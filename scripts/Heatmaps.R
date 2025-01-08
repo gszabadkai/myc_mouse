@@ -21,9 +21,8 @@ library(cowplot)
 library(fgsea)
 library(data.table)
 
-setwd("/Users/michaelsworklaptop/Documents/k693_rerun")
 
-cts = read.csv("FULL.DAT_copy.csv")
+cts = read.csv("data/FULL.DAT_copy.csv")
 colnames(cts) <- sub("X", "", colnames(cts))
 
 ###Remove transcript ID###
@@ -37,9 +36,6 @@ res_anno <- AnnotationDbi::select(org.Mm.eg.db,keys=res$ENSEMBL,
                                   columns=c("ENSEMBL","SYMBOL","GENENAME","ENTREZID"),
                                   keytype="ENSEMBL") %>% 
   filter(!duplicated(ENSEMBL))
-
-# Have a look at the annotation
-res_anno
 
 # Bind the annotation to the original dataset here
 res.annotated <- left_join(res_anno, res, by="ENSEMBL")
@@ -55,7 +51,7 @@ columns_to_remove <- c(1, 3, 4)
 df_2 <- res.annotated[, -columns_to_remove]
 head(df_2)
 
-write.csv(df_2,"df_2.csv")
+# write.csv(df_2,"df_2.csv")
 
 # Remove duplicated rows based on the SYMBOL column
 df_2 <- df_2 %>% distinct(SYMBOL, .keep_all = TRUE)
