@@ -1,0 +1,25 @@
+sample	count.file	group	cancer	age
+MYBS102_1i	MYBS102_1i	hyperplastic	6 Wk MYC POS	6 wk
+MYBS104_1h	MYBS104_1h	hyperplastic	6 Wk MYC POS	6 wk
+MYCF52_5f	MYCF52_5f	hyperplastic	12 Wk MYC pos	12 wk
+MYCF52_5g	MYCF52_5g	hyperplastic	12 Wk MYC pos	12 wk
+MYCF52_5i	MYCF52_5i	WT	12 Wk MYC neg	12 wk
+MYCF52_5j	MYCF52_5j	WT	12 Wk MYC neg	12 wk
+MYCF52_6i	MYCF52_6i	hyperplastic	12 Wk MYC pos	12 wk
+MYCF53_6d	MYCF53_6d	WT	12 Wk MYC neg	12 wk
+MYCF55_3g	MYCF55_3g	hyperplastic	12 Wk MYC pos	12 wk
+MYCF55_3h	MYCF55_3h	hyperplastic	12 Wk MYC pos	12 wk
+MYCF56_4a	MYCF56_4a	hyperplastic	12 Wk MYC pos	12 wk
+MYCF56_4b	MYCF56_4b	WT	12 Wk MYC neg	12 wk
+MYCF56_4d	MYCF56_4d	WT	12 Wk MYC neg	12 wk
+MYCF56_4e	MYCF56_4e	WT	12 Wk MYC neg	12 wk
+MYCF62_3d	MYCF62_3d	hyperplastic	6 Wk MYC POS	6 wk
+MYCF62_3f	MYCF62_3f	WT	6 Wk MYC neg	6 wk
+MYCF62_3g	MYCF62_3g	hyperplastic	6 Wk MYC POS	6 wk
+MYCF62_3h	MYCF62_3h	WT	6 Wk MYC neg	6 wk
+MYCF63_3e	MYCF63_3e	WT	6 Wk MYC neg	6 wk
+MYCF63_3f	MYCF63_3f	WT	6 Wk MYC neg	6 wk
+MYCF63_3h	MYCF63_3h	WT	6 Wk MYC neg	6 wk
+MYCF64_3f	MYCF64_3f	WT	6 Wk MYC neg	6 wk
+MYCF64_4g	MYCF64_4g	hyperplastic	6 Wk MYC POS	6 wk
+MYCF65_3h	MYCF65_3h	hyperplastic	6 Wk MYC POS	6 wk

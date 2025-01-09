@@ -75,7 +75,7 @@ coldata$cancer <- as.factor(coldata$age)
 # Load the dataset and create a DESeq object for group
 dds <- DESeqDataSetFromMatrix(countData = round(cts),
                               colData = coldata,
-                              design = ~ age)
+                                design = ~ age)
 head(dds)
 
 # Pre-filtering => Removes all genes whose row sum is less than 10. 
