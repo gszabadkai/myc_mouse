@@ -12,10 +12,19 @@ library(vsn)
 library(pheatmap)
 library(RColorBrewer)
 library(PoiClaClu)
+library(biomaRt)
+library(clipr)
+library(variancePartition)
+library(edgeR)
+library(stringr)
+
+
 
 ###### Read in and set up coldata
 
 coldata <- read.delim("data/FULL.DAT.COL.DATA.txt", sep = "\t", header = TRUE)
+
+#  reshape data, add groupings to detect source of variability - see below
 coldata <- coldata %>% remove_rownames %>% column_to_rownames(var="count.file") %>% 
   mutate(myc_status = case_when(
     group == "hyperplastic" ~ "pos",
@@ -25,10 +34,17 @@ coldata <- coldata %>% remove_rownames %>% column_to_rownames(var="count.file") 
     age == '6 wk' ~ '6W',
     age == '12 wk' ~'12W'
   )) %>% 
-  mutate(group = paste(timepoint, myc_status, sep = '_'))
+  mutate(group = paste(timepoint, myc_status, sep = '_')) %>% 
+  mutate(prefix = sub("_.*", "", sample)) %>% 
+  mutate(suffix = sub(".*_", "", sample)) %>% 
+  mutate(numeric_part = str_extract(suffix, "\\d+")) %>% 
+  mutate(alphabetical_part = str_extract(suffix, "[a-zA-Z]+")) %>% 
+  mutate(across(c(5, 7:10), as.factor))
 coldata <- coldata[-c(3,4)]
 coldata$timepoint <- as.factor(coldata$timepoint) %>% relevel('6W')
-coldata$myc_status <- as.factor(coldata$myc_status)
+coldata$group <- factor(coldata$group, levels = c('6W_neg', '6W_pos', '12W_neg', '12W_pos'))
+coldata <- coldata[order(coldata$group), ]
+
 
 ###### Read in and set up count file
 
@@ -37,6 +53,8 @@ cts <- cts[-2]
 cts <- cts %>% remove_rownames %>% column_to_rownames(var="gene_id")
 cts <- as.matrix(round(cts))
 storage.mode(cts) <- "integer"
+cts <- cts[, rownames(coldata)]
+
 
 # Check the matches here before loading the data for further analysis
 all(rownames(coldata) %in% colnames(cts)) # This should return TRUE
@@ -106,10 +124,10 @@ ggbetweenstats(
 
 ## variance stabilizing transformations 
 
-vsd <- vst(dds, blind = TRUE)
+vsd <- vst(dds, blind = FALSE)
 head(assay(vsd), 3)
 
-rld <- rlog(dds, blind = TRUE)
+rld <- rlog(dds, blind = FALSE)
 head(assay(rld), 3)
 
 df_var <- bind_rows(
@@ -166,10 +184,94 @@ pheatmap(samplePoisDistMatrix,
          col = colors)
 
 # MYCF64_4g / 6W_pos is an outlier (also MYCF64_3f / 6W_neg) ???
+# overall there is no clustering by sample groups
+
 
 ## PCA
 
 plotPCA(vsd, intgroup = c("group", "sample"))
+
+# no clear grouping by condition!! also, no batch effect is visible, all seems rather random
+## which genes contribute to PCA1 and PCA2 (repeat with changing the numbers), 
+
+pca <- prcomp(t(assay(vsd)))  # Perform PCA on the same data
+pc1_loadings <- pca$rotation[, 1]  # Extract PC2 loadings
+top_genes <- head(order(abs(pc1_loadings), decreasing = TRUE), n = 50)  # Top 50 contributors
+
+pc1_top_genes <- rownames(pca$rotation)[top_genes]
+
+ensembl <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+annotation <- getBM(
+  attributes = c("ensembl_gene_id", "external_gene_name"),
+  filters = "ensembl_gene_id",
+  values = pc1_top_genes,
+  mart = ensembl
+)
+
+annotation$external_gene_name
+
+write_clip(annotation$external_gene_name)
+
+# examining the resulted gene sets with Gprofiler gives mostly immune/lymphocyte related terms see: https://biit.cs.ut.ee/gprofiler/gost?organism=mmusculus&query=Il7r%0ACd247%0APax5%0AIkzf3%0ACyfip2%0AItk%0AGpr132%0ASatb1%0AMs4a1%0AMs4a6b%0ACd28%0APtprc%0ASell%0ACr2%0ACd2%0ALef1%0ASh2d2a%0ARhoh%0ASt8sia1%0ACd27%0ACd19%0AIl21r%0ACd3e%0ADnah8%0AGalnt6%0ATraf3ip3%0ABank1%0ACcr7%0AGimap3%0ACd53%0AUbash3a%0AGrap2%0ACxcr5%0ASelplg%0AThemis%0AArhgap15%0AP2ry10%0ASkap1%0AGvin3%0AFam169b%0ATrbc2%0ATrac%0AC230085N15Rik%0A5830444F18Rik%0AE430014B02Rik%0AGm37248%0AGm36931%0AIghd%0AA130071D04Rik%0AGm49553&ordered=false&all_results=false&no_iea=false&combined=false&measure_underrepresentation=false&domain_scope=annotated&significance_threshold_method=g_SCS&user_threshold=0.05&numeric_namespace=ENTREZGENE_ACC&sources=GO:MF,GO:CC,GO:BP,KEGG,TF,REAC,MIRNA,HPA,CORUM,HP,WP&background=&highlight=true&no_evidences=false
+# this might be a random contamination???
+
+# further exploration with variancePartition
+# Prepare count data and metadata
+countData <- counts(dds)
+metadata <- colData(dds)
+
+# Normalize and transform data
+dge <- DGEList(counts = countData)
+dge <- calcNormFactors(dge)
+v <- voom(dge, design = NULL)
+
+# define formula
+formula <- ~ (1|group/myc_status) 
+
+(1|myc_status) + (1|timepoint) 
+
++ (1|numeric_part) + (1|alphabetical_part) + (1|myc_status) + (1|timepoint) (1|prefix) (1|suffix)
+
+# Fit variance model
+varPart <- fitExtractVarPartModel(v$E, formula, metadata)
+
+# Plot variance partitioning results
+plotVarPart(varPart)
+
+
+# only samll part of the variation is explained by any of the parameters - moving on for DGE
+
+###### DGE results / contrasts
+
+dds <- DESeq(dds)
+
+resultsNames(dds)
+
+# main effect of timepoints (myc_neg)
+
+timepoint_effect_12W_vs_6W_at_myc_neg <- results(dds, name = "timepoint_12W_vs_6W")
+
+# main effect of timepoints (myc_pos)
+
+timepoint_effect_12W_vs_6W_at_myc_pos <- results(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")))
+
+# overall myc effect
+
+myc_effect_overall <- results(dds, name = "myc_status_pos_vs_neg")
+
+# myc effect at 6W
+
+myc_effect_at_6W <- results(dds, contrast = c("myc_status", "pos", "neg"))
+
+# myc effect at 12W
+
+myc_effect_at_12W <- results(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")))
+
+# change in myc effect between 6W and 12W
+
+myc_effect_12W_vs_6W <- results(dds, name = "timepoint12W.myc_statuspos")
+
+
 
 
 
