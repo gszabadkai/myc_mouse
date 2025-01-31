@@ -17,10 +17,11 @@ library(clipr)
 library(variancePartition)
 library(edgeR)
 library(stringr)
+library(IHW)
 
 
 
-###### Read in and set up coldata
+###### Read in and set up coldata ----
 
 coldata <- read.delim("data/FULL.DAT.COL.DATA.txt", sep = "\t", header = TRUE)
 
@@ -46,7 +47,7 @@ coldata$group <- factor(coldata$group, levels = c('6W_neg', '6W_pos', '12W_neg',
 coldata <- coldata[order(coldata$group), ]
 
 
-###### Read in and set up count file
+###### Read in and set up count file ----
 
 cts <- read.csv("data/FULL.DAT.csv")
 cts <- cts[-2]
@@ -85,13 +86,11 @@ ggbetweenstats(
   ylab = "total counts (M)"
 )
 
-##### create a DESeq object
+##### create a DESeq object w interaction -----
 
 ddsMat <- DESeqDataSetFromMatrix(countData = cts,
                                  colData = coldata,
                                  design = ~ timepoint * myc_status) #this expands to ~ timepoint + myc_status + timepoint:myc_status
-
-##### look at the ddsMat data
 
 ## filter by counts: 55K rows --> 19K
 
@@ -107,6 +106,8 @@ nrow(dds)
 
 dds <- estimateSizeFactors(dds)
 sizeFactors(dds)
+
+##### dds data QC -----
 
 total_cts_graph_data$size_factors <- sizeFactors(dds)
 
@@ -183,9 +184,7 @@ pheatmap(samplePoisDistMatrix,
          clustering_distance_cols = poisd$dd,
          col = colors)
 
-# MYCF64_4g / 6W_pos is an outlier (also MYCF64_3f / 6W_neg) ???
 # overall there is no clustering by sample groups
-
 
 ## PCA
 
@@ -238,38 +237,167 @@ varPart <- fitExtractVarPartModel(v$E, formula, metadata)
 # Plot variance partitioning results
 plotVarPart(varPart)
 
-
 # only samll part of the variation is explained by any of the parameters - moving on for DGE
 
-###### DGE results / contrasts
+###### DGE results / contrasts / lfcShrink /IHW -----
 
 dds <- DESeq(dds)
 
 resultsNames(dds)
 
-# main effect of timepoints (myc_neg)
+#### 1. main effect of timepoints (myc_neg) -----
 
 timepoint_effect_12W_vs_6W_at_myc_neg <- results(dds, name = "timepoint_12W_vs_6W")
+timepoint_effect_12W_vs_6W_at_myc_neg.ape <- lfcShrink(dds, coef="timepoint_12W_vs_6W", type="apeglm")
+timepoint_effect_12W_vs_6W_at_myc_neg.IHW <- results(dds, name = "timepoint_12W_vs_6W", filterFun=ihw)
+# final result with lfcShrink/apeglm and IHW:
+timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape <- lfcShrink(dds, coef="timepoint_12W_vs_6W", type="apeglm", res = timepoint_effect_12W_vs_6W_at_myc_neg.IHW)
 
-# main effect of timepoints (myc_pos)
+# summaries and MA plot
+summary(timepoint_effect_12W_vs_6W_at_myc_neg)
+summary(timepoint_effect_12W_vs_6W_at_myc_neg.ape) 
+DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_neg.ape, ylim=c(-2,2))
+DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape, ylim=c(-2,2))
+
+# number of 10% FDR results is less with IHW --> noisy data???
+# sum(timepoint_effect_12W_vs_6W_at_myc_neg.ape$padj < 0.1, na.rm = TRUE)
+# [1] 1896
+# > sum(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape$padj < 0.1, na.rm = TRUE)
+# [1] 1867
+
+# checking ihw results - using basemean as covariate doesn't add anything --> use timepoint_effect_12W_vs_6W_at_myc_neg.ape in further analysis
+
+res <- results(dds, name = "timepoint_12W_vs_6W", pAdjustMethod="none")
+ihw_res <- ihw(
+  pvalues    = res$pvalue,
+  covariates = res$baseMean,
+  alpha      = 0.1
+)
+res$IHW_padj <- adj_pvalues(ihw_res)
+
+# > sum(res$pvalue < 0.1, na.rm = TRUE)
+# [1] 5028
+# > sum(res$IHW_padj < 0.1, na.rm = TRUE)
+# [1] 1867
+
+plot(ihw_res)
+plot(ihw_res, what = "decisionboundary") 
+gg <- ggplot(as.data.frame(ihw_res), aes(x = pvalue, y = adj_pvalue, col = group)) + 
+  geom_point(size = 0.25) + scale_colour_hue(l = 70, c = 150, drop = FALSE)
+gg %+% subset(as.data.frame(ihw_res), adj_pvalue <= 0.1)
+  
+#### 2. main effect of timepoints (myc_pos) ----
 
 timepoint_effect_12W_vs_6W_at_myc_pos <- results(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")))
+    # timepoint_effect_12W_vs_6W_at_myc_pos.normal <- lfcShrink(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), type="normal") #ofc, lfcShrink work with interactions
+summary(timepoint_effect_12W_vs_6W_at_myc_pos)
+DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_pos, ylim=c(-2,2))
 
-# overall myc effect
+resMyc <- results(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), pAdjustMethod="none")
+ihw_resMyc <- ihw(
+  pvalues    = resMyc$pvalue,
+  covariates = resMyc$baseMean,
+  alpha      = 0.1
+)
+resMyc$IHW_padj <- adj_pvalues(ihw_resMyc)
+
+# slight effect of IHW... no worth pursuing
+# > sum(resMyc$pvalue < 0.1, na.rm = TRUE)
+# [1] 5631
+# > # [1] 5028
+#   > sum(resMyc$IHW_padj < 0.1, na.rm = TRUE)
+# [1] 2623
+# > sum(timepoint_effect_12W_vs_6W_at_myc_pos$padj < 0.1, na.rm = TRUE)
+# [1] 2636
+# > 
+
+plot(ihw_resMyc)
+plot(ihw_resMyc, what = "decisionboundary")
+
+
+##### 3. overall myc effect (6W) ---- 
+# (actually it is the same as the 6W effect, due to the use of the interaction term see ?results examples 2 and 3)
 
 myc_effect_overall <- results(dds, name = "myc_status_pos_vs_neg")
+myc_effect_overall.ape <- lfcShrink(dds, coef = "myc_status_pos_vs_neg", type = "apeglm")
+summary(myc_effect_overall)
+summary(myc_effect_overall.ape)
 
-# myc effect at 6W
+# IHW
+resMycO <- results(dds, name = "myc_status_pos_vs_neg", pAdjustMethod="none")
+ihw_resMycO <- ihw(
+  pvalues    = resMycO$pvalue,
+  covariates = resMycO$baseMean,
+  alpha      = 0.1
+)
+resMycO$IHW_padj <- adj_pvalues(ihw_resMycO)
 
-myc_effect_at_6W <- results(dds, contrast = c("myc_status", "pos", "neg"))
+# > sum(resMycO$pvalue < 0.1, na.rm = TRUE)
+# [1] 5825
+# > sum(resMycO$IHW_padj < 0.1, na.rm = TRUE)
+# [1] 2777
+# > sum(myc_effect_overall$padj < 0.1, na.rm = TRUE)
+# [1] 2704
 
-# myc effect at 12W
+plot(ihw_resMycO)
+plot(ihw_resMycO, what = "decisionboundary") 
+
+
+# IHW is useful in this case!! integrating with lfcShrink:
+myc_effect_overall.ape.IHW <- myc_effect_overall.ape
+myc_effect_overall.ape.IHW$padj <- resMycO$IHW_padj
+
+DESeq2::plotMA(myc_effect_overall.ape.IHW, ylim=c(-2,2))
+
+# # myc effect at 6W 
+# 
+# myc_effect_at_6W <- results(dds, contrast = c("myc_status", "pos", "neg"))
+# summary(myc_effect_at_6W)
+
+###### 4. myc effect at 12W ----
 
 myc_effect_at_12W <- results(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")))
+summary(myc_effect_at_12W)
 
-# change in myc effect between 6W and 12W
+resMyc12 <- results(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")), pAdjustMethod="none")
+ihw_resMyc12 <- ihw(
+  pvalues    = resMyc12$pvalue,
+  covariates = resMyc12$baseMean,
+  alpha      = 0.1
+)
+resMyc12$IHW_padj <- adj_pvalues(ihw_resMyc12)
+
+# > sum(resMyc12$pvalue < 0.1, na.rm = TRUE)
+# [1] 3048
+# > sum(resMyc12$IHW_padj < 0.1, na.rm = TRUE)
+# [1] 239
+# > sum(myc_effect_at_12W$padj < 0.1, na.rm = TRUE)
+# [1] 218
+
+plot(ihw_resMyc12)
+plot(ihw_resMyc12, what = "decisionboundary") 
+
+# IHW is useful in this case!! merging
+myc_effect_at_12W.IHW <- myc_effect_at_12W
+myc_effect_at_12W.IHW$padj <- resMyc12$IHW_padj
+
+DESeq2::plotMA(myc_effect_at_12W.IHW, ylim=c(-2,2))
+
+##### 5. diff myc effect between 6W and 12W ----
 
 myc_effect_12W_vs_6W <- results(dds, name = "timepoint12W.myc_statuspos")
+summary(myc_effect_12W_vs_6W)
+
+###### SUM DGE results from interaction model -----
+
+timepoint_effect_12W_vs_6W_at_myc_neg.ape
+timepoint_effect_12W_vs_6W_at_myc_pos
+myc_effect_overall.ape.IHW
+myc_effect_at_12W.IHW
+
+
+
+
 
 
 
