@@ -396,10 +396,113 @@ myc_effect_overall.ape.IHW
 myc_effect_at_12W.IHW
 
 
+##### compare LFCs between 6W and 12W -----
 
 
+# Merge results from the two time points
+merged_res_12W_vs_6W <- merge(as.data.frame(myc_effect_overall.ape.IHW), 
+                              as.data.frame(myc_effect_at_12W.IHW), 
+                              by = "row.names", 
+                              suffixes = c("_6W", "_12W"))
 
+# Rename row names column
+colnames(merged_res_12W_vs_6W)[1] <- "Ensembl_ID"
 
+# Create scatter plot for ALL genes
+ggplot(merged_res_12W_vs_6W, aes(x = log2FoldChange_6W, y = log2FoldChange_12W)) +
+  geom_point(alpha = 0.1) + 
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  labs(x = "log2FC (Myc Effect at 6W)", y = "log2FC (Myc Effect at 12W)", 
+       title = "Comparison of Myc Effects at 6W vs 12W (All Data)") +
+  theme_minimal()
 
+# Filter for significant genes (padj < 0.1 at both timepoints)
+
+merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
+  mutate(Significance = case_when(
+    padj_6W < 0.1 & padj_12W < 0.1 ~ "Significant at both",
+    padj_6W < 0.1 & padj_12W >= 0.1 ~ "Significant at 6W only",
+    padj_6W >= 0.1 & padj_12W < 0.1 ~ "Significant at 12W only",
+    TRUE ~ "Not significant"
+  ))
+
+# Choose ColorBrewer palette
+palette_colors <- brewer.pal(n = 4, name = "Dark2")  # "Dark2" is a good categorical choice
+
+# Map significance categories to ColorBrewer colors
+color_palette <- c(
+  "Significant at both" = palette_colors[1],  # Dark green
+  "Significant at 6W only" = palette_colors[2], # Dark orange
+  "Significant at 12W only" = palette_colors[3], # Dark purple
+  "Not significant" = "gray70"  # Use gray for non-significant
+)
+
+# Define alpha values for different categories
+alpha_values <- c(
+  "Significant at both" = 0.5,
+  "Significant at 6W only" = 0.2,
+  "Significant at 12W only" = 0.9,
+  "Not significant" = 0.02
+)
+
+# Create scatter plot with different colors and alpha values
+ggplot(merged_res_12W_vs_6W, 
+            aes(x = log2FoldChange_6W, 
+                y = log2FoldChange_12W, 
+                color = Significance, 
+                alpha = Significance)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  scale_color_manual(values = color_palette) +  # Apply ColorBrewer colors
+  scale_alpha_manual(values = alpha_values) +   # Apply different alpha values
+  xlim(-5, 5) +   # Limit x-axis between -5 and +5
+  ylim(-5, 5) +   # Limit y-axis between -5 and +5
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", color = "gray50") +  # Dashed lines at y = ±1
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "gray50") +  # Dashed lines at x = ±1
+  labs(x = "log2FC (Myc Effect at 6W)", 
+       y = "log2FC (Myc Effect at 12W)", 
+       title = "Myc Effects 6W vs 12W") +
+  theme_minimal() +
+  theme(legend.title = element_blank())
+
+# extract gene sets
+# Connect to Ensembl biomart for Mouse (Mus musculus)
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+# Get gene names for Ensembl IDs
+gene_annotations <- getBM(
+  attributes = c("ensembl_gene_id", "mgi_symbol"), 
+  filters = "ensembl_gene_id", 
+  values = merged_res_12W_vs_6W$Ensembl_ID, 
+  mart = mart
+)
+
+# Merge gene names into dataset
+merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
+  left_join(gene_annotations, by = c("Ensembl_ID" = "ensembl_gene_id"))
+
+# Replace missing gene names with Ensembl IDs
+merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
+  mutate(mgi_symbol = ifelse(mgi_symbol == "", Ensembl_ID, mgi_symbol))
+
+# Extract and sort genes for each category
+genes_both <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at both") %>%
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_6W_only <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 6W only") %>%
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_12W_only <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 12W only") %>%
+  arrange(desc(log2FoldChange_12W)) %>%
+  pull(mgi_symbol)
+
+# copy for ggplot web_ui
+
+write_clip(genes_6W_only)
 
 
