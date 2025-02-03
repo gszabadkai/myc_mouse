@@ -86,7 +86,11 @@ ggbetweenstats(
   ylab = "total counts (M)"
 )
 
+<<<<<<< HEAD
 ##### create a DESeq object w interaction -----
+=======
+##### create a DESeq object -----
+>>>>>>> e51bf34e25f3ac64d2e1b39c33044662d47df567
 
 ddsMat <- DESeqDataSetFromMatrix(countData = cts,
                                  colData = coldata,
@@ -394,6 +398,13 @@ timepoint_effect_12W_vs_6W_at_myc_neg.ape
 timepoint_effect_12W_vs_6W_at_myc_pos
 myc_effect_overall.ape.IHW
 myc_effect_at_12W.IHW
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> e51bf34e25f3ac64d2e1b39c33044662d47df567
 
 
 ##### compare LFCs between 6W and 12W -----
