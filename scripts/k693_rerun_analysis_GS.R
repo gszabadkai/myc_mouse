@@ -18,6 +18,12 @@ library(variancePartition)
 library(edgeR)
 library(stringr)
 library(IHW)
+library(gprofiler2)
+library(purrr)
+library(tidyr)
+library(UpSetR)
+library(openxlsx)
+library(RCy3)
 
 
 
@@ -457,6 +463,8 @@ alpha_values <- c(
 )
 
 # Create scatter plot with different colors and alpha values
+pdf('output/Myc_effect_12W_vs_6W.pdf', width = 14, height = 10)
+
 ggplot(merged_res_12W_vs_6W, 
             aes(x = log2FoldChange_6W, 
                 y = log2FoldChange_12W, 
@@ -475,6 +483,8 @@ ggplot(merged_res_12W_vs_6W,
        title = "Myc Effects 6W vs 12W") +
   theme_minimal() +
   theme(legend.title = element_blank())
+
+dev.off()
 
 # extract gene sets
 # Connect to Ensembl biomart for Mouse (Mus musculus)
@@ -496,10 +506,22 @@ merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
 merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
   mutate(mgi_symbol = ifelse(mgi_symbol == "", Ensembl_ID, mgi_symbol))
 
-# Extract and sort genes for each category
+# Extract and sort genes for each category, divide positive and negative
 genes_both <- merged_res_12W_vs_6W %>%
   filter(Significance == "Significant at both") %>%
   arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_both_pos <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at both") %>%
+  filter(log2FoldChange_6W > 0) %>% 
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_both_neg <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at both") %>%
+  filter(log2FoldChange_6W < 0) %>% 
+  arrange(log2FoldChange_6W) %>%
   pull(mgi_symbol)
 
 genes_6W_only <- merged_res_12W_vs_6W %>%
@@ -507,13 +529,262 @@ genes_6W_only <- merged_res_12W_vs_6W %>%
   arrange(desc(log2FoldChange_6W)) %>%
   pull(mgi_symbol)
 
+genes_6W_only_pos <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 6W only") %>%
+  filter(log2FoldChange_6W > 0) %>% 
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_6W_only_neg <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 6W only") %>%
+  filter(log2FoldChange_6W < 0) %>% 
+  arrange(log2FoldChange_6W) %>%
+  pull(mgi_symbol)
+
+genes_6W_all <- merged_res_12W_vs_6W %>%
+  filter(Significance %in% c("Significant at both", "Significant at 6W only")) %>%
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_6W_all_pos <- merged_res_12W_vs_6W %>%
+  filter(Significance %in% c("Significant at both", "Significant at 6W only")) %>%
+  filter(log2FoldChange_6W > 0) %>% 
+  arrange(desc(log2FoldChange_6W)) %>%
+  pull(mgi_symbol)
+
+genes_6W_all_neg <- merged_res_12W_vs_6W %>%
+  filter(Significance %in% c("Significant at both", "Significant at 6W only")) %>%
+  filter(log2FoldChange_6W < 0) %>% 
+  arrange(log2FoldChange_6W) %>%
+  pull(mgi_symbol)
+
 genes_12W_only <- merged_res_12W_vs_6W %>%
   filter(Significance == "Significant at 12W only") %>%
   arrange(desc(log2FoldChange_12W)) %>%
   pull(mgi_symbol)
 
-# copy for ggplot web_ui
+genes_12W_only_pos <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 12W only") %>%
+  filter(log2FoldChange_12W > 0) %>% 
+  arrange(desc(log2FoldChange_12W)) %>%
+  pull(mgi_symbol)
 
+genes_12W_only_neg <- merged_res_12W_vs_6W %>%
+  filter(Significance == "Significant at 12W only") %>%
+  filter(log2FoldChange_12W < 0) %>% 
+  arrange(log2FoldChange_12W) %>%
+  pull(mgi_symbol)
+
+
+
+
+##### gprofiler analysis ----
+
+#  for web ui
 write_clip(genes_6W_only)
+write_clip(genes_12W_only)
+write_clip(genes_both)
+write_clip(genes_6W_all)
+
+# Background genes for gprofiler = all genes tested in DESeq2
+background_genes <- merged_res_12W_vs_6W$mgi_symbol
+
+# Save as a text file for g:Profiler web ui input
+write.table(background_genes, "output/background_genes.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+# Define a function that runs g:Profiler for a given gene set.
+run_gprofiler <- function(query_genes, gene_set_name, background) {
+  # Run g:Profiler analysis with the following parameters:
+  # - ordered_query = TRUE : the query gene list is ordered.
+  # - organism = "mmusculus"
+  # - custom background provided
+  # - sources: GO:BP, GO:CC, KEGG, REAC, TRANSFAC
+  res <- gost(query = query_genes,
+              organism = "mmusculus",
+              ordered_query = TRUE,
+              custom_bg = background,
+              evcodes = TRUE,  #also lists the intersection genes in a column
+              sources = c("GO:BP", "GO:CC", "KEGG", "REAC", "MIRNA", "TF"))
+  
+  # If there are results, add a column indicating the gene set name.
+  if (!is.null(res$result)) {
+    res_df <- res$result %>%
+      mutate(gene_set = gene_set_name)
+  } else {
+    # If no significant results were returned, create an empty data frame with the expected structure.
+    res_df <- data.frame(gene_set = gene_set_name)
+  }
+  
+  return(res_df)
+}
+
+gene_sets <- list(
+  '12W_only'     = genes_12W_only,
+  'both_n'     = genes_both_neg,
+  '6W_only_n'  = genes_6W_only_neg,
+  '6W_all_n'   = genes_6W_all_neg,
+  'both_p'     = genes_both_pos,
+  '6W_only_p'  = genes_6W_only_pos,
+  '6W_all_p'   = genes_6W_all_pos)
+
+# genes_12W_only_neg, genes_12W_only_pos doesn't give any significant result, going with genes_12W_only
+
+
+# Run g:Profiler for each gene set and store the results in a list
+gprofiler_results_list <- lapply(names(gene_sets), function(set_name) {
+  message("Running g:Profiler for gene set: ", set_name)
+  run_gprofiler(query_genes = gene_sets[[set_name]],
+                gene_set_name = set_name,
+                background = background_genes)
+})
+
+# Combine all the results into one data frame
+all_pathways <- bind_rows(gprofiler_results_list)
+
+# Reorder columns so that 'gene_set' is the first column
+all_pathways <- all_pathways %>% select(gene_set, everything())
+
+# Save the final merged results to a CSV file for further analysis/visualization.
+all_pathways_fixed <- all_pathways %>% 
+  mutate(across(where(is.list), ~ sapply(., function(x) paste(unlist(x), collapse = ","))))
+
+write.csv(all_pathways_fixed, "output/gprofiler/merged_gprofiler_results.csv", row.names = FALSE)
+
+# Adjust p-values to -log10 scale for visualization
+all_pathways$neg_log10_pval <- -log10(all_pathways$p_value)
+
+# Create a summary of pathway occurrence
+pathway_counts <- all_pathways %>%
+  group_by(term_id, term_name, source) %>%
+  summarise(occurrences = n(), .groups = "drop")
+
+# Create a binary presence/absence matrix for UpSet plot
+pathway_presence <- all_pathways %>%
+  select(term_id, gene_set) %>%
+  mutate(present = 1) %>%
+  pivot_wider(names_from = gene_set, values_from = present, values_fill = 0)
+
+###### UpSet plot for gprofiler results ----
+
+# Convert pathway presence matrix into a format suitable for UpSet
+upset_matrix <- pathway_presence %>%
+  column_to_rownames("term_id") %>%
+  as.matrix()
+
+upset_matrix <- as.data.frame(upset_matrix)
+
+colorsUpSet <- brewer.pal(n = 7, name = "Dark2")
+
+# Create UpSet plot
+pdf("output/gprofiler/gprofiler_upset_1.pdf")
+
+upset(
+  upset_matrix, 
+  sets = colnames(upset_matrix),
+  sets.bar.color = colorsUpSet,
+  keep.order = TRUE,
+  mainbar.y.label = "Number of Shared Pathways",
+  sets.x.label = "Number of Pathways in Each Set"
+)
+
+dev.off()
+
+# extract pathway names for each category
+
+pathway_presence_merged <- left_join(pathway_presence, 
+                                     all_pathways %>% select(term_id, term_name),
+                                     by = "term_id")
+
+# Specify the gene set columns
+gene_set_columns <- c("both_n", "both_p", 
+                      "6W_only_n", "6W_only_p", 
+                      "6W_all_n", "6W_all_p", 
+                      "12W_only")
+
+# Create an "intersection" identifier for each pathway,
+# indicating the gene set columns (from gene_set_columns) where the pathway is present (value == 1).
+pathway_presence_merged <- pathway_presence_merged %>%
+  rowwise() %>%
+  mutate(intersection = {
+    # Get the gene set names for which the pathway is present (== 1)
+    present_sets <- gene_set_columns[which(c_across(all_of(gene_set_columns)) == 1)]
+    if(length(present_sets) == 0) "none" else paste(sort(present_sets), collapse = ";")
+  }) %>%
+  ungroup()
+
+# Now split the pathway names (term_name) by the unique intersection categories.
+# This gives you a list where each element is the vector of pathway names for a given intersection category.
+intersection_list <- split(pathway_presence_merged$term_name, pathway_presence_merged$intersection)
+intersection_list <- lapply(intersection_list, unique)
+
+# write each path list in a separate sheet of and excel file
+
+wb <- createWorkbook()
+for (int_name in names(intersection_list)) {
+  # Create a valid sheet name (max 31 characters; truncate if necessary)
+  sheet_name <- substr(int_name, 1, 31)
+  
+  # Create a data frame with the pathway names.
+  df <- data.frame(Pathway = intersection_list[[int_name]], stringsAsFactors = FALSE)
+  
+  addWorksheet(wb, sheetName = sheet_name)
+  writeData(wb, sheet = sheet_name, x = df)
+}
+
+# Save the Excel workbook.
+saveWorkbook(wb, file = "output/gprofiler/upset_pathways.xlsx", overwrite = TRUE)
+
+
+##### Cytoscape -----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### fgsea -----
+
+# Create ranked gene list for GSEA
+ranks <- merged_res_12W_vs_6W %>%
+  arrange(desc(log2FoldChange_6W)) %>%  # Rank by LFC at 6W (or use 12W if needed)
+  select(mgi_symbol, log2FoldChange_6W) %>%
+  distinct()  # Ensure unique gene names
+
+# Convert to named numeric vector
+gene_ranks <- setNames(ranks$log2FoldChange_6W, ranks$mgi_symbol)
+
+# Load gene sets (e.g., MSigDB, KEGG, Reactome)
+pathways <- gmtPathways("mouse_msigdb.gmt")  # Replace with the correct gene set file
+
+# Run fgsea
+fgsea_results <- fgsea(pathways = pathways, 
+                       stats = gene_ranks, 
+                       minSize = 15, 
+                       maxSize = 500, 
+                       nperm = 10000)  # Increase permutations for stability
+
+# Filter significant pathways
+fgsea_results <- fgsea_results %>%
+  arrange(padj)  # Sort by adjusted p-value
+
+# Save results
+write.table(fgsea_results, "GSEA_results_6W.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+
+# Plot top enriched pathways
+plotEnrichment(pathways[["KEGG_OXIDATIVE_PHOSPHORYLATION"]], gene_ranks)  # Example pathway
+
+
+
+
+
 
 
