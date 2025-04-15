@@ -92,11 +92,11 @@ ggbetweenstats(
   ylab = "total counts (M)"
 )
 
-<<<<<<< HEAD
+
 ##### create a DESeq object w interaction -----
-=======
+
 ##### create a DESeq object -----
->>>>>>> e51bf34e25f3ac64d2e1b39c33044662d47df567
+
 
 ddsMat <- DESeqDataSetFromMatrix(countData = cts,
                                  colData = coldata,
@@ -404,13 +404,7 @@ timepoint_effect_12W_vs_6W_at_myc_neg.ape
 timepoint_effect_12W_vs_6W_at_myc_pos
 myc_effect_overall.ape.IHW
 myc_effect_at_12W.IHW
-<<<<<<< HEAD
-=======
 
-
-
-
->>>>>>> e51bf34e25f3ac64d2e1b39c33044662d47df567
 
 
 ##### compare LFCs between 6W and 12W -----
@@ -580,38 +574,31 @@ genes_12W_only_neg <- merged_res_12W_vs_6W %>%
 
 ##### gprofiler analysis ----
 
-#  for web ui
-write_clip(genes_6W_only)
-write_clip(genes_12W_only)
-write_clip(genes_both)
-write_clip(genes_6W_all)
+# #  for web ui
+# write_clip(genes_6W_only)
+# write_clip(genes_12W_only)
+# write_clip(genes_both)
+# write_clip(genes_6W_all)
 
-# Background genes for gprofiler = all genes tested in DESeq2
+### 1. Background genes for gprofiler = all genes tested in DESeq2
 background_genes <- merged_res_12W_vs_6W$mgi_symbol
 
 # Save as a text file for g:Profiler web ui input
 write.table(background_genes, "output/background_genes.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
-# Define a function that runs g:Profiler for a given gene set.
-run_gprofiler <- function(query_genes, gene_set_name, background) {
-  # Run g:Profiler analysis with the following parameters:
-  # - ordered_query = TRUE : the query gene list is ordered.
-  # - organism = "mmusculus"
-  # - custom background provided
-  # - sources: GO:BP, GO:CC, KEGG, REAC, TRANSFAC
+### 2. Define a function to run g:Profiler for an ordered query
+run_gprofiler_ordered <- function(query_genes, gene_set_name, background) {
   res <- gost(query = query_genes,
               organism = "mmusculus",
               ordered_query = TRUE,
               custom_bg = background,
-              evcodes = TRUE,  #also lists the intersection genes in a column
+              evcodes = TRUE,   # returns the list of intersecting genes
               sources = c("GO:BP", "GO:CC", "KEGG", "REAC", "MIRNA", "TF"))
   
-  # If there are results, add a column indicating the gene set name.
   if (!is.null(res$result)) {
     res_df <- res$result %>%
       mutate(gene_set = gene_set_name)
   } else {
-    # If no significant results were returned, create an empty data frame with the expected structure.
     res_df <- data.frame(gene_set = gene_set_name)
   }
   
@@ -619,68 +606,137 @@ run_gprofiler <- function(query_genes, gene_set_name, background) {
 }
 
 gene_sets <- list(
-  '12W_only'     = genes_12W_only,
+  '12onl'     = genes_12W_only,
   'both_n'     = genes_both_neg,
-  '6W_only_n'  = genes_6W_only_neg,
-  '6W_all_n'   = genes_6W_all_neg,
+  '6onl_n'  = genes_6W_only_neg,
+  '6all_n'   = genes_6W_all_neg,
   'both_p'     = genes_both_pos,
-  '6W_only_p'  = genes_6W_only_pos,
-  '6W_all_p'   = genes_6W_all_pos)
+  '6onl_p'  = genes_6W_only_pos,
+  '6all_p'   = genes_6W_all_pos)
 
 # genes_12W_only_neg, genes_12W_only_pos doesn't give any significant result, going with genes_12W_only
 
 
-# Run g:Profiler for each gene set and store the results in a list
-gprofiler_results_list <- lapply(names(gene_sets), function(set_name) {
-  message("Running g:Profiler for gene set: ", set_name)
-  run_gprofiler(query_genes = gene_sets[[set_name]],
-                gene_set_name = set_name,
-                background = background_genes)
+
+# Run the ordered query for each gene set and combine the results
+gprofiler_results_ordered_list <- lapply(names(gene_sets), function(set_name) {
+  message("Running ordered g:Profiler for gene set: ", set_name)
+  run_gprofiler_ordered(query_genes = gene_sets[[set_name]],
+                        gene_set_name = set_name,
+                        background = background_genes)
 })
 
-# Combine all the results into one data frame
-all_pathways <- bind_rows(gprofiler_results_list)
+all_pathways_ordered <- bind_rows(gprofiler_results_ordered_list) %>% 
+  select(gene_set, everything())
 
-# Reorder columns so that 'gene_set' is the first column
-all_pathways <- all_pathways %>% select(gene_set, everything())
-
-# Save the final merged results to a CSV file for further analysis/visualization.
-all_pathways_fixed <- all_pathways %>% 
+# For visualization: adjust p-values to -log10 scale (if desired), unlist lists
+all_pathways_ordered <- all_pathways_ordered %>%
+  mutate(neg_log10_pval = -log10(p_value)) %>% 
   mutate(across(where(is.list), ~ sapply(., function(x) paste(unlist(x), collapse = ","))))
 
-write.csv(all_pathways_fixed, "output/gprofiler/merged_gprofiler_results.csv", row.names = FALSE)
+# (Optional) Save the ordered results
+write.csv(all_pathways_ordered, "output/gprofiler/merged_gprofiler_results_ordered.csv", row.names = FALSE)
 
-# Adjust p-values to -log10 scale for visualization
-all_pathways$neg_log10_pval <- -log10(all_pathways$p_value)
 
-# Create a summary of pathway occurrence
-pathway_counts <- all_pathways %>%
-  group_by(term_id, term_name, source) %>%
-  summarise(occurrences = n(), .groups = "drop")
 
-# Create a binary presence/absence matrix for UpSet plot
-pathway_presence <- all_pathways %>%
+### 3. Define a similar function for a non-ordered query
+run_gprofiler_nonordered <- function(query_genes, gene_set_name, background) {
+  res <- gost(query = query_genes,
+              organism = "mmusculus",
+              ordered_query = FALSE,  # non-ordered analysis
+              custom_bg = background,
+              evcodes = TRUE,
+              sources = c("GO:BP", "GO:CC", "KEGG", "REAC", "MIRNA", "TF"))
+  
+  if (!is.null(res$result)) {
+    res_df <- res$result %>%
+      mutate(gene_set = gene_set_name)
+  } else {
+    res_df <- data.frame(gene_set = gene_set_name)
+  }
+  
+  return(res_df)
+}
+
+
+# Run the non-ordered query for each gene set and combine the results
+gprofiler_results_non_ordered_list <- lapply(names(gene_sets), function(set_name) {
+  message("Running non-ordered g:Profiler for gene set: ", set_name)
+  run_gprofiler_nonordered(query_genes = gene_sets[[set_name]],
+                           gene_set_name = set_name,
+                           background = background_genes)
+})
+
+# 12onl does not give significant result - row deleted from results: see later
+
+all_pathways_non_ordered <- bind_rows(gprofiler_results_non_ordered_list) %>% 
+  select(gene_set, everything())
+
+# For visualization: adjust p-values to -log10 scale (if desired), unlist lists
+all_pathways_non_ordered <- all_pathways_non_ordered %>%
+  mutate(neg_log10_pval = -log10(p_value)) %>% 
+  mutate(across(where(is.list), ~ sapply(., function(x) paste(unlist(x), collapse = ","))))
+
+# (Optional) Save the ordered results
+write.csv(all_pathways_non_ordered, "output/gprofiler/merged_gprofiler_results_non_ordered.csv", row.names = FALSE)
+
+
+### 4. Calculate additional metrics for both ordered and non-ordered result tables
+# These calculations use the following columns (returned by g:Profiler):
+# - intersection_size: number of query genes overlapping with the term (in the optimal subset for ordered queries)
+# - query_size: the size of the query (or top-N subset for ordered queries)
+# - term_size: the total number of genes annotated to the term in the background
+# - effective_domain_size: the size of the background
+
+# For the ordered results:
+all_pathways_ordered <- all_pathways_ordered %>%
+  mutate(
+    ratio_intersection_term = as.numeric(intersection_size) / as.numeric(term_size),
+    ratio_intersection_query = as.numeric(intersection_size) / as.numeric(query_size),
+    fold_enrichment = (as.numeric(intersection_size) / as.numeric(query_size)) /
+      (as.numeric(term_size) / as.numeric(effective_domain_size))
+  )
+
+# For the non-ordered results:
+all_pathways_non_ordered <- all_pathways_non_ordered %>%
+  mutate(
+    ratio_intersection_term = as.numeric(intersection_size) / as.numeric(term_size),
+    ratio_intersection_query = as.numeric(intersection_size) / as.numeric(query_size),
+    fold_enrichment = (as.numeric(intersection_size) / as.numeric(query_size)) /
+      (as.numeric(term_size) / as.numeric(effective_domain_size))
+  )
+
+# 
+# # Create a summary of pathway occurrence
+# pathway_counts <- all_pathways %>%
+#   group_by(term_id, term_name, source) %>%
+#   summarise(occurrences = n(), .groups = "drop")
+
+
+
+###### UpSet plot for gprofiler results ----
+
+# 1. Ordered: Create a binary presence/absence matrix for UpSet plot
+pathway_presence_ordered <- all_pathways_ordered %>%
   select(term_id, gene_set) %>%
   mutate(present = 1) %>%
   pivot_wider(names_from = gene_set, values_from = present, values_fill = 0)
 
-###### UpSet plot for gprofiler results ----
-
 # Convert pathway presence matrix into a format suitable for UpSet
-upset_matrix <- pathway_presence %>%
+upset_matrix_ordered <- pathway_presence_ordered %>%
   column_to_rownames("term_id") %>%
   as.matrix()
 
-upset_matrix <- as.data.frame(upset_matrix)
+upset_matrix_ordered <- as.data.frame(upset_matrix_ordered)
 
 colorsUpSet <- brewer.pal(n = 7, name = "Dark2")
 
 # Create UpSet plot
-pdf("output/gprofiler/gprofiler_upset_1.pdf")
+pdf("output/gprofiler/gprofiler_upset_ordered.pdf")
 
 upset(
-  upset_matrix, 
-  sets = colnames(upset_matrix),
+  upset_matrix_ordered, 
+  sets = colnames(upset_matrix_ordered),
   sets.bar.color = colorsUpSet,
   keep.order = TRUE,
   mainbar.y.label = "Number of Shared Pathways",
@@ -691,19 +747,19 @@ dev.off()
 
 # extract pathway names for each category
 
-pathway_presence_merged <- left_join(pathway_presence, 
-                                     all_pathways %>% select(term_id, term_name),
+pathway_presence_ordered_merged <- left_join(pathway_presence_ordered, 
+                                     all_pathways_ordered %>% select(term_id, term_name),
                                      by = "term_id")
 
 # Specify the gene set columns
 gene_set_columns <- c("both_n", "both_p", 
-                      "6W_only_n", "6W_only_p", 
-                      "6W_all_n", "6W_all_p", 
-                      "12W_only")
+                      "6onl_n", "6onl_p", 
+                      "6all_n", "6all_p", 
+                      "12onl")
 
 # Create an "intersection" identifier for each pathway,
 # indicating the gene set columns (from gene_set_columns) where the pathway is present (value == 1).
-pathway_presence_merged <- pathway_presence_merged %>%
+pathway_presence_ordered_merged <- pathway_presence_ordered_merged %>%
   rowwise() %>%
   mutate(intersection = {
     # Get the gene set names for which the pathway is present (== 1)
@@ -714,35 +770,339 @@ pathway_presence_merged <- pathway_presence_merged %>%
 
 # Now split the pathway names (term_name) by the unique intersection categories.
 # This gives you a list where each element is the vector of pathway names for a given intersection category.
-intersection_list <- split(pathway_presence_merged$term_name, pathway_presence_merged$intersection)
-intersection_list <- lapply(intersection_list, unique)
+intersection_list_ordered <- split(pathway_presence_ordered_merged$term_name, pathway_presence_ordered_merged$intersection)
+intersection_list_ordered <- lapply(intersection_list_ordered, unique)
 
 # write each path list in a separate sheet of and excel file
 
 wb <- createWorkbook()
-for (int_name in names(intersection_list)) {
+for (int_name in names(intersection_list_ordered)) {
   # Create a valid sheet name (max 31 characters; truncate if necessary)
   sheet_name <- substr(int_name, 1, 31)
   
   # Create a data frame with the pathway names.
-  df <- data.frame(Pathway = intersection_list[[int_name]], stringsAsFactors = FALSE)
+  df <- data.frame(Pathway = intersection_list_ordered[[int_name]], stringsAsFactors = FALSE)
   
   addWorksheet(wb, sheetName = sheet_name)
   writeData(wb, sheet = sheet_name, x = df)
 }
 
 # Save the Excel workbook.
-saveWorkbook(wb, file = "output/gprofiler/upset_pathways.xlsx", overwrite = TRUE)
+saveWorkbook(wb, file = "output/gprofiler/upset_pathways_ordered.xlsx", overwrite = TRUE)
+
+
+# 2. Non-ordered: Create a binary presence/absence matrix for UpSet plot
+all_pathways_non_ordered <- all_pathways_non_ordered[-1, ]
+
+pathway_presence_non_ordered <- all_pathways_non_ordered %>%
+  select(term_id, gene_set) %>%
+  mutate(present = 1) %>%
+  pivot_wider(names_from = gene_set, values_from = present, values_fill = 0)
+
+# Convert pathway presence matrix into a format suitable for UpSet
+upset_matrix_non_ordered <- pathway_presence_non_ordered %>%
+  column_to_rownames("term_id") %>%
+  as.matrix()
+
+upset_matrix_non_ordered <- as.data.frame(upset_matrix_non_ordered)
+
+colorsUpSet2 <- brewer.pal(n = 6, name = "Dark2")
+
+# Create UpSet plot
+pdf("output/gprofiler/gprofiler_upset_non_ordered.pdf")
+
+upset(
+  upset_matrix_non_ordered, 
+  sets = colnames(upset_matrix_non_ordered),
+  sets.bar.color = colorsUpSet2,
+  keep.order = TRUE,
+  mainbar.y.label = "Number of Shared Pathways",
+  sets.x.label = "Number of Pathways in Each Set"
+)
+
+dev.off()
+
+# extract pathway names for each category
+
+pathway_presence_non_ordered_merged <- left_join(pathway_presence_non_ordered, 
+                                             all_pathways_non_ordered %>% select(term_id, term_name),
+                                             by = "term_id")
+
+# Specify the gene set columns
+gene_set_columns2 <- c("both_n", "both_p", 
+                      "6onl_n", "6onl_p", 
+                      "6all_n", "6all_p")
+
+# Create an "intersection" identifier for each pathway,
+# indicating the gene set columns (from gene_set_columns) where the pathway is present (value == 1).
+pathway_presence_non_ordered_merged <- pathway_presence_non_ordered_merged %>%
+  rowwise() %>%
+  mutate(intersection = {
+    # Get the gene set names for which the pathway is present (== 1)
+    present_sets <- gene_set_columns2[which(c_across(all_of(gene_set_columns2)) == 1)]
+    if(length(present_sets) == 0) "none" else paste(sort(present_sets), collapse = ";")
+  }) %>%
+  ungroup()
+
+# Now split the pathway names (term_name) by the unique intersection categories.
+# This gives you a list where each element is the vector of pathway names for a given intersection category.
+intersection_list_non_ordered <- split(pathway_presence_non_ordered_merged$term_name, pathway_presence_non_ordered_merged$intersection)
+intersection_list_non_ordered <- lapply(intersection_list_non_ordered, unique)
+
+# write each path list in a separate sheet of and excel file
+
+wb2 <- createWorkbook()
+for (int_name in names(intersection_list_non_ordered)) {
+  # Create a valid sheet name (max 31 characters; truncate if necessary)
+  sheet_name <- substr(int_name, 1, 31)
+  
+  # Create a data frame with the pathway names.
+  df <- data.frame(Pathway = intersection_list_non_ordered[[int_name]], stringsAsFactors = FALSE)
+  
+  addWorksheet(wb2, sheetName = sheet_name)
+  writeData(wb2, sheet = sheet_name, x = df)
+}
+
+# Save the Excel workbook.
+saveWorkbook(wb2, file = "output/gprofiler/upset_pathways_non_ordered.xlsx", overwrite = TRUE)
+
+###### Compare ordered and non-ordered results ----
+
+# 1. Merge the Ordered and Non-Ordered Results
+
+# convert key numeric columns from character to numeric
+numeric_cols <- c("intersection_size", "query_size", "term_size", "effective_domain_size")
+all_pathways_ordered <- all_pathways_ordered %>%
+  mutate(across(all_of(numeric_cols), as.numeric))
+all_pathways_non_ordered <- all_pathways_non_ordered %>%
+  mutate(across(all_of(numeric_cols), as.numeric))
+
+# Merge by gene_set and term_id (suffixes _ord and _nonord)
+merged_results <- inner_join(all_pathways_ordered, all_pathways_non_ordered,
+                             by = c("gene_set", "term_id"),
+                             suffix = c("_ord", "_nonord"))
+
+
+# 2. Compare the Overlap of Enriched Terms per Gene Set
+
+# For each gene set, count the number of enriched terms in each analysis and the overlap.
+overlap_df <- lapply(unique(all_pathways_ordered$gene_set), function(gs) {
+  terms_ord <- unique(all_pathways_ordered$term_id[all_pathways_ordered$gene_set == gs])
+  terms_nonord <- unique(all_pathways_non_ordered$term_id[all_pathways_non_ordered$gene_set == gs])
+  common_terms <- intersect(terms_ord, terms_nonord)
+  
+  data.frame(
+    gene_set = gs,
+    ordered_count = length(terms_ord),
+    nonordered_count = length(terms_nonord),
+    overlap_count = length(common_terms)
+  )
+}) %>% bind_rows()
+
+overlap_df
+
+# > overlap_df
+# gene_set ordered_count nonordered_count overlap_count
+# 1    12onl             1                0             0
+# 2   both_n             1                1             1
+# 3   6onl_n           171              321           148
+# 4   6all_n           166              329           139
+# 5   both_p           122              181           109
+# 6   6onl_p           559             1105           510
+# 7   6all_p           642             1211           579
+# > 
+
+# merge the computed metrics by gene_set and term_id (if not already merged)
+merged_metrics <- inner_join(
+  all_pathways_ordered %>% select(gene_set, term_id, ratio_intersection_term, ratio_intersection_query, fold_enrichment),
+  all_pathways_non_ordered %>% select(gene_set, term_id, ratio_intersection_term, ratio_intersection_query, fold_enrichment),
+  by = c("gene_set", "term_id"),
+  suffix = c("_ord", "_nonord")
+)
+
+# Scatter plot comparing fold enrichment (ordered vs non-ordered) for each gene set.
+ggplot(merged_metrics, aes(x = fold_enrichment_ord, y = fold_enrichment_nonord)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ gene_set) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Comparison of Fold Enrichment: Ordered vs Non-Ordered",
+       x = "Fold Enrichment (Ordered)", y = "Fold Enrichment (Non-Ordered)") +
+  theme_minimal()
+
+
+# Similarly, scatter plots for the ratio_intersection_query:
+ggplot(merged_metrics, aes(x = ratio_intersection_query_ord, y = ratio_intersection_query_nonord)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ gene_set) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue") +
+  labs(title = "Comparison of Intersection/Query Ratio: Ordered vs Non-Ordered",
+       x = "Intersection/Query Ratio (Ordered)", y = "Intersection/Query Ratio (Non-Ordered)") +
+  theme_minimal()
+
+# And for the ratio_intersection_term:
+ggplot(merged_metrics, aes(x = ratio_intersection_term_ord, y = ratio_intersection_term_nonord)) +
+  geom_point(alpha = 0.7) +
+  facet_wrap(~ gene_set) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "green") +
+  labs(title = "Comparison of Intersection/Term Ratio: Ordered vs Non-Ordered",
+       x = "Intersection/Term Ratio (Ordered)", y = "Intersection/Term Ratio (Non-Ordered)") +
+  theme_minimal()
 
 
 ##### Cytoscape -----
+# trying to visualise the group of pathwqysc different in 6w and 12w myc induction - based on the UPSet plots above
+
+
+# 1. Subset to the pathway types of interest
+selected_sources <- c("GO:BP", "GO:CC", "KEGG", "REAC")
+filtered_pathways <- all_pathways_ordered %>%
+  filter(source %in% selected_sources)
+
+# 2. Define keys for each dataset based on the names in intersection_list_ordered
+only6_keys <- c("6all_p", "6all_p;6onl_p", "6onl_p")
+maintained12_keys <- c("6all_p;6onl_p;both_p", "6all_p;both_p", "both_p")
+
+# 3. Extract pathway (term) names for each dataset from the list of lists
+only6_terms <- unlist(intersection_list_ordered[only6_keys])
+maintained12_terms <- unlist(intersection_list_ordered[maintained12_keys])
+
+# 4. Subset the filtered pathways based on term_name
+only_6 <- filtered_pathways %>%
+  filter(term_name %in% only6_terms)
+
+maintained_12 <- filtered_pathways %>%
+  filter(term_name %in% maintained12_terms)
+
+# 5. Prepare node tables for each dataset.
+# Rename key columns to match EnrichmentMap’s required names: "ID", "Name", "Genes".
+# Extra numeric attributes are renamed for clarity.
+only_6_map <- only_6 %>%
+  select(ID = term_id,
+         Name = term_name,
+         Genes = intersection,
+         NegLog10PValue = neg_log10_pval,
+         RatioIntersectionTerm = ratio_intersection_term,
+         RatioIntersectionQuery = ratio_intersection_query,
+         FoldEnrichment = fold_enrichment) %>%
+  mutate(Group = "only_6") %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  mutate(ID = as.character(ID))
+
+maintained_12_map <- maintained_12 %>%
+  select(ID = term_id,
+         Name = term_name,
+         Genes = intersection,
+         NegLog10PValue = neg_log10_pval,
+         RatioIntersectionTerm = ratio_intersection_term,
+         RatioIntersectionQuery = ratio_intersection_query,
+         FoldEnrichment = fold_enrichment) %>%
+  mutate(Group = "maintained_12") %>%
+  distinct(ID, .keep_all = TRUE) %>%
+  mutate(ID = as.character(ID))
+
+
+
+# 6. Combine the two datasets into one node table
+combined_map <- bind_rows(only_6_map, maintained_12_map)
+combined_map <- as.data.frame(combined_map, stringsAsFactors = FALSE)
+rownames(combined_map) <- NULL
+
+
+
+# 9. Connect to Cytoscape
+cytoscapePing()
+
+# 10. Create a network from the combined node table.
+#     We specify node.id.col and node.name.col matching our column names "ID" and "Name".
+createNetworkFromDataFrames(
+  nodes = combined_map,
+  title = "6W_vs_12W_EnrichmentMap",
+  collection = "EnrichmentMap",
+  node.id.col = "ID",
+  node.name.col = "Name"
+)
+
+# 11. Build the EnrichmentMap using RCy3.
+#     The command below uses analysisType="generic", a qvalue threshold, a similarityCutoff,
+#     and specifies groupAttribute="Group" so the two datasets are distinguishable.
+analysisType <- "generic"
+qvalue <- 0.1
+similarityCutoff <- 0.375
+
+em_command <- paste0(
+  'enrichmentmap build analysisType="', analysisType, 
+  '" qvalue="', qvalue,
+  '" similarityCutoff="', similarityCutoff,
+  '" groupAttribute="Group"'
+)
+
+commandsRun(em_command)
 
 
 
 
 
 
+# EnrichmentMap input files
+emap_results_map1 <- all_pathways_ordered %>% 
+  filter(source %in% c("GO:BP", "GO:CC", "KEGG", "REAC")) %>%
+  rename(GeneSet = term_id,
+         Description = term_name,
+         PValue = p_value,  # this is your g:SCS adjusted p-value
+         Genes = intersection,  # assuming this is a comma-separated string
+         GeneSetSize = term_size) %>%
+  # Since you're using g:SCS adjusted p-values, assign it directly
+  mutate(FDR = PValue) %>%  
+  # Include your additional metrics for visualization
+  select(GeneSet, Description, PValue, FDR, neg_log10_pval, Genes, GeneSetSize, gene_set,
+         fold_enrichment, ratio_intersection_term, ratio_intersection_query)
 
+emap_results_map2 <- all_pathways_ordered %>% 
+  filter(source %in% c("MIRNA", "TF")) %>%
+  rename(GeneSet = term_id,
+         Description = term_name,
+         PValue = p_value,
+         Genes = intersection,
+         GeneSetSize = term_size) %>%
+  mutate(FDR = PValue) %>%  
+  select(GeneSet, Description, PValue, FDR, neg_log10_pval, Genes, GeneSetSize, gene_set,
+         fold_enrichment, ratio_intersection_term, ratio_intersection_query)
+
+# Write the two tables to tab‐delimited text files
+write.table(emap_results_map1, file = "emap_results_map1.txt", sep = "\t",
+            quote = FALSE, row.names = FALSE)
+write.table(emap_results_map2, file = "emap_results_map2.txt", sep = "\t",
+            quote = FALSE, row.names = FALSE)
+
+# Connect to Cytoscape (make sure Cytoscape is running and the EnrichmentMap app is installed)
+cytoscapePing()
+
+# Prepare a helper to get the full path (Cytoscape requires full file paths)
+map1_path <- normalizePath("emap_results_map1.txt")
+map2_path <- normalizePath("emap_results_map2.txt")
+
+# Create EnrichmentMap for Map 1.
+# Here we call the EnrichmentMap command via Cytoscape’s command interface.
+# Adjust parameters (pvalue cutoff, qvalue cutoff, similarityCutoff, etc.) as desired.
+emap_cmd1 <- paste0('enrichmentmap create analysisType="generic" ',
+                    'pvalue="0.05" qvalue="0.2" similarityCutoff="0.375" ',
+                    'geneSetsFile="', map1_path, '"')
+commandsRun(emap_cmd1)
+
+# (Optional) If you want to color nodes by the originating gene set, note that
+# the file includes a "gene_set" column. In Cytoscape you can then create a discrete mapping
+# based on this attribute. For example:
+# createVisualStyle('EM_Style', base.color = 'white')
+# setNodeColorMapping('EM_Style', 'gene_set',
+#                     unique(emap_results_map1$gene_set),
+#                     c("#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#999999"))
+# applyVisualStyle('EM_Style', network = getNetworkSuid())
+
+# Create EnrichmentMap for Map 2 in a separate network:
+emap_cmd2 <- paste0('enrichmentmap create analysisType="generic" ',
+                    'pvalue="0.05" qvalue="0.2" similarityCutoff="0.375" ',
+                    'geneSetsFile="', map2_path, '"')
+commandsRun(emap_cmd2)
 
 
 
