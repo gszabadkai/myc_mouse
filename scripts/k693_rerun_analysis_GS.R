@@ -1,7 +1,8 @@
 # for details of choices of some steps see the workflow: https://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html#introduction
 
 
-rm(list=ls())
+reset_environment()
+
 
 library(DESeq2)
 library(dplyr)
@@ -52,6 +53,8 @@ coldata$timepoint <- as.factor(coldata$timepoint) %>% relevel('6W')
 coldata$group <- factor(coldata$group, levels = c('6W_neg', '6W_pos', '12W_neg', '12W_pos'))
 coldata <- coldata[order(coldata$group), ]
 
+write.csv(coldata, file = 'data/coldata.csv')
+write_clip(colnames(coldata))
 
 ###### Read in and set up count file ----
 
@@ -62,6 +65,7 @@ cts <- as.matrix(round(cts))
 storage.mode(cts) <- "integer"
 cts <- cts[, rownames(coldata)]
 
+write.csv(cts, file = data/cts)
 
 # Check the matches here before loading the data for further analysis
 all(rownames(coldata) %in% colnames(cts)) # This should return TRUE
@@ -204,7 +208,7 @@ plotPCA(vsd, intgroup = c("group", "sample"))
 ## which genes contribute to PCA1 and PCA2 (repeat with changing the numbers), 
 
 pca <- prcomp(t(assay(vsd)))  # Perform PCA on the same data
-pc1_loadings <- pca$rotation[, 1]  # Extract PC2 loadings
+pc1_loadings <- pca$rotation[, 2]  # Extract PC2 loadings
 top_genes <- head(order(abs(pc1_loadings), decreasing = TRUE), n = 50)  # Top 50 contributors
 
 pc1_top_genes <- rownames(pca$rotation)[top_genes]
@@ -262,14 +266,17 @@ timepoint_effect_12W_vs_6W_at_myc_neg.ape <- lfcShrink(dds, coef="timepoint_12W_
 timepoint_effect_12W_vs_6W_at_myc_neg.IHW <- results(dds, name = "timepoint_12W_vs_6W", filterFun=ihw)
 # final result with lfcShrink/apeglm and IHW:
 timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape <- lfcShrink(dds, coef="timepoint_12W_vs_6W", type="apeglm", res = timepoint_effect_12W_vs_6W_at_myc_neg.IHW)
+timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ashr <- lfcShrink(dds, coef="timepoint_12W_vs_6W", type="ashr", res = timepoint_effect_12W_vs_6W_at_myc_neg.IHW)
+
 
 # summaries and MA plot
 summary(timepoint_effect_12W_vs_6W_at_myc_neg)
-summary(timepoint_effect_12W_vs_6W_at_myc_neg.ape) 
+summary(timepoint_effect_12W_vs_6W_at_myc_neg.ape)
+summary(timepoint_effect_12W_vs_6W_at_myc_neg.IHW)
 DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_neg.ape, ylim=c(-2,2))
-DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape, ylim=c(-2,2))
+DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ashr, ylim=c(-2,2))
 
-# number of 10% FDR results is less with IHW --> noisy data???
+# number of 10% FDR results is slightly less with IHW --> noisy data???
 # sum(timepoint_effect_12W_vs_6W_at_myc_neg.ape$padj < 0.1, na.rm = TRUE)
 # [1] 1896
 # > sum(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ape$padj < 0.1, na.rm = TRUE)
@@ -299,9 +306,10 @@ gg %+% subset(as.data.frame(ihw_res), adj_pvalue <= 0.1)
 #### 2. main effect of timepoints (myc_pos) ----
 
 timepoint_effect_12W_vs_6W_at_myc_pos <- results(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")))
-    # timepoint_effect_12W_vs_6W_at_myc_pos.normal <- lfcShrink(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), type="normal") #ofc, lfcShrink work with interactions
+timepoint_effect_12W_vs_6W_at_myc_pos.ashr <- lfcShrink(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), type="ashr") 
+
 summary(timepoint_effect_12W_vs_6W_at_myc_pos)
-DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_pos, ylim=c(-2,2))
+DESeq2::plotMA(timepoint_effect_12W_vs_6W_at_myc_pos.ashr, ylim=c(-2,2))
 
 resMyc <- results(dds, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), pAdjustMethod="none")
 ihw_resMyc <- ihw(
@@ -330,6 +338,8 @@ plot(ihw_resMyc, what = "decisionboundary")
 
 myc_effect_overall <- results(dds, name = "myc_status_pos_vs_neg")
 myc_effect_overall.ape <- lfcShrink(dds, coef = "myc_status_pos_vs_neg", type = "apeglm")
+myc_effect_overall.ashr <- lfcShrink(dds, coef = "myc_status_pos_vs_neg", type = "ashr")
+
 summary(myc_effect_overall)
 summary(myc_effect_overall.ape)
 
@@ -357,7 +367,10 @@ plot(ihw_resMycO, what = "decisionboundary")
 myc_effect_overall.ape.IHW <- myc_effect_overall.ape
 myc_effect_overall.ape.IHW$padj <- resMycO$IHW_padj
 
-DESeq2::plotMA(myc_effect_overall.ape.IHW, ylim=c(-2,2))
+myc_effect_overall.ashr.IHW <- myc_effect_overall.ashr
+myc_effect_overall.ashr.IHW$padj <- resMycO$IHW_padj
+
+DESeq2::plotMA(myc_effect_overall.ashr.IHW, ylim=c(-2,2))
 
 # # myc effect at 6W 
 # 
@@ -368,6 +381,9 @@ DESeq2::plotMA(myc_effect_overall.ape.IHW, ylim=c(-2,2))
 
 myc_effect_at_12W <- results(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")))
 summary(myc_effect_at_12W)
+myc_effect_at_12W.ashr <- lfcShrink(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")), type="ashr") 
+
+
 
 resMyc12 <- results(dds, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")), pAdjustMethod="none")
 ihw_resMyc12 <- ihw(
@@ -391,28 +407,103 @@ plot(ihw_resMyc12, what = "decisionboundary")
 myc_effect_at_12W.IHW <- myc_effect_at_12W
 myc_effect_at_12W.IHW$padj <- resMyc12$IHW_padj
 
-DESeq2::plotMA(myc_effect_at_12W.IHW, ylim=c(-2,2))
+myc_effect_at_12W.ashr.IHW <- myc_effect_at_12W.ashr
+myc_effect_at_12W.ashr.IHW$padj <- resMyc12$IHW_padj
+
+DESeq2::plotMA(myc_effect_at_12W.ashr.IHW, ylim=c(-2,2))
 
 ##### 5. diff myc effect between 6W and 12W ----
 
 myc_effect_12W_vs_6W <- results(dds, name = "timepoint12W.myc_statuspos")
 summary(myc_effect_12W_vs_6W)
 
+myc_effect_12W_vs_6W.ashr <- lfcShrink(dds, coef = "timepoint12W.myc_statuspos", type = "normal")
+
+DESeq2::plotMA(myc_effect_12W_vs_6W.ashr, ylim=c(-2,2))
+
+
+# # IHW
+# resMycdiff <- results(dds, name = "timepoint12W.myc_statuspos", pAdjustMethod="none")
+# ihw_resMycdiff <- ihw(
+#   pvalues    = resMycdiff$pvalue,
+#   covariates = resMycdiff$baseMean,
+#   alpha      = 0.1
+# )
+# resMycdiff$IHW_padj <- adj_pvalues(ihw_resMycdiff)
+# 
+# sum(resMycdiff$pvalue < 0.1, na.rm = TRUE)
+# 
+# sum(resMycdiff$IHW_padj < 0.1, na.rm = TRUE)
+# 
+# sum(myc_effect_12W_vs_6W$padj < 0.1, na.rm = TRUE)
+# 
+# 
+# plot(ihw_resMycdiff)
+# plot(ihw_resMycdiff, what = "decisionboundary")
+
+
+
 ###### SUM DGE results from interaction model -----
 
-timepoint_effect_12W_vs_6W_at_myc_neg.ape
-timepoint_effect_12W_vs_6W_at_myc_pos
-myc_effect_overall.ape.IHW
-myc_effect_at_12W.IHW
+timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ashr
+timepoint_effect_12W_vs_6W_at_myc_pos.ashr
+myc_effect_overall.ashr.IHW
+myc_effect_at_12W.ashr.IHW
 
+##### Myc neg time effect pathways ------
 
+baseline_change_genes <- as.data.frame(timepoint_effect_12W_vs_6W_at_myc_neg.IHW.ashr) %>% 
+  rownames_to_column(var = "Ensembl_ID")
+
+# extract gene set
+# Connect to Ensembl biomart for Mouse (Mus musculus)
+mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+# Get gene names for Ensembl IDs
+gene_annotations_baseline <- getBM(
+  attributes = c("ensembl_gene_id", "mgi_symbol"), 
+  filters = "ensembl_gene_id", 
+  values = baseline_change_genes$Ensembl_ID, 
+  mart = mart
+)
+
+# Merge gene names into dataset
+baseline_change_genes <- baseline_change_genes %>%
+  left_join(gene_annotations_baseline, by = c("Ensembl_ID" = "ensembl_gene_id"))
+
+# Replace missing gene names with Ensembl IDs
+baseline_change_genes <- baseline_change_genes %>%
+  mutate(mgi_symbol = ifelse(mgi_symbol == "", Ensembl_ID, mgi_symbol))
+
+# Extract and sort genes for each category, divide positive and negative
+baseline_change_genes_significant <- baseline_change_genes %>%
+  filter(padj < 0.1) %>%
+  arrange(desc(log2FoldChange)) %>%
+  pull(mgi_symbol)
+
+baseline_change_genes_significant_neg <- baseline_change_genes %>%
+  filter(padj < 0.1) %>%
+  filter(log2FoldChange < 0) %>% 
+  arrange(log2FoldChange) %>%
+  pull(mgi_symbol)
+
+baseline_change_genes_significant_pos <- baseline_change_genes %>%
+  filter(padj < 0.1) %>%
+  filter(log2FoldChange > 0) %>% 
+  arrange(desc(log2FoldChange)) %>%
+  pull(mgi_symbol)
+
+background_genes <- baseline_change_genes$mgi_symbol
+
+write_clip(baseline_change_genes_significant_pos)
+write_clip(background_genes)
 
 ##### compare LFCs between 6W and 12W -----
 
 
 # Merge results from the two time points
-merged_res_12W_vs_6W <- merge(as.data.frame(myc_effect_overall.ape.IHW), 
-                              as.data.frame(myc_effect_at_12W.IHW), 
+merged_res_12W_vs_6W <- merge(as.data.frame(myc_effect_overall.ashr.IHW), 
+                              as.data.frame(myc_effect_at_12W.ashr.IHW), 
                               by = "row.names", 
                               suffixes = c("_6W", "_12W"))
 
@@ -431,9 +522,9 @@ ggplot(merged_res_12W_vs_6W, aes(x = log2FoldChange_6W, y = log2FoldChange_12W))
 
 merged_res_12W_vs_6W <- merged_res_12W_vs_6W %>%
   mutate(Significance = case_when(
-    padj_6W < 0.1 & padj_12W < 0.1 ~ "Significant at both",
-    padj_6W < 0.1 & padj_12W >= 0.1 ~ "Significant at 6W only",
-    padj_6W >= 0.1 & padj_12W < 0.1 ~ "Significant at 12W only",
+    padj_6W < 0.05 & padj_12W < 0.05 ~ "Significant at both",
+    padj_6W < 0.05 & padj_12W >= 0.05 ~ "Significant at 6W only",
+    padj_6W >= 0.05 & padj_12W < 0.05 ~ "Significant at 12W only",
     TRUE ~ "Not significant"
   ))
 
@@ -575,10 +666,11 @@ genes_12W_only_neg <- merged_res_12W_vs_6W %>%
 ##### gprofiler analysis ----
 
 # #  for web ui
-# write_clip(genes_6W_only)
-# write_clip(genes_12W_only)
-# write_clip(genes_both)
-# write_clip(genes_6W_all)
+write_clip(genes_6W_only)
+write_clip(genes_6W_only_pos)
+write_clip(genes_12W_only)
+write_clip(genes_both)
+write_clip(genes_6W_all)
 
 ### 1. Background genes for gprofiler = all genes tested in DESeq2
 background_genes <- merged_res_12W_vs_6W$mgi_symbol
@@ -627,9 +719,9 @@ gprofiler_results_ordered_list <- lapply(names(gene_sets), function(set_name) {
 })
 
 all_pathways_ordered <- bind_rows(gprofiler_results_ordered_list) %>% 
-  select(gene_set, everything())
+  dplyr::select(gene_set, everything())
 
-# For visualization: adjust p-values to -log10 scale (if desired), unlist lists
+# For visualization: adjust p-values to -log10 scale, unlist lists
 all_pathways_ordered <- all_pathways_ordered %>%
   mutate(neg_log10_pval = -log10(p_value)) %>% 
   mutate(across(where(is.list), ~ sapply(., function(x) paste(unlist(x), collapse = ","))))
