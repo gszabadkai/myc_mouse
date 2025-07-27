@@ -2,3 +2,23 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# OS files
+.DS_Store
+
+# Intermediate / generated files
+results/
+outputs/
+
+# Editor backups (but not your real data!)
+*.csv~
+*.rds
+*.nb.html
+*.utf8.md
+*.pdf
+*.xlsx
+*.html
+
+!data/*.csv
+!data/*.gmx
+!data/*.xlsx
