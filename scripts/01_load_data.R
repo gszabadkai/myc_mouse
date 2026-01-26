@@ -1,5 +1,6 @@
 # scripts/01_load_data.R
 
+
 source("scripts/00_setup_packages.R")
 
 # === Load coldata and reshape ===
@@ -104,6 +105,26 @@ felsher_mouse_genes <- unique(na.omit(felsher_mouse_genes))
 gene_sets_list <- c(mitocarta_sets, myc_signature_sets)
 
 gene_sets_list[["MYC_felsher_integrative_signature"]] <- felsher_mouse_genes
+
+# === Custom apoptosis gene sets (Mitocarta 3.0 -derived) ===
+
+# Lists
+apoptosis_pro_symbols <- c(
+  "Aifm1","Aifm3","Aifm2","Bad","Bak1","Bax","Bbc3","Bcl2l11","Bid","Bik",
+  "Bnip3","Bnip3l","Bok","Casp3","Casp8","Casp9","Cycs","Diablo","Endog",
+  "Htra2","Ifi27","Pmaip1","Septin4","Bcl2l13","Sphk2"
+)
+
+apoptosis_anti_symbols <- c(
+  "Bcl2","Bcl2a1d","Bcl2l1","Bcl2l10","Bcl2l2","Mcl1","Ghitm","Styxl1","Chchd2"
+)
+
+
+# Add to gene_sets_list
+gene_sets_list[["MC_Apoptosis_Pro"]]  <- apoptosis_pro_symbols
+gene_sets_list[["MC_Apoptosis_Anti"]] <- apoptosis_anti_symbols
+
+
 
 
 # === Save processed objects ===

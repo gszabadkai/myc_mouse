@@ -25,6 +25,23 @@ timepoint_neg_log2FC <- lfcShrink(dds_int, coef = "timepoint_12W_vs_6W", type = 
 myc_12W_log2FC <- lfcShrink(dds_int, contrast = list(c("myc_status_pos_vs_neg", "timepoint12W.myc_statuspos")), type = "ashr", res = myc_12W_log2FC_raw)
 timepoint_pos_log2FC <- lfcShrink(dds_int, contrast = list(c("timepoint_12W_vs_6W", "timepoint12W.myc_statuspos")), type = "ashr", res = timepoint_pos_log2FC_raw)
 
+# === Minimum-effect tests (decisions use |LFC| >= theta) ===
+alpha <- 0.10
+theta <- 0.30
+theta_delta <- 0.00  # interaction as pure significance test
+
+myc_6W_thresh        <- results(dds_int, name="myc_status_pos_vs_neg",
+                                lfcThreshold=theta, altHypothesis="greaterAbs", filterFun=ihw)
+timepoint_neg_thresh <- results(dds_int, name="timepoint_12W_vs_6W",
+                                lfcThreshold=theta, altHypothesis="greaterAbs", filterFun=ihw)
+myc_12W_thresh       <- results(dds_int, contrast=list(c("myc_status_pos_vs_neg","timepoint12W.myc_statuspos")),
+                                lfcThreshold=theta, altHypothesis="greaterAbs", filterFun=ihw)
+interaction_thresh   <- results(dds_int, name="timepoint12W.myc_statuspos",
+                                lfcThreshold=theta_delta, altHypothesis="greaterAbs", filterFun=ihw)
+
+
+
+
 # === Build annotated dataframes ===
 
 ## Shrunken
@@ -49,13 +66,29 @@ combined_df_annotated_raw <- data.frame(
   padj = myc_6W_log2FC_raw$padj
 )
 
+# add thresholded padj to the shrunken table (for evidence decisions) ===
+combined_df_annotated$mu6_padj   <- myc_6W_thresh$padj[        match(combined_df_annotated$gene, rownames(myc_6W_thresh)) ]
+combined_df_annotated$mu12_padj  <- myc_12W_thresh$padj[       match(combined_df_annotated$gene, rownames(myc_12W_thresh)) ]
+combined_df_annotated$tau_padj   <- timepoint_neg_thresh$padj[ match(combined_df_annotated$gene, rownames(timepoint_neg_thresh)) ]
+combined_df_annotated$delta_padj <- interaction_thresh$padj[   match(combined_df_annotated$gene, rownames(interaction_thresh)) ]
+
+# store Wald stats and lfcSE for μ6 and μ12 (for trend flags & fgsea ranking) ===
+combined_df_annotated$mu6_stat   <- myc_6W_log2FC_raw$stat[   match(combined_df_annotated$gene, rownames(myc_6W_log2FC_raw)) ]
+combined_df_annotated$mu12_stat  <- myc_12W_log2FC_raw$stat[  match(combined_df_annotated$gene, rownames(myc_12W_log2FC_raw)) ]
+combined_df_annotated$mu6_lfcSE  <- myc_6W_log2FC_raw$lfcSE[  match(combined_df_annotated$gene, rownames(myc_6W_log2FC_raw)) ]
+combined_df_annotated$mu12_lfcSE <- myc_12W_log2FC_raw$lfcSE[ match(combined_df_annotated$gene, rownames(myc_12W_log2FC_raw)) ]
+
+# keep τ/δ stats
+combined_df_annotated$tau_stat   <- timepoint_neg_log2FC_raw$stat[ match(combined_df_annotated$gene, rownames(timepoint_neg_log2FC_raw)) ]
+combined_df_annotated$delta_stat <- interaction_thresh$stat[       match(combined_df_annotated$gene, rownames(interaction_thresh)) ]
+
+
+
 # === Add gene symbols ===
 gene_annotations <- readRDS("results/ortholog_table.rds") %>%
   dplyr::select(ensembl_gene_id, external_gene_name) %>%
-  distinct()
-
-gene_annotations <- gene_annotations %>%
-  rename(gene = ensembl_gene_id, mgi_symbol = external_gene_name)
+  distinct() %>%
+  dplyr::rename(gene = ensembl_gene_id, mgi_symbol = external_gene_name)
 
 combined_df_annotated <- combined_df_annotated %>%
   left_join(gene_annotations, by = "gene")

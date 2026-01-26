@@ -4,14 +4,16 @@
 cran_packages <- c(
   "dplyr", "tibble", "readr", "stringr", "purrr", "magrittr",
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
-  "grid", "gridExtra"
+  "grid", "gridExtra", "readr",
+  "reshape2", "ggrepel"               
 )
 
 # List of Bioconductor packages
 bioc_packages <- c(
   "DESeq2", "IHW", "ashr", "apeglm", "biomaRt",
   "ComplexHeatmap", "circlize",
-  "PoiClaClu", "limma", "edgeR", "variancePartition"
+  "PoiClaClu", "limma", "edgeR", "variancePartition",
+  "fgsea", "gprofiler2"               
 )
 
 # Load or install CRAN packages
@@ -26,7 +28,6 @@ for (pkg in cran_packages) {
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
 }
-
 for (pkg in bioc_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     BiocManager::install(pkg)

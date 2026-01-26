@@ -80,20 +80,20 @@ myc-temporal-analysis/
 
 ---
 
-## ✅ Implemented Features
+## Implemented Features
 
-- 🧪 DESeq2 pipeline with `ashr` shrinkage and `IHW` p-value filtering
-- 🧬 Classification of MYC effect over time:
+- DESeq2 pipeline with `ashr` shrinkage and `IHW` p-value filtering
+- Classification of MYC effect over time:
   - `direct_Myc_reduction/increase`
   - `baseline_driven_reduction/increase`
   - `no_change`
-- 📊 Heatmap generation:
+- Heatmap generation:
   - Log2FC matrix with annotations
   - Z-scaled group expression heatmaps
   - Per-gene annotations:
     - MYC temporal classification
     - Group-based significance
-- 🧭 Modular structure with individual scripts for:
+- Modular structure with individual scripts for:
   - Data loading
   - Model fitting
   - LFC classification
@@ -102,7 +102,7 @@ myc-temporal-analysis/
 
 ---
 
-## 📈 Output Preview
+## Output Preview
 
 Each gene set generates:
 - One PDF per heatmap type (shrunk and raw)
@@ -111,7 +111,7 @@ Each gene set generates:
 
 ---
 
-## 📦 Setup
+## Setup
 
 Required R packages (auto-installed in `00_setup_packages.R`):
 - `DESeq2`, `apeglm`, `ashr`, `IHW`
@@ -132,7 +132,7 @@ Create: Fig 1 Myc-mito paper: mitochondrial adaptation defines early tumourigene
 - Histology of tumours - 6w and 12W, apoptosis and proliferation
 - What do we see at the gene level?
 - What are the gene sets changing most? - pathway analysis
-- gene sets from hocklebbery? - better to define it ourselves, eventually comapre to that
+- gene sets from hocklebbery? - better to define it ourselves, eventually compare to that
 - Clusters of gene sets - mitochondrial most affected
 - While Myc goes on, some mitochondrial genes are reduced - Complex I and Complex IV
 - What is special about Complex I - a lot.
@@ -147,6 +147,8 @@ What to do:
 - p19 pathway?
 - separate mtDNA - why LFC does not fit?
 - Pathway analysis
+
+
 
 
 
