@@ -32,6 +32,16 @@ mito_de <- combined_df |>
 message(sprintf("Matched %d gene-pathway pairs from %d unique genes", 
                 nrow(mito_de), n_distinct(mito_de$mgi_symbol)))
 
+# === Helper function for safe t-test ===
+safe_t_pval <- function(x) {
+  x <- x[!is.na(x)]
+  if (length(x) > 2 && sd(x) > 0) {
+    t.test(x, mu = 0)$p.value
+  } else {
+    NA_real_
+  }
+}
+
 # === Pathway-level summary function ===
 summarize_pathway <- function(df, lfc_col, padj_col = NULL, stat_col = NULL, 
                                lfc_thresh = 0.3, padj_thresh = 0.1, stat_thresh = 2) {
@@ -62,10 +72,7 @@ summarize_pathway <- function(df, lfc_col, padj_col = NULL, stat_col = NULL,
       n_down = sum(!!lfc_sym < -lfc_thresh & .sig, na.rm = TRUE),
       n_sig = n_up + n_down,
       pct_sig = 100 * n_sig / n(),
-      # One-sample t-test against 0
-      t_pval = if (n() > 2 & sd(!!lfc_sym, na.rm = TRUE) > 0) {
-        t.test(!!lfc_sym, mu = 0)$p.value
-      } else NA_real_,
+      t_pval = safe_t_pval(!!lfc_sym),
       .groups = "drop"
     ) |>
     mutate(
@@ -204,7 +211,6 @@ pathway_long <- pathway_summary |>
   )
 
 p_dotplot <- ggplot(pathway_long, aes(x = contrast, y = pathway)) +
-
   geom_point(aes(size = pct_sig, color = mean_lfc)) +
   scale_color_gradient2(
     low = "#2166AC", mid = "white", high = "#B2182B",
