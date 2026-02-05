@@ -39,7 +39,7 @@ PC1 and 2 top genes hint to immune cells...
 # Second attempt
 Myc_timecourse_analysis_GS.R and the sandbox version, later updated to:
 
-# MYC-Dependent Temporal Transcriptome Analysis in Mouse Tissues
+# MYC-Dependent Temporal Transcriptome Analysis in MMTV tumour derived epithelial cells
 
 This repository contains the analysis pipeline and results for a transcriptomic study comparing MYC-positive and MYC-negative samples across two timepoints (6 weeks and 12 weeks). It uses RNA-seq data processed with DESeq2 to identify MYC-dependent expression programs and their temporal changes, with visualizations based on gene set heatmaps.
 
