@@ -24,7 +24,7 @@ for (variant in c("shrunk", "raw")) {
       dds_obj = dds_int,
       lfc_variant = variant,
       output_dir = output_dir,
-      show_plot = FALSE
+      show_plot = TRUE
     )
   })
   names(heatmap_outputs[[variant]]) <- names(gene_sets_list)

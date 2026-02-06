@@ -174,7 +174,6 @@ generate_heatmaps_for_gene_set <- function(
   
   return(list(
     pdf_file = pdf_path,
-    heatmap_object = ht_list,
     lfc_matrix = lfc_mat
   ))
 }
