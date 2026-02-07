@@ -19,7 +19,7 @@ oxphos_long <- oxphos_df %>%
 
 oxphos_long$mtDNA <- ifelse(str_starts(oxphos_long$Genes, "mt-"), "mtDNA", "nuclear")
 
-# === Generate heatmap (returns heatmap object) ===
+# === Generate heatmap ===
 
 for (lfc_variant in c("shrunk", "raw")) {
   # Load correct LFC version
@@ -28,6 +28,7 @@ for (lfc_variant in c("shrunk", "raw")) {
     shrunk = readRDS("results/combined_df_annotated.rds"),
     raw    = readRDS("results/combined_df_annotated_raw.rds")
   )
+  # Get lfc_matrix from the function (heatmap_object no longer returned)
   ht_result <- generate_heatmaps_for_gene_set(
     set_name = set_name,
     gene_symbols = gene_symbols,
@@ -35,17 +36,28 @@ for (lfc_variant in c("shrunk", "raw")) {
     lfc_variant = lfc_variant,
     show_plot = FALSE
   )
-  # === Extract row order and heatmap object ===
-  ht_main <- ht_result$heatmap_object
+  
   lfc_mat <- ht_result$lfc_matrix
   rownames_lfc <- rownames(lfc_mat)
+  
+  # === Rebuild the heatmap locally for custom annotation ===
+  
+  # Get z-scored expression matrix
+  vsd <- vst(dds_int, blind = FALSE)
+  expr_mat <- assay(vsd)
+  ens_to_symbol <- setNames(gene_annotations$mgi_symbol, gene_annotations$gene)
+rownames(expr_mat) <- ens_to_symbol[rownames(expr_mat)]
+  expr_mat_filtered <- expr_mat[rownames(expr_mat) %in% rownames_lfc, ]
+  expr_mat_filtered <- expr_mat_filtered[rownames_lfc, ]
+  zscore_mat <- t(scale(t(expr_mat_filtered)))
+  
   # Reorder annotation to match heatmap gene order
   oxphos_anno_df <- oxphos_long %>%
     distinct(Genes, Complex, mtDNA) %>%
     filter(Genes %in% rownames_lfc) %>%
     column_to_rownames("Genes") %>%
     .[rownames_lfc, , drop = FALSE]
-  # === Custom row annotations (to avoid overwriting the main function's annotation need to add it again as raw_ha) ===
+  # === Custom row annotations ===
   row_ha_oxphos <- rowAnnotation(
     Complex = oxphos_anno_df$Complex,
     mtDNA = oxphos_anno_df$mtDNA,
@@ -100,6 +112,30 @@ for (lfc_variant in c("shrunk", "raw")) {
     show_annotation_name = TRUE
   )
   
+  # === Create heatmaps ===
+  ht_lfc <- Heatmap(
+    lfc_mat,
+    name = "log2FC",
+    cluster_rows = TRUE,
+    cluster_columns = FALSE,
+    show_row_names = TRUE,
+    show_column_names = TRUE,
+    row_names_gp = gpar(fontsize = 8),
+    column_names_gp = gpar(fontsize = 10)
+  )
+  
+  ht_zscore <- Heatmap(
+    zscore_mat,
+    name = "Z-score",
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
+    show_row_names = FALSE,
+    show_column_names = TRUE,
+    row_names_gp = gpar(fontsize = 8),
+    column_names_gp = gpar(fontsize = 10)
+  )
+  
+  ht_main <- ht_lfc + ht_zscore
   
   # === Save combined heatmap ===
   pdf_file <- sprintf("outputs/heatmaps_int/OXPHOS_%s_with_extra_annotation2.pdf", lfc_variant)
