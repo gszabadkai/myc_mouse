@@ -32,6 +32,7 @@ This project investigates the effect of the **Myc oncogene** in early breast tum
 | `00_setup_packages.R` | Load/install required R packages |
 | `01_load_data.R` | Load count data, create DESeq2 object, load gene sets |
 | `02_qc.R` | Quality control: PCA, sample distances, variance transforms |
+| `03_deseq_results_qc.R` | DESeq2 results extraction (raw + shrunken LFCs) with IHW, MA plots |
 
 ### Directory Structure
 
@@ -46,15 +47,20 @@ myc_mouse/
 ├── scripts/
 │   ├── 00_setup_packages.R
 │   ├── 01_load_data.R
-│   └── 02_qc.R
+│   ├── 02_qc.R
+│   └── 03_deseq_results_qc.R
 ├── results/
 │   ├── dds_int.rds                    # DESeq2 object (interaction design)
+│   ├── dds_group.rds                  # DESeq2 object (group design)
+│   ├── interaction_results.rds        # All interaction model results
+│   ├── group_results.rds              # All group model results
 │   ├── count_matrix.rds
 │   ├── coldata.rds
 │   ├── gene_sets_list.rds
 │   └── ortholog_table.rds             # Cached human-mouse orthologs
 ├── outputs/
-│   └── qc/                            # QC plots (PDF)
+│   ├── qc/                            # Initial QC plots (PDF)
+│   └── deseq_qc/                      # MA plots and results summary
 └── README.md
 ```
 
@@ -110,6 +116,102 @@ Key observations:
 3. **Myc effect visible at 12W** — 12W_pos separates from 12W_neg on PC2, suggesting Myc-driven transcriptional changes become more pronounced over time
 4. **Interaction model is appropriate** — the Myc effect appears to differ between timepoints, supporting the `~ timepoint * myc_status` design
 5. **Group-based comparisons also warranted** — direct 12W_pos vs 6W_pos comparison will capture progressive Myc effects
+
+---
+
+## DESeq2 Results and QC
+
+### Analysis Scripts
+
+| Script | Description |
+|--------|-------------|
+| `03_deseq_results_qc.R` | Generate DESeq2 results (raw + shrunken LFCs) with IHW filtering, produce MA plots |
+
+### Results Summary
+
+Results were extracted from two model types:
+
+1. **Interaction model** (`~ timepoint * myc_status`): Tests main effects and interaction
+2. **Group model** (`~ group`): Direct pairwise comparisons between groups
+
+**IHW** (Independent Hypothesis Weighting) was used for p-value adjustment, using mean expression as the covariate.
+
+### Summary Statistics (padj < 0.1)
+
+| Contrast | Significant | Up | Down |
+|----------|-------------|-----|------|
+| Myc effect at 6W | 2,777 | 1,955 | 822 |
+| Myc effect at 12W | 239 | 193 | 46 |
+| Timepoint effect (Myc−) | 1,867 | 950 | 917 |
+| Timepoint effect (Myc+) | 2,623 | 1,078 | 1,545 |
+| Interaction (Myc × Time) | 0 | 0 | 0 |
+| Group: 12W_neg vs 6W_neg | 1,869 | 952 | 917 |
+| Group: 12W_pos vs 6W_pos | 2,619 | 1,081 | 1,538 |
+
+### Key Observations
+
+1. **Strong Myc effect at 6W** (2,777 genes), but **weak at 12W** (239 genes) in the interaction model
+2. **Interaction term yields 0 significant genes** — no detectable differential Myc effect between timepoints
+3. **Timepoint effect (Myc−) ≈ Group 12W_neg vs 6W_neg** — as expected, these are equivalent comparisons (1,867 vs 1,869 genes, near-identical)
+4. **Timepoint effect (Myc+) ≈ Group 12W_pos vs 6W_pos** — also equivalent (2,623 vs 2,619 genes)
+
+### MA Plot QC Findings
+
+- **Raw vs shrunken LFCs**: `ashr` shrinkage is well-behaved for main effects
+- **Interaction term**: Raw results show variance, but shrinkage collapses LFCs to near-zero, explaining the lack of significant hits
+- **Low-count genes**: Appropriately shrunk toward zero, especially at 12W where library sizes are smaller
+
+---
+
+## Interpretation: Interaction Term vs Group Comparisons
+
+Understanding the difference between the interaction term and the group comparisons is critical for this analysis.
+
+### What the Interaction Term Tests
+
+The interaction term (`timepoint12W.myc_statuspos`) asks:
+
+> **"Does the Myc effect differ between 6W and 12W?"**
+
+Mathematically:
+```
+Interaction = (Myc effect at 12W) − (Myc effect at 6W)
+            = (12W_pos − 12W_neg) − (6W_pos − 6W_neg)
+```
+
+A significant interaction would mean that Myc activates (or represses) a gene **differently** depending on the timepoint. For example:
+- A gene upregulated 4-fold by Myc at 6W but only 1.5-fold at 12W → positive interaction
+- A gene unchanged by Myc at 6W but strongly repressed at 12W → negative interaction
+
+**Result**: No significant interactions detected. This means the **Myc transcriptional program is stable between timepoints** — genes affected by Myc at 6W are affected similarly at 12W.
+
+### What the Group Comparison Tests
+
+The comparison `12W_pos vs 6W_pos` asks:
+
+> **"What genes differ between Myc+ samples at 12W versus 6W?"**
+
+This captures:
+1. **Time-dependent changes** in Myc+ tumours (tumour progression, adaptation)
+2. **Batch effects** between timepoints (library size differences)
+3. **Normal developmental changes** that occur regardless of Myc status
+
+**Result**: 2,619 significant genes. This is similar to the timepoint effect in Myc+ samples (2,623 genes), confirming equivalence.
+
+### Why Both Analyses Matter
+
+| Question | Use this comparison |
+|----------|---------------------|
+| Does Myc change gene X expression? | Myc effect at 6W or 12W |
+| Does Myc affect gene X differently over time? | Interaction term |
+| How do Myc+ tumours change from 6W to 12W? | Group: 12W_pos vs 6W_pos |
+| Is a change Myc-specific vs developmental? | Compare 12W_pos vs 6W_pos to 12W_neg vs 6W_neg |
+
+### Practical Implications
+
+1. **The interaction term is underpowered** — high noise (batch effect) and modest effect sizes prevent detection of differential Myc effects
+2. **Lack of interaction ≠ no biological difference** — statistical power is limited; genes may have subtle differential responses
+3. **For downstream analysis**: Use the **group model** for clear pairwise comparisons, and reserve the interaction term for hypothesis-driven checks on specific genes
 
 ---
 
