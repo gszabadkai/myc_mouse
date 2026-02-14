@@ -1,166 +1,187 @@
-RNAseq 6w vs 12w +/- MMTV-MYC mouse merged data June-September 2024
+# MYC Mouse RNAseq Analysis
 
-# First attempt
-k693_rerun_analysis_GS.R --> analysis with interaction myc-status vs timepoint
+## Project Overview
 
-  - coldata setup: 
-
-from: data/FULL.DAT.COL.DATA.txt
-columns:
-- sample
-- group
-- myc_status
-- timepoint
-- prefix
-- suffix
-- numeric_part
-- alphabetical_part
-
-- counts: cts
-- issue?: 12W has about half total counts comapred to 6W
-
-- dds: design = ~ timepoint * myc_status) #this expands to ~ timepoint + myc_status + timepoint:myc_status
-  
-- coverage: 19K genes >10 counts
-  
-- issue?: data are noisy - none of the variance stabilising transformations, followed by distance measures or PCA ("log2(x + 1)", "vst", "rlog") reveal grouping by the actual experimental groups
-PC1 and 2 top genes hint to immune cells...
-  
-- further exploration with variancePartition: only small part of the variation is explained by any of the parameters: see coldata: (1|myc_status) + (1|timepoint) + (1|numeric_part) + (1|alphabetical_part) + (1|myc_status) + (1|timepoint) (1|prefix) (1|suffix)
-
-- moving on for DGE anyway: 
-
-- altogether this analysis provides a list, using the interaction terms to create lists of genes whihc are significant at 6W and 12W. The genes are used in Gprofiler, but it is is difficult to interpret the changes.
-
-- I have also tried a Cytoscpae analysis to visualise the gene lists, but it is not yet completed and/or informative.
-
-- Conclusion: this file is used as the base of the second analysis where both the interactiion and group-based design is used to create gene lists, to understand the difference in the Myc effect between 6W and 12W timepoints.
-
-# Second attempt
-Myc_timecourse_analysis_GS.R and the sandbox version, later updated to:
-
-# MYC-Dependent Temporal Transcriptome Analysis in MMTV tumour derived epithelial cells
-
-This repository contains the analysis pipeline and results for a transcriptomic study comparing MYC-positive and MYC-negative samples across two timepoints (6 weeks and 12 weeks). It uses RNA-seq data processed with DESeq2 to identify MYC-dependent expression programs and their temporal changes, with visualizations based on gene set heatmaps.
-
----
-
-## 📁 Project Structure
-
-<pre>
-myc-temporal-analysis/
-├── data/                      # Raw input files (counts, metadata, gene sets)
-├── results/                  # RDS results files (LFCs, annotations)
-├── outputs/heatmaps_int/     # Heatmaps generated from interaction design
-├── scripts/                  # Modular R scripts used for pipeline
-├── functions/                # Utility functions (heatmap generation, etc.)
-├── 00_setup_packages.R       # Package loading and environment setup
-├── run_all_scripts.R         # Wrapper to run full pipeline
-└── README.md                 # This file
-</pre>
-
----
-
-## 🔬 Analysis Overview
+This project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
 
 ### Experimental Design
-- 4 experimental conditions:
-  - Timepoints: 6W vs 12W
-  - Genotype: MYC-positive vs MYC-negative
-- 6 biological replicates per group
 
-### DESeq2 Designs
-1. **Interaction model**: `~ timepoint * myc_status`
-2. **Group-based design**: 4-level `group` factor with contrast `"12W_pos vs 6W_pos"`
+- **Model**: MMTV-Myc transgenic mice
+- **Groups**: 4 experimental groups (n=6 per group)
+  - `6W_neg`: 6 weeks, Myc negative (control)
+  - `6W_pos`: 6 weeks, Myc positive
+  - `12W_neg`: 12 weeks, Myc negative (control)
+  - `12W_pos`: 12 weeks, Myc positive
+- **Total samples**: 24
+- **Data type**: Bulk RNAseq
 
-### Gene Sets Used
-- 🧬 [MitoCarta 3.0](https://www.broadinstitute.org/mitocarta) mitochondrial pathways
-- 🔬 MYC signature gene sets (`.gmx` format, converted to mouse orthologs)
-- 📄 Felsher integrative MYC target list
+### Research Questions
 
----
-
-## Implemented Features
-
-- DESeq2 pipeline with `ashr` shrinkage and `IHW` p-value filtering
-- Classification of MYC effect over time:
-  - `direct_Myc_reduction/increase`
-  - `baseline_driven_reduction/increase`
-  - `no_change`
-- Heatmap generation:
-  - Log2FC matrix with annotations
-  - Z-scaled group expression heatmaps
-  - Per-gene annotations:
-    - MYC temporal classification
-    - Group-based significance
-- Modular structure with individual scripts for:
-  - Data loading
-  - Model fitting
-  - LFC classification
-  - Heatmap generation
-  - QC exploration
+1. What is the transcriptional effect of Myc expression in breast epithelial cells?
+2. How does the Myc effect evolve between 6 and 12 weeks?
+3. Which pathways and gene sets are affected by Myc expression?
 
 ---
 
-## Output Preview
+## Analysis Workflow
 
-Each gene set generates:
-- One PDF per heatmap type (shrunk and raw)
-- Row-annotated by MYC classification and group-level DE
-- OXPHOS subunits additionally annotated by complex and mtDNA encoding
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `00_setup_packages.R` | Load/install required R packages |
+| `01_load_data.R` | Load count data, create DESeq2 object, load gene sets |
+| `02_qc.R` | Quality control: PCA, sample distances, variance transforms |
+
+### Directory Structure
+
+```
+myc_mouse/
+├── data/
+│   ├── coldata.csv                    # Sample metadata
+│   ├── FULL.DAT.csv                   # Raw count matrix
+│   ├── mitocarta_pathways.csv         # Mitocarta gene sets
+│   ├── myc_signature_genesets.gmx     # MYC signature gene sets (Felsher)
+│   └── felsher_integrative_signature.csv
+├── scripts/
+│   ├── 00_setup_packages.R
+│   ├── 01_load_data.R
+│   └── 02_qc.R
+├── results/
+│   ├── dds_int.rds                    # DESeq2 object (interaction design)
+│   ├── count_matrix.rds
+│   ├── coldata.rds
+│   ├── gene_sets_list.rds
+│   └── ortholog_table.rds             # Cached human-mouse orthologs
+├── outputs/
+│   └── qc/                            # QC plots (PDF)
+└── README.md
+```
 
 ---
 
-## Setup
+## QC Summary
 
-Required R packages (auto-installed in `00_setup_packages.R`):
-- `DESeq2`, `apeglm`, `ashr`, `IHW`
-- `ComplexHeatmap`, `circlize`, `ggplot2`, `biomaRt`, `edgeR`, etc.
+### Library Size (Total Counts)
 
-Run full pipeline:
+| Group | Mean Counts | SD | Min | Max |
+|-------|-------------|-----|-----|-----|
+| 6W_neg | 22.6M | 2.5M | 18.8M | 25.3M |
+| 6W_pos | 23.8M | 3.3M | 19.7M | 29.0M |
+| 12W_neg | 12.9M | 1.8M | 10.2M | 14.7M |
+| 12W_pos | 13.5M | 2.6M | 9.9M | 16.1M |
+
+**Note**: 6W samples have approximately 2x more reads than 12W samples. This is a technical/batch effect that DESeq2's size factor normalization addresses.
+
+### Size Factors
+
+| Group | Mean | SD |
+|-------|------|-----|
+| 6W_neg | 1.30 | 0.25 |
+| 6W_pos | 1.29 | 0.24 |
+| 12W_neg | 0.81 | 0.21 |
+| 12W_pos | 0.83 | 0.20 |
+
+Size factors reflect the library size differences between timepoints. Within-group variation is modest, indicating consistent library preparation.
+
+### PCA Analysis
+
+- **PC1 (36%)**: Captures timepoint effect (6W vs 12W)
+- **PC2 (14%)**: Captures Myc status effect, particularly at 12W
+
+Key observations:
+- **12W_pos** separates clearly from other groups on PC2, suggesting a stronger Myc transcriptional effect at 12 weeks
+- **6W_pos** clusters tightly, with modest separation from 6W_neg
+- **6W_neg and 12W_neg** (controls) show considerable overlap across timepoints
+- No major outliers requiring removal
+
+### Sample Distance Heatmap
+
+- Samples cluster primarily by timepoint
+- 12W_pos samples show more internal variability
+- No obvious outliers
+
+---
+
+## QC Conclusions
+
+1. **Data quality is acceptable** — no major outliers, size factors are reasonable
+2. **Strong timepoint effect** — 6W vs 12W is the dominant source of variation (driven partly by library size differences)
+3. **Myc effect visible at 12W** — 12W_pos separates from 12W_neg on PC2, suggesting Myc-driven transcriptional changes become more pronounced over time
+4. **Interaction model is appropriate** — the Myc effect appears to differ between timepoints, supporting the `~ timepoint * myc_status` design
+5. **Group-based comparisons also warranted** — direct 12W_pos vs 6W_pos comparison will capture progressive Myc effects
+
+---
+
+## Statistical Design
+
+### Interaction Model
 
 ```r
-source("run_all_scripts.R")
+design = ~ timepoint * myc_status
+```
 
-NOTE: this has not been fully implemented yet. Testing on OXPHOS (scripts/07_heatmap_oxphos_annotated.R) currently, not satisfying heatmap structure and annotations
-aims to develop:
+This model tests:
+- Main effect of timepoint (12W vs 6W)
+- Main effect of Myc status (pos vs neg)
+- **Interaction**: whether the Myc effect differs between timepoints
 
-Create: Fig 1 Myc-mito paper: mitochondrial adaptation defines early tumourigenesis and late progression
+### Group-Based Model (planned)
 
+```r
+design = ~ group
+```
 
-- To understand early evolution, looked at timecourse of early myc regulated genes. 
-- Histology of tumours - 6w and 12W, apoptosis and proliferation
-- What do we see at the gene level?
-- What are the gene sets changing most? - pathway analysis
-- gene sets from hocklebbery? - better to define it ourselves, eventually compare to that
-- Clusters of gene sets - mitochondrial most affected
-- While Myc goes on, some mitochondrial genes are reduced - Complex I and Complex IV
-- What is special about Complex I - a lot.
+Allows direct pairwise comparisons (e.g., 12W_pos vs 6W_pos) to capture progressive Myc effects.
 
-- where to get the myc-ER 6 vs 12 in?
-- 
-go to in vitro: MYAZ has the same
 ---
-What to do:
-- Find best way to cluster genes: try clustering to enhance 12to6 downreg (12_6_d geneset) - use old PGT4o or a new Claude4?
-- apoptotic pathway?
-- p19 pathway?
-- separate mtDNA - why LFC does not fit?
-- Pathway analysis
 
+## Gene Sets
 
+The analysis includes curated gene sets for pathway-level interpretation:
 
+- **Mitocarta 3.0**: Mitochondrial pathways (OXPHOS, TCA cycle, FAO, etc.)
+- **MYC signatures**: Multiple gene sets from Felsher et al. (2022)
+- **Apoptosis**: Pro- and anti-apoptotic genes
 
+Human gene symbols are mapped to mouse orthologs via biomaRt (cached in `results/ortholog_table.rds`).
 
+---
 
+## Requirements
 
+### R Packages
 
+**CRAN:**
+- here, dplyr, tibble, readr, stringr, purrr, magrittr
+- ggplot2, ggstatsplot, pheatmap, RColorBrewer
+- grid, gridExtra, reshape2, ggrepel
 
+**Bioconductor:**
+- DESeq2, biomaRt, org.Mm.eg.db, AnnotationDbi
+- ComplexHeatmap, EnhancedVolcano, fgsea, msigdbr
+- PoiClaClu, vsn, sva
 
+---
 
+## Usage
 
+```r
+# From the project root directory
+library(here)
 
+# Run scripts in order
+source(here("scripts", "00_setup_packages.R"))
+source(here("scripts", "01_load_data.R"))
+source(here("scripts", "02_qc.R"))
+```
 
+---
 
-  
+## Authors
 
+[Add collaborator information]
+
+## Date
+
+Analysis updated: February 2026

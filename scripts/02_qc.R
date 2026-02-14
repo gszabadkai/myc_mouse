@@ -1,14 +1,14 @@
-# scripts/06_diagnostics_QC.R
+# scripts/02_qc.R
 
-source("scripts/00_setup_packages.R")
+source(here::here("scripts", "00_setup_packages.R"))
 
 # === Load inputs ===
-dds <- readRDS("results/dds_int_run.rds")
-cts <- readRDS("results/count_matrix.rds")
-coldata <- readRDS("results/coldata.rds")
+dds <- readRDS(here("results", "dds_int.rds"))
+cts <- readRDS(here("results", "count_matrix.rds"))
+coldata <- readRDS(here("results", "coldata.rds"))
 
 # Ensure output directory exists
-qc_dir <- "outputs/qc"
+qc_dir <- here("outputs", "qc")
 dir.create(qc_dir, showWarnings = FALSE, recursive = TRUE)
 
 # === Match samples between coldata and cts ===

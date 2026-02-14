@@ -1,10 +1,10 @@
 # scripts/01_load_data.R
 
 
-source("scripts/00_setup_packages.R")
+source(here::here("scripts", "00_setup_packages.R"))
 
 # === Load coldata and reshape ===
-coldata <- read.csv("data/coldata.csv", row.names = 1)
+coldata <- read.csv(here("data", "coldata.csv"), row.names = 1)
 
 coldata$timepoint <- as.factor(coldata$timepoint) %>% relevel('6W')
 coldata$myc_status <- as.factor(coldata$myc_status) %>% relevel('neg')
@@ -12,7 +12,7 @@ coldata$group <- factor(coldata$group, levels = c('6W_neg', '6W_pos', '12W_neg',
 coldata <- coldata[order(coldata$group), ]
 
 # === Load count matrix ===
-cts <- read.csv("data/FULL.DAT.csv")
+cts <- read.csv(here("data", "FULL.DAT.csv"))
 cts <- cts[-2]  # remove the second column
 cts <- cts %>%
   remove_rownames() %>%
@@ -35,7 +35,7 @@ dds_int <- ddsMat_int[keep, ]
 
 # Mitocarta
 # Convert to named list: pathway → gene vector. Custom selection of gene groups covering all mitocarta3.0
-mitocarta_df <- read.csv("data/mitocarta_pathways.csv", header = FALSE, col.names = c("pathway", "symbol_string"))
+mitocarta_df <- read.csv(here("data", "mitocarta_pathways.csv"), header = FALSE, col.names = c("pathway", "symbol_string"))
 
 mitocarta_sets <- setNames(
   lapply(strsplit(mitocarta_df$symbol_string, ","), str_trim),
@@ -49,7 +49,7 @@ names(mitocarta_sets) <- paste0("MC_", names(mitocarta_sets))
 # https://github.com/Yenaled/felsher/blob/master/genesets/myc_signature_genesets.gmx
 
 # Read .gmx as column-oriented table
-gmx_table <- read.delim("data/myc_signature_genesets.gmx", header = FALSE, sep = "\t", fill = TRUE, stringsAsFactors = FALSE)
+gmx_table <- read.delim(here("data", "myc_signature_genesets.gmx"), header = FALSE, sep = "\t", fill = TRUE, stringsAsFactors = FALSE)
 
 # Convert columns into named list of gene sets
 gmx_sets <- apply(gmx_table, 2, function(col) {
@@ -59,26 +59,39 @@ gmx_sets <- apply(gmx_table, 2, function(col) {
 names(gmx_sets) <- as.character(gmx_table[1, ])
 
 
-# Connect to Ensembl mouse mart
-mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+# === Ortholog mapping (cached) ===
+ortholog_cache_path <- here("results", "ortholog_table.rds")
 
-ortholog_table <- getBM(
-  attributes = c(
-    "ensembl_gene_id",  # Mouse Ensembl ID
-    "external_gene_name",  # Mouse gene symbol
-    "hsapiens_homolog_associated_gene_name",  # Human gene symbol
-    "hsapiens_homolog_orthology_type"
-  ),
-  mart = mouse
-)
-
-# Clean and filter
-ortholog_table <- ortholog_table %>%
-  filter(
-    external_gene_name != "" & 
-      hsapiens_homolog_associated_gene_name != "" &
-      hsapiens_homolog_orthology_type %in% c("ortholog_one2one", "ortholog_one2many")
+if (file.exists(ortholog_cache_path)) {
+  message("Loading cached ortholog table...")
+  ortholog_table <- readRDS(ortholog_cache_path)
+} else {
+  message("Querying biomaRt for ortholog table (this may take a few minutes)...")
+  
+  # Connect to Ensembl mouse mart
+  mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+  
+  ortholog_table <- getBM(
+    attributes = c(
+      "ensembl_gene_id",
+      "external_gene_name",
+      "hsapiens_homolog_associated_gene_name",
+      "hsapiens_homolog_orthology_type"
+    ),
+    mart = mouse
   )
+  
+  # Clean and filter
+  ortholog_table <- ortholog_table %>%
+    filter(
+      external_gene_name != "" & 
+        hsapiens_homolog_associated_gene_name != "" &
+        hsapiens_homolog_orthology_type %in% c("ortholog_one2one", "ortholog_one2many")
+    )
+  
+  # Save cache for future runs
+  saveRDS(ortholog_table, ortholog_cache_path)
+}
 
 # Create mapping from human → mouse (by gene symbol)
 human_to_mouse_map <- deframe(
@@ -95,7 +108,7 @@ myc_signature_sets <- lapply(gmx_sets, function(genes) {
 names(myc_signature_sets) <- paste0("MYC_", names(myc_signature_sets))
 
 # Felsher integrative myc gene set
-felsher_human_genes <- read.csv("data/felsher_integrative_signature.csv")$Symbol
+felsher_human_genes <- read.csv(here("data", "felsher_integrative_signature.csv"))$Symbol
 felsher_human_genes <- unique(na.omit(felsher_human_genes))
 
 felsher_mouse_genes <- human_to_mouse_map[felsher_human_genes]
@@ -128,8 +141,7 @@ gene_sets_list[["MC_Apoptosis_Anti"]] <- apoptosis_anti_symbols
 
 
 # === Save processed objects ===
-saveRDS(cts, "results/count_matrix.rds")
-saveRDS(coldata, "results/coldata.rds")
-saveRDS(dds_int, "results/dds_int.rds")
-saveRDS(gene_sets_list, "results/gene_sets_list.rds")
-saveRDS(ortholog_table, "results/ortholog_table.rds")
+saveRDS(cts, here("results", "count_matrix.rds"))
+saveRDS(coldata, here("results", "coldata.rds"))
+saveRDS(dds_int, here("results", "dds_int.rds"))
+saveRDS(gene_sets_list, here("results", "gene_sets_list.rds"))

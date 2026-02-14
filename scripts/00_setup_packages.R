@@ -2,6 +2,7 @@
 
 # List of CRAN packages
 cran_packages <- c(
+  "here",
   "dplyr", "tibble", "readr", "stringr", "purrr", "magrittr",
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
   "grid", "gridExtra", "readr",
@@ -21,7 +22,6 @@ for (pkg in cran_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     install.packages(pkg)
   }
-  library(pkg, character.only = TRUE)
 }
 
 # Load or install Bioconductor packages
@@ -32,5 +32,9 @@ for (pkg in bioc_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     BiocManager::install(pkg)
   }
-  library(pkg, character.only = TRUE)
 }
+
+# Load all packages
+library(here)
+for (pkg in cran_packages) library(pkg, character.only = TRUE)
+for (pkg in bioc_packages) library(pkg, character.only = TRUE)
