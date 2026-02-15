@@ -48,19 +48,25 @@ myc_mouse/
 │   ├── 00_setup_packages.R
 │   ├── 01_load_data.R
 │   ├── 02_qc.R
-│   └── 03_deseq_results_qc.R
+│   └── 03_deseq_results_qc.R          # Includes extended interaction QC
 ├── results/
 │   ├── dds_int.rds                    # DESeq2 object (interaction design)
-│   ├── dds_group.rds                  # DESeq2 object (group design)
+│   ├── dds_int_run.rds                # DESeq2 object after DESeq() run
+│   ├── dds_group_run.rds              # DESeq2 object (group design) after run
 │   ├── interaction_results.rds        # All interaction model results
 │   ├── group_results.rds              # All group model results
+│   ├── extended_qc_summary.rds        # Extended QC statistics
+│   ├── lfc_comparison_timepoint.rds   # LFC comparison data for timepoint effects
 │   ├── count_matrix.rds
 │   ├── coldata.rds
 │   ├── gene_sets_list.rds
 │   └── ortholog_table.rds             # Cached human-mouse orthologs
 ├── outputs/
 │   ├── qc/                            # Initial QC plots (PDF)
-│   └── deseq_qc/                      # MA plots and results summary
+│   └── deseq_qc/                      # MA plots, extended QC, and results summary
+│       ├── MA_*.pdf                   # MA plots for each contrast
+│       ├── extended_qc_interaction_analysis.pdf  # LFC correlation, p-value histograms
+│       └── results_summary.csv
 └── README.md
 ```
 
@@ -163,6 +169,54 @@ Results were extracted from two model types:
 
 ---
 
+## Extended QC: Understanding the Interaction Term
+
+### The Puzzle
+
+A key puzzle emerges from the results:
+
+- **No significant interactions** (0 genes at padj < 0.1)
+- **Yet ~2,600 genes differ between 12W_pos and 6W_pos**
+
+If so many genes change over time in Myc+ samples, why doesn't the interaction term detect differential Myc effects?
+
+### Clarification: DESeq2 Normalization Handles Library Size
+
+DESeq2's size factors correctly account for the ~2x library size difference between 6W and 12W samples. The group comparisons (e.g., 12W_pos vs 6W_pos) are **not confounded** by library size—they capture true biological differences (developmental changes, tumour progression) plus any residual technical variation beyond what size factors address.
+
+### Resolution: Timepoint Effects Are Highly Correlated
+
+We investigated the overlap between timepoint effects in Myc+ and Myc− samples:
+
+| Metric | Value |
+|--------|-------|
+| Significant in Myc+ (timepoint effect) | 2,623 |
+| Significant in Myc− (timepoint effect) | 1,867 |
+| **Overlap** | **961** (51% of Myc−) |
+| Unique to Myc+ | 1,662 |
+| Unique to Myc− | 906 |
+
+**LFC correlations:**
+- Genes significant in both: r = **0.96** (near-perfect)
+- All genes significant in either: r = **0.74**
+
+This explains the lack of interaction: genes changing over time follow **the same direction and similar magnitude** in both Myc+ and Myc− samples. The interaction term (difference-of-differences) is therefore close to zero.
+
+### Interaction P-value Distribution
+
+The interaction term p-value histogram is **near-uniform**, indicating no enrichment of true signal:
+
+- Minimum padj: **0.16** (no genes below 0.1)
+- Genes with p < 0.05: **~900** (expected by chance: ~925)
+
+However, for the 1,662 genes "unique to Myc+ timepoint effect":
+- **357 have interaction p < 0.05** (expected by chance: ~83)
+- **0 survive FDR correction** (padj < 0.1)
+
+This suggests a **weak signal** exists (more than expected by chance), but effect sizes are too small and/or variance too high for reliable detection after multiple testing correction.
+
+---
+
 ## Interpretation: Interaction Term vs Group Comparisons
 
 Understanding the difference between the interaction term and the group comparisons is critical for this analysis.
@@ -180,7 +234,7 @@ Interaction = (Myc effect at 12W) − (Myc effect at 6W)
 ```
 
 A significant interaction would mean that Myc activates (or represses) a gene **differently** depending on the timepoint. For example:
-- A gene upregulated 4-fold by Myc at 6W but only 1.5-fold at 12W → positive interaction
+- A gene upregulated 4-fold by Myc at 6W but only 1.5-fold at 12W → negative interaction
 - A gene unchanged by Myc at 6W but strongly repressed at 12W → negative interaction
 
 **Result**: No significant interactions detected. This means the **Myc transcriptional program is stable between timepoints** — genes affected by Myc at 6W are affected similarly at 12W.
@@ -191,27 +245,55 @@ The comparison `12W_pos vs 6W_pos` asks:
 
 > **"What genes differ between Myc+ samples at 12W versus 6W?"**
 
-This captures:
-1. **Time-dependent changes** in Myc+ tumours (tumour progression, adaptation)
-2. **Batch effects** between timepoints (library size differences)
-3. **Normal developmental changes** that occur regardless of Myc status
+This is a **simple difference**, capturing:
+1. **Developmental/tissue changes** that occur from 6W to 12W
+2. **Tumour progression** effects in Myc+ samples
+3. Any combination of the above
+
+Critically, this comparison does **not** tell us whether observed changes are Myc-specific or would occur anyway in Myc− controls.
 
 **Result**: 2,619 significant genes. This is similar to the timepoint effect in Myc+ samples (2,623 genes), confirming equivalence.
 
-### Why Both Analyses Matter
+### Key Insight: Most Timepoint Changes Are Shared
 
-| Question | Use this comparison |
-|----------|---------------------|
+The group comparisons reveal that:
+- **12W_neg vs 6W_neg**: 1,869 genes (developmental baseline)
+- **12W_pos vs 6W_pos**: 2,619 genes
+
+The ~750 additional genes in the Myc+ comparison could reflect:
+1. Myc-specific temporal dynamics (true interaction signal, too weak to detect)
+2. Power differences (Myc+ comparison may have slightly different variance)
+3. Borderline genes just crossing significance in one comparison
+
+The **high correlation** (r = 0.74–0.96) between Myc+ and Myc− timepoint effects confirms that most of these changes are **shared developmental effects**, not Myc-specific.
+
+### Summary Table: Which Comparison to Use
+
+| Biological Question | Comparison to Use |
+|---------------------|-------------------|
 | Does Myc change gene X expression? | Myc effect at 6W or 12W |
 | Does Myc affect gene X differently over time? | Interaction term |
 | How do Myc+ tumours change from 6W to 12W? | Group: 12W_pos vs 6W_pos |
-| Is a change Myc-specific vs developmental? | Compare 12W_pos vs 6W_pos to 12W_neg vs 6W_neg |
+| Is a change Myc-specific vs developmental? | Compare 12W_pos/6W_pos to 12W_neg/6W_neg |
+| What's the baseline developmental effect? | Timepoint effect (Myc−) or Group: 12W_neg vs 6W_neg |
 
-### Practical Implications
+### Biological Conclusions
 
-1. **The interaction term is underpowered** — high noise (batch effect) and modest effect sizes prevent detection of differential Myc effects
-2. **Lack of interaction ≠ no biological difference** — statistical power is limited; genes may have subtle differential responses
-3. **For downstream analysis**: Use the **group model** for clear pairwise comparisons, and reserve the interaction term for hypothesis-driven checks on specific genes
+1. **The Myc transcriptional program is largely stable between 6W and 12W**
+   - No significant interactions = the Myc effect doesn't change dramatically over time
+   
+2. **Timepoint effects are predominantly developmental**
+   - Most genes changing from 6W to 12W do so similarly in both Myc+ and Myc− samples
+   
+3. **Genes "unique" to Myc+ timepoint are likely borderline cases**
+   - Not true Myc-specific temporal dynamics, but genes near the significance threshold
+
+### Practical Recommendations
+
+1. **Use the GROUP MODEL for clear pairwise comparisons**
+2. **Reserve the interaction term for hypothesis-driven checks** on specific candidate genes
+3. **Consider relaxed thresholds (padj < 0.2)** for exploratory interaction analysis if needed
+4. **Interpret timepoint differences cautiously** — most are shared between Myc+ and Myc−
 
 ---
 
