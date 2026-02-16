@@ -3,7 +3,7 @@
 # List of CRAN packages
 cran_packages <- c(
   "here",
-  "dplyr", "tibble", "readr", "stringr", "purrr", "magrittr",
+  "dplyr", "tibble", "tidyr", "readr", "stringr", "purrr", "magrittr", "forcats",
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
   "grid", "gridExtra", "readr",
   "reshape2", "ggrepel"               
