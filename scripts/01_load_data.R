@@ -137,8 +137,28 @@ apoptosis_anti_symbols <- c(
 gene_sets_list[["MC_Apoptosis_Pro"]]  <- apoptosis_pro_symbols
 gene_sets_list[["MC_Apoptosis_Anti"]] <- apoptosis_anti_symbols
 
+# === MSigDB Hallmark pathways ===
+# Load Hallmark gene sets from msigdbr package
+# These are human gene sets - we convert to mouse orthologs
 
+hallmark_df <- msigdbr(species = "Mus musculus", category = "H")
 
+hallmark_list <- hallmark_df |>
+  dplyr::select(gs_name, gene_symbol) |>
+  group_by(gs_name) |>
+  summarise(genes = list(unique(gene_symbol)), .groups = "drop") |>
+  deframe()
+
+# Prefix names for clarity
+names(hallmark_list) <- paste0("MSigDB_", names(hallmark_list))
+
+# Combine all gene sets (89 total: 22 MitoCarta + 17 MYC + 50 Hallmark)
+gene_sets_list <- c(gene_sets_list, hallmark_list)
+
+message("Gene sets loaded: ", length(gene_sets_list), " total")
+message("  MitoCarta: ", sum(grepl("^MC_", names(gene_sets_list))))
+message("  MYC signatures: ", sum(grepl("^MYC_", names(gene_sets_list))))
+message("  MSigDB Hallmark: ", sum(grepl("^MSigDB_", names(gene_sets_list))))
 
 # === Save processed objects ===
 saveRDS(cts, here("results", "count_matrix.rds"))

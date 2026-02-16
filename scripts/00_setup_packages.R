@@ -6,7 +6,8 @@ cran_packages <- c(
   "dplyr", "tibble", "tidyr", "readr", "stringr", "purrr", "magrittr", "forcats",
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
   "grid", "gridExtra", "readr",
-  "reshape2", "ggrepel"               
+  "reshape2", "ggrepel",
+  "msigdbr"
 )
 
 # List of Bioconductor packages
