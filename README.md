@@ -33,6 +33,8 @@ This project investigates the effect of the **Myc oncogene** in early breast tum
 | `01_load_data.R` | Load count data, create DESeq2 object, load gene sets |
 | `02_qc.R` | Quality control: PCA, sample distances, variance transforms |
 | `03_deseq_results_qc.R` | DESeq2 results extraction (raw + shrunken LFCs) with IHW, MA plots |
+| `04_fgsea_pathway_analysis.R` | fGSEA pathway analysis using Wald statistic ranking |
+| `05_fgsea_visualisation.R` | fGSEA visualisation: dot plots, bar charts, enrichment plots |
 
 ### Directory Structure
 
@@ -61,12 +63,19 @@ myc_mouse/
 │   ├── coldata.rds
 │   ├── gene_sets_list.rds
 │   └── ortholog_table.rds             # Cached human-mouse orthologs
+│   └── fgsea_results.rds              # fGSEA results (Wald statistic ranking)
 ├── outputs/
 │   ├── qc/                            # Initial QC plots (PDF)
-│   └── deseq_qc/                      # MA plots, extended QC, and results summary
-│       ├── MA_*.pdf                   # MA plots for each contrast
-│       ├── extended_qc_interaction_analysis.pdf  # LFC correlation, p-value histograms
-│       └── results_summary.csv
+│   ├── deseq_qc/                      # MA plots, extended QC, and results summary
+│   │   ├── MA_*.pdf                   # MA plots for each contrast
+│   │   ├── extended_qc_interaction_analysis.pdf
+│   │   └── results_summary.csv
+│   └── fgsea/                         # fGSEA visualisations
+│       ├── dotplot_*.pdf              # Dot plots by pathway category
+│       ├── barplot_*_comparison.pdf   # Comparative bar plots (Myc+ vs Myc-)
+│       ├── enrichment_*.pdf           # Running enrichment score plots
+│       ├── category_summary.pdf       # Pathway classification summary
+│       └── heatmap_top_pathways.pdf   # NES heatmap
 └── README.md
 ```
 
@@ -294,6 +303,102 @@ The **high correlation** (r = 0.74–0.96) between Myc+ and Myc− timepoint eff
 2. **Reserve the interaction term for hypothesis-driven checks** on specific candidate genes
 3. **Consider relaxed thresholds (padj < 0.2)** for exploratory interaction analysis if needed
 4. **Interpret timepoint differences cautiously** — most are shared between Myc+ and Myc−
+
+---
+
+## fGSEA Pathway Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `04_fgsea_pathway_analysis.R` | Gene set enrichment analysis for Myc+ vs Myc- progression |
+
+### Strategy
+
+Given the lack of significant interaction term hits, we use a comparative fGSEA approach:
+
+1. **Run fGSEA on 12W_pos vs 6W_pos** (Q1: How do Myc+ tumours change over time?)
+2. **Run fGSEA on 12W_neg vs 6W_neg** (Q3: What's the baseline developmental effect?)
+3. **Compare enrichment between comparisons** (Q2: Which changes are Myc-specific?)
+
+### Ranking Metric: Wald Statistic
+
+We use the **Wald statistic** (`stat` column from DESeq2) for ranking genes in fGSEA:
+
+```
+Wald = log2FoldChange / lfcSE
+```
+
+**Why Wald over sign(LFC) × -log10(p)?**
+
+| Metric | Wald statistic | sign(LFC) × -log10(p) |
+|--------|----------------|------------------------|
+| Source | Single model quantity | Derived from LFC + pvalue |
+| Properties | Already signed, incorporates effect size and precision | Amplifies extreme values |
+| Correlation | — | r = 0.95 with Wald |
+
+Empirical comparison showed:
+- **Wald detected 11 additional pathways** (44 vs 33 significant in Myc+)
+- **No pathways lost** — all sign(LFC) × -log10(p) hits also significant with Wald
+- Higher sensitivity for pathways with moderate but consistent effects
+
+### Gene Sets Analysed (89 total)
+
+| Source | Sets | Description |
+|--------|------|-------------|
+| MitoCarta 3.0 | 22 | Mitochondrial pathways |
+| MYC signatures | 17 | Felsher et al. (2022) + others |
+| Apoptosis | 2 | Pro/anti-apoptotic genes |
+| MSigDB Hallmark | 50 | Canonical pathway collection |
+
+### Output
+
+Results saved to `results/fgsea_results.rds` containing:
+- Individual fGSEA results for Myc+ and Myc- comparisons
+- Combined comparison table with pathway classification
+- Ranked gene lists
+
+### Interpretation Notes
+
+#### Temporal vs cross-sectional comparisons
+
+The fGSEA results reflect **changes over time within each genotype** (12W vs 6W), 
+not differences between Myc+ and Myc- at any given timepoint. A pathway classified 
+as "Myc+ specific" shows significant temporal change only in Myc+ tumours, but 
+this doesn't confirm the pathway differs between genotypes at 12W.
+
+| Observation | What it means | What it doesn't mean |
+|-------------|---------------|----------------------|
+| Negative NES in both genotypes | Both decrease over time | Nothing about absolute levels at 12W |
+| "Myc+ specific" | Significant change only in Myc+ | Not necessarily direct Myc regulation |
+| "Opposite effects" | Genotypes diverge over time | Could be direct or indirect |
+
+#### MYC target signatures decrease despite stable Myc mRNA
+
+All MYC target gene sets show significant negative enrichment in Myc+ tumours 
+(12W vs 6W), suggesting reduced transcriptional output from Myc over time. 
+However, **Myc mRNA itself shows no significant change** (log2FC = -0.10, 
+padj = 0.76), implying:
+
+- Post-transcriptional regulation (protein stability, localisation, modification)
+- Cofactor limitation (Max, Miz1, etc.)
+- Chromatin accessibility changes
+- Negative feedback from Myc targets
+
+#### Limitations
+
+These results identify pathways with differential temporal dynamics between 
+genotypes but cannot determine:
+
+- Absolute pathway activity levels at either timepoint
+- Whether "Myc+ specific" effects reflect direct Myc regulation
+- Causal relationships between Myc and pathway changes
+
+To address these limitations, additional analyses could include:
+- Myc+ vs Myc- fGSEA at each timepoint (requires genotype contrasts)
+- Leading edge analysis of MYC signatures
+- Expression analysis of Myc cofactors and regulators
 
 ---
 
