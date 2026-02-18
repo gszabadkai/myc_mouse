@@ -196,15 +196,15 @@ message(strrep("=", 70))
 message("\n--- MYC Signatures ---")
 myc_pathways |>
   dplyr::select(pathway, NES_pos, padj_pos, NES_neg, padj_neg, category) |>
-  arrange(padj_pos) |
-  head(20) |
+  arrange(padj_pos) |>
+  head(20) |>
   print()
 
 message("\n--- MitoCarta Pathways ---")
 mito_pathways |>
   dplyr::select(pathway, NES_pos, padj_pos, NES_neg, padj_neg, category) |>
-  arrange(padj_pos) |
-  head(25) |
+  arrange(padj_pos) |>
+  head(25) |>
   print()
 
 message("\n--- Apoptosis Pathways ---")
@@ -215,8 +215,8 @@ apoptosis_pathways |>
 message("\n--- Top Hallmark Pathways (by |NES_diff|) ---")
 hallmark_pathways |>
   dplyr::select(pathway, NES_pos, padj_pos, NES_neg, padj_neg, NES_diff, category) |>
-  arrange(desc(abs(NES_diff))) |
-  head(15) |
+  arrange(desc(abs(NES_diff))) |>
+  head(15) |>
   print()
 
 message("\n", strrep("=", 70))
