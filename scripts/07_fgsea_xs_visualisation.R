@@ -299,6 +299,142 @@ ggsave(
 
 message("Developmental contribution plot saved")
 
+# =============================================================================
+# SIMPLIFIED PLOTS
+# =============================================================================
+
+# --- Plot 3: NES timepoint_neg vs NES timepoint_pos ---
+# X: NES (Myc- 12W vs 6W) - developmental baseline
+# Y: NES (Myc+ 12W vs 6W) - Myc+ trajectory
+# Size: significance, Colour: pathway category
+
+fgsea_simple_data <- fgsea_combined_temporal |>
+  as_tibble() |>
+  mutate(
+    min_padj = pmin(padj_pos, padj_neg, na.rm = TRUE),
+    sig_level = -log10(min_padj),
+    pathway_category = case_when(
+      str_detect(pathway, "^MC_|^Mitochondrial|^Metabolism|^Protein import|^Small molecule|^Signaling|^OXPHOS") ~ "MitoCarta",
+      str_detect(pathway, "^MYC_") ~ "MYC Signature",
+      str_detect(pathway, "^MSigDB_HALLMARK_") ~ "Hallmark",
+      TRUE ~ "Other"
+    ),
+    pathway_label = str_remove(pathway, "^(MSigDB_HALLMARK_|MYC_|MC_)") |>
+      str_replace_all("_", " ")
+  )
+
+p_nes_comparison <- ggplot(
+  fgsea_simple_data,
+  aes(x = NES_neg, y = NES_pos)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dotted", colour = "grey40") +
+  geom_point(
+    aes(size = sig_level, colour = pathway_category),
+    alpha = 0.7
+  ) +
+  ggrepel::geom_text_repel(
+    aes(label = pathway_label),
+    size = 2.5,
+    max.overlaps = Inf,
+    segment.alpha = 0.3,
+    segment.size = 0.2,
+    force = 2,
+    box.padding = 0.2
+  ) +
+  scale_colour_manual(values = c(
+    "MitoCarta" = "#E41A1C",
+    "MYC Signature" = "#377EB8",
+    "Hallmark" = "#4DAF4A"
+  )) +
+  scale_size_continuous(range = c(2, 10), breaks = c(2, 5, 10, 20)) +
+  labs(
+    title = "Temporal pathway enrichment: Myc+ vs Myc-",
+    x = "NES (Myc- 12W vs 6W)",
+    y = "NES (Myc+ 12W vs 6W)",
+    colour = "Category",
+    size = "-log10(padj)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.position = "right"
+  )
+
+ggsave(
+  file.path(fig_dir, "xs_nes_comparison_simple.pdf"),
+  p_nes_comparison, width = 14, height = 10
+)
+
+message("Simplified NES comparison plot saved")
+
+# --- Plot 4: NES 6W vs NES 12W (cross-sectional Myc effect) ---
+# X: NES (Myc+ vs Myc- at 6W)
+# Y: NES (Myc+ vs Myc- at 12W)
+# Size: significance, Colour: pathway category
+
+fgsea_simple_xs <- fgsea_xs_combined |>
+  as_tibble() |>
+  mutate(
+    min_padj = pmin(padj_6W, padj_12W, na.rm = TRUE),
+    sig_level = -log10(min_padj),
+    pathway_category = case_when(
+      str_detect(pathway, "^MC_") ~ "MitoCarta",
+      str_detect(pathway, "^MYC_") ~ "MYC Signature",
+      str_detect(pathway, "^MSigDB_HALLMARK_") ~ "Hallmark",
+      TRUE ~ "Other"
+    ),
+    pathway_label = str_remove(pathway, "^(MSigDB_HALLMARK_|MYC_|MC_)") |>
+      str_replace_all("_", " ")
+  )
+
+p_nes_xs <- ggplot(
+  fgsea_simple_xs,
+  aes(x = NES_6W, y = NES_12W)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dotted", colour = "grey40") +
+  geom_point(
+    aes(size = sig_level, colour = pathway_category),
+    alpha = 0.7
+  ) +
+  ggrepel::geom_text_repel(
+    aes(label = pathway_label),
+    size = 2.5,
+    max.overlaps = Inf,
+    segment.alpha = 0.3,
+    segment.size = 0.2,
+    force = 2,
+    box.padding = 0.2
+  ) +
+  scale_colour_manual(values = c(
+    "MitoCarta" = "#E41A1C",
+    "MYC Signature" = "#377EB8",
+    "Hallmark" = "#4DAF4A"
+  )) +
+  scale_size_continuous(range = c(2, 10), breaks = c(2, 5, 10, 20)) +
+  labs(
+    title = "Cross-sectional Myc effect: 6W vs 12W",
+    x = "NES (Myc+ vs Myc- at 6W)",
+    y = "NES (Myc+ vs Myc- at 12W)",
+    colour = "Category",
+    size = "-log10(padj)"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 12),
+    legend.position = "right"
+  )
+
+ggsave(
+  file.path(fig_dir, "xs_nes_crosssectional_comparison.pdf"),
+  p_nes_xs, width = 14, height = 10
+)
+
+message("Cross-sectional NES comparison plot saved")
+
 message("\n", strrep("=", 70))
 message("CROSS-SECTIONAL fGSEA VISUALISATION COMPLETE")
 message("Figures saved to: ", fig_dir)
