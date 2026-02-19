@@ -35,6 +35,8 @@ This project investigates the effect of the **Myc oncogene** in early breast tum
 | `03_deseq_results_qc.R` | DESeq2 results extraction (raw + shrunken LFCs) with IHW, MA plots |
 | `04_fgsea_pathway_analysis.R` | fGSEA pathway analysis using Wald statistic ranking |
 | `05_fgsea_visualisation.R` | fGSEA visualisation: dot plots, bar charts, enrichment plots |
+| `06_fgsea_cross_sectional.R` | Cross-sectional fGSEA: Myc+ vs Myc- at each timepoint |
+| `07_fgsea_xs_visualisation.R` | Cross-sectional fGSEA visualisation and NES correlation plots |
 
 ### Directory Structure
 
@@ -76,6 +78,14 @@ myc_mouse/
 │       ├── enrichment_*.pdf           # Running enrichment score plots
 │       ├── category_summary.pdf       # Pathway classification summary
 │       └── heatmap_top_pathways.pdf   # NES heatmap
+│   └── fgsea_cross_sectional/         # Cross-sectional fGSEA visualisations
+│       ├── xs_category_summary.pdf    # Category bar chart
+│       ├── dotplot_*_6W.pdf           # Dot plots at 6W
+│       ├── dotplot_*_12W.pdf          # Dot plots at 12W
+│       ├── xs_nes_correlation.pdf     # Plot 1: NES correlation (maintenance vs baseline)
+│       ├── xs_dev_contribution.pdf    # Plot 2: Developmental contribution
+│       ├── xs_nes_temporal_comparison.pdf     # Plot 3: NES Myc- vs Myc+ temporal
+│       └── xs_nes_crosssectional_comparison.pdf  # Plot 4: NES 6W vs 12W cross-sectional
 └── README.md
 ```
 
@@ -399,6 +409,93 @@ To address these limitations, additional analyses could include:
 - Myc+ vs Myc- fGSEA at each timepoint (requires genotype contrasts)
 - Leading edge analysis of MYC signatures
 - Expression analysis of Myc cofactors and regulators
+
+---
+
+## Cross-Sectional fGSEA Analysis
+
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `06_fgsea_cross_sectional.R` | fGSEA on Myc+ vs Myc- contrasts at 6W and 12W separately |
+| `07_fgsea_xs_visualisation.R` | Visualisation of cross-sectional results and combined NES correlation plots |
+
+### Strategy
+
+The cross-sectional analysis complements the temporal analysis by asking a different question:
+
+- **Temporal** (scripts 04–05): How do pathways change *over time* within each genotype?
+- **Cross-sectional** (scripts 06–07): How do pathways differ *between genotypes* at each timepoint?
+
+fGSEA is run on two contrasts:
+1. **Myc+ vs Myc- at 6W** (early Myc effect)
+2. **Myc+ vs Myc- at 12W** (late Myc effect)
+
+Results are classified into categories: Stable (significant at both timepoints), 6W only (lost by 12W), 12W only (gained by 12W), Reversed, or Not significant.
+
+### Output
+
+Results saved to `results/fgsea_xs_results.rds` containing:
+- Individual fGSEA results for 6W and 12W cross-sectional contrasts
+- Combined comparison table with pathway classification
+- Pathway subsets (MYC, MitoCarta, Hallmark)
+
+### NES Correlation Plots
+
+Four plots combine information from the temporal and cross-sectional analyses to characterise the relationship between developmental and Myc-driven pathway changes.
+
+#### Plot 1: NES Correlation — Maintenance of the Myc Effect (`xs_nes_correlation.pdf`)
+
+- **X-axis**: Developmental baseline effect (NES: Myc- 12W vs 6W)
+- **Y-axis**: Change in cross-sectional Myc effect over time (NES₁₂W − NES₆W from Myc+ vs Myc-)
+- **Size**: -log10(padj) of the most significant comparison across all four contrasts
+- **Colour**: Developmental contribution (1/ΔNES where ΔNES = NES_pos − NES_neg from temporal)
+
+Interpretation: Pathways in the upper half *gain* Myc enrichment between 6W and 12W; pathways in the lower half *lose* it. The colour indicates whether the temporal difference between Myc+ and Myc- is large (near zero, grey) or small (saturated colour, meaning development drives a similar trajectory in both genotypes).
+
+#### Plot 2: Developmental Contribution (`xs_dev_contribution.pdf`)
+
+- **X-axis**: Developmental baseline effect (NES: Myc- 12W vs 6W)
+- **Y-axis**: Developmental contribution (1/[NES_pos − NES_neg])
+- **Size**: -log10(padj)
+- **Colour**: Myc+ temporal trajectory (NES: Myc+ 12W vs 6W)
+
+Interpretation: Pathways far from y = 0 have similar temporal trajectories in both genotypes (small ΔNES → large 1/ΔNES), suggesting development rather than Myc drives the change. Pathways near y = 0 have large Myc-specific temporal effects. The colour shows the direction of change in Myc+ cells.
+
+#### Plot 3: Temporal NES — Myc- vs Myc+ (`xs_nes_temporal_comparison.pdf`)
+
+- **X-axis**: NES (Myc- 12W vs 6W) — developmental trajectory
+- **Y-axis**: NES (Myc+ 12W vs 6W) — Myc+ trajectory
+- **Size**: -log10(padj)
+- **Colour**: Pathway category (MitoCarta, MYC Signature, Hallmark)
+
+Interpretation: Points on the diagonal have identical temporal trajectories in both genotypes. The deviation from the diagonal represents the Myc-specific component of temporal change. Key observations:
+
+- Most pathways cluster near the diagonal, confirming that developmental effects dominate temporal changes (consistent with the non-significant interaction term from DESeq2)
+- MitoCarta pathways (red) and MYC signatures (blue) tend to fall below the diagonal — both genotypes decline over time, but Myc+ declines more steeply
+- Pathways above the diagonal (e.g., estrogen response, androgen response) are enhanced in Myc+ relative to the developmental trend
+
+#### Plot 4: Cross-Sectional NES — 6W vs 12W (`xs_nes_crosssectional_comparison.pdf`)
+
+- **X-axis**: NES (Myc+ vs Myc- at 6W) — early Myc effect
+- **Y-axis**: NES (Myc+ vs Myc- at 12W) — late Myc effect
+- **Size**: -log10(padj)
+- **Colour**: Pathway category (MitoCarta, MYC Signature, Hallmark)
+
+Interpretation: Points on the diagonal have a stable Myc effect across timepoints. Deviations indicate pathways where the Myc effect changes over time. Key observations:
+
+- The majority of pathways are positive at both timepoints, clustering in the upper-right quadrant — Myc+ cells are enriched for these pathways relative to Myc- at both 6W and 12W
+- MYC signatures (blue) show slightly higher NES at 12W than at 6W (above the diagonal), despite declining in absolute terms over time (Plot 3) — because Myc- cells decline faster
+- Translation, OXPHOS, and mTORC1 signaling are strongly positive at both timepoints, confirming these as robust Myc-driven pathways
+
+### Reconciling Plots 3 and 4: A Key Insight
+
+MYC signature pathways show **negative NES in Plot 3** (both genotypes decline over time) but **positive NES in Plot 4** (Myc+ remains enriched relative to Myc- at both timepoints), with a slight increase at 12W (above the diagonal in Plot 4).
+
+This means: **MYC signatures decline in both genotypes over time, but they decline faster in Myc- than in Myc+.** The Myc transgene does not prevent the developmental decline in MYC pathway activity — it buffers against it. As the Myc- baseline drops further at 12W, the relative enrichment in Myc+ cells actually increases.
+
+This is consistent with the non-significant interaction term: the *absolute* Myc effect (difference-of-differences) is small, but the *relative* Myc effect (Myc+ vs Myc- at each timepoint) is maintained or even slightly enhanced.
 
 ---
 
