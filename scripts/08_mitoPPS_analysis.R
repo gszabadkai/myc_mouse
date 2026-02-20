@@ -16,6 +16,19 @@
 #      mito content and intrinsic pathway-scale differences
 #   3. Statistical comparison of both metrics across four experimental groups
 #
+# mtDNA gene handling:
+#   Mouse mtDNA-encoded genes (mt-* prefix: 13 protein-coding, 2 rRNA, 22 tRNA)
+#   are transcribed at orders-of-magnitude higher levels than nuclear-encoded
+#   mitochondrial genes. Leaving them in their canonical MitoCarta3.0 pathways
+#   (OXPHOS complexes I, III, IV, V; mitochondrial central dogma) would
+#   dominate and distort scores for those pathways. Therefore:
+#     a) All mt-* genes are REMOVED from their original MitoCarta3.0 pathways
+#     b) A new synthetic pathway "mtDNA-encoded OXPHOS subunits" is created
+#        containing all detected mt-* genes
+#   This preserves the interpretability of nuclear-encoded pathway scores
+#   while still allowing the mtDNA-encoded contribution to be quantified
+#   as its own pathway in the mitoPPS framework.
+#
 # mitoPPS algorithm (from Monzel et al. source code):
 #   Step 1: For each sample, compute ratio_ij = score_i / score_j for all
 #           pathway pairs (i ≠ j)
@@ -169,6 +182,150 @@ pathway_tier1_map <- pathway_levels %>%
   slice_head(n = 1) %>%
   ungroup() %>%
   deframe()
+
+# =============================================================================
+# PART 2b: SEPARATE mtDNA-ENCODED GENES INTO THEIR OWN PATHWAY
+# =============================================================================
+# Mouse mtDNA encodes 13 protein-coding genes, 22 tRNAs, and 2 rRNAs.
+# In MitoCarta3.0 these are distributed across OXPHOS complex pathways and
+# the mitochondrial central dogma / translation pathway. Because mtDNA
+# transcription is driven by a single promoter and produces transcript
+# abundances orders of magnitude higher than nuclear-encoded mito genes,
+# any pathway containing even one mt-* gene will have a severely inflated
+# score.
+#
+# Strategy:
+#   1. Detect mt-* genes in gene_to_pathway (case-insensitive, covers both
+#      "mt-Co1" and "MT-CO1" conventions, though mouse uses lowercase prefix)
+#   2. Remove those entries from gene_to_pathway
+#   3. Add a single new row with pathway = MTDNA_PATHWAY_NAME containing
+#      all detected mt-* genes (deduplicated)
+#   4. Append the new pathway to pathway_levels with Tier1 = "OXPHOS"
+#      (mtDNA-encoded genes are exclusively OXPHOS subunits + ribosomes)
+
+MTDNA_PATHWAY_NAME <- "mtDNA-encoded OXPHOS subunits"
+
+message("Separating mtDNA-encoded genes into dedicated pathway...")
+
+# Identify mt-* genes (mouse convention: mt-Co1, mt-Nd1, mt-Atp6, mt-Rnr1, etc.)
+# Also catches human MT- prefix for robustness
+is_mtdna_gene <- grepl("^[Mm][Tt]-", gene_to_pathway$Gene)
+mtdna_genes   <- unique(gene_to_pathway$Gene[is_mtdna_gene])
+
+if (length(mtdna_genes) == 0) {
+  warning(
+    "No mtDNA-encoded genes (mt-* prefix) found in gene_to_pathway.\n",
+    "Check that MitoCarta3.0 gene symbols use the expected mt- prefix.\n",
+    "mtDNA separation step skipped."
+  )
+} else {
+  message(sprintf(
+    "  Found %d mtDNA-encoded genes in %d original pathways — relocating to '%s'",
+    length(mtdna_genes),
+    length(unique(gene_to_pathway$Pathway[is_mtdna_gene])),
+    MTDNA_PATHWAY_NAME
+  ))
+  message(sprintf("  mtDNA genes: %s", paste(sort(mtdna_genes), collapse = ", ")))
+
+  # Remove mt-* genes from all original pathways
+  gene_to_pathway <- gene_to_pathway[!is_mtdna_gene, ]
+
+  # Add new dedicated pathway row for each mt-* gene (one row per gene,
+  # consistent with the long-format structure of gene_to_pathway)
+  mtdna_rows <- data.frame(
+    Pathway = MTDNA_PATHWAY_NAME,
+    Gene    = mtdna_genes,
+    stringsAsFactors = FALSE
+  )
+  gene_to_pathway <- bind_rows(gene_to_pathway, mtdna_rows)
+
+  # Append to pathway_levels so the new pathway gets a tier1 annotation
+  # mtDNA-encoded proteins are exclusively OXPHOS subunits + ribosomal RNAs;
+  # assign to "OXPHOS" tier1 category
+  mtdna_level_row <- data.frame(
+    Pathway         = MTDNA_PATHWAY_NAME,
+    Pathway_Level1  = "OXPHOS",
+    Pathway_Level2  = "OXPHOS subunits",
+    Pathway_Level3  = MTDNA_PATHWAY_NAME,
+    Level           = "Pathway_Level3",
+    stringsAsFactors = FALSE
+  )
+  pathway_levels <- bind_rows(pathway_levels, mtdna_level_row)
+
+  # Update tier1 map to include the new pathway
+  pathway_tier1_map[MTDNA_PATHWAY_NAME] <- "OXPHOS"
+
+  # Report which original pathways lost genes
+  original_pathways_affected <- unique(gene_to_pathway$Pathway[
+    gene_to_pathway$Pathway %in%
+      unique(gene_to_pathway$Pathway[gene_to_pathway$Gene %in% mtdna_genes])
+  ])
+  # (after removal, check which pathways now have fewer genes than before)
+  message(sprintf(
+    "  Pathway count after separation: %d (was %d)",
+    length(unique(gene_to_pathway$Pathway)),
+    n_pathways_total
+  ))
+}
+
+# =============================================================================
+# PART 2c: ADD APOPTOSIS-PRO AND APOPTOSIS-ANTI AS SUBGROUPS OF APOPTOSIS
+# =============================================================================
+# The MitoCarta3.0 "Apoptosis" pathway is kept intact. Two additional child
+# pathways are added alongside it, each with a curated gene list, allowing
+# mitoPPS to distinguish pro- vs anti-apoptotic mitochondrial contributions.
+#
+# Hierarchy:
+#   Mitochondrial dynamics and surveillance > Apoptosis > Apoptosis-PRO
+#   Mitochondrial dynamics and surveillance > Apoptosis > Apoptosis-ANTI
+
+APOPTOSIS_PRO_NAME  <- "Apoptosis-PRO"
+APOPTOSIS_ANTI_NAME <- "Apoptosis-ANTI"
+
+apoptosis_pro_genes <- c(
+  "Aifm1", "Aifm3", "Aifm2", "Bad",     "Bak1",    "Bax",     "Bbc3",
+  "Bcl2l11", "Bid", "Bik",   "Bnip3",   "Bnip3l",  "Bok",     "Casp3",
+  "Casp8",   "Casp9", "Cycs", "Diablo", "Endog",   "Htra2",   "Ifi27",
+  "Pmaip1",  "Septin4", "Bcl2l13", "Sphk2"
+)
+
+apoptosis_anti_genes <- c(
+  "Bcl2", "Bcl2a1d", "Bcl2l1", "Bcl2l10", "Bcl2l2",
+  "Mcl1", "Ghitm",   "Styxl1", "Chchd2"
+)
+
+message("Adding Apoptosis-PRO and Apoptosis-ANTI subgroup pathways...")
+
+# Determine hierarchy from the existing "Apoptosis" pathway entry
+apoptosis_hierarchy <- pathway_levels %>%
+  filter(Pathway == "Apoptosis") %>%
+  slice_head(n = 1)
+
+apoptosis_level1 <- if (nrow(apoptosis_hierarchy) > 0) apoptosis_hierarchy$Pathway_Level1 else "Mitochondrial dynamics and surveillance"
+apoptosis_level2 <- if (nrow(apoptosis_hierarchy) > 0) apoptosis_hierarchy$Pathway_Level2 else "Apoptosis"
+
+# Add gene rows for the two new pathways (genes overlap with Apoptosis — intentional)
+new_apoptosis_rows <- bind_rows(
+  data.frame(Pathway = APOPTOSIS_PRO_NAME,  Gene = apoptosis_pro_genes,  stringsAsFactors = FALSE),
+  data.frame(Pathway = APOPTOSIS_ANTI_NAME, Gene = apoptosis_anti_genes, stringsAsFactors = FALSE)
+)
+gene_to_pathway <- bind_rows(gene_to_pathway, new_apoptosis_rows)
+
+# Add hierarchy entries for the two new pathways (Level3 under Apoptosis)
+new_apoptosis_levels <- data.frame(
+  Pathway        = c(APOPTOSIS_PRO_NAME,  APOPTOSIS_ANTI_NAME),
+  Pathway_Level1 = c(apoptosis_level1,    apoptosis_level1),
+  Pathway_Level2 = c(apoptosis_level2,    apoptosis_level2),
+  Pathway_Level3 = c(APOPTOSIS_PRO_NAME,  APOPTOSIS_ANTI_NAME),
+  Level          = c("Pathway_Level3",    "Pathway_Level3"),
+  stringsAsFactors = FALSE
+)
+pathway_levels    <- bind_rows(pathway_levels, new_apoptosis_levels)
+pathway_tier1_map[APOPTOSIS_PRO_NAME]  <- apoptosis_level1
+pathway_tier1_map[APOPTOSIS_ANTI_NAME] <- apoptosis_level1
+
+message(sprintf("  Apoptosis-PRO:  %d genes", length(apoptosis_pro_genes)))
+message(sprintf("  Apoptosis-ANTI: %d genes", length(apoptosis_anti_genes)))
 
 # =============================================================================
 # PART 3: MAP EXPRESSION MATRIX TO GENE SYMBOLS
@@ -823,10 +980,20 @@ mitopps_results <- list(
   # Metadata
   n_pathways = n_after,
   n_mitocarta_genes_found = length(overlap),
+  mtdna_genes_separated = mtdna_genes,
+  mtdna_pathway_name = MTDNA_PATHWAY_NAME,
+  apoptosis_pro_genes = apoptosis_pro_genes,
+  apoptosis_anti_genes = apoptosis_anti_genes,
   analysis_date = Sys.Date(),
   description = paste(
     "MitoPPS analysis using pairwise ratio normalisation.",
     "Raw pathway scores from DESeq2 normalised counts (linear scale).",
+    "mtDNA-encoded genes (mt-* prefix) removed from original MitoCarta3.0",
+    "pathways and placed in a dedicated synthetic pathway",
+    sprintf("'%s' to prevent high-abundance mtDNA transcripts", MTDNA_PATHWAY_NAME),
+    "from distorting nuclear-encoded pathway scores.",
+    "Apoptosis pathway split into Apoptosis-PRO and Apoptosis-ANTI subgroups",
+    "based on curated gene sets (MC_Apoptosis_Pro / MC_Apoptosis_Anti).",
     "mitoPPS computed per Monzel et al. (2025) algorithm."
   )
 )
@@ -853,6 +1020,8 @@ message("\n", strrep("=", 70))
 message("mitoPPS ANALYSIS COMPLETE")
 message(strrep("=", 70))
 message(sprintf("Pathways analysed: %d", n_after))
+message(sprintf("  incl. synthetic pathway '%s' (%d genes)",
+                MTDNA_PATHWAY_NAME, length(mtdna_genes)))
 message(sprintf("Results saved to: results/mitopps_scores.rds"))
 message(sprintf("Figures saved to: %s", mitopps_fig_dir))
 message(strrep("=", 70))
