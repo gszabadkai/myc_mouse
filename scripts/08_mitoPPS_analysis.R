@@ -551,15 +551,40 @@ pps_row_annotation <- data.frame(
 )
 valid_rows_pps <- !is.na(pps_row_annotation$Category)
 
+# Fix any name mismatches between annotation levels and colour vector
+# (e.g. Oxford comma differences from MitoCarta source)
+tier1_colours_matched <- tier1_colours
+names(tier1_colours_matched) <- names(tier1_colours)
+annot_levels <- unique(pps_row_annotation$Category[valid_rows_pps])
+for (lvl in annot_levels) {
+  if (!lvl %in% names(tier1_colours_matched)) {
+    # Try fuzzy match (e.g. comma difference)
+    best <- agrep(lvl, names(tier1_colours_matched), value = TRUE, max.distance = 0.1)
+    if (length(best) == 1) tier1_colours_matched[lvl] <- tier1_colours_matched[best]
+  }
+}
+
+# ComplexHeatmap annotation for mitoPPS
+pps_ha <- ComplexHeatmap::rowAnnotation(
+  Category = pps_row_annotation$Category[valid_rows_pps],
+  col = list(Category = tier1_colours_matched[annot_levels]),
+  show_legend = TRUE
+)
+
 pdf(file.path(mitopps_fig_dir, "heatmap_mitopps.pdf"), width = 8, height = 18)
-pheatmap(pps_means_z[valid_rows_pps, ],
-         color = colorRampPalette(c("#2166AC", "white", "#B2182B"))(100),
-         cluster_cols = FALSE,
-         annotation_row = pps_row_annotation[valid_rows_pps, , drop = FALSE],
-         annotation_colors = list(Category = tier1_colours),
-         fontsize_row = 6,
-         fontsize_col = 10,
-         main = "mitoPPS (log10, z-scored group means)")
+ComplexHeatmap::draw(ComplexHeatmap::Heatmap(
+  pps_means_z[valid_rows_pps, ],
+  col = circlize::colorRamp2(
+    seq(-2, 2, length.out = 100),
+    colorRampPalette(c("#2166AC", "white", "#B2182B"))(100)
+  ),
+  cluster_columns = FALSE,
+  left_annotation = pps_ha,
+  row_names_gp = grid::gpar(fontsize = 6),
+  column_names_gp = grid::gpar(fontsize = 10),
+  column_title = "mitoPPS (log10, z-scored group means)",
+  heatmap_legend_param = list(title = "Z-score")
+))
 dev.off()
 
 # --- 10d. Heatmap: raw pathway scores (group means, z-scored) ---
@@ -577,15 +602,111 @@ raw_row_annotation <- data.frame(
 )
 valid_rows_raw <- !is.na(raw_row_annotation$Category)
 
+# ComplexHeatmap annotation for raw scores
+raw_annot_levels <- unique(raw_row_annotation$Category[valid_rows_raw])
+raw_ha <- ComplexHeatmap::rowAnnotation(
+  Category = raw_row_annotation$Category[valid_rows_raw],
+  col = list(Category = tier1_colours_matched[raw_annot_levels]),
+  show_legend = TRUE
+)
+
 pdf(file.path(mitopps_fig_dir, "heatmap_raw_pathway_scores.pdf"), width = 8, height = 18)
-pheatmap(raw_means_z[valid_rows_raw, ],
-         color = colorRampPalette(c("#2166AC", "white", "#B2182B"))(100),
-         cluster_cols = FALSE,
-         annotation_row = raw_row_annotation[valid_rows_raw, , drop = FALSE],
-         annotation_colors = list(Category = tier1_colours),
-         fontsize_row = 6,
-         fontsize_col = 10,
-         main = "Raw MitoPathway scores (z-scored group means)")
+ComplexHeatmap::draw(ComplexHeatmap::Heatmap(
+  raw_means_z[valid_rows_raw, ],
+  col = circlize::colorRamp2(
+    seq(-2, 2, length.out = 100),
+    colorRampPalette(c("#2166AC", "white", "#B2182B"))(100)
+  ),
+  cluster_columns = FALSE,
+  left_annotation = raw_ha,
+  row_names_gp = grid::gpar(fontsize = 6),
+  column_names_gp = grid::gpar(fontsize = 10),
+  column_title = "Raw MitoPathway scores (z-scored group means)",
+  heatmap_legend_param = list(title = "Z-score")
+))
+dev.off()
+
+# --- 10c2. Heatmap: mitoPPS column z-scored (pathway prioritisation within conditions) ---
+# Row z-score (above): how each pathway changes across conditions
+# Column z-score (below): how the cell prioritises pathways *within* each condition
+#   — this view directly reflects the mitoPPS concept of relative resource allocation
+pps_means_z_col <- scale(pps_means_log10)  # scale() on columns by default
+
+pps_ha_col <- ComplexHeatmap::rowAnnotation(
+  Category = pps_row_annotation$Category[valid_rows_pps],
+  col = list(Category = tier1_colours_matched[annot_levels]),
+  show_legend = TRUE
+)
+
+pdf(file.path(mitopps_fig_dir, "heatmap_mitopps_col_zscore.pdf"), width = 8, height = 18)
+ComplexHeatmap::draw(ComplexHeatmap::Heatmap(
+  pps_means_z_col[valid_rows_pps, ],
+  col = circlize::colorRamp2(
+    seq(-2, 2, length.out = 100),
+    colorRampPalette(c("#2166AC", "white", "#B2182B"))(100)
+  ),
+  cluster_columns = FALSE,
+  left_annotation = pps_ha_col,
+  row_names_gp = grid::gpar(fontsize = 6),
+  column_names_gp = grid::gpar(fontsize = 10),
+  column_title = "mitoPPS — column z-scored (pathway prioritisation within conditions)",
+  heatmap_legend_param = list(title = "Z-score")
+))
+dev.off()
+
+# --- 10d2. Heatmap: raw pathway scores column z-scored ---
+raw_means_z_col <- scale(raw_means_wide)
+
+raw_ha_col <- ComplexHeatmap::rowAnnotation(
+  Category = raw_row_annotation$Category[valid_rows_raw],
+  col = list(Category = tier1_colours_matched[raw_annot_levels]),
+  show_legend = TRUE
+)
+
+pdf(file.path(mitopps_fig_dir, "heatmap_raw_pathway_scores_col_zscore.pdf"), width = 8, height = 18)
+ComplexHeatmap::draw(ComplexHeatmap::Heatmap(
+  raw_means_z_col[valid_rows_raw, ],
+  col = circlize::colorRamp2(
+    seq(-2, 2, length.out = 100),
+    colorRampPalette(c("#2166AC", "white", "#B2182B"))(100)
+  ),
+  cluster_columns = FALSE,
+  left_annotation = raw_ha_col,
+  row_names_gp = grid::gpar(fontsize = 6),
+  column_names_gp = grid::gpar(fontsize = 10),
+  column_title = "Raw MitoPathway scores — column z-scored (pathway prioritisation within conditions)",
+  heatmap_legend_param = list(title = "Z-score")
+))
+dev.off()
+
+# --- 10d3. Heatmap: mitoPPS unscaled (log10 group means, no z-scoring) ---
+# The mitoPPS is already normalised so that the global mean = 1.0.
+# In log10 space: >0 = pathway prioritised above average, <0 = deprioritised.
+# No z-scoring preserves both between-pathway and between-condition differences,
+# giving the most direct view of mitochondrial resource allocation.
+pps_ha_unscaled <- ComplexHeatmap::rowAnnotation(
+  Category = pps_row_annotation$Category[valid_rows_pps],
+  col = list(Category = tier1_colours_matched[annot_levels]),
+  show_legend = TRUE
+)
+
+# Centre the colour scale on 0 (= global average prioritisation)
+pps_range <- 0.1
+
+pdf(file.path(mitopps_fig_dir, "heatmap_mitopps_unscaled.pdf"), width = 8, height = 18)
+ComplexHeatmap::draw(ComplexHeatmap::Heatmap(
+  pps_means_log10[valid_rows_pps, ],
+  col = circlize::colorRamp2(
+    seq(-pps_range, pps_range, length.out = 100),
+    colorRampPalette(c("#2166AC", "white", "#B2182B"))(100)
+  ),
+  cluster_columns = FALSE,
+  left_annotation = pps_ha_unscaled,
+  row_names_gp = grid::gpar(fontsize = 6),
+  column_names_gp = grid::gpar(fontsize = 10),
+  column_title = "mitoPPS (log10 group means, unscaled)",
+  heatmap_legend_param = list(title = "log10(mitoPPS)")
+))
 dev.off()
 
 # --- 10e. Dot plot: significantly reprioritised pathways (mitoPPS, Myc effect) ---
