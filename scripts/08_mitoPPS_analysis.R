@@ -321,11 +321,15 @@ message(sprintf("mitoPPS: global mean = %.4f (should be ~1.0), range = [%.4f, %.
 
 # Add group information to both score matrices
 annotate_scores <- function(scores_df, coldata) {
+  # coldata may already have a 'sample' column from earlier scripts
+  cd <- as.data.frame(coldata)
+  if (!"sample" %in% colnames(cd)) {
+    cd <- cd %>% rownames_to_column("sample")
+  }
   scores_df %>%
     as.data.frame() %>%
     rownames_to_column("sample") %>%
-    left_join(coldata %>% rownames_to_column("sample") %>%
-                dplyr::select(sample, group, timepoint, myc_status),
+    left_join(cd %>% dplyr::select(sample, group, timepoint, myc_status),
               by = "sample")
 }
 
@@ -372,7 +376,7 @@ raw_stats <- run_anova(raw_pathway_scores_ann, pathway_names)
 
 raw_stats_summary <- raw_stats %>%
   group_by(effect) %>%
-  summarise(sig_005 = sum(padj < 0.05), sig_01 = sum(padj < 0.1), .groups = "drop")
+  summarise(sig_005 = sum(padj < 0.05), sig_010 = sum(padj < 0.10), .groups = "drop")
 
 message("\nRaw pathway scores — significant pathways (two-way ANOVA):")
 print(raw_stats_summary)
@@ -393,7 +397,7 @@ mitopps_stats <- run_anova(mitopps_scores_ann, pathway_names)
 
 mitopps_stats_summary <- mitopps_stats %>%
   group_by(effect) %>%
-  summarise(sig_005 = sum(padj < 0.05), sig_01 = sum(padj < 0.1), .groups = "drop")
+  summarise(sig_005 = sum(padj < 0.05), sig_010 = sum(padj < 0.10), .groups = "drop")
 
 message("\nmitoPPS — significant pathways (two-way ANOVA):")
 print(mitopps_stats_summary)
@@ -452,7 +456,7 @@ pps_pairwise <- bind_rows(pps_pw_myc6W, pps_pw_myc12W, pps_pw_time_pos, pps_pw_t
 pairwise_summary <- pps_pairwise %>%
   group_by(contrast) %>%
   summarise(sig_005 = sum(padj < 0.05, na.rm = TRUE),
-            sig_01 = sum(padj < 0.1, na.rm = TRUE),
+            sig_010 = sum(padj < 0.10, na.rm = TRUE),
             .groups = "drop")
 
 message("\nmitoPPS pairwise comparisons — significant pathways:")
