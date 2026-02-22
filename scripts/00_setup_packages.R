@@ -7,7 +7,9 @@ cran_packages <- c(
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
   "grid", "gridExtra", "readr",
   "reshape2", "ggrepel",
-  "msigdbr"
+  "msigdbr",
+  "readxl",          # MitoCarta3.0 .xls parsing (08_mitoPPS_analysis.R)
+  "splitstackshape"  # cSplit for gene-to-pathway mapping (08_mitoPPS_analysis.R)
 )
 
 # List of Bioconductor packages

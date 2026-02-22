@@ -1,8 +1,6 @@
-# MYC Mouse RNAseq Analysis
-
-## Project Overview
-
-This project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
+│   ├── felsher_integrative_signature.csv
+│   └── Mouse.MitoCarta3.0.xls        # MitoCarta3.0 mouse annotation (Broad Institute)
+├── scripts/s project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
 
 ### Experimental Design
 
@@ -37,6 +35,7 @@ This project investigates the effect of the **Myc oncogene** in early breast tum
 | `05_fgsea_visualisation.R` | fGSEA visualisation: dot plots, bar charts, enrichment plots |
 | `06_fgsea_cross_sectional.R` | Cross-sectional fGSEA: Myc+ vs Myc- at each timepoint |
 | `07_fgsea_xs_visualisation.R` | Cross-sectional fGSEA visualisation and NES correlation plots |
+| `08_mitoPPS_analysis.R` | MitoPPS: mitochondrial pathway prioritisation scores (Monzel et al. 2025) |
 
 ### Directory Structure
 
@@ -66,6 +65,7 @@ myc_mouse/
 │   ├── gene_sets_list.rds
 │   └── ortholog_table.rds             # Cached human-mouse orthologs
 │   └── fgsea_results.rds              # fGSEA results (Wald statistic ranking)
+│   └── mitopps_scores.rds             # mitoPPS scores, statistics, pathway annotations
 ├── outputs/
 │   ├── qc/                            # Initial QC plots (PDF)
 │   ├── deseq_qc/                      # MA plots, extended QC, and results summary
@@ -86,6 +86,19 @@ myc_mouse/
 │       ├── xs_dev_contribution.pdf    # Plot 2: Developmental contribution
 │       ├── xs_nes_temporal_comparison.pdf     # Plot 3: NES Myc- vs Myc+ temporal
 │       └── xs_nes_crosssectional_comparison.pdf  # Plot 4: NES 6W vs 12W cross-sectional
+│   └── mitopps/                           # mitoPPS visualisations
+│       ├── pca_raw_pathway_scores.pdf     # PCA of raw MitoPathway scores
+│       ├── pca_mitopps.pdf                # PCA of normalised mitoPPS
+│       ├── heatmap_mitopps.pdf            # Group mean heatmap (row z-scored)
+│       ├── heatmap_raw_pathway_scores.pdf # Raw scores heatmap (row z-scored)
+│       ├── heatmap_mitopps_col_zscore.pdf # Column z-scored (prioritisation within conditions)
+│       ├── heatmap_mitopps_unscaled.pdf   # Unscaled log10(mitoPPS) group means
+│       ├── dotplot_mitopps_myc_effect.pdf # Myc-driven reprioritisation at 6W and 12W
+│       ├── scatter_mitopps_6W_vs_12W_myc_effect.pdf  # Consistency of Myc effect across timepoints
+│       ├── dotplot_mitopps_temporal_effect.pdf         # Temporal reprioritisation in Myc- and Myc+
+│       ├── scatter_mitopps_temporal_mycneg_vs_mycpos.pdf  # Correlation of temporal trajectories
+│       ├── boxplots_top_mitopps_myc.pdf   # Top 12 Myc-affected pathways
+│       └── boxplot_total_mito_expression.pdf  # Total mito expression by group
 └── README.md
 ```
 
@@ -496,6 +509,75 @@ MYC signature pathways show **negative NES in Plot 3** (both genotypes decline o
 This means: **MYC signatures decline in both genotypes over time, but they decline faster in Myc- than in Myc+.** The Myc transgene does not prevent the developmental decline in MYC pathway activity — it buffers against it. As the Myc- baseline drops further at 12W, the relative enrichment in Myc+ cells actually increases.
 
 This is consistent with the non-significant interaction term: the *absolute* Myc effect (difference-of-differences) is small, but the *relative* Myc effect (Myc+ vs Myc- at each timepoint) is maintained or even slightly enhanced.
+
+---
+
+## Mitochondrial Pathway Prioritisation Score (mitoPPS) Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `08_mitoPPS_analysis.R` | Compute raw MitoPathway scores and mitoPPS, statistical analysis, visualisation |
+
+### Method
+
+MitoPPS was computed following Monzel et al. (2025) (*bioRxiv* 2025.02.03.635951). For each sample, raw MitoPathway scores were calculated as the mean DESeq2-normalised count of member genes for each MitoCarta3.0 pathway (Sheet 4, mouse). MitoPPS was then derived via a three-step pairwise ratio normalisation: (1) all pairwise pathway ratios computed per sample, (2) each ratio corrected by its global mean across samples, (3) corrected ratios averaged per pathway per sample. This normalisation removes both total mitochondrial content and intrinsic scale differences between pathways, so mitoPPS reflects relative mitochondrial resource allocation — which pathways are selectively prioritised — independent of overall mitochondrial abundance. Values centre around 1.0 (dataset average prioritisation), with >1.0 indicating relative up-prioritisation and <1.0 down-prioritisation.
+
+### mtDNA Gene Handling
+
+Mouse mtDNA-encoded genes (13 protein-coding: mt-Nd1–6, mt-Co1–3, mt-Cytb, mt-Atp6, mt-Atp8) are transcribed at orders-of-magnitude higher levels than nuclear-encoded mitochondrial genes. Leaving them in their canonical MitoCarta3.0 pathways (OXPHOS complexes, mitochondrial central dogma) would dominate and distort those pathway scores. Therefore:
+
+1. All mt-* genes are **removed** from their original MitoCarta3.0 pathways
+2. A synthetic pathway **"mtDNA-encoded OXPHOS subunits"** is created containing all detected mt-* genes
+
+This preserves the interpretability of nuclear-encoded pathway scores while retaining the mtDNA-encoded contribution as its own pathway in the mitoPPS framework.
+
+### Additional Curated Pathways
+
+The parent MitoCarta3.0 "Apoptosis" pathway is retained, and two child pathways are added:
+
+- **Apoptosis-PRO** (25 genes): pro-apoptotic factors (Bax, Bak1, Bad, Bid, Casp3/8/9, Cycs, etc.)
+- **Apoptosis-ANTI** (9 genes): anti-apoptotic factors (Bcl2, Bcl2l1, Mcl1, etc.)
+
+### Results
+
+**Gene coverage:** 952 / 1037 MitoCarta genes found in expression data (91.8%), yielding 142 scoreable pathways.
+
+#### Myc Effect
+
+Myc+ samples show significant mitoPPS reprioritisation compared to Myc− at both 6W and 12W timepoints. The effect is highly consistent across timepoints (scatter plot: 6W vs 12W Myc effect), indicating that Myc imposes a stable mitochondrial prioritisation signature rather than a time-dependent one.
+
+| Effect (ANOVA) | Pathways padj < 0.05 | Pathways padj < 0.10 |
+|---|---|---|
+| myc_status | 34 | 49 |
+| timepoint | 7 | 21 |
+| interaction | 0 | 0 |
+
+#### Temporal Effect
+
+No pathways reach significance in the Myc− timecourse (6W→12W), but the Myc+ timecourse shows significant temporal reprioritisation. Critically, the two temporal trajectories are strongly correlated across all pathways (Pearson r = 0.75, p < 2.2e-16, slope = 0.76), indicating that the direction of age-associated mitochondrial reprioritisation is largely shared between Myc− and Myc+. The Myc− effect does not reach significance likely due to higher within-group variance rather than a genuinely absent effect. Myc therefore appears to amplify and stabilise an underlying physiological ageing-associated mitochondrial remodelling programme rather than inducing a novel one.
+
+| Pairwise contrast | Pathways padj < 0.05 | Pathways padj < 0.10 |
+|---|---|---|
+| Myc effect at 12W | 4 | 16 |
+| Myc effect at 6W | 0 | 6 |
+| Temporal in Myc+ | 0 | 9 |
+| Temporal in Myc− | 0 | 0 |
+
+### Heatmap Scaling
+
+Three heatmap variants are produced for mitoPPS, each answering a different question:
+
+| Heatmap | Scaling | Question answered |
+|---|---|---|
+| `heatmap_mitopps.pdf` | Row z-score | How does each pathway's prioritisation change across conditions? |
+| `heatmap_mitopps_col_zscore.pdf` | Column z-score | How are pathways ranked within each condition? (Closest to the mitoPPS concept) |
+| `heatmap_mitopps_unscaled.pdf` | None (log10) | Absolute prioritisation — both between-pathway and between-condition differences preserved |
+
+### Output
+
+Results saved to `results/mitopps_scores.rds` containing per-sample raw and mitoPPS scores, group means, ANOVA and pairwise statistics, pathway annotations, and PCA objects. All figures saved to `outputs/mitopps/`.
 
 ---
 

@@ -896,6 +896,229 @@ if (nrow(myc_effect_pps) > 0) {
          p_myc_pps, width = 14, height = max(6, nrow(myc_effect_pps) * 0.2))
 }
 
+# --- 10e2. Scatterplot: Myc effect at 6W vs 12W (mitoPPS differences) ---
+# Each point = one pathway; x = Myc effect at 6W, y = Myc effect at 12W
+# Diagonal → consistent Myc effect; off-diagonal → timepoint-specific reprioritisation
+# Only pathways present in both comparisons are shown.
+# Size = geometric mean of -log10(padj) at 6W and 12W
+# Colour = top-level MitoCarta hierarchy (Tier 1)
+# Labelled: pathways significant (padj < 0.1) in at least one timepoint
+
+myc_scatter_data <- pps_pw_myc6W %>%
+  dplyr::select(pathway, diff_6W = diff, padj_6W = padj) %>%
+  inner_join(
+    pps_pw_myc12W %>% dplyr::select(pathway, diff_12W = diff, padj_12W = padj),
+    by = "pathway"
+  ) %>%
+  mutate(
+    tier1       = pathway_tier1_map[pathway],
+    pathway_label = str_replace_all(pathway, "_", " "),
+    # Combined significance: geometric mean of -log10(padj) at both timepoints
+    neg_log_p   = sqrt(-log10(padj_6W) * -log10(padj_12W)),
+    # Flag pathways significant at either timepoint for labelling
+    sig_either  = padj_6W < 0.1 | padj_12W < 0.1
+  )
+
+# Axis limits: symmetric around 0, driven by data range
+axis_lim <- max(abs(c(myc_scatter_data$diff_6W, myc_scatter_data$diff_12W)),
+                na.rm = TRUE) * 1.1
+
+p_myc_scatter <- ggplot(myc_scatter_data,
+                        aes(x = diff_6W, y = diff_12W)) +
+  # Reference lines
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.4) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.4) +
+  # Diagonal: equal effect at both timepoints
+  geom_abline(slope = 1, intercept = 0, linetype = "dotted",
+              colour = "grey50", linewidth = 0.4) +
+  # All pathways (background, unsignificant)
+  geom_point(data = filter(myc_scatter_data, !sig_either),
+             aes(size = neg_log_p, colour = tier1),
+             alpha = 0.25) +
+  # Significant at either timepoint (foreground, opaque)
+  geom_point(data = filter(myc_scatter_data, sig_either),
+             aes(size = neg_log_p, colour = tier1),
+             alpha = 0.85) +
+  # Labels for significant pathways
+  ggrepel::geom_text_repel(
+    data = filter(myc_scatter_data, sig_either),
+    aes(label = pathway_label, colour = tier1),
+    size = 2.5,
+    max.overlaps = 30,
+    segment.colour = "grey60",
+    segment.size  = 0.3,
+    show.legend   = FALSE
+  ) +
+  scale_colour_manual(values = tier1_colours, na.value = "grey60",
+                      name = "MitoCarta Tier 1") +
+  scale_size_continuous(range = c(1, 6), name = expression(sqrt(-log[10](padj)))) +
+  scale_x_continuous(limits = c(-axis_lim, axis_lim)) +
+  scale_y_continuous(limits = c(-axis_lim, axis_lim)) +
+  coord_fixed() +
+  labs(
+    title    = "Consistency of Myc-driven mitoPPS reprioritisation across timepoints",
+    subtitle = paste0("Each point: one MitoCarta pathway  |  Diagonal: equal effect at 6W & 12W\n",
+                      "Labelled: pathways significant (padj < 0.1) at either timepoint"),
+    x        = "Δ mitoPPS: Myc+ − Myc−  (6 weeks)",
+    y        = "Δ mitoPPS: Myc+ − Myc−  (12 weeks)"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title    = element_text(face = "bold"),
+    legend.position = "right",
+    aspect.ratio  = 1
+  )
+
+
+ggsave(file.path(mitopps_fig_dir, "scatter_mitopps_6W_vs_12W_myc_effect.pdf"),
+       p_myc_scatter, width = 10, height = 9)
+
+# --- 10e3. Dotplot: temporal effect in Myc- and Myc+ side by side ---
+temporal_both_pps <- bind_rows(pps_pw_time_neg, pps_pw_time_pos) %>%
+  filter(padj < 0.1) %>%
+  mutate(
+    pathway_label = str_replace_all(pathway, "_", " "),
+    tier1         = pathway_tier1_map[pathway],
+    direction     = ifelse(diff > 0, "Up at 12W", "Down at 12W")
+  )
+
+if (nrow(temporal_both_pps) > 0) {
+  p_temporal_both <- ggplot(temporal_both_pps,
+                            aes(x = diff, y = reorder(pathway_label, diff))) +
+    geom_point(aes(size = -log10(padj), colour = tier1), alpha = 0.8) +
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+    facet_wrap(~ contrast, ncol = 2) +
+    scale_colour_manual(values = tier1_colours, na.value = "grey50") +
+    labs(
+      title    = "mitoPPS: Temporal reprioritisation (12W vs 6W)",
+      subtitle = "Pathways significantly reprioritised (padj < 0.1)",
+      x        = "\u0394 mitoPPS: 12W \u2212 6W",
+      y        = NULL,
+      colour   = "Category",
+      size     = "-log10(padj)"
+    ) +
+    theme_minimal() +
+    theme(axis.text.y  = element_text(size = 7),
+          plot.title   = element_text(face = "bold"))
+
+  ggsave(file.path(mitopps_fig_dir, "dotplot_mitopps_temporal_effect.pdf"),
+         p_temporal_both,
+         width  = 14,
+         height = max(6, nrow(temporal_both_pps) * 0.2))
+} else {
+  message("No significant temporal pathways (padj < 0.1) in either Myc group.")
+}
+
+# --- 10e4. Scatterplot: temporal effect in Myc- vs Myc+ ---
+# Each point = one pathway
+# x = 12W vs 6W difference in Myc-  (temporal effect without Myc)
+# y = 12W vs 6W difference in Myc+  (temporal effect with Myc)
+# Diagonal → ageing effect independent of Myc
+# Above diagonal → amplified temporal change in Myc+
+# Below diagonal → attenuated or reversed temporal change in Myc+
+
+temporal_scatter_data <- pps_pw_time_neg %>%
+  dplyr::select(pathway, diff_neg = diff, padj_neg = padj) %>%
+  inner_join(
+    pps_pw_time_pos %>% dplyr::select(pathway, diff_pos = diff, padj_pos = padj),
+    by = "pathway"
+  ) %>%
+  mutate(
+    tier1         = pathway_tier1_map[pathway],
+    pathway_label = str_replace_all(pathway, "_", " "),
+    neg_log_p     = sqrt(-log10(padj_neg) * -log10(padj_pos)),
+    sig_either    = padj_neg < 0.1 | padj_pos < 0.1
+  )
+
+axis_lim_t <- max(
+  abs(c(temporal_scatter_data$diff_neg, temporal_scatter_data$diff_pos)),
+  na.rm = TRUE
+) * 1.1
+
+# Compute before the plot
+cor_temporal <- cor.test(temporal_scatter_data$diff_neg,
+                         temporal_scatter_data$diff_pos,
+                         method = "pearson")
+lm_temporal  <- lm(diff_pos ~ diff_neg, data = temporal_scatter_data)
+slope        <- coef(lm_temporal)[["diff_neg"]]
+
+temporal_scatter_data <- temporal_scatter_data %>%
+  mutate(
+    fitted   = predict(lm_temporal),
+    resid    = diff_pos - fitted,
+    resid_sd = sd(resid),
+    outlier  = abs(resid) > 2 * resid_sd
+  )
+
+annotate_text <- sprintf("r = %.2f, p < 2.2e-16, slope = %.2f",
+                         cor_temporal$estimate, slope)
+
+p_temporal_scatter <- ggplot(temporal_scatter_data,
+                             aes(x = diff_neg, y = diff_pos)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.4) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.4) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dotted",
+              colour = "grey50", linewidth = 0.4) +
+  # Regression line with 95% CI — add after geom_abline, before geom_point layers
+  geom_smooth(method = "lm", formula = y ~ x,
+            colour = "grey30", fill = "grey80",
+            linewidth = 0.7, alpha = 0.25,
+            se = TRUE) +
+  # Background: non-significant pathways
+  geom_point(data = filter(temporal_scatter_data, !sig_either),
+             aes(size = neg_log_p, colour = tier1),
+             alpha = 0.25) +
+  # Foreground: significant at either comparison
+  geom_point(data = filter(temporal_scatter_data, sig_either),
+             aes(size = neg_log_p, colour = tier1),
+             alpha = 0.85) +
+  geom_text_repel(
+    data           = filter(temporal_scatter_data, padj_pos < 0.1),
+    aes(label = pathway_label, colour = tier1),
+    size           = 2.5,
+    max.overlaps   = 30,
+    segment.colour = "grey60",
+    segment.size   = 0.3,
+    show.legend    = FALSE
+  ) +
+  geom_text_repel(
+    data           = filter(temporal_scatter_data, outlier & !(padj_pos < 0.1)),
+    aes(label = pathway_label),
+    colour         = "grey30",
+    size           = 2.2,
+    fontface       = "italic",
+    max.overlaps   = 20,
+    segment.colour = "grey70",
+    segment.size   = 0.3,
+    show.legend    = FALSE
+  ) +
+  scale_colour_manual(values = tier1_colours, na.value = "grey60",
+                      name = "MitoCarta Tier 1") +
+  scale_size_continuous(range = c(1, 6),
+                        name = expression(sqrt(-log[10](padj)))) +
+  scale_x_continuous(limits = c(-axis_lim_t, axis_lim_t)) +
+  scale_y_continuous(limits = c(-axis_lim_t, axis_lim_t)) +
+  coord_fixed() +
+  labs(
+    title    = "Temporal mitoPPS reprioritisation: Myc\u2212 vs Myc+",
+    subtitle = paste0(
+  "Dotted line: equal effect (slope = 1)  |  Grey band: 95% CI of regression\n",
+  "Pearson ", annotate_text, "  |  Labelled: padj < 0.1 in Myc+ temporal comparison"
+),
+    x = "\u0394 mitoPPS: 12W \u2212 6W  (Myc\u2212)",
+    y = "\u0394 mitoPPS: 12W \u2212 6W  (Myc+)"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title      = element_text(face = "bold"),
+    legend.position = "right",
+    aspect.ratio    = 1
+  )
+
+ggsave(file.path(mitopps_fig_dir, "scatter_mitopps_temporal_mycneg_vs_mycpos.pdf"),
+       p_temporal_scatter, width = 10, height = 9)
+
+
 # --- 10f. Box plots for top pathways ---
 top_myc_pathways <- mitopps_stats %>%
   filter(effect == "myc_status") %>%
