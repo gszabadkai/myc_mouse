@@ -21,12 +21,25 @@
 #   genuine mitochondrial REPRIORITISATION vs global transcriptional amplification.
 #
 # Interpretation framework:
-#   fGSEA sig + mitoPPS sig (same direction) → absolute AND relative change
+#   fGSEA sig + mitoPPS sig (same direction) → absolute AND relative change:
+#                                              pathway specifically prioritised
 #   fGSEA sig + mitoPPS NOT sig              → absolute change, proportional
-#                                              (global mito amplification)
-#   fGSEA NOT sig + mitoPPS sig              → relative reallocation without
-#                                              strong gene-level DE signal
+#                                              (global mito amplification, e.g. biogenesis)
+#   fGSEA sig + mitoPPS sig (opposite dir.)  → pathway increased absolutely but
+#                                              deprioritised relative to others
+#                                              (left behind by biogenesis programme)
+#   fGSEA NOT sig + mitoPPS sig              → relative reallocation with small
+#                                              but consistent gene-level shifts,
+#                                              invisible against genome-wide background
 #   Neither significant                      → no detected change
+#
+# Dotplot layout:
+#   Each classification category produces ONE combined PDF with four panels:
+#     Top row:    Myc+ vs Myc- at 6W  |  Myc+ vs Myc- at 12W
+#     Bottom row: 12W vs 6W in Myc-   |  12W vs 6W in Myc+
+#   Y-axis: shared within top row (mean effect at 6W+12W) and within bottom
+#   row (mean effect in Myc-+Myc+) independently, so the Myc-effect and
+#   temporal comparisons are directly visible side-by-side in one figure.
 #
 # Input:
 #   - results/mitopps_scores.rds       (from 08_mitoPPS_analysis.R)
@@ -80,20 +93,17 @@ ensembl_to_symbol <- setNames(
 
 message("Building MitoCarta gene sets for fGSEA (using modified gene_to_pathway)...")
 
-# gene_to_pathway is already the modified version from mitopps_scores.rds
-# (mtDNA separated, apoptosis subgroups added)
 mitocarta_gene_sets <- gene_to_pathway %>%
   group_by(Pathway) %>%
   summarise(genes = list(unique(Gene)), .groups = "drop") %>%
   deframe()  # named list: pathway name → character vector of gene symbols
 
-# Also update pathway_tier1_map with the custom pathways saved in results
+# Custom pathway names from script 08
 MTDNA_PATHWAY_NAME  <- mitopps_results$mtdna_pathway_name
 APOPTOSIS_PRO_NAME  <- "Apoptosis-PRO"
 APOPTOSIS_ANTI_NAME <- "Apoptosis-ANTI"
 
-# These should already be in pathway_tier1_map loaded from mitopps_results,
-# but make explicit in case of any mismatch
+# Ensure custom pathways are in tier1 map
 pathway_tier1_map[MTDNA_PATHWAY_NAME]  <- "OXPHOS"
 pathway_tier1_map[APOPTOSIS_PRO_NAME]  <- "Mitochondrial dynamics and surveillance"
 pathway_tier1_map[APOPTOSIS_ANTI_NAME] <- "Mitochondrial dynamics and surveillance"
@@ -102,12 +112,11 @@ message(sprintf("  %d gene sets built (incl. '%s', '%s', '%s')",
                 length(mitocarta_gene_sets),
                 MTDNA_PATHWAY_NAME, APOPTOSIS_PRO_NAME, APOPTOSIS_ANTI_NAME))
 
-# Verify the custom pathways are present
 for (pw in c(MTDNA_PATHWAY_NAME, APOPTOSIS_PRO_NAME, APOPTOSIS_ANTI_NAME)) {
   if (pw %in% names(mitocarta_gene_sets)) {
-    message(sprintf("  ✓ '%s': %d genes", pw, length(mitocarta_gene_sets[[pw]])))
+    message(sprintf("  \u2713 '%s': %d genes", pw, length(mitocarta_gene_sets[[pw]])))
   } else {
-    warning(sprintf("  ✗ '%s' NOT FOUND in gene sets — check mitopps_scores.rds", pw))
+    warning(sprintf("  \u2717 '%s' NOT FOUND in gene sets — check mitopps_scores.rds", pw))
   }
 }
 
@@ -136,8 +145,8 @@ create_ranks <- function(res, id_to_symbol) {
 message("Creating ranked gene lists (Wald statistic)...")
 
 ranks <- list(
-  Myc_effect_6W   = create_ranks(interaction_results$myc_6W_raw,    ensembl_to_symbol),
-  Myc_effect_12W  = create_ranks(interaction_results$myc_12W_raw,   ensembl_to_symbol),
+  Myc_effect_6W    = create_ranks(interaction_results$myc_6W_raw,   ensembl_to_symbol),
+  Myc_effect_12W   = create_ranks(interaction_results$myc_12W_raw,  ensembl_to_symbol),
   Temporal_Myc_neg = create_ranks(group_results$neg_12W_vs_6W_raw,  ensembl_to_symbol),
   Temporal_Myc_pos = create_ranks(group_results$pos_12W_vs_6W_raw,  ensembl_to_symbol)
 )
@@ -167,7 +176,6 @@ fgsea_results <- lapply(names(ranks), function(contrast_name) {
 
 names(fgsea_results) <- names(ranks)
 
-# Summary
 for (nm in names(fgsea_results)) {
   n_sig <- sum(fgsea_results[[nm]]$padj < 0.05, na.rm = TRUE)
   message(sprintf("  %-20s: %d pathways significant (padj < 0.05)", nm, n_sig))
@@ -176,48 +184,56 @@ for (nm in names(fgsea_results)) {
 # =============================================================================
 # PART 5: ALIGN fGSEA AND mitoPPS RESULTS
 # =============================================================================
-# Map contrast names between the two methods, then join on pathway name.
-# fGSEA gives NES (normalised enrichment score, signed)
-# mitoPPS gives diff (mean mitoPPS difference between groups, signed)
-# Both are signed the same way (positive = up in condition B vs A)
 
 message("\nAligning fGSEA and mitoPPS results...")
 
-# mitoPPS contrast name mapping to fGSEA names
+# Contrast name mapping: mitoPPS → fGSEA
 contrast_map <- c(
-  "Myc_effect_6W"    = "Myc_effect_6W",
-  "Myc_effect_12W"   = "Myc_effect_12W",
-  "Temporal_Myc-"    = "Temporal_Myc_neg",
-  "Temporal_Myc+"    = "Temporal_Myc_pos"
+  "Myc_effect_6W"   = "Myc_effect_6W",
+  "Myc_effect_12W"  = "Myc_effect_12W",
+  "Temporal_Myc-"   = "Temporal_Myc_neg",
+  "Temporal_Myc+"   = "Temporal_Myc_pos"
 )
 
-# Combine all fGSEA results into one long table
+# Friendly labels for facets — used consistently across all plots
+contrast_labels <- c(
+  "Myc_effect_6W"    = "Myc+ vs Myc\u2212  (6W)",
+  "Myc_effect_12W"   = "Myc+ vs Myc\u2212  (12W)",
+  "Temporal_Myc_neg" = "12W vs 6W  (Myc\u2212)",
+  "Temporal_Myc_pos" = "12W vs 6W  (Myc+)"
+)
+
+# Contrast group membership — shared y-axis ordering within each group
+myc_effect_contrasts <- c("Myc+ vs Myc\u2212  (6W)", "Myc+ vs Myc\u2212  (12W)")
+temporal_contrasts   <- c("12W vs 6W  (Myc\u2212)", "12W vs 6W  (Myc+)")
+
+# Combine all fGSEA results
 fgsea_long <- bind_rows(fgsea_results) %>%
   dplyr::select(pathway, contrast, NES, padj_fgsea = padj, size) %>%
   mutate(sig_fgsea = padj_fgsea < 0.05)
 
-# Prepare mitoPPS pairwise results — rename contrast to match fGSEA
+# Prepare mitoPPS pairwise results
 mitopps_long <- mitopps_pairwise %>%
   mutate(contrast_fgsea = contrast_map[contrast]) %>%
   filter(!is.na(contrast_fgsea)) %>%
   dplyr::select(pathway, contrast = contrast_fgsea,
                 mitopps_diff = diff, padj_mitopps = padj) %>%
-  mutate(sig_mitopps = padj_mitopps < 0.1)  # mitoPPS uses padj < 0.1 threshold
+  mutate(sig_mitopps = padj_mitopps < 0.1)
 
-# Join on pathway + contrast
+# Join and classify
 comparison <- fgsea_long %>%
   inner_join(mitopps_long, by = c("pathway", "contrast")) %>%
   mutate(
-    tier1 = pathway_tier1_map[pathway],
+    tier1         = pathway_tier1_map[pathway],
     pathway_label = str_replace_all(pathway, "_", " "),
-    # Classification by agreement
-    category = case_when(
+    category      = case_when(
       sig_fgsea & sig_mitopps & sign(NES) == sign(mitopps_diff) ~ "Both: concordant",
       sig_fgsea & sig_mitopps & sign(NES) != sign(mitopps_diff) ~ "Both: discordant",
-      sig_fgsea & !sig_mitopps ~ "fGSEA only\n(absolute change, proportional)",
-      !sig_fgsea & sig_mitopps ~ "mitoPPS only\n(reallocation without bulk DE)",
+      sig_fgsea  & !sig_mitopps ~ "fGSEA only\n(absolute change, proportional)",
+      !sig_fgsea & sig_mitopps  ~ "mitoPPS only\n(reallocation without bulk DE)",
       TRUE ~ "Neither significant"
-    )
+    ),
+    contrast_label = factor(contrast_labels[contrast], levels = contrast_labels)
   )
 
 message("\nPathway classification per contrast:")
@@ -233,41 +249,95 @@ comparison %>%
 message("\nGenerating visualisations...")
 
 tier1_colours <- c(
-  "Metabolism"                                      = "#2166AC",
-  "OXPHOS"                                          = "#B2182B",
-  "Protein import, sorting, and homeostasis"        = "#1B9E77",
-  "Mitochondrial central dogma"                     = "#D95F02",
-  "Mitochondrial dynamics and surveillance"         = "#7570B3",
-  "Small molecule transport"                        = "#E7298A",
-  "Signaling"                                       = "#66A61E"
+  "Metabolism"                                = "#2166AC",
+  "OXPHOS"                                    = "#B2182B",
+  "Protein import, sorting, and homeostasis"  = "#1B9E77",
+  "Mitochondrial central dogma"               = "#D95F02",
+  "Mitochondrial dynamics and surveillance"   = "#7570B3",
+  "Small molecule transport"                  = "#E7298A",
+  "Signaling"                                 = "#66A61E"
 )
 
 category_colours <- c(
-  "Both: concordant"                        = "#B2182B",
-  "Both: discordant"                        = "#FF7F00",
-  "fGSEA only\n(absolute change, proportional)" = "#2166AC",
+  "Both: concordant"                             = "#B2182B",
+  "Both: discordant"                             = "#FF7F00",
+  "fGSEA only\n(absolute change, proportional)"  = "#2166AC",
   "mitoPPS only\n(reallocation without bulk DE)" = "#4DAF4A",
-  "Neither significant"                     = "grey80"
+  "Neither significant"                          = "grey80"
 )
 
-# Friendly contrast labels for plot facets
-contrast_labels <- c(
-  "Myc_effect_6W"    = "Myc+ vs Myc\u2212  (6W)",
-  "Myc_effect_12W"   = "Myc+ vs Myc\u2212  (12W)",
-  "Temporal_Myc_neg" = "12W vs 6W  (Myc\u2212)",
-  "Temporal_Myc_pos" = "12W vs 6W  (Myc+)"
-)
+# =============================================================================
+# Helper: four-panel combined dotplot for one classification category.
+#
+# Layout (facet_wrap ncol = 2, scales = "free_y"):
+#   Panel 1 (top-left):  Myc+ vs Myc- (6W)
+#   Panel 2 (top-right): Myc+ vs Myc- (12W)
+#   Panel 3 (bot-left):  12W vs 6W (Myc-)
+#   Panel 4 (bot-right): 12W vs 6W (Myc+)
+#
+# Y-axis ordering:
+#   Top row (Myc-effect): shared order by mean effect at 6W + 12W
+#   Bottom row (temporal): shared order by mean effect in Myc- + Myc+
+#   Implemented via [M]/[T] tagged factor levels that are stripped from
+#   display labels by scale_y_discrete(labels = ...).
+# =============================================================================
 
-comparison <- comparison %>%
-  mutate(contrast_label = factor(contrast_labels[contrast],
-                                 levels = contrast_labels))
+make_combined_dotplot <- function(dat, x_var, size_var, title, subtitle, x_label) {
+
+  if (nrow(dat) == 0) return(NULL)
+
+  # Shared ordering within each row
+  order_myc <- dat %>%
+    filter(contrast_label %in% myc_effect_contrasts) %>%
+    group_by(pathway_label) %>%
+    summarise(mean_eff = mean(.data[[x_var]], na.rm = TRUE), .groups = "drop") %>%
+    arrange(mean_eff) %>%
+    pull(pathway_label)
+
+  order_temporal <- dat %>%
+    filter(contrast_label %in% temporal_contrasts) %>%
+    group_by(pathway_label) %>%
+    summarise(mean_eff = mean(.data[[x_var]], na.rm = TRUE), .groups = "drop") %>%
+    arrange(mean_eff) %>%
+    pull(pathway_label)
+
+  # Tag labels so the two rows have independent factor levels
+  dat <- dat %>%
+    mutate(
+      pathway_tagged = case_when(
+        contrast_label %in% myc_effect_contrasts ~ paste0(pathway_label, " [M]"),
+        TRUE                                     ~ paste0(pathway_label, " [T]")
+      ),
+      pathway_tagged = factor(
+        pathway_tagged,
+        levels = c(paste0(order_myc,      " [M]"),
+                   paste0(order_temporal, " [T]"))
+      )
+    )
+
+  strip_tag <- function(x) sub(" \\[[MT]\\]$", "", x)
+
+  ggplot(dat, aes(x = .data[[x_var]], y = pathway_tagged)) +
+    geom_point(aes(size = -log10(.data[[size_var]]), colour = tier1), alpha = 0.85) +
+    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+    facet_wrap(~ contrast_label, ncol = 2, scales = "free_y") +
+    scale_y_discrete(labels = strip_tag) +
+    scale_colour_manual(values = tier1_colours, na.value = "grey50",
+                        name = "MitoCarta Tier 1") +
+    scale_size_continuous(range = c(2, 8), name = expression(-log[10](padj))) +
+    labs(title = title, subtitle = subtitle, x = x_label, y = NULL) +
+    theme_minimal(base_size = 11) +
+    theme(
+      axis.text.y     = element_text(size = 7),
+      plot.title      = element_text(face = "bold"),
+      strip.text      = element_text(face = "bold", size = 10),
+      legend.position = "right"
+    )
+}
 
 # --- 6a. Scatterplot: NES vs mitoPPS diff, faceted by contrast ---
-# This is the core comparison plot.
-# x = fGSEA NES (absolute transcriptional enrichment)
-# y = mitoPPS diff (relative mitochondrial resource reallocation)
-# Colour = classification category
-# Size = mean significance (-log10 of geometric mean of both padj)
+# Core comparison: all pathways plotted, coloured by classification category,
+# with regression line and per-contrast correlation annotation.
 
 comparison_plot <- comparison %>%
   mutate(
@@ -275,7 +345,6 @@ comparison_plot <- comparison %>%
     label_this   = (sig_fgsea | sig_mitopps) & category != "Neither significant"
   )
 
-# Compute per-contrast correlations BEFORE the ggplot call
 cor_labels <- comparison %>%
   group_by(contrast_label) %>%
   summarise(
@@ -289,26 +358,22 @@ p_scatter_main <- ggplot(comparison_plot,
                          aes(x = NES, y = mitopps_diff)) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.3) +
   geom_vline(xintercept = 0, linetype = "dashed", colour = "grey70", linewidth = 0.3) +
-  # Regression line through ALL points — goes before geom_point so points sit on top
   geom_smooth(method = "lm", formula = y ~ x,
               colour = "grey30", fill = "grey80",
               linewidth = 0.5, alpha = 0.15, se = TRUE) +
-  # Background: non-significant
   geom_point(data = filter(comparison_plot, category == "Neither significant"),
              colour = "grey85", size = 1.5, alpha = 0.5) +
-  # Foreground: classified pathways
   geom_point(data = filter(comparison_plot, category != "Neither significant"),
              aes(colour = category, size = combined_sig), alpha = 0.85) +
   geom_text_repel(
-    data          = filter(comparison_plot, label_this),
+    data           = filter(comparison_plot, label_this),
     aes(label = pathway_label, colour = category),
-    size          = 2.2,
-    max.overlaps  = 20,
+    size           = 2.2,
+    max.overlaps   = 20,
     segment.colour = "grey60",
-    segment.size  = 0.3,
-    show.legend   = FALSE
+    segment.size   = 0.3,
+    show.legend    = FALSE
   ) +
-  # Correlation annotation — goes after geom_text_repel, before scales
   geom_text(
     data        = cor_labels,
     aes(x = -Inf, y = Inf, label = label),
@@ -370,7 +435,7 @@ p_barplot <- ggplot(summary_counts,
 ggsave(file.path(comp_dir, "barplot_classification_summary.pdf"),
        p_barplot, width = 10, height = 6)
 
-# --- 6c. Correlation between NES and mitoPPS diff per contrast ---
+# --- 6c. Correlation scatter: NES vs mitoPPS diff, coloured by tier1 ---
 cor_by_contrast <- comparison %>%
   group_by(contrast, contrast_label) %>%
   summarise(
@@ -402,7 +467,7 @@ p_cor_scatter <- ggplot(comparison,
                       name = "MitoCarta Tier 1") +
   labs(
     title    = "fGSEA NES vs \u0394 mitoPPS correlation per contrast",
-    subtitle = "Grey band: 95% CI of linear regression",
+    subtitle = "Grey band: 95% CI of linear regression  |  Coloured by MitoCarta Tier 1",
     x        = "fGSEA NES",
     y        = "\u0394 mitoPPS"
   ) +
@@ -416,74 +481,107 @@ p_cor_scatter <- ggplot(comparison,
 ggsave(file.path(comp_dir, "scatter_nes_vs_mitopps_correlation.pdf"),
        p_cor_scatter, width = 14, height = 12)
 
-# --- 6d. Dotplot: pathways significant in mitoPPS only (reallocation signal) ---
-# These are the most interesting: mitochondrial reprioritisation NOT captured
-# by conventional enrichment analysis
-mitopps_only <- comparison %>%
-  filter(category == "mitoPPS only\n(reallocation without bulk DE)") %>%
-  mutate(pathway_label = str_replace_all(pathway, "_", " "))
+# --- 6d-6g. Combined four-panel dotplots, one PDF per classification category ---
+#
+# Each PDF layout (facet_wrap ncol = 2, scales = "free_y"):
+#   Top row:    Myc+ vs Myc- at 6W  |  Myc+ vs Myc- at 12W
+#   Bottom row: 12W vs 6W in Myc-   |  12W vs 6W in Myc+
+#
+# Y-axis: shared within top row and shared within bottom row independently.
 
-if (nrow(mitopps_only) > 0) {
-  p_mitopps_only <- ggplot(mitopps_only,
-                           aes(x = mitopps_diff, y = reorder(pathway_label, mitopps_diff))) +
-    geom_point(aes(size = -log10(padj_mitopps), colour = tier1), alpha = 0.85) +
-    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
-    facet_wrap(~ contrast_label, ncol = 2) +
-    scale_colour_manual(values = tier1_colours, na.value = "grey50",
-                        name = "MitoCarta Tier 1") +
-    scale_size_continuous(range = c(2, 8), name = expression(-log[10](padj))) +
-    labs(
-      title    = "mitoPPS-only pathways: reallocation without bulk DE",
-      subtitle = "Significant in mitoPPS (padj < 0.1) but NOT in fGSEA (padj \u2265 0.05)\nThese pathways are reprioritised independently of global transcriptional changes",
-      x        = "\u0394 mitoPPS",
-      y        = NULL
-    ) +
-    theme_minimal(base_size = 11) +
-    theme(
-      axis.text.y     = element_text(size = 7),
-      plot.title      = element_text(face = "bold"),
-      strip.text      = element_text(face = "bold", size = 10),
-      legend.position = "right"
-    )
+dotplot_specs <- list(
 
-  ggsave(file.path(comp_dir, "dotplot_mitopps_only_pathways.pdf"),
-         p_mitopps_only,
-         width  = 14,
-         height = max(5, length(unique(mitopps_only$pathway_label)) * 0.3))
-}
+  list(
+    category = "mitoPPS only\n(reallocation without bulk DE)",
+    x_var    = "mitopps_diff",
+    size_var = "padj_mitopps",
+    title    = "mitoPPS-only pathways: relative reallocation without bulk DE signal",
+    subtitle = paste0(
+      "Significant in mitoPPS (padj < 0.1) but NOT fGSEA (padj \u2265 0.05)\n",
+      "Small consistent shifts visible within mito compartment, sub-threshold genome-wide\n",
+      "Top row: Myc effect (6W | 12W)  |  Bottom row: Temporal (Myc\u2212 | Myc+)  |  ",
+      "Y-axis: shared order within each row by mean \u0394 mitoPPS"
+    ),
+    x_label  = "\u0394 mitoPPS",
+    filename = "dotplot_mitopps_only.pdf"
+  ),
 
-# --- 6e. Dotplot: pathways significant in fGSEA only (proportional amplification) ---
-fgsea_only <- comparison %>%
-  filter(category == "fGSEA only\n(absolute change, proportional)") %>%
-  mutate(pathway_label = str_replace_all(pathway, "_", " "))
+  list(
+    category = "fGSEA only\n(absolute change, proportional)",
+    x_var    = "NES",
+    size_var = "padj_fgsea",
+    title    = "fGSEA-only pathways: absolute change proportional across mito compartment",
+    subtitle = paste0(
+      "Significant in fGSEA (padj < 0.05) but NOT mitoPPS (padj \u2265 0.1)\n",
+      "Consistent with global mitochondrial biogenesis — all pathways amplified equally\n",
+      "Top row: Myc effect (6W | 12W)  |  Bottom row: Temporal (Myc\u2212 | Myc+)  |  ",
+      "Y-axis: shared order within each row by mean NES"
+    ),
+    x_label  = "fGSEA NES",
+    filename = "dotplot_fgsea_only.pdf"
+  ),
 
-if (nrow(fgsea_only) > 0) {
-  p_fgsea_only <- ggplot(fgsea_only,
-                         aes(x = NES, y = reorder(pathway_label, NES))) +
-    geom_point(aes(size = -log10(padj_fgsea), colour = tier1), alpha = 0.85) +
-    geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
-    facet_wrap(~ contrast_label, ncol = 2) +
-    scale_colour_manual(values = tier1_colours, na.value = "grey50",
-                        name = "MitoCarta Tier 1") +
-    scale_size_continuous(range = c(2, 8), name = expression(-log[10](padj))) +
-    labs(
-      title    = "fGSEA-only pathways: absolute change, proportional across mito compartment",
-      subtitle = "Significant in fGSEA (padj < 0.05) but NOT in mitoPPS (padj \u2265 0.1)\nLikely driven by global mitochondrial content change rather than selective reallocation",
-      x        = "fGSEA NES",
-      y        = NULL
-    ) +
-    theme_minimal(base_size = 11) +
-    theme(
-      axis.text.y     = element_text(size = 7),
-      plot.title      = element_text(face = "bold"),
-      strip.text      = element_text(face = "bold", size = 10),
-      legend.position = "right"
-    )
+  list(
+    category = "Both: concordant",
+    x_var    = "mitopps_diff",
+    size_var = "padj_mitopps",
+    title    = "Concordant pathways: significant in both fGSEA and mitoPPS (same direction)",
+    subtitle = paste0(
+      "Absolute AND relative change — strongest evidence for selective mitochondrial targeting\n",
+      "Top row: Myc effect (6W | 12W)  |  Bottom row: Temporal (Myc\u2212 | Myc+)  |  ",
+      "Y-axis: shared order within each row by mean \u0394 mitoPPS"
+    ),
+    x_label  = "\u0394 mitoPPS",
+    filename = "dotplot_concordant.pdf"
+  ),
 
-  ggsave(file.path(comp_dir, "dotplot_fgsea_only_pathways.pdf"),
-         p_fgsea_only,
-         width  = 14,
-         height = max(5, length(unique(fgsea_only$pathway_label)) * 0.3))
+  list(
+    category = "Both: discordant",
+    x_var    = "mitopps_diff",
+    size_var = "padj_mitopps",
+    title    = "Discordant pathways: significant in both fGSEA and mitoPPS (opposite direction)",
+    subtitle = paste0(
+      "Pathway gains absolute transcript abundance but is relatively deprioritised\n",
+      "Consistent with being left behind by global mitochondrial biogenesis\n",
+      "Top row: Myc effect (6W | 12W)  |  Bottom row: Temporal (Myc\u2212 | Myc+)  |  ",
+      "Y-axis: shared order within each row by mean \u0394 mitoPPS"
+    ),
+    x_label  = "\u0394 mitoPPS",
+    filename = "dotplot_discordant.pdf"
+  )
+)
+
+for (spec in dotplot_specs) {
+
+  dat <- comparison %>% filter(category == spec$category)
+
+  if (nrow(dat) == 0) {
+    message(sprintf("  No pathways in '%s' — skipping", gsub("\n", " ", spec$category)))
+    next
+  }
+
+  p <- make_combined_dotplot(
+    dat      = dat,
+    x_var    = spec$x_var,
+    size_var = spec$size_var,
+    title    = spec$title,
+    subtitle = spec$subtitle,
+    x_label  = spec$x_label
+  )
+
+  if (!is.null(p)) {
+    n_myc <- dat %>%
+      filter(contrast_label %in% myc_effect_contrasts) %>%
+      pull(pathway_label) %>% unique() %>% length()
+    n_temporal <- dat %>%
+      filter(contrast_label %in% temporal_contrasts) %>%
+      pull(pathway_label) %>% unique() %>% length()
+
+    ggsave(file.path(comp_dir, spec$filename), p,
+           width  = 14,
+           height = max(6, (n_myc + n_temporal) * 0.3))
+    message(sprintf("  Saved: %s", spec$filename))
+  }
 }
 
 # =============================================================================
@@ -493,15 +591,18 @@ if (nrow(fgsea_only) > 0) {
 message("\nSaving results...")
 
 comparison_results <- list(
-  comparison        = comparison,
-  fgsea_results     = fgsea_results,
-  cor_by_contrast   = cor_by_contrast,
+  comparison          = comparison,
+  fgsea_results       = fgsea_results,
+  cor_by_contrast     = cor_by_contrast,
   mitocarta_gene_sets = mitocarta_gene_sets,
-  analysis_date     = Sys.Date(),
-  description       = paste(
+  analysis_date       = Sys.Date(),
+  description         = paste(
     "Full MitoCarta fGSEA vs mitoPPS comparison.",
     "fGSEA ranked by DESeq2 Wald statistic, minSize = 3.",
-    "mitoPPS threshold padj < 0.1; fGSEA threshold padj < 0.05."
+    "mitoPPS threshold padj < 0.1; fGSEA threshold padj < 0.05.",
+    "Dotplots: one combined four-panel PDF per classification category.",
+    "Top row: Myc effect (6W | 12W); bottom row: temporal (Myc- | Myc+).",
+    "Y-axis ordering shared within each row independently."
   )
 )
 
