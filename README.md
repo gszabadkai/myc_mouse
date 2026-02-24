@@ -36,6 +36,8 @@
 | `06_fgsea_cross_sectional.R` | Cross-sectional fGSEA: Myc+ vs Myc- at each timepoint |
 | `07_fgsea_xs_visualisation.R` | Cross-sectional fGSEA visualisation and NES correlation plots |
 | `08_mitoPPS_analysis.R` | MitoPPS: mitochondrial pathway prioritisation scores (Monzel et al. 2025) |
+| `09_mitoPPS_vs_fgsea_comparison.R` | Compare fGSEA and mitoPPS across all MitoCarta pathways and four contrasts |
+| `10_interaction_fgsea_mitopps.R` | fGSEA on interaction Wald statistics; compare with mitoPPS interaction |
 
 ### Directory Structure
 
@@ -66,6 +68,8 @@ myc_mouse/
 │   └── ortholog_table.rds             # Cached human-mouse orthologs
 │   └── fgsea_results.rds              # fGSEA results (Wald statistic ranking)
 │   └── mitopps_scores.rds             # mitoPPS scores, statistics, pathway annotations
+│   └── mitopps_fgsea_comparison.rds   # fGSEA vs mitoPPS alignment (script 09)
+│   └── interaction_fgsea_mitopps.rds  # Interaction fGSEA + mitoPPS comparison (script 10)
 ├── outputs/
 │   ├── qc/                            # Initial QC plots (PDF)
 │   ├── deseq_qc/                      # MA plots, extended QC, and results summary
@@ -99,6 +103,24 @@ myc_mouse/
 │       ├── scatter_mitopps_temporal_mycneg_vs_mycpos.pdf  # Correlation of temporal trajectories
 │       ├── boxplots_top_mitopps_myc.pdf   # Top 12 Myc-affected pathways
 │       └── boxplot_total_mito_expression.pdf  # Total mito expression by group
+│   └── mitopps_fgsea/                     # fGSEA vs mitoPPS comparison (script 09)
+│       ├── scatter_fgsea_vs_mitopps_all_contrasts.pdf  # NES vs mitoPPS Δ, all 4 contrasts
+│       ├── scatter_nes_vs_mitopps_correlation.pdf      # Per-contrast correlation panels
+│       ├── barplot_classification_summary.pdf           # Category counts per contrast
+│       ├── dotplot_concordant.pdf                       # Concordant pathways (4 panels)
+│       ├── dotplot_discordant.pdf                       # Discordant pathways (4 panels)
+│       ├── dotplot_fgsea_only.pdf                       # fGSEA-only pathways (4 panels)
+│       ├── dotplot_mitopps_only.pdf                     # mitoPPS-only pathways (4 panels)
+│       └── fgsea_vs_mitopps_full_comparison.csv         # Full comparison table
+│   └── interaction_analysis/              # Interaction fGSEA + mitoPPS (script 10)
+│       ├── histogram_fgsea_interaction_pvalues.pdf      # P-value distribution
+│       ├── dotplot_fgsea_interaction_curated.pdf        # Curated sets interaction NES
+│       ├── dotplot_fgsea_interaction_mitocarta.pdf      # MitoCarta interaction NES
+│       ├── dotplot_paired_myc_effect_6W_vs_12W.pdf     # Paired NES: Myc effect at 6W vs 12W
+│       ├── scatter_interaction_fgsea_vs_mitopps.pdf     # fGSEA NES vs mitoPPS interaction
+│       ├── barplot_interaction_classification.pdf       # Classification summary
+│       ├── fgsea_interaction_curated_all.csv            # Full curated results table
+│       └── interaction_fgsea_vs_mitopps.csv             # Full comparison table
 └── README.md
 ```
 
@@ -578,6 +600,155 @@ Three heatmap variants are produced for mitoPPS, each answering a different ques
 ### Output
 
 Results saved to `results/mitopps_scores.rds` containing per-sample raw and mitoPPS scores, group means, ANOVA and pairwise statistics, pathway annotations, and PCA objects. All figures saved to `outputs/mitopps/`.
+
+---
+
+## fGSEA vs mitoPPS Comparison (MitoCarta Pathways)
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `09_mitoPPS_vs_fgsea_comparison.R` | Systematic comparison of fGSEA enrichment and mitoPPS reprioritisation across all 142 MitoCarta pathways and four contrasts |
+
+### Rationale
+
+fGSEA and mitoPPS measure fundamentally different things. fGSEA detects whether a pathway's genes are enriched at the extremes of a genome-wide differential expression ranking — it captures **absolute transcriptional change relative to the rest of the genome** (proportional change). mitoPPS measures whether a pathway's share of total mitochondrial expression changes — it captures **reallocation within the mitochondrial compartment**, independent of whether total mitochondrial content goes up or down. A pathway can be fGSEA-significant but mitoPPS-stable (it changes, but proportionally with other mitochondrial pathways), or mitoPPS-significant but fGSEA-non-significant (it is selectively reprioritised within mitochondria without standing out genome-wide).
+
+### Correlation Between Metrics
+
+The two metrics are positively correlated across all four contrasts, but the agreement is moderate, confirming they capture overlapping but distinct biology:
+
+| Contrast | Pearson r | p-value |
+|----------|-----------|---------|
+| Myc+ vs Myc− (6W) | 0.52 | 5.0 × 10⁻¹¹ |
+| Myc+ vs Myc− (12W) | 0.52 | 3.1 × 10⁻¹¹ |
+| 12W vs 6W (Myc−) | 0.67 | 1.2 × 10⁻¹⁹ |
+| 12W vs 6W (Myc+) | 0.76 | 1.7 × 10⁻²⁷ |
+
+The temporal contrasts show higher correlation (r = 0.67–0.76) than the cross-sectional Myc effect contrasts (r = 0.52), suggesting that age-associated mitochondrial remodelling involves coordinated changes in both absolute expression and intra-mitochondrial allocation, whereas Myc's effect is more heterogeneous — it can alter the transcriptional level of a pathway without necessarily changing its relative priority within the mitochondrial compartment.
+
+### Pathway Classification
+
+Each pathway × contrast combination was classified into five categories based on significance in fGSEA (padj < 0.05) and mitoPPS (pairwise padj < 0.05):
+
+| Category | Myc effect 6W | Myc effect 12W | Temporal Myc− | Temporal Myc+ |
+|----------|---------------|----------------|---------------|---------------|
+| Both: concordant | 21 | 10 | 0 | 3 |
+| Both: discordant | 11 | 6 | 0 | 0 |
+| fGSEA only | 64 | 70 | 10 | 18 |
+| mitoPPS only | 26 | 18 | 0 | 12 |
+| Neither significant | 20 | 38 | 132 | 109 |
+
+**Key observations:**
+
+1. **fGSEA dominates.** The majority of significant pathways are fGSEA-only in the Myc effect contrasts (64–70 pathways), meaning Myc drives bulk transcriptional changes in these pathways without altering their mitochondrial priority.
+
+2. **Concordant pathways decline from 6W to 12W.** 21 pathways show agreement between fGSEA and mitoPPS at 6W, dropping to 10 at 12W. Of the 21 concordant at 6W, 14 switch to fGSEA-only at 12W — they retain bulk transcriptional enrichment but lose selective mitochondrial reprioritisation.
+
+3. **mitoPPS-only pathways also decline.** 26 pathways at 6W show selective mitochondrial reallocation without genome-wide enrichment, dropping to 18 at 12W.
+
+4. **Temporal contrasts are dominated by "neither significant."** Consistent with the ANOVA results (script 08), most pathways do not change significantly over time in either metric. The temporal signal is weaker than the cross-sectional Myc effect.
+
+### Concordant → fGSEA-Only Switches (6W → 12W)
+
+The 14 pathways that lose mitoPPS significance between 6W and 12W while retaining fGSEA significance are particularly informative. Their mitoPPS Δ values decline substantially:
+
+| Pathway | mitoPPS Δ (6W) | mitoPPS Δ (12W) | Decline |
+|---------|----------------|-----------------|---------|
+| Pyruvate metabolism | 0.329 | 0.008 | 98% |
+| Carbohydrate metabolism | 0.113 | 0.016 | 86% |
+| Polycistronic mtRNA processing | 0.115 | 0.025 | 78% |
+| Translation factors | 0.156 | 0.046 | 71% |
+| Mitochondrial central dogma | 0.086 | 0.029 | 66% |
+
+These pathways show that Myc continues to upregulate them at 12W (fGSEA remains significant), but the upregulation is no longer *selective* — it occurs proportionally with other mitochondrial pathways, consistent with a shift from targeted reprioritisation toward general mitochondrial biogenesis.
+
+### Output
+
+Results saved to `results/mitopps_fgsea_comparison.rds`. Full comparison table exported to `outputs/mitopps_fgsea/fgsea_vs_mitopps_full_comparison.csv`. Visualisations saved to `outputs/mitopps_fgsea/`.
+
+---
+
+## Interaction fGSEA and mitoPPS Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `10_interaction_fgsea_mitopps.R` | fGSEA on interaction-term Wald statistics; comparison with mitoPPS interaction |
+
+### Rationale
+
+The DESeq2 interaction term yielded zero individually significant genes (padj < 0.1), suggesting the Myc transcriptional programme is stable between 6W and 12W. However, fGSEA can detect coordinated small shifts across gene sets that fail to reach individual significance. Running fGSEA on the interaction Wald statistics (which rank genes by the magnitude and precision of the difference-of-differences) tests whether the Myc effect changes at the *pathway* level even when no single gene achieves significance.
+
+### Results: Curated Gene Sets
+
+Of 88 curated gene sets (MSigDB Hallmarks + MYC signatures + apoptosis + selected MitoCarta), **52 are significant at padj < 0.05** (55 at padj < 0.10). The interaction p-value histogram shows a strong left-skew, confirming widespread coordinated signal.
+
+**Direction breakdown** of the 52 significant sets:
+
+- **31 with negative NES** (Myc effect weakens at 12W relative to 6W): dominated by mitochondrial and biosynthetic pathways — OXPHOS (NES = −2.22), MYC_TARGETS_V1 (NES = −1.80), mTORC1 signalling, Translation, Carbohydrate metabolism
+- **21 with positive NES** (Myc effect weakens *less* or reverses at 12W): dominated by stromal/inflammatory/developmental pathways — EMT (NES = +2.40), Myogenesis (NES = +2.23), Estrogen response late (NES = +2.16), KRAS signalling up, Coagulation
+
+### Results: MitoCarta Pathways
+
+Of 142 MitoCarta pathways, **40 are significant at padj < 0.05** (55 at padj < 0.10). Strikingly, **all 40 significant pathways have negative interaction NES**, meaning the Myc effect on mitochondrial pathways is uniformly weaker at 12W than at 6W. No mitochondrial pathway shows a strengthening Myc effect over time.
+
+### fGSEA vs mitoPPS: Interaction Comparison
+
+The interaction fGSEA results were compared with mitoPPS interaction scores (difference between Myc effect at 12W and Myc effect at 6W). Of the 142 MitoCarta pathways:
+
+| Category | Count |
+|----------|-------|
+| fGSEA only (transcriptional interaction, stable mitoPPS) | 40 |
+| Neither significant | 102 |
+
+No pathway shows significant interaction in mitoPPS alone or in both metrics simultaneously. This means the fading Myc effect detected by fGSEA is a genome-wide transcriptional phenomenon (genes in these pathways are less strongly induced at 12W) but does not manifest as a change in intra-mitochondrial resource allocation — the *relative priorities* among mitochondrial pathways remain stable even as the absolute Myc-driven upregulation weakens.
+
+### Reconciling with Prior Results
+
+#### Why zero interaction genes but 52 interaction pathways?
+
+fGSEA has greater power to detect small coordinated shifts. The interaction LFCs are modest (~0.1–0.15 log2FC per gene) and individually non-significant, but they are directionally consistent across hundreds of genes within each pathway. For MYC_TARGETS_V1, 82% of pathway genes shift in the same (negative) direction in the interaction; for OXPHOS, 83%.
+
+#### Why does the cross-sectional NES increase while gene-level LFCs decrease?
+
+Cross-sectional fGSEA (script 06) showed NES for MYC_TARGETS_V1 increasing from 2.86 (6W) to 3.62 (12W). This appears contradictory. The resolution: **NES is a rank-based statistic relative to the entire genome, not an absolute measure of fold-change.** The Myc effect on MYC target genes shrinks modestly (~28% mean LFC decline), but the Myc effect on the rest of the genome shrinks even faster. So MYC targets become relatively *more enriched* at the top of the ranked list at 12W, yielding a higher NES despite smaller absolute fold-changes.
+
+#### Myc effect pattern from mitoPPS interaction
+
+The mitoPPS interaction analysis classifies the Myc effect trajectory for each pathway:
+
+| Pattern | Pathways |
+|---------|----------|
+| Amplifying (same direction, magnitude changes) | 116 |
+| Fading (6W active, 12W ≈ 0) | 8 |
+| Stable (minimal interaction) | 8 |
+| Reversing (opposite at 6W vs 12W) | 7 |
+| Emerging (6W ≈ 0, 12W active) | 3 |
+
+The dominance of the "Amplifying" category (116/142) confirms that the Myc effect is directionally preserved across timepoints — pathways up-prioritised by Myc at 6W remain up-prioritised at 12W — but the magnitude of the effect changes (typically fading, as captured by the negative interaction NES).
+
+### Revised Biological Interpretation
+
+The interaction analyses refine but do not contradict the earlier conclusion that the Myc programme is "stable." The refined picture:
+
+1. **The broad Myc transcriptional programme is maintained.** Myc continues to upregulate its targets at 12W relative to controls. The direction of effect is fully preserved.
+
+2. **Gene-level effect sizes genuinely shrink.** The ~15–30% decline in per-gene LFC is too small for any individual gene to reach significance, but it is coordinated across pathways and detected by fGSEA (52/88 curated sets, 40/142 MitoCarta pathways).
+
+3. **Mitochondrial selective prioritisation fades.** At 6W, Myc differentially reprioritises mitochondrial pathways (some gain more than others, visible in mitoPPS). By 12W, the overall mitochondrial upregulation persists but becomes more uniform — closer to general biogenesis than selective targeting. The 14 concordant→fGSEA-only switches demonstrate this directly.
+
+4. **Suppression of non-mitochondrial programmes erodes.** The 21 curated sets with positive interaction NES (EMT, estrogen response, inflammatory signalling, apoptosis) show that Myc's suppression of these programmes weakens at 12W.
+
+5. **The NES-stability paradox resolves.** Cross-sectional NES is stable or increasing because it is rank-relative; the absolute Myc effect fades, but the rest of the transcriptome fades faster. mitoPPS — being an absolute within-compartment measure — reveals the fading selectivity that NES masks.
+
+In summary: early Myc (6W) drives a strong, selective programme where mitochondrial pathways are differentially prioritised and stromal/EMT/inflammatory pathways are actively suppressed. Late Myc (12W) shows the programme persisting but *blurring* — mitochondrial upregulation flattens into general biogenesis, and suppression of alternative programmes erodes. This is consistent with cofactor limitation, chromatin remodelling, or negative feedback diluting Myc's specificity without eliminating its activity.
+
+### Output
+
+Results saved to `results/interaction_fgsea_mitopps.rds`. Tables exported to `outputs/interaction_analysis/fgsea_interaction_curated_all.csv` and `outputs/interaction_analysis/interaction_fgsea_vs_mitopps.csv`. Visualisations saved to `outputs/interaction_analysis/`.
 
 ---
 
