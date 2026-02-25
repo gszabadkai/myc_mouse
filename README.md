@@ -1,6 +1,6 @@
-│   ├── felsher_integrative_signature.csv
-│   └── Mouse.MitoCarta3.0.xls        # MitoCarta3.0 mouse annotation (Broad Institute)
-├── scripts/s project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
+# MMTV-Myc Mouse Timecourse Analysis
+
+This project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
 
 ### Experimental Design
 
@@ -41,90 +41,74 @@
 
 ### Directory Structure
 
+> Only files tracked on the `new-analysis` branch are shown.
+> `results/` and `outputs/` are gitignored (generated at runtime by the scripts).
+
 ```
 myc_mouse/
 ├── data/
-│   ├── coldata.csv                    # Sample metadata
-│   ├── FULL.DAT.csv                   # Raw count matrix
-│   ├── mitocarta_pathways.csv         # Mitocarta gene sets
-│   ├── myc_signature_genesets.gmx     # MYC signature gene sets (Felsher)
-│   └── felsher_integrative_signature.csv
-├── scripts/
+│   ├── coldata.csv                        # Sample metadata
+│   ├── FULL.DAT.csv                       # Raw count matrix
+│   ├── FULL.DAT_copy.csv                 # Copy of raw count matrix
+│   ├── FULL.DAT.COL.DATA.txt             # Column metadata
+│   ├── OXPHOS_subunits.csv                # OXPHOS subunit gene list
+│   ├── mitocarta_pathways.csv             # MitoCarta gene sets (CSV)
+│   ├── mitocarta_pathways.xlsx            # MitoCarta gene sets (Excel)
+│   ├── Mouse.MitoCarta3.0.xls            # MitoCarta3.0 mouse (Broad)
+│   ├── Mouse_MitoCarta3_0.xls            # MitoCarta3.0 mouse (alt format)
+│   ├── Human_MitoCarta3_0.xls            # MitoCarta3.0 human
+│   ├── myc_signature_genesets.gmx         # MYC signature gene sets (Felsher)
+│   ├── felsher_integrative_signature.csv  # Felsher integrative MYC signature
+│   ├── cell_death_genes_consolidated.csv  # Cell death gene list
+│   └── signature_go_mouse_cells.xlsx      # GO signature gene sets (mouse)
+├── scripts/                               # New-analysis pipeline (00-10)
 │   ├── 00_setup_packages.R
 │   ├── 01_load_data.R
 │   ├── 02_qc.R
-│   └── 03_deseq_results_qc.R          # Includes extended interaction QC
-├── results/
-│   ├── dds_int.rds                    # DESeq2 object (interaction design)
-│   ├── dds_int_run.rds                # DESeq2 object after DESeq() run
-│   ├── dds_group_run.rds              # DESeq2 object (group design) after run
-│   ├── interaction_results.rds        # All interaction model results
-│   ├── group_results.rds              # All group model results
-│   ├── extended_qc_summary.rds        # Extended QC statistics
-│   ├── lfc_comparison_timepoint.rds   # LFC comparison data for timepoint effects
-│   ├── count_matrix.rds
-│   ├── coldata.rds
-│   ├── gene_sets_list.rds
-│   └── ortholog_table.rds             # Cached human-mouse orthologs
-│   └── fgsea_results.rds              # fGSEA results (Wald statistic ranking)
-│   └── mitopps_scores.rds             # mitoPPS scores, statistics, pathway annotations
-│   └── mitopps_fgsea_comparison.rds   # fGSEA vs mitoPPS alignment (script 09)
-│   └── interaction_fgsea_mitopps.rds  # Interaction fGSEA + mitoPPS comparison (script 10)
-├── outputs/
-│   ├── qc/                            # Initial QC plots (PDF)
-│   ├── deseq_qc/                      # MA plots, extended QC, and results summary
-│   │   ├── MA_*.pdf                   # MA plots for each contrast
-│   │   ├── extended_qc_interaction_analysis.pdf
-│   │   └── results_summary.csv
-│   └── fgsea/                         # fGSEA visualisations
-│       ├── dotplot_*.pdf              # Dot plots by pathway category
-│       ├── barplot_*_comparison.pdf   # Comparative bar plots (Myc+ vs Myc-)
-│       ├── enrichment_*.pdf           # Running enrichment score plots
-│       ├── category_summary.pdf       # Pathway classification summary
-│       └── heatmap_top_pathways.pdf   # NES heatmap
-│   └── fgsea_cross_sectional/         # Cross-sectional fGSEA visualisations
-│       ├── xs_category_summary.pdf    # Category bar chart
-│       ├── dotplot_*_6W.pdf           # Dot plots at 6W
-│       ├── dotplot_*_12W.pdf          # Dot plots at 12W
-│       ├── xs_nes_correlation.pdf     # Plot 1: NES correlation (maintenance vs baseline)
-│       ├── xs_dev_contribution.pdf    # Plot 2: Developmental contribution
-│       ├── xs_nes_temporal_comparison.pdf     # Plot 3: NES Myc- vs Myc+ temporal
-│       └── xs_nes_crosssectional_comparison.pdf  # Plot 4: NES 6W vs 12W cross-sectional
-│   └── mitopps/                           # mitoPPS visualisations
-│       ├── pca_raw_pathway_scores.pdf     # PCA of raw MitoPathway scores
-│       ├── pca_mitopps.pdf                # PCA of normalised mitoPPS
-│       ├── heatmap_mitopps.pdf            # Group mean heatmap (row z-scored)
-│       ├── heatmap_raw_pathway_scores.pdf # Raw scores heatmap (row z-scored)
-│       ├── heatmap_mitopps_col_zscore.pdf # Column z-scored (prioritisation within conditions)
-│       ├── heatmap_mitopps_unscaled.pdf   # Unscaled log10(mitoPPS) group means
-│       ├── dotplot_mitopps_myc_effect.pdf # Myc-driven reprioritisation at 6W and 12W
-│       ├── scatter_mitopps_6W_vs_12W_myc_effect.pdf  # Consistency of Myc effect across timepoints
-│       ├── dotplot_mitopps_temporal_effect.pdf         # Temporal reprioritisation in Myc- and Myc+
-│       ├── scatter_mitopps_temporal_mycneg_vs_mycpos.pdf  # Correlation of temporal trajectories
-│       ├── boxplots_top_mitopps_myc.pdf   # Top 12 Myc-affected pathways
-│       └── boxplot_total_mito_expression.pdf  # Total mito expression by group
-│   └── mitopps_fgsea/                     # fGSEA vs mitoPPS comparison (script 09)
-│       ├── scatter_fgsea_vs_mitopps_all_contrasts.pdf  # NES vs mitoPPS Δ, all 4 contrasts
-│       ├── scatter_nes_vs_mitopps_correlation.pdf      # Per-contrast correlation panels
-│       ├── barplot_classification_summary.pdf           # Category counts per contrast
-│       ├── dotplot_concordant.pdf                       # Concordant pathways (4 panels)
-│       ├── dotplot_discordant.pdf                       # Discordant pathways (4 panels)
-│       ├── dotplot_fgsea_only.pdf                       # fGSEA-only pathways (4 panels)
-│       ├── dotplot_mitopps_only.pdf                     # mitoPPS-only pathways (4 panels)
-│       └── fgsea_vs_mitopps_full_comparison.csv         # Full comparison table
-│   └── interaction_analysis/              # Interaction fGSEA + mitoPPS (script 10)
-│       ├── histogram_fgsea_interaction_pvalues.pdf      # P-value distribution
-│       ├── dotplot_fgsea_interaction_curated.pdf        # Curated sets interaction NES
-│       ├── dotplot_fgsea_interaction_mitocarta.pdf      # MitoCarta interaction NES
-│       ├── dotplot_paired_myc_effect_6W_vs_12W.pdf     # Paired NES: Myc effect at 6W vs 12W
-│       ├── scatter_interaction_fgsea_vs_mitopps.pdf     # fGSEA NES vs mitoPPS interaction
-│       ├── barplot_interaction_classification.pdf       # Classification summary
-│       ├── fgsea_interaction_curated_all.csv            # Full curated results table
-│       └── interaction_fgsea_vs_mitopps.csv             # Full comparison table
+│   ├── 03_deseq_results_qc.R
+│   ├── 04_fgsea_pathway_analysis.R
+│   ├── 05_fgsea_visualisation.R
+│   ├── 06_fgsea_cross_sectional.R
+│   ├── 07_fgsea_xs_visualisation.R
+│   ├── 08_mitoPPS_analysis.R
+│   ├── 09_mitoPPS_vs_fgsea_comparison.R
+│   └── 10_interaction_fgsea_mitopps.R
+├── functions/
+│   └── generate_heatmap.R                 # Heatmap generation utility
+├── external/
+│   └── mitotyping/                        # Monzel et al. (2025) mitoPPS reference
+│       ├── Code/                          # Figure reproduction scripts
+│       ├── Data/                          # Original and processed datasets
+│       ├── main.R
+│       ├── SOURCE.md
+│       └── README.txt
+├── results/                               # [gitignored] generated by scripts
+│   ├── dds_int.rds, dds_int_run.rds       # DESeq2 objects
+│   ├── interaction_results.rds            # Interaction model results
+│   ├── fgsea_results.rds                  # fGSEA results (temporal)
+│   ├── fgsea_xs_results.rds              # fGSEA results (cross-sectional)
+│   ├── mitopps_scores.rds                 # mitoPPS scores + annotations
+│   ├── mitopps_fgsea_comparison.rds       # fGSEA vs mitoPPS (script 09)
+│   └── interaction_fgsea_mitopps.rds      # Interaction comparison (script 10)
+├── outputs/                               # [gitignored] generated by scripts
+│   ├── qc/                                # QC plots (PCA, distances, variance)
+│   ├── deseq_qc/                          # MA plots, extended QC, results CSV
+│   ├── fgsea/                             # fGSEA dot/bar/enrichment plots
+│   ├── fgsea_cross_sectional/             # Cross-sectional fGSEA visualisations
+│   ├── mitopps/                           # mitoPPS PCA, heatmaps, dotplots
+│   ├── mitopps_fgsea/                     # fGSEA vs mitoPPS comparison plots
+│   ├── interaction_analysis/              # Interaction fGSEA + mitoPPS plots
+│   └── heatmaps_int/                      # Per-pathway heatmaps (raw + shrunk LFC)
+├── MYC_mouse_analysis_summary_before_revision_20251002.md
+├── NES_paradox_explanation.md
+├── myc_mouse.Rproj
+├── myc_mouse.code-workspace
+├── .gitignore
 └── README.md
 ```
 
 ---
+
 
 ## QC Summary
 
@@ -626,7 +610,7 @@ The two metrics are positively correlated across all four contrasts, but the agr
 | 12W vs 6W (Myc−) | 0.67 | 1.2 × 10⁻¹⁹ |
 | 12W vs 6W (Myc+) | 0.76 | 1.7 × 10⁻²⁷ |
 
-The temporal contrasts show higher correlation (r = 0.67–0.76) than the cross-sectional Myc effect contrasts (r = 0.52), suggesting that age-associated mitochondrial remodelling involves coordinated changes in both absolute expression and intra-mitochondrial allocation, whereas Myc's effect is more heterogeneous — it can alter the transcriptional level of a pathway without necessarily changing its relative priority within the mitochondrial compartment.
+The temporal contrasts show higher correlation (r = 0.67–0.76) than the cross-sectional Myc effect contrasts (r = 0.52), suggesting that age-associated mitochondrial remodelling involves coordinated changes in both absolute expression and intra-mitochondrial allocation, :::{.callout-warning title="Check: it rather goes the other way no change in NES but increase in mitoPPS"}whereas Myc's effect is more heterogeneous — it can alter the transcriptional level of a pathway without necessarily changing its relative priority within the mitochondrial compartment.:::
 
 ### Pathway Classification
 
