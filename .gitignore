@@ -22,3 +22,6 @@ outputs/
 !data/*.csv
 !data/*.gmx
 !data/*.xlsx
+
+# Google Drive icon files
+Icon?
