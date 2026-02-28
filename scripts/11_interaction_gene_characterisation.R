@@ -1,36 +1,86 @@
 # scripts/11_interaction_gene_characterisation.R
 # =============================================================================
-# Characterisation of the Interaction Gene Set
+# Characterisation of Interaction Gene Sets: Gene-Level Dissection of the
+# Fading Myc Effect
 # =============================================================================
 #
 # Background:
-#   Script 03 identified ~1,662 genes showing a significant timepoint effect
-#   (padj < 0.1) only in Myc+ samples ("unique to Myc+"). Of these, ~357 have
-#   nominal interaction p < 0.05 — well above the ~83 expected by chance,
-#   suggesting a weak but real signal that fails FDR correction.
+#   Script 03 identified three classes of temporally regulated genes based on
+#   whether their timepoint effect (padj < 0.1) is significant in Myc+, Myc−,
+#   or both:
+#     - Unique to Myc+:  ~1,662 genes (temporal change only in Myc+ samples)
+#     - Unique to Myc−:  ~906 genes  (temporal change only in Myc− samples)
+#     - Overlapping:     ~961 genes  (temporal change in both genotypes)
 #
-#   Script 10 showed that fGSEA on the interaction Wald statistics detects
-#   52/88 significant curated gene sets (40/142 MitoCarta), confirming
-#   coordinated pathway-level signal. This script connects those two findings:
-#   are the 357 genes the ones driving the pathway-level signal?
+#   Among the unique-to-Myc+ set, ~357 genes have nominal interaction p < 0.05,
+#   well above the ~83 expected by chance — suggesting a weak but real signal
+#   that fails FDR correction. Script 10 confirmed pathway-level interaction
+#   signal via fGSEA (52/88 curated sets, 40/142 MitoCarta pathways).
 #
 # This script asks:
-#   1. DIRECTION: Are the 357 genes predominantly negative interaction (Myc
-#      effect weakening) or mixed? (#4 from discussion)
-#   2. FUNCTIONAL ENRICHMENT: What biological processes are over-represented
-#      among these genes? Uses g:Profiler for GO/KEGG/Reactome. (#2)
-#   3. LEADING EDGE OVERLAP: Do these genes drive the significant fGSEA
-#      interaction pathways from script 10? (#6)
+#   1. DIRECTION (Part 2): Are the interaction genes predominantly negative
+#      (Myc effect weakening at 12W) or mixed?
+#
+#   2. FUNCTIONAL ENRICHMENT (Part 3): What biological processes are enriched?
+#      Two complementary g:Profiler approaches:
+#        a) Ordered query on all unique-to-Myc+ genes ranked by |Wald stat|
+#           (more powerful, uses the continuous ranking)
+#        b) Unordered ORA on the 357 p < 0.05 genes, split by direction
+#      Also run on unique-to-Myc− and overlapping sets for comparison.
+#
+#   3. LEADING EDGE OVERLAP (Part 4): Do these 357 genes drive the significant
+#      fGSEA interaction pathways from script 10? Hypergeometric test of
+#      enrichment within leading edges.
+#
+#   4. SELECTION vs REMODELLING (Part 5B): If Bbc3/PUMA (a pro-apoptotic gene)
+#      shows a fading Myc effect, is this clonal selection against apoptosis-
+#      prone cells, or transcriptional remodelling of Myc's promoter targets?
+#      Selection predicts a coordinated shift across the entire pro-apoptotic
+#      module; remodelling predicts isolated gene-level changes. Tested with:
+#        - Forest plots: Apoptosis-PRO (25 genes), Apoptosis-ANTI (9 genes)
+#        - Volcano plots: all MitoCarta genes, Felsher integrative MYC signature
+#        - One-sample t-tests for group-level shifts
+#
+#   5. THREE-SET COMPARISON (Part 5C): Parallel analysis of the unique-to-Myc−
+#      and overlapping gene sets. The overlapping set serves as a negative
+#      control (shared developmental genes should show minimal interaction).
+#      The unique-to-Myc− set tests whether Myc buffers developmental changes
+#      that occur in controls. Comparative summary table quantifies interaction
+#      signal enrichment, directional bias, and functional themes across all
+#      three sets.
 #
 # Input:
-#   - results/interaction_results.rds       (DESeq2 results)
-#   - results/interaction_fgsea_mitopps.rds (script 10 fGSEA results)
+#   - results/interaction_results.rds       (DESeq2 results, all contrasts)
+#   - results/interaction_fgsea_mitopps.rds (script 10 fGSEA + mitoPPS interaction)
+#   - results/mitopps_scores.rds            (gene-to-pathway mapping)
 #   - results/ortholog_table.rds
 #   - results/gene_sets_list.rds
 #
 # Output:
 #   - results/interaction_gene_characterisation.rds
-#   - outputs/interaction_analysis/  (additional figures and tables)
+#   - outputs/interaction_analysis/:
+#       Direction:    histogram_interaction_gene_direction.pdf
+#                     histogram_interaction_gene_basemean.pdf
+#                     volcano_interaction_unique_to_pos.pdf
+#       g:Profiler:   gprofiler_manhattan_ordered.pdf
+#                     gprofiler_manhattan_unordered.pdf
+#                     dotplot_gprofiler_ordered.pdf
+#                     gprofiler_ordered_sig.csv
+#                     gprofiler_unordered_sig.csv
+#       Leading edge: dotplot_le_overlap_curated.pdf
+#                     dotplot_le_overlap_mitocarta.pdf
+#                     le_overlap_curated.csv, le_overlap_mitocarta.csv
+#       Selection:    focused_interaction_selection_vs_remodelling.pdf (4-panel)
+#                     forest_apoptosis_pro_interaction.pdf
+#                     forest_apoptosis_anti_interaction.pdf
+#                     volcano_mitocarta_interaction.pdf
+#                     volcano_felsher_myc_interaction.pdf
+#       Three-set:    histogram_interaction_lfc_three_sets.pdf
+#                     volcano_interaction_three_sets.pdf (3-panel)
+#                     volcano_interaction_unique_to_neg.pdf
+#                     volcano_interaction_overlapping.pdf
+#                     interaction_three_sets_summary.csv
+#                     interaction_sig_genes_p05.csv
 #
 # =============================================================================
 
@@ -163,7 +213,7 @@ p_basemean <- ggplot(unique_pos_interaction,
   geom_histogram(bins = 50, colour = "white", alpha = 0.7, position = "identity") +
   scale_fill_manual(
     values = c("TRUE" = "#B2182B", "FALSE" = "grey70"),
-    labels = c("TRUE" = "p < 0.05 (interaction signal)", "FALSE" = "p ≥ 0.05"),
+    labels = c("TRUE" = "p < 0.05 (interaction signal)", "FALSE" = "p >= 0.05"),
     name = "Interaction"
   ) +
   labs(
@@ -808,6 +858,610 @@ gene_set_membership |>
   print()
 
 # =============================================================================
+# PART 5B: FOCUSED INTERACTION PLOTS — SELECTION vs REMODELLING
+# =============================================================================
+# If the fading Myc effect on Bbc3 (and other apoptotic genes) reflects clonal
+# selection against apoptosis-prone cells, we'd expect a COORDINATED shift
+# across pro-apoptotic genes — because selection removes entire cells, not
+# individual transcripts. If instead Myc's transcriptional engagement with
+# specific promoters changes, we'd expect ISOLATED gene-level changes.
+#
+# Four panels test this:
+#   1. Apoptosis-PRO (25 genes)  — forest plot: is Bbc3 an outlier?
+#   2. Apoptosis-ANTI (9 genes)  — forest plot: do anti-apoptotic genes change?
+#   3. MitoCarta (all genes)     — volcano: broader mitochondrial landscape
+#   4. Felsher integrative MYC   — volcano: is the fading Myc-specific?
+#
+# Forest plots for small sets: show every gene with LFC ± SE, highlight p<0.05
+# Volcano plots for large sets: LFC vs -log10(p), label significant genes
+
+message("\n", strrep("=", 70))
+message("PART 5B: FOCUSED INTERACTION PLOTS (SELECTION vs REMODELLING)")
+message(strrep("=", 70))
+
+# --- Prepare interaction statistics for all genes (mapped to symbols) ---
+# interaction_raw_df already exists from Part 1 (ensembl_id, gene_symbol, LFC, etc.)
+
+# Helper: extract interaction stats for a gene set (by symbol)
+get_interaction_stats <- function(symbols, interaction_df) {
+  interaction_df |>
+    filter(gene_symbol %in% symbols) |>
+    # Deduplicate: keep strongest signal per symbol
+    group_by(gene_symbol) |>
+    slice_min(pvalue, n = 1, with_ties = FALSE) |>
+    ungroup() |>
+    mutate(
+      sig = !is.na(pvalue) & pvalue < 0.05,
+      direction = ifelse(log2FoldChange < 0, "Negative", "Positive")
+    )
+}
+
+# --- Gene sets ---
+apoptosis_pro_symbols <- gene_sets[["MC_Apoptosis_Pro"]]
+apoptosis_anti_symbols <- gene_sets[["MC_Apoptosis_Anti"]]
+felsher_symbols <- gene_sets[["MYC_felsher_integrative_signature"]]
+
+# All MitoCarta genes (union across all pathways from gene_to_pathway)
+mitocarta_all_symbols <- unique(gene_to_pathway$Gene)
+
+# Get interaction stats for each set
+stats_apop_pro  <- get_interaction_stats(apoptosis_pro_symbols, interaction_raw_df)
+stats_apop_anti <- get_interaction_stats(apoptosis_anti_symbols, interaction_raw_df)
+stats_mitocarta <- get_interaction_stats(mitocarta_all_symbols, interaction_raw_df)
+stats_felsher   <- get_interaction_stats(felsher_symbols, interaction_raw_df)
+
+message(sprintf("  Apoptosis-PRO:  %d / %d genes found, %d with interaction p < 0.05",
+                nrow(stats_apop_pro), length(apoptosis_pro_symbols),
+                sum(stats_apop_pro$sig, na.rm = TRUE)))
+message(sprintf("  Apoptosis-ANTI: %d / %d genes found, %d with interaction p < 0.05",
+                nrow(stats_apop_anti), length(apoptosis_anti_symbols),
+                sum(stats_apop_anti$sig, na.rm = TRUE)))
+message(sprintf("  MitoCarta:      %d / %d genes found, %d with interaction p < 0.05",
+                nrow(stats_mitocarta), length(mitocarta_all_symbols),
+                sum(stats_mitocarta$sig, na.rm = TRUE)))
+message(sprintf("  Felsher MYC:    %d / %d genes found, %d with interaction p < 0.05",
+                nrow(stats_felsher), length(felsher_symbols),
+                sum(stats_felsher$sig, na.rm = TRUE)))
+
+# --- 5B-1. Forest plot: Apoptosis-PRO ---
+p_forest_pro <- ggplot(stats_apop_pro,
+                       aes(x = log2FoldChange,
+                           y = reorder(gene_symbol, log2FoldChange))) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = log2FoldChange - 1.96 * lfcSE,
+                    xmax = log2FoldChange + 1.96 * lfcSE,
+                     colour = sig),
+                 height = 0.3, linewidth = 0.5, orientation = "y") +
+  geom_point(aes(colour = sig, size = sig)) +
+  scale_colour_manual(values = c("TRUE" = "#B2182B", "FALSE" = "grey60"),
+                      labels = c("TRUE" = "p < 0.05", "FALSE" = "n.s."),
+                      name = "Interaction") +
+  scale_size_manual(values = c("TRUE" = 3, "FALSE" = 2), guide = "none") +
+  labs(
+    title = "Apoptosis-PRO: interaction LFC (Myc effect change 6W → 12W)",
+    subtitle = paste0(
+      "Negative = Myc effect weakens at 12W  |  Error bars = 95% CI\n",
+      nrow(stats_apop_pro), " genes  |  ",
+      sum(stats_apop_pro$sig, na.rm = TRUE), " significant (p < 0.05)"
+    ),
+    x = "Interaction log2FC (timepoint12W:myc_statuspos)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
+
+# --- 5B-2. Forest plot: Apoptosis-ANTI ---
+p_forest_anti <- ggplot(stats_apop_anti,
+                        aes(x = log2FoldChange,
+                            y = reorder(gene_symbol, log2FoldChange))) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_errorbar(aes(xmin = log2FoldChange - 1.96 * lfcSE,
+                    xmax = log2FoldChange + 1.96 * lfcSE,
+                     colour = sig),
+                 height = 0.3, linewidth = 0.5, orientation = "y") +
+  geom_point(aes(colour = sig, size = sig)) +
+  scale_colour_manual(values = c("TRUE" = "#B2182B", "FALSE" = "grey60"),
+                      labels = c("TRUE" = "p < 0.05", "FALSE" = "n.s."),
+                      name = "Interaction") +
+  scale_size_manual(values = c("TRUE" = 3, "FALSE" = 2), guide = "none") +
+  labs(
+    title = "Apoptosis-ANTI: interaction LFC (Myc effect change 6W → 12W)",
+    subtitle = paste0(
+      "Negative = Myc effect weakens at 12W  |  Error bars = 95% CI\n",
+      nrow(stats_apop_anti), " genes  |  ",
+      sum(stats_apop_anti$sig, na.rm = TRUE), " significant (p < 0.05)"
+    ),
+    x = "Interaction log2FC (timepoint12W:myc_statuspos)",
+    y = NULL
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
+
+# --- 5B-3. Volcano plot: MitoCarta ---
+# Label genes with p < 0.05 (or top N if too many)
+n_sig_mc_vol <- sum(stats_mitocarta$sig, na.rm = TRUE)
+label_mc <- if (n_sig_mc_vol <= 40) {
+  filter(stats_mitocarta, sig)
+} else {
+  stats_mitocarta |> arrange(pvalue) |> head(40)
+}
+
+p_volcano_mc <- ggplot(stats_mitocarta,
+                       aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(data = filter(stats_mitocarta, !sig),
+             colour = "grey80", size = 1, alpha = 0.5) +
+  geom_point(data = filter(stats_mitocarta, sig),
+             aes(colour = direction), size = 2, alpha = 0.7) +
+  ggrepel::geom_text_repel(
+    data = label_mc,
+    aes(label = gene_symbol, colour = direction),
+    size = 2.5, max.overlaps = 30,
+    segment.colour = "grey60", segment.size = 0.3,
+    show.legend = FALSE
+  ) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", colour = "grey50") +
+  scale_colour_manual(values = c("Negative" = "#2166AC", "Positive" = "#B2182B"),
+                      name = "Direction") +
+  labs(
+    title = "MitoCarta genes: interaction LFC",
+    subtitle = sprintf(
+      "%d mitochondrial genes  |  %d with p < 0.05 (%d neg, %d pos)",
+      nrow(stats_mitocarta), n_sig_mc_vol,
+      sum(stats_mitocarta$sig & stats_mitocarta$direction == "Negative", na.rm = TRUE),
+      sum(stats_mitocarta$sig & stats_mitocarta$direction == "Positive", na.rm = TRUE)
+    ),
+    x = "Interaction log2FC",
+    y = expression(-log[10](p))
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
+
+# --- 5B-4. Volcano plot: Felsher integrative MYC signature ---
+n_sig_felsher <- sum(stats_felsher$sig, na.rm = TRUE)
+label_felsher <- if (n_sig_felsher <= 40) {
+  filter(stats_felsher, sig)
+} else {
+  stats_felsher |> arrange(pvalue) |> head(40)
+}
+
+p_volcano_felsher <- ggplot(stats_felsher,
+                            aes(x = log2FoldChange, y = -log10(pvalue))) +
+  geom_point(data = filter(stats_felsher, !sig),
+             colour = "grey80", size = 1, alpha = 0.5) +
+  geom_point(data = filter(stats_felsher, sig),
+             aes(colour = direction), size = 2, alpha = 0.7) +
+  ggrepel::geom_text_repel(
+    data = label_felsher,
+    aes(label = gene_symbol, colour = direction),
+    size = 2.5, max.overlaps = 30,
+    segment.colour = "grey60", segment.size = 0.3,
+    show.legend = FALSE
+  ) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", colour = "grey50") +
+  scale_colour_manual(values = c("Negative" = "#2166AC", "Positive" = "#B2182B"),
+                      name = "Direction") +
+  labs(
+    title = "Felsher integrative MYC signature: interaction LFC",
+    subtitle = sprintf(
+      "%d MYC signature genes  |  %d with p < 0.05 (%d neg, %d pos)",
+      nrow(stats_felsher), n_sig_felsher,
+      sum(stats_felsher$sig & stats_felsher$direction == "Negative", na.rm = TRUE),
+      sum(stats_felsher$sig & stats_felsher$direction == "Positive", na.rm = TRUE)
+    ),
+    x = "Interaction log2FC",
+    y = expression(-log[10](p))
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
+
+# --- Combined PDF: 4 panels ---
+pdf(file.path(int_dir, "focused_interaction_selection_vs_remodelling.pdf"),
+    width = 14, height = 16)
+
+gridExtra::grid.arrange(
+  p_forest_pro, p_forest_anti,
+  p_volcano_mc, p_volcano_felsher,
+  ncol = 2,
+  top = grid::textGrob(
+    "Selection vs remodelling: interaction LFC across gene sets",
+    gp = grid::gpar(fontsize = 14, fontface = "bold")
+  )
+)
+
+dev.off()
+
+# Also save individual panels
+ggsave(file.path(int_dir, "forest_apoptosis_pro_interaction.pdf"),
+       p_forest_pro, width = 8, height = 7)
+ggsave(file.path(int_dir, "forest_apoptosis_anti_interaction.pdf"),
+       p_forest_anti, width = 8, height = 5)
+ggsave(file.path(int_dir, "volcano_mitocarta_interaction.pdf"),
+       p_volcano_mc, width = 10, height = 8)
+ggsave(file.path(int_dir, "volcano_felsher_myc_interaction.pdf"),
+       p_volcano_felsher, width = 10, height = 8)
+
+# --- Summary statistics for the selection vs remodelling argument ---
+message("\n--- Selection vs remodelling evidence ---")
+
+# Apoptosis-PRO: is Bbc3 an outlier?
+apop_pro_median_lfc <- median(stats_apop_pro$log2FoldChange, na.rm = TRUE)
+bbc3_lfc <- stats_apop_pro |> filter(gene_symbol == "Bbc3") |> pull(log2FoldChange)
+bbc3_rank <- which(sort(stats_apop_pro$log2FoldChange) == bbc3_lfc)
+
+message(sprintf("  Apoptosis-PRO median interaction LFC: %.4f", apop_pro_median_lfc))
+if (length(bbc3_lfc) > 0) {
+  message(sprintf("  Bbc3 interaction LFC: %.4f (rank %d / %d in pathway)",
+                  bbc3_lfc, bbc3_rank[1], nrow(stats_apop_pro)))
+}
+
+# Test: is the Apoptosis-PRO set shifted as a group?
+apop_pro_ttest <- t.test(stats_apop_pro$log2FoldChange, mu = 0)
+message(sprintf("  Apoptosis-PRO one-sample t-test (mean ≠ 0): p = %.4f, mean = %.4f",
+                apop_pro_ttest$p.value, apop_pro_ttest$estimate))
+
+apop_anti_ttest <- t.test(stats_apop_anti$log2FoldChange, mu = 0)
+message(sprintf("  Apoptosis-ANTI one-sample t-test (mean ≠ 0): p = %.4f, mean = %.4f",
+                apop_anti_ttest$p.value, apop_anti_ttest$estimate))
+
+message("\n  Interpretation:")
+if (apop_pro_ttest$p.value > 0.05 && length(bbc3_lfc) > 0 && abs(bbc3_lfc) > abs(apop_pro_median_lfc) * 2) {
+  message("  → Apoptosis-PRO is NOT shifted as a group; Bbc3 is an outlier")
+  message("  → FAVOURS transcriptional remodelling over clonal selection")
+} else if (apop_pro_ttest$p.value < 0.05) {
+  message("  → Apoptosis-PRO IS shifted as a group")
+  message("  → CONSISTENT WITH clonal selection (or coordinated transcriptional change)")
+} else {
+  message("  → No clear pattern — examine forest plot for details")
+}
+
+# =============================================================================
+# PART 5C: PARALLEL ANALYSIS — UNIQUE-TO-MYC− AND OVERLAPPING GENE SETS
+# =============================================================================
+# The unique-to-Myc+ analysis above characterises genes where the temporal
+# change is only significant in Myc+ samples. Two complementary gene sets
+# complete the picture:
+#
+# UNIQUE-TO-MYC−: ~906 genes with significant timepoint effect only in Myc−.
+#   These change developmentally but NOT in Myc+ samples. If they show
+#   positive interaction (Myc effect strengthens at 12W), it means Myc
+#   BUFFERS against a developmental change that occurs in controls.
+#   If no interaction signal: the failure to reach significance in Myc+
+#   is just a power issue, not a real difference.
+#
+# OVERLAPPING: ~961 genes significant in both genotypes.
+#   These are the core shared developmental programme. Their interaction
+#   LFCs should centre on zero (negative control). Any genes with
+#   interaction signal here are particularly credible — robustly
+#   temporally regulated genes where Myc modulates the MAGNITUDE of a
+#   change that occurs in both genotypes.
+
+message("\n", strrep("=", 70))
+message("PART 5C: UNIQUE-TO-MYC− AND OVERLAPPING GENE SETS")
+message(strrep("=", 70))
+
+# --- Define the three gene sets ---
+unique_to_neg <- setdiff(sig_timepoint_neg, sig_timepoint_pos)
+overlap_genes <- intersect(sig_timepoint_pos, sig_timepoint_neg)
+
+message(sprintf("  Unique to Myc+:  %d genes", length(unique_to_pos)))
+message(sprintf("  Unique to Myc−:  %d genes", length(unique_to_neg)))
+message(sprintf("  Overlapping:     %d genes", length(overlap_genes)))
+
+# --- Extract interaction stats for each set ---
+unique_neg_interaction <- interaction_raw_df |>
+  filter(ensembl_id %in% unique_to_neg)
+
+overlap_interaction <- interaction_raw_df |>
+  filter(ensembl_id %in% overlap_genes)
+
+# --- Helper function for characterising each set ---
+characterise_set <- function(int_df, set_name) {
+  message(sprintf("\n--- %s ---", set_name))
+
+  # Genes with nominal interaction p < 0.05
+  sig_int <- int_df |> filter(!is.na(pvalue) & pvalue < 0.05)
+  expected <- round(sum(!is.na(int_df$pvalue)) * 0.05)
+
+  message(sprintf("  Total genes: %d", nrow(int_df)))
+  message(sprintf("  Interaction p < 0.05: %d (expected by chance: %d, ratio: %.1fx)",
+                  nrow(sig_int), expected,
+                  nrow(sig_int) / max(expected, 1)))
+
+  # Direction
+  n_neg_dir <- sum(sig_int$log2FoldChange < 0, na.rm = TRUE)
+  n_pos_dir <- sum(sig_int$log2FoldChange > 0, na.rm = TRUE)
+  pct_neg_dir <- if (nrow(sig_int) > 0) round(100 * n_neg_dir / nrow(sig_int), 1) else NA
+
+  message(sprintf("  Direction (p < 0.05): %d negative (%.1f%%), %d positive (%.1f%%)",
+                  n_neg_dir, pct_neg_dir, n_pos_dir, 100 - pct_neg_dir))
+
+  if (nrow(sig_int) > 1) {
+    binom <- binom.test(n_neg_dir, nrow(sig_int), p = 0.5)
+    message(sprintf("  Binomial test: p = %.2e", binom$p.value))
+  }
+
+  # Global distribution (all genes in set, not just p < 0.05)
+  all_median <- median(int_df$log2FoldChange, na.rm = TRUE)
+  all_mean   <- mean(int_df$log2FoldChange, na.rm = TRUE)
+  ttest_all  <- tryCatch(
+    t.test(int_df$log2FoldChange, mu = 0),
+    error = function(e) NULL
+  )
+
+  message(sprintf("  All genes — median LFC: %.4f, mean LFC: %.4f", all_median, all_mean))
+  if (!is.null(ttest_all)) {
+    message(sprintf("  One-sample t-test (mean != 0): p = %.2e", ttest_all$p.value))
+  }
+
+  list(
+    int_df      = int_df,
+    sig_int     = sig_int,
+    n_sig       = nrow(sig_int),
+    expected    = expected,
+    n_neg       = n_neg_dir,
+    n_pos       = n_pos_dir,
+    pct_neg     = pct_neg_dir,
+    median_lfc  = all_median,
+    mean_lfc    = all_mean,
+    ttest_p     = if (!is.null(ttest_all)) ttest_all$p.value else NA
+  )
+}
+
+char_unique_neg <- characterise_set(unique_neg_interaction, "Unique to Myc−")
+char_overlap    <- characterise_set(overlap_interaction, "Overlapping (both genotypes)")
+# For reference, recompute for unique-to-Myc+ with same framework
+char_unique_pos <- characterise_set(unique_pos_interaction, "Unique to Myc+ (recap)")
+
+# --- Combined direction histogram ---
+all_three_sets <- bind_rows(
+  unique_pos_interaction |>
+    mutate(gene_set = sprintf("Unique to Myc+ (n=%d)", length(unique_to_pos))),
+  unique_neg_interaction |>
+    mutate(gene_set = sprintf("Unique to Myc− (n=%d)", length(unique_to_neg))),
+  overlap_interaction |>
+    mutate(gene_set = sprintf("Overlapping (n=%d)", length(overlap_genes)))
+) |>
+  filter(!is.na(log2FoldChange))
+
+# Order factor so Myc+ is first
+all_three_sets$gene_set <- factor(all_three_sets$gene_set,
+                                   levels = unique(all_three_sets$gene_set))
+
+p_three_hist <- ggplot(all_three_sets, aes(x = log2FoldChange)) +
+  geom_histogram(bins = 50, fill = "steelblue", colour = "white", boundary = 0) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "red", linewidth = 0.5) +
+  facet_wrap(~ gene_set, ncol = 1, scales = "free_y") +
+  labs(
+    title = "Interaction LFC distribution by gene set",
+    subtitle = paste0(
+      "Genes with significant timepoint effect (padj < 0.1) in one or both genotypes\n",
+      "Negative LFC = Myc effect weakens at 12W  |  Red dashed = zero"
+    ),
+    x = "Interaction log2FC (timepoint12W:myc_statuspos)",
+    y = "Count"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        strip.text = element_text(face = "bold"))
+
+ggsave(file.path(int_dir, "histogram_interaction_lfc_three_sets.pdf"),
+       p_three_hist, width = 8, height = 10)
+
+# --- Volcano plots: unique-to-Myc− and overlapping ---
+
+# Helper to make volcano for any set
+make_interaction_volcano <- function(int_df, title, subtitle_extra = "") {
+  int_df <- int_df |>
+    mutate(
+      sig = !is.na(pvalue) & pvalue < 0.05,
+      direction = ifelse(log2FoldChange < 0, "Negative", "Positive")
+    )
+
+  n_sig <- sum(int_df$sig, na.rm = TRUE)
+
+  label_genes <- if (n_sig <= 40) {
+    filter(int_df, sig)
+  } else {
+    int_df |> filter(sig) |> arrange(pvalue) |> head(40)
+  }
+
+  # Map Ensembl to symbols for labels
+  label_genes <- label_genes |>
+    mutate(label = ifelse(!is.na(gene_symbol) & gene_symbol != "",
+                          gene_symbol, ensembl_id))
+
+  p <- ggplot(int_df, aes(x = log2FoldChange, y = -log10(pvalue))) +
+    geom_point(data = filter(int_df, !sig),
+               colour = "grey80", size = 1, alpha = 0.5) +
+    geom_point(data = filter(int_df, sig),
+               aes(colour = direction), size = 1.5, alpha = 0.7) +
+    geom_hline(yintercept = -log10(0.05), linetype = "dashed", colour = "grey50") +
+    scale_colour_manual(values = c("Negative" = "#2166AC", "Positive" = "#B2182B"),
+                        name = "Direction")
+
+  if (nrow(label_genes) > 0) {
+    p <- p + ggrepel::geom_text_repel(
+      data = label_genes,
+      aes(label = label, colour = direction),
+      size = 2.5, max.overlaps = 30,
+      segment.colour = "grey60", segment.size = 0.3,
+      show.legend = FALSE
+    )
+  }
+
+  n_neg_sig <- sum(int_df$sig & int_df$direction == "Negative", na.rm = TRUE)
+  n_pos_sig <- sum(int_df$sig & int_df$direction == "Positive", na.rm = TRUE)
+
+  p + labs(
+    title = title,
+    subtitle = sprintf(
+      "%d genes  |  %d with p < 0.05 (%d neg, %d pos)%s",
+      nrow(int_df), n_sig, n_neg_sig, n_pos_sig, subtitle_extra
+    ),
+    x = "Interaction log2FC (timepoint12W:myc_statuspos)",
+    y = expression(-log[10](p))
+  ) +
+    theme_minimal(base_size = 11) +
+    theme(plot.title = element_text(face = "bold"),
+          legend.position = "bottom")
+}
+
+p_volcano_neg <- make_interaction_volcano(
+  unique_neg_interaction,
+  "Interaction: genes unique to Myc- timepoint effect",
+  sprintf("\nExpected by chance: %d", char_unique_neg$expected)
+)
+
+p_volcano_overlap <- make_interaction_volcano(
+  overlap_interaction,
+  "Interaction: genes with timepoint effect in both genotypes",
+  sprintf("\nExpected by chance: %d", char_overlap$expected)
+)
+
+ggsave(file.path(int_dir, "volcano_interaction_unique_to_neg.pdf"),
+       p_volcano_neg, width = 10, height = 8)
+ggsave(file.path(int_dir, "volcano_interaction_overlapping.pdf"),
+       p_volcano_overlap, width = 10, height = 8)
+
+# --- Combined 3-panel volcano ---
+pdf(file.path(int_dir, "volcano_interaction_three_sets.pdf"),
+    width = 10, height = 20)
+gridExtra::grid.arrange(
+  # Reuse the existing volcano from Part 5c for unique-to-Myc+ (p_volcano)
+  p_volcano +
+    labs(title = "Interaction: genes unique to Myc+ timepoint effect"),
+  p_volcano_neg,
+  p_volcano_overlap,
+  ncol = 1,
+  top = grid::textGrob(
+    "Interaction signal across three temporal gene sets",
+    gp = grid::gpar(fontsize = 14, fontface = "bold")
+  )
+)
+dev.off()
+
+# --- g:Profiler on unique-to-Myc− interaction genes (if enough) ---
+neg_sig_int <- unique_neg_interaction |>
+  filter(!is.na(pvalue) & pvalue < 0.05)
+
+neg_sig_symbols <- neg_sig_int |>
+  filter(!is.na(gene_symbol) & gene_symbol != "") |>
+  pull(gene_symbol) |>
+  unique()
+
+gost_neg_set <- NULL
+if (length(neg_sig_symbols) >= 10) {
+  message(sprintf("\n  Running g:Profiler on %d unique-to-Myc− interaction genes...",
+                  length(neg_sig_symbols)))
+
+  gost_neg_set <- gost(
+    query         = neg_sig_symbols,
+    organism      = "mmusculus",
+    ordered_query = FALSE,
+    significant   = FALSE,
+    custom_bg     = all_tested_symbols,
+    sources       = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC", "WP"),
+    evcodes       = TRUE
+  )
+
+  if (!is.null(gost_neg_set) && nrow(gost_neg_set$result) > 0) {
+    n_sig_gost_neg <- sum(gost_neg_set$result$p_value < 0.05)
+    message(sprintf("  g:Profiler (unique-to-Myc−): %d significant terms", n_sig_gost_neg))
+
+    if (n_sig_gost_neg > 0) {
+      message("  Top 15:")
+      gost_neg_set$result |>
+        filter(p_value < 0.05) |>
+        arrange(p_value) |>
+        dplyr::select(source, term_name, term_size, intersection_size, p_value) |>
+        head(15) |>
+        print()
+    }
+  } else {
+    message("  No significant terms")
+  }
+} else {
+  message(sprintf("\n  Unique-to-Myc− interaction genes: only %d — skipping g:Profiler",
+                  length(neg_sig_symbols)))
+}
+
+# --- g:Profiler on overlapping set interaction genes (if enough) ---
+overlap_sig_int <- overlap_interaction |>
+  filter(!is.na(pvalue) & pvalue < 0.05)
+
+overlap_sig_symbols <- overlap_sig_int |>
+  filter(!is.na(gene_symbol) & gene_symbol != "") |>
+  pull(gene_symbol) |>
+  unique()
+
+gost_overlap_set <- NULL
+if (length(overlap_sig_symbols) >= 10) {
+  message(sprintf("\n  Running g:Profiler on %d overlapping-set interaction genes...",
+                  length(overlap_sig_symbols)))
+
+  gost_overlap_set <- gost(
+    query         = overlap_sig_symbols,
+    organism      = "mmusculus",
+    ordered_query = FALSE,
+    significant   = FALSE,
+    custom_bg     = all_tested_symbols,
+    sources       = c("GO:BP", "GO:MF", "GO:CC", "KEGG", "REAC", "WP"),
+    evcodes       = TRUE
+  )
+
+  if (!is.null(gost_overlap_set) && nrow(gost_overlap_set$result) > 0) {
+    n_sig_gost_ov <- sum(gost_overlap_set$result$p_value < 0.05)
+    message(sprintf("  g:Profiler (overlapping): %d significant terms", n_sig_gost_ov))
+
+    if (n_sig_gost_ov > 0) {
+      message("  Top 15:")
+      gost_overlap_set$result |>
+        filter(p_value < 0.05) |>
+        arrange(p_value) |>
+        dplyr::select(source, term_name, term_size, intersection_size, p_value) |>
+        head(15) |>
+        print()
+    }
+  } else {
+    message("  No significant terms")
+  }
+} else {
+  message(sprintf("\n  Overlapping interaction genes: only %d — skipping g:Profiler",
+                  length(overlap_sig_symbols)))
+}
+
+# --- Comparative summary table ---
+comparison_table <- data.frame(
+  gene_set = c("Unique to Myc+", "Unique to Myc-", "Overlapping"),
+  total_genes = c(length(unique_to_pos), length(unique_to_neg), length(overlap_genes)),
+  int_p05 = c(nrow(int_sig_genes), char_unique_neg$n_sig, char_overlap$n_sig),
+  expected = c(round(length(unique_to_pos) * 0.05),
+               char_unique_neg$expected,
+               char_overlap$expected),
+  ratio = c(nrow(int_sig_genes) / max(round(length(unique_to_pos) * 0.05), 1),
+            char_unique_neg$n_sig / max(char_unique_neg$expected, 1),
+            char_overlap$n_sig / max(char_overlap$expected, 1)),
+  pct_negative = c(pct_neg, char_unique_neg$pct_neg, char_overlap$pct_neg),
+  median_lfc = c(median(int_sig_genes$log2FoldChange),
+                 char_unique_neg$median_lfc,
+                 char_overlap$median_lfc),
+  ttest_p = c(t.test(unique_pos_interaction$log2FoldChange, mu = 0)$p.value,
+              char_unique_neg$ttest_p,
+              char_overlap$ttest_p)
+)
+
+message("\n--- Comparative summary: interaction signal across gene sets ---")
+print(comparison_table)
+
+write.csv(comparison_table,
+          file.path(int_dir, "interaction_three_sets_summary.csv"),
+          row.names = FALSE)
+
+# =============================================================================
 # PART 6: SUMMARY
 # =============================================================================
 
@@ -869,6 +1523,32 @@ if (!is.null(le_overlap_curated)) {
                   n_enriched))
 }
 
+message(sprintf("\n5. SELECTION vs REMODELLING:"))
+message(sprintf("   Apoptosis-PRO: %d / %d genes with interaction p < 0.05",
+                sum(stats_apop_pro$sig, na.rm = TRUE), nrow(stats_apop_pro)))
+message(sprintf("   Apoptosis-PRO group shift t-test: p = %.4f (mean LFC = %.4f)",
+                apop_pro_ttest$p.value, apop_pro_ttest$estimate))
+if (length(bbc3_lfc) > 0) {
+  message(sprintf("   Bbc3 LFC = %.4f vs pathway median = %.4f",
+                  bbc3_lfc, apop_pro_median_lfc))
+}
+message(sprintf("   MitoCarta: %d / %d with p < 0.05  |  Felsher MYC: %d / %d with p < 0.05",
+                sum(stats_mitocarta$sig, na.rm = TRUE), nrow(stats_mitocarta),
+                sum(stats_felsher$sig, na.rm = TRUE), nrow(stats_felsher)))
+
+message("\n6. THREE-SET COMPARISON:")
+message("   Gene set          | Total | Int p<0.05 | Expected | Ratio | %Neg  | Median LFC")
+for (i in seq_len(nrow(comparison_table))) {
+  message(sprintf("   %-18s | %5d | %10d | %8d | %5.1fx | %5.1f%% | %.4f",
+                  comparison_table$gene_set[i],
+                  comparison_table$total_genes[i],
+                  comparison_table$int_p05[i],
+                  comparison_table$expected[i],
+                  comparison_table$ratio[i],
+                  comparison_table$pct_negative[i],
+                  comparison_table$median_lfc[i]))
+}
+
 # =============================================================================
 # PART 7: SAVE RESULTS
 # =============================================================================
@@ -908,6 +1588,24 @@ interaction_gene_results <- list(
     pct_in_le     = pct_in_le,
     not_in_le     = not_in_le
   ),
+
+  # Focused interaction stats (selection vs remodelling)
+  interaction_by_geneset = list(
+    apoptosis_pro  = stats_apop_pro,
+    apoptosis_anti = stats_apop_anti,
+    mitocarta      = stats_mitocarta,
+    felsher_myc    = stats_felsher
+  ),
+
+  # Three-set comparison (unique-to-Myc+, unique-to-Myc−, overlapping)
+  three_set_analysis = list(
+    unique_to_pos  = char_unique_pos,
+    unique_to_neg  = char_unique_neg,
+    overlapping    = char_overlap,
+    comparison_table = comparison_table
+  ),
+  gprofiler_unique_neg = gost_neg_set,
+  gprofiler_overlap    = gost_overlap_set,
 
   # Gene set membership
   gene_set_membership = gene_set_membership,
