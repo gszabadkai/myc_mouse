@@ -18,10 +18,15 @@ outputs/
 *.pdf
 *.xlsx
 *.html
+*.xls
 
-!data/*.csv
-!data/*.gmx
-!data/*.xlsx
+# Large data files (available via shared Google Drive)
+data/FULL.DAT.csv
+data/FULL.DAT_copy.csv
+data/Human_MitoCarta3_0.xls
+data/Mouse_MitoCarta3_0.xls
+data/Mouse.MitoCarta3.0.xls
+data/cell-death/
 
 # Google Drive icon files
 Icon?
