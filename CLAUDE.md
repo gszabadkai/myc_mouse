@@ -1,4 +1,46 @@
+
 # MMTV-Myc Mouse Timecourse Analysis
+## Repository state: two-pipeline situation (temporary)
+
+This repository currently contains two pipeline versions in two git branches:
+
+- `main` — older pipeline, fewer scripts. Historical reference.
+- `new-analysis` — current, complete pipeline (scripts 00–12). Active development.
+
+**Important:** the working directory may contain files from both pipelines
+side-by-side. Do not assume a script's branch membership from its filename
+or location alone. The authoritative reference is `docs/branch_manifest.md`
+(once generated).
+
+### Clean checkouts available as git worktrees
+
+- `../myc_mouse_main`  — clean checkout of `main`
+- `../myc_mouse_new`   — clean checkout of `new-analysis`
+
+Both share this repo's `.git` directory (no duplicated history).
+
+### Rules for assistants working in this repo
+
+1. **Never switch branches** in the current working folder with `git checkout`.
+   Use the worktrees or `git show <branch>:<path>` instead.
+2. **Never rename, move, or delete scripts** without first consulting
+   `docs/branch_manifest.md` and confirming with the user.
+3. **Never run analysis scripts** until the pipeline consolidation is
+   complete and the user has explicitly approved.
+4. Read-only git operations (`git show`, `git diff`, `git log`, `git ls-tree`)
+   are always fine.
+5. When in doubt, ask. The cost of clarifying is small; the cost of
+   destroying ambiguous state is large.
+
+### Current task
+
+Consolidating the two pipelines into a single unified pipeline, to be
+published as a Quarto document for collaborator review. The cell death
+pathway analysis (script 12 on `new-analysis`, different script on `main`)
+is a key comparison point — the two approaches need to be compared before
+firm conclusions can be drawn.
+
+###Overall project description
 
 R bioinformatics pipeline analysing bulk RNA-seq from MMTV-Myc transgenic mice.
 4 groups x 6 replicates: 6W_neg, 6W_pos, 12W_neg, 12W_pos.
