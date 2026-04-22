@@ -12,10 +12,10 @@ side-by-side. Do not assume a script's branch membership from its filename
 or location alone. The authoritative reference is `docs/branch_manifest.md`
 (once generated).
 
-### Clean checkouts available as git worktrees
+### Clean checkouts available as git worktrees - only one worktree, `new-analysis` is current
 
 - `../myc_mouse_main`  — clean checkout of `main`
-- `../myc_mouse_new`   — clean checkout of `new-analysis`
+
 
 Both share this repo's `.git` directory (no duplicated history).
 
