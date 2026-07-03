@@ -39,7 +39,7 @@ comparator panel, and that is already loaded inside myc_mouse (`gene_sets_list.r
 The library is consumed as a v1.0 snapshot (section 5), not rebuilt.
 
 **Branch reconciliation is not a git merge, and it now has three parts.**
-`new-analysis` is already the consolidated trunk (scripts 00-12); `main`'s scripts are
+`new-analysis` is already the consolidated trunk (scripts 00-12); main's scripts are
 archived byte-identical in `scripts/archive_main_pipeline/`. Reconciliation means:
 (a) the cell-death question - resolved: run **both** branches, neither canonical, on
 raw LFCs (AP-CD); (b) whether cell death stays a parallel branch or integrates with
@@ -205,9 +205,11 @@ place 6W/12W on the trajectory. Gating: if divergence *grows* across the window,
 already-large-and-flat at 6W, the soft "already diverged" claim holds. Script 11
 Part 2 already computes interaction direction (negative = Myc effect weakens at 12W);
 the 357-gene p<0.05 set and its directional bias exist (`interaction_sig_genes_p05.csv`);
-the 6W contrast is in `interaction_results.rds`. **[reframe - reading existing outputs + the projection from AP2]**
+the 6W contrast is in `interaction_results.rds`. **[reframe - reading existing outputs
++ the projection from AP2]**
 
-**GATE 2 - Apoptosis selection-vs-remodelling readout.** Extract the PRO (25) and ANTI (9) apoptosis group-shift t-tests from `interaction_gene_characterisation.rds` (script
+**GATE 2 - Apoptosis selection-vs-remodelling readout.** Extract the PRO (25) and ANTI
+(9) apoptosis group-shift t-tests from `interaction_gene_characterisation.rds` (script
 11 Part 5B saves these as `interaction_by_geneset$apoptosis_pro / apoptosis_anti`);
 confirm/compute both one-sample t-tests; interpret. Decides whether the selection force
 is mito-apoptotic and module-wide, i.e. whether the mitochondrion is a decision point
@@ -262,7 +264,9 @@ converge and diverge.
 as a named mitoPPS result: mtDNA-encoded subunits are prioritised at 12W (both
 genotypes) while nuclear-encoded OXPHOS complexes (I, III, IV) are de-prioritised, and
 mtDNA-encoded genes are not induced by Myc; Complex I shows the strongest effect. The
-synthetic "mtDNA-encoded OXPHOS subunits" pathway already isolates this in the mitoPPS build, so this is a plotting/interpretation task: show the mtDNA-vs-nuclear split, with per-complex correlations in a supplementary. **[reframe - off existing mitoPPS output]**
+synthetic "mtDNA-encoded OXPHOS subunits" pathway already isolates this in the mitoPPS
+build, so this is a plotting/interpretation task: show the mtDNA-vs-nuclear split, with
+per-complex correlations in a supplementary. **[reframe - off existing mitoPPS output]**
 
 **AP-abund - Abundance vs reprioritisation.** State the question explicitly and answer
 it with the fGSEA-vs-mitoPPS contrast: fGSEA (rank-relative) reads more like overall
@@ -280,7 +284,8 @@ prose: a stronger negative timecourse NES in Myc+ is **not** loss of Myc activit
 because the cross-sectional Myc enrichment is stable (slightly increasing) at both ages
 - the correct reading is "developmental decline plus a stable Myc offset". Supporting
 plots: slope of pos vs dev timecourse LFC (Felsher genes), cross-sectional stability
-(myc_6W vs myc_12W LFC), interaction fGSEA. **[reframe - defines a metric on existing fGSEA]**
+(myc_6W vs myc_12W LFC), interaction fGSEA. **[reframe - defines a metric on existing
+fGSEA]**
 
 ---
 
@@ -298,18 +303,69 @@ plots: slope of pos vs dev timecourse LFC (Felsher genes), cross-sectional stabi
 
 **Git strategy.**
 - `new-analysis` - stable trunk for the consolidated pipeline.
-- `analysis-exploratory` - branched off `new-analysis` for Block A. All broad runs and the raw re-runs land here. Commit per verified analysis.
+- `analysis-exploratory` - branched off `new-analysis` for Block A. All broad runs and
+  the raw re-runs land here. Commit per verified analysis.
 - `paper-figures` - branched off `analysis-exploratory` at the reviewed commit for
   Block B, after the Block A review. Only narrative-selected code moves forward.
-- Merge `paper-figures` back to `new-analysis` when the draft figures are stable; keep `analysis-exploratory` as the exploratory record.
+- Merge `paper-figures` back to `new-analysis` when the draft figures are stable; keep
+  `analysis-exploratory` as the exploratory record.
 - Do not check out `main` in the working directory - use the `../myc_mouse_main`
   worktree or `git show main:<path>`.
 
-**Library snapshot.** Snapshot the library GMTs + provenance CSV into
-`data/genesets_from_library/`, pinned to the `v1.0` tag/commit hash, with a one-
-paragraph provenance README (source repo, tag, commit, snapshot date, per-set method
-tag). This depends on the library `v1.0` tag existing first - do the library close-out
-(merge `dev`->`main`, tag `v1.0`, push `--follow-tags`, keep `dev`) before the snapshot.
+**Library snapshot.** Snapshot the library into `data/genesets_from_library/`, pinned
+to the `v1.0` tag/commit hash, with a provenance README. This depends on the `v1.0`
+tag existing first - do the library close-out (merge `dev`->`main`, tag `v1.0`, push
+`--follow-tags`, keep `dev`) before the snapshot. The library output is
+**category-stratified**, and the structure is preserved on snapshot: copy the nine
+mouse category GMTs into `data/genesets_from_library/by_category/` (01_mitocarta,
+02_myc_signatures, 03_mammary_development, 04_metabolism, 05_proliferation,
+06_tf_targets, 07_biogenesis_discrimination, 08_apoptosis,
+09_biogenesis_apoptosis_intersections), the combined master
+(`mammary_mito_myc_metab_v1_mouse.gmt`) at the top level, and `provenance_table.csv`
+(which carries the per-set method tag). Do not copy the `human/` tree - this is a
+mouse dataset and a wrong-species GMT is an easy mistake to make. `metabric_sets.rds`
+(from the library `results/`) and `gray_chea_mito_tf_shortlist.csv` (from the library
+`outputs/qc/`) come along too.
+
+**Category GMTs are used per-category, not as one master NES.** Consuming the master
+GMT in a single fGSEA run is exploratory-only (Block A omnibus scan). The publication
+claims run fGSEA per category, because that is what makes AP6's "preferential, not
+just absolute" contrast interpretable and keeps the multiple-testing scope legible.
+Each category maps to the action points it serves:
+
+- `01_mitocarta` -> AP6 (mito-focus decomposition), AP-mtDNA (mtDNA-vs-nuclear split),
+  and the mitoPPS pathway partition.
+- `02_myc_signatures` -> AP4 (Felsher membership/co-variation), AP-retention (the
+  retention index and Felsher guardrail).
+- `03_mammary_development` -> AP1, AP2, AP3, AP5 (the `MG_*` developmental sets, via
+  GSVA and the dev-set projection).
+- `04_metabolism`, `05_proliferation` -> AP6 comparator panel (show the mito signal is
+  comparable-to/above proliferation, and that the stage interaction is mito-specific
+  where proliferation is genotype-wide).
+- `06_tf_targets` -> AP6 decomposition (dev/TF lanes through the interaction ranking).
+- `07_biogenesis_discrimination` -> the Category 7 MYC_SPECIFIC / CORE / DEVELOPMENTAL
+  partition on Figure 2.
+- `08_apoptosis` -> AP-CD branch 2 (alongside the Tang `data/cell-death/` sets) and
+  Gate 2.
+- `09_biogenesis_apoptosis_intersections` -> the biogenesis-vs-apoptosis intersection
+  claim (Supp/Figure 2 support).
+
+Open design point for the build spec: confirm per-category vs master fGSEA scope and
+the multiple-testing correction that follows (correct within-category, or pool across
+categories). This is a scientific choice - the build spec should propose it explicitly
+and surface it for approval, not assume it. The AP6 comparator panel already loaded
+in-repo (`gene_sets_list.rds`, 89 sets incl. 50 Hallmark) remains the Hallmark source;
+the `04_metabolism`/`05_proliferation` category GMTs are the mammary-specific
+comparators - decide whether to use one, the other, or both.
+
+**Set-design rationale is in `docs/library_reference/`.** The per-set provenance and
+method tags are machine-readable in `provenance_table.csv`, but the *why* behind each
+category - what "biogenesis discrimination" operationalises, the Category 7 algebra,
+which developmental atlases feed the `MG_*` sets, why the pass-1 TF roster is what it
+is - lives in the library reference docs snapshotted into `docs/library_reference/`
+(read-only; see that folder's README). Consult them when a set's meaning or method
+matters for a figure claim or a method-section sentence. They are not a build spec:
+sets are consumed from the snapshot, never rebuilt from these docs.
 
 **Step 1 / Step 2 pipeline split.**
 - Step 1 = data load + DESeq2 (basic contrasts + interaction) + QC (basic and
@@ -332,7 +388,8 @@ contrasts. Probably adds little; exploratory-only and a cut candidate.
 The APs are a dependency tree, not a flat queue. Run the two cheap gates first; their
 results decide which later APs to build and in what form.
 - Gates draw only on existing myc_mouse outputs (interaction model, contrasts,
-  `interaction_gene_characterisation.rds`) - they need none of the new library GSVA infrastructure, so they run essentially first. Confirm the Gate 2 inputs are raw /
+  `interaction_gene_characterisation.rds`) - they need none of the new library GSVA
+  infrastructure, so they run essentially first. Confirm the Gate 2 inputs are raw /
   Wald-based before trusting them (T3).
 - AP7 is load-bearing and cheap once GSVA exists - run it early-and-high regardless of
   the gates.
@@ -495,6 +552,11 @@ figure assembly. Nearly everything else is reframe/read.
 - **Where the `01` gene-set tidy belongs:** routing the legacy `mitocarta_pathways.csv`
   / `.gmx` loads through the library snapshot is a real code change touching fGSEA
   inputs. Decide whether it goes in Block A now or is deferred.
+- **fGSEA scope - per-category vs master (section 5):** per-category is the default for
+  the publication claims, master for exploratory omnibus only. Confirm this, and the
+  multiple-testing correction that follows (within-category vs pooled). Also decide
+  which comparators feed AP6 - the in-repo Hallmark panel, the mammary-specific
+  `04_metabolism`/`05_proliferation` category GMTs, or both.
 
 ---
 

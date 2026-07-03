@@ -4,6 +4,9 @@ Generated: 2026-04-22
 Purpose: Read-only structural reference for the ongoing pipeline
 consolidation. The working directory holds a mix of files from both
 branches; this document is the authoritative map of what belongs where.
+	
+important: this file is a previous state, here only for reference - consolidation ongoing
+
 
 > **No files were moved, renamed, or deleted to produce this manifest.**
 > All claims are derived from `git show`, `git ls-tree`, `git diff`,

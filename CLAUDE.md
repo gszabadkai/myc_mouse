@@ -171,4 +171,9 @@ Canonical file: `scripts/R_CODING_INSTRUCTIONS.md`. Key points:
 - `docs/branch_manifest.md` — two-pipeline / script inventory (dated 2026-04-22; its
   "consolidation ongoing" framing is superseded by the plan and this file's current
   phase).
+- `docs/library_reference/` — read-only reference docs from `mammary_geneset_library`
+  v1.0: the set-design rationale (roster, fGSEA/GSVA split, Category 7 algebra, TF
+  lanes, dev-set catalog, dropped sets, provenance). Consult when a gene set's meaning
+  or method matters for a decision. It is **reference for interpreting the GMTs, not a
+  build spec** — do not use it to reconstruct sets. See its `README.md` for an index.
 - Decisions are recorded as dated markdown notes; newer supersedes older.
