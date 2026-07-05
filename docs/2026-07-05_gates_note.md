@@ -28,26 +28,44 @@ predominantly-negative interaction. Myc dose is stable across 6W-12W
 (mRNA + blot + literature), so this is NOT a driver-dose decline. Constant
 driver, moving substrate.
 
-CAVEAT - resolve before any published "convergence" claim:
-- myc_6W_raw is the reference-level contrast (name = myc_status_pos_vs_neg);
-  myc_12W_raw is a composite (list) contrast summing main effect + interaction,
-  which carries a larger SE and therefore LOWER power. Part of the 2777 -> 239
-  drop in significant-gene COUNT could be reduced power on the 12W contrast, not
-  biological convergence.
-- Distinguish with EFFECT-SIZE distributions, not counts: read script 13's
-  median_abs_lfc_sig per timepoint (already computed); compare |LFC| of the
-  genotype effect at 6W vs 12W on a common gene set (e.g. the 6W-divergent genes
-  carried into 12W). If magnitudes also collapse -> convergence is biological;
-  if only counts collapse -> power is implicated. Shrunken estimates for the
-  visual only.
+Effect-size check (script 13 PART 2b) - RESOLVED: convergence is BIOLOGICAL,
+not a power artifact.
+- Concern: myc_6W_raw is the reference-level contrast (name =
+  myc_status_pos_vs_neg); myc_12W_raw is a composite (list) contrast with a
+  larger SE and therefore LOWER power, so the 2777 -> 239 COUNT drop is
+  confounded with reduced 12W power. LFC POINT estimates are SE-independent, so
+  the check compares |LFC| across FIXED gene sets (not re-thresholded at 12W).
+- Results (median |LFC| 6W -> 12W; slope of lm(lfc_12W ~ 0 + lfc_6W); Pearson r):
+    Set A  6W-divergent (padj<0.1, n=2777): 0.62 -> 0.27, ratio 0.44,
+           slope 0.46, r 0.70, 97% of genes attenuated. NOTE selection-on-6W
+           biases this set TOWARD apparent attenuation.
+    Set B  expressed (baseMean>=median, n=9262, LFC-INDEPENDENT/UNBIASED):
+           0.22 -> 0.16, ratio 0.72, slope 0.45, r 0.64, 64% attenuated.
+- Decisive point: the two SLOPES are identical (0.46 biased vs 0.45 unbiased).
+  Regression-to-the-mean would make the 6W-selected set A attenuate MORE than
+  the LFC-independent set B; they agree, so the ~2x shrinkage is NOT a
+  selection/power artifact. The genotype effect genuinely attenuates to ~45% of
+  its 6W magnitude by 12W, direction preserved (positive r -> attenuation, not
+  sign reversal). Verdict class: COLLAPSED_BIOLOGICAL.
+- Honest residual caveats: (a) "converge" is shorthand - the effect HALVES, it
+  does NOT vanish; quote the SLOPE (~0.45), not set A's median ratio (0.44),
+  which is composition-inflated vs set B's noise-floor-padded 0.72. (b)
+  Regression dilution biases the slope downward but hits both sets equally, and
+  the 97%-attenuated figure is dilution-independent - the conclusion is robust.
+- Outputs: outputs/gates/gate1_effect_size_check.csv + .pdf;
+  gate1_divergence_timing.rds$effect_size_{check,class,verdict}.
 
 Framing consequence:
 - The "developmental change licenses Myc" (permission) verb is NOT supported,
-  and neither is a "progressive divergence" trajectory. Data show early-max,
-  converging divergence.
-- Title verb: move off both "licenses" and "drives progressive". The trajectory
-  reframing is OPEN, pending Day 2+ (candidate hypotheses below). No committed
-  replacement framing yet.
+  and neither is a "progressive divergence" trajectory. Data show early-max
+  divergence that then attenuates ~2-fold (biologically) across the window.
+- Convergence IS now supported at the EFFECT-SIZE level (quantified: genotype
+  effect ~halves 6W->12W, direction preserved) - not merely a significant-gene
+  count artifact. State it as "~2-fold attenuation, not to zero".
+- Title verb: move off both "licenses" and "drives progressive"; an
+  attenuation/convergence verb is now defensible. The MECHANISM behind the
+  attenuation (H1 vs H3 vs H4) is still OPEN, pending Day 2+. No committed
+  mechanistic framing yet.
 
 ## Candidate trajectory hypotheses (OPEN - to test Day 2+, none adopted)
 
@@ -58,9 +76,13 @@ planned analysis that can discriminate it.
   attenuates as the tissue substrate matures; stable dose, moving substrate.
   Test: AP-retention / AP-abund (script 21), per-pathway interaction direction
   (script 19).
-- H2 Power artifact: apparent shrinkage inflated by the lower power of the
-  composite 12W contrast. Test: effect-size comparison + shrunken visuals
-  (script 13 magnitude columns; MA/QC from script 03).
+- H2 Power artifact: LARGELY REJECTED (script 13 PART 2b, 2026-07-05). The
+  count drop is NOT primarily a 12W-power artifact: genotype |LFC| point
+  estimates (SE-independent) attenuate to ~45% on a fixed 6W-divergent set
+  (slope 0.46), and the LFC-independent expressed set gives the SAME slope
+  (0.45), ruling out a selection/power explanation. Residual power effects may
+  still inflate the raw COUNT ratio, but the underlying effect-size collapse is
+  real. Not a live trajectory hypothesis; retained only as a QC footnote.
 - H3 Developmental catch-up (convergence from the WT side): Myc- controls move
   toward the Myc+ state by 12W (WT development advancing), closing the gap rather
   than Myc+ reverting. Test: WT temporal shift AP1 (mitoPPS + MG_* GSVA on Myc-
@@ -123,8 +145,12 @@ Framing consequence:
 - T3 RESOLVED: Gate 2 direction + PRO/ANTI already computed on raw / Wald values
   (interaction_results$interaction_raw, unshrunken MLE; IHW touches only padj).
   No shrinkage recompute anywhere in the gate layer. Do not re-litigate.
-- Gate 1 power caveat (composite 12W contrast) - address before any published
-  "convergence" wording.
+- Gate 1 power caveat (composite 12W contrast) - RESOLVED 2026-07-05 by the
+  effect-size check (script 13 PART 2b): the SHRINKS is biological ~2-fold
+  attenuation (slope ~0.45 on both a biased and an unbiased gene set), not a
+  power artifact. See outputs/gates/gate1_effect_size_check.{csv,pdf}.
+  "Convergence" wording is now defensible if quantified as ~2-fold attenuation
+  (not to zero).
 - Gate 2 small-n caveat (23 / 7 genes) - corroborate with cell-death branches.
 - 01 gene-set tidy still deferred to Block B; trunk self-containment for the raw
   cell-death inputs still a Block B task.

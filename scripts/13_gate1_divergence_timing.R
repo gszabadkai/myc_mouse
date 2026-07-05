@@ -155,6 +155,126 @@ message(sprintf("  Context - all genes with interaction p<0.05: %d neg (%.1f%%),
                 n_int_neg, pct_int_neg_all, n_int_pos))
 
 # =============================================================================
+# PART 2b: COMMON-GENE-SET EFFECT-SIZE CHECK (resolve the power caveat / H2)
+# =============================================================================
+# The 2777 -> 239 drop in PART 2 is a significant-gene COUNT. Because myc_12W is a
+# composite (list) contrast with a larger SE than the 6W reference-level contrast,
+# the count drop is confounded with lower 12W power. A LFC point estimate is
+# UNAFFECTED by SE, so comparing |LFC| across a FIXED gene set (not re-thresholded
+# at 12W) discriminates:
+#   - |LFC| magnitude PRESERVED 6W -> 12W  -> count drop is a POWER artifact (H2)
+#   - |LFC| magnitude COLLAPSES 6W -> 12W  -> BIOLOGICAL convergence (H1/H3/H4)
+#
+# Two complementary sets:
+#   (A) 6W-divergent set (padj<0.1 at 6W): "did the divergent genes stay
+#       divergent?". CAVEAT: selecting on 6W significance inflates the 6W |LFC|
+#       (winner's curse / regression-to-mean), biasing this comparison TOWARD
+#       apparent attenuation. So ratio >= ~0.9 here is STRONG evidence for a power
+#       artifact; ratio < 1 is only SUGGESTIVE of real convergence.
+#   (B) expression-selected set (baseMean >= median), independent of the genotype
+#       LFC: an UNBIASED read of the 12W-vs-6W LFC relationship (slope, corr),
+#       free of the selection-on-effect bias in (A).
+
+message("\n", strrep("=", 70))
+message("PART 2b: COMMON-GENE-SET EFFECT-SIZE CHECK (power caveat / H2)")
+message(strrep("=", 70))
+
+# Joined genotype LFCs across the two contrasts (shared gene universe from dds_int)
+lfc_join <- data.frame(
+  ensembl_id = rownames(myc_6W),
+  baseMean   = myc_6W$baseMean,
+  lfc_6W     = myc_6W$log2FoldChange,
+  padj_6W    = myc_6W$padj,
+  lfc_12W    = myc_12W$log2FoldChange,
+  row.names  = NULL
+) |>
+  dplyr::filter(!is.na(lfc_6W), !is.na(lfc_12W))
+
+summarise_effize <- function(df, set_label) {
+  # paired Wilcoxon signed-rank on |LFC| across the SAME genes
+  wp <- suppressWarnings(
+    wilcox.test(abs(df$lfc_12W), abs(df$lfc_6W), paired = TRUE)
+  )$p.value
+  tibble::tibble(
+    gene_set           = set_label,
+    n                  = nrow(df),
+    median_abs_lfc_6W  = median(abs(df$lfc_6W)),
+    median_abs_lfc_12W = median(abs(df$lfc_12W)),
+    ratio_12W_over_6W  = median(abs(df$lfc_12W)) / median(abs(df$lfc_6W)),
+    slope_12W_on_6W    = unname(coef(lm(lfc_12W ~ 0 + lfc_6W, data = df))[1]),
+    pearson_r          = cor(df$lfc_6W, df$lfc_12W),
+    frac_attenuated    = mean(abs(df$lfc_12W) < abs(df$lfc_6W)),
+    paired_wilcox_p    = wp
+  )
+}
+
+set_A <- lfc_join |> dplyr::filter(padj_6W < 0.1)                 # 6W-divergent (biased toward attenuation)
+set_B <- lfc_join |> dplyr::filter(baseMean >= median(baseMean)) # expressed (LFC-independent, unbiased)
+
+effize_A     <- summarise_effize(set_A, "6W-divergent (padj<0.1)")
+effize_B     <- summarise_effize(set_B, "expressed (baseMean>=median)")
+effize_check <- dplyr::bind_rows(effize_A, effize_B)
+
+effize_check |> print()
+
+# --- Verdict: magnitude collapse (biology) vs preserved magnitude (power) ---
+ratioA <- effize_A$ratio_12W_over_6W
+effize_class <- dplyr::case_when(
+  ratioA >= 0.9 ~ "PRESERVED_POWER_ARTIFACT",
+  ratioA <= 0.6 ~ "COLLAPSED_BIOLOGICAL",
+  TRUE          ~ "PARTIAL"
+)
+
+effize_verdict <- switch(
+  effize_class,
+  PRESERVED_POWER_ARTIFACT = sprintf(
+    paste("PRESERVED: genotype |LFC| on the 6W-divergent set holds at 12W",
+          "(ratio %.2f, slope %.2f, r %.2f). The count drop is largely a POWER",
+          "artifact (H2); effect-size 'convergence' NOT supported."),
+    effize_A$ratio_12W_over_6W, effize_A$slope_12W_on_6W, effize_A$pearson_r),
+  COLLAPSED_BIOLOGICAL = sprintf(
+    paste("COLLAPSED: genotype |LFC| falls at 12W (ratio %.2f, slope %.2f, r %.2f).",
+          "Supports BIOLOGICAL convergence (H1/H3/H4). 6W-selection biases toward",
+          "attenuation - corroborated by the expressed-set slope %.2f."),
+    effize_A$ratio_12W_over_6W, effize_A$slope_12W_on_6W, effize_A$pearson_r,
+    effize_B$slope_12W_on_6W),
+  PARTIAL = sprintf(
+    paste("PARTIAL: |LFC| ratio %.2f intermediate (slope %.2f, r %.2f); the count",
+          "drop mixes power + magnitude. Expressed-set slope %.2f is the unbiased",
+          "tiebreak."),
+    effize_A$ratio_12W_over_6W, effize_A$slope_12W_on_6W, effize_A$pearson_r,
+    effize_B$slope_12W_on_6W)
+)
+
+message(sprintf("\n  Class: %s", effize_class))
+message(sprintf("  %s", effize_verdict))
+
+# --- Money plot: genotype LFC 6W vs 12W on the 6W-divergent set ---
+p_effize <- ggplot(set_A, aes(x = lfc_6W, y = lfc_12W)) +
+  geom_point(alpha = 0.25, size = 0.7, colour = "steelblue") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "red") +
+  geom_abline(slope = effize_A$slope_12W_on_6W, intercept = 0,
+              colour = "darkblue", linewidth = 0.7) +
+  coord_equal() +
+  labs(
+    title = "Gate 1 effect-size check: genotype LFC, 6W-divergent genes",
+    subtitle = sprintf(
+      paste0("n=%d  |  median |LFC| 6W=%.2f, 12W=%.2f (ratio %.2f)  |  ",
+             "slope(12W~6W)=%.2f, r=%.2f\n",
+             "Red dashed = y=x (magnitude preserved)  |  Blue = fitted through-origin slope"),
+      effize_A$n, effize_A$median_abs_lfc_6W, effize_A$median_abs_lfc_12W,
+      effize_A$ratio_12W_over_6W, effize_A$slope_12W_on_6W, effize_A$pearson_r),
+    x = "Genotype LFC at 6W (myc_status_pos_vs_neg)",
+    y = "Genotype LFC at 12W (composite)"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"))
+
+ggsave(file.path(gate_dir, "gate1_effect_size_check.pdf"), p_effize, width = 7, height = 7)
+write.csv(effize_check, file.path(gate_dir, "gate1_effect_size_check.csv"),
+          row.names = FALSE)
+
+# =============================================================================
 # PART 3: DAY-3 HOOK (developmental-set stage projection) -- placeholder only
 # =============================================================================
 # Filled on Day 3 from results/gsva_scores.rds (script 15) + results/
@@ -240,6 +360,9 @@ gate1_results <- list(
   interaction_direction_all_context = list(
     n_negative = n_int_neg, n_positive = n_int_pos, pct_negative = pct_int_neg_all
   ),
+  effect_size_check      = effize_check,
+  effect_size_class      = effize_class,
+  effect_size_verdict    = effize_verdict,
   dev_projection_hook    = dev_projection_hook,
   gate1_call             = gate1_call,
   analysis_date          = Sys.Date()
@@ -251,6 +374,8 @@ message("\nSaved:")
 message("  results/gate1_divergence_timing.rds")
 message("  outputs/gates/gate1_summary.csv")
 message("  outputs/gates/gate1_divergence_timing.pdf")
+message("  outputs/gates/gate1_effect_size_check.csv")
+message("  outputs/gates/gate1_effect_size_check.pdf")
 
 # =============================================================================
 # SANDBOX (skipped by source()/Rscript; run line-by-line in Positron)
@@ -277,6 +402,13 @@ if (FALSE) {
   # Sanity: interaction direction split reproduced from script 11's persisted set
   characterisation$direction
 
-  # Eyeball the plot
+  # --- Effect-size check (PART 2b) inspection ---
+  # Two summary rows: 6W-divergent (biased toward attenuation) + expressed (unbiased).
+  #  - set_A ratio near/above 1 or slope near 1  => power artifact (H2)
+  #  - set_A ratio well below 1 AND set_B slope below 1 => real convergence
+  effize_check |> print()
+
+  # Eyeball both plots
   print(p_divergence)
+  print(p_effize)
 }
