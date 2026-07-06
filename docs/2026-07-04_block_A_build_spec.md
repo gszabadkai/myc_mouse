@@ -99,14 +99,21 @@ scripts read existing `.rds`; build scripts add new computation.
 | 14 | `14_gate2_apoptosis_readout.R` | reframe | Gate 2 | 1 |
 | 15 | `15_gsva_scoring.R` | build | AP1/2/3/4/7 infra | 2 |
 | 16 | `16_cell_death_binomial_raw.R` | port | AP-CD branch 1 | 2 |
-| 17 | `17_ap7_mb_fork_projection.R` | build | AP7 (centrepiece) | 3 |
-| 18 | `18_dev_composition.R` | build | AP1, AP2, AP3, AP4 | 3 |
-| 19 | `19_fgsea_percategory.R` | build | AP6.1, AP-retention, AP-abund | 3 |
-| 20 | `20_ap6_permutation_null.R` | build | AP6.2 | 4 |
-| 21 | `21_reframe_mtdna_abund_retention.R` | reframe | AP-mtDNA, AP-abund, AP-retention | 4-5 |
-| 22 | `22_figure1.R` | build | Fig 1 draft | 4 |
-| 23 | `23_figure2.R` | build | Fig 2 draft | 5 |
-| 24 | `24_supplementaries.R` | build | Supp 1-3 draft | 5 |
+| 17 | `17_gsva_overview.R` | build | GSVA read / H1-vs-H3 discrimination | 3 |
+| 18 | `18_ap7_mb_fork_projection.R` | build | AP7 (centrepiece) | 3 |
+| 19 | `19_dev_composition.R` | build | AP1, AP2, AP3, AP4 | 3 |
+| 20 | `20_fgsea_percategory.R` | build | AP6.1, AP-retention, AP-abund | 3 |
+| 21 | `21_ap6_permutation_null.R` | build | AP6.2 | 4 |
+| 22 | `22_reframe_mtdna_abund_retention.R` | reframe | AP-mtDNA, AP-abund, AP-retention | 4-5 |
+| 23 | `23_figure1.R` | build | Fig 1 draft | 4 |
+| 24 | `24_figure2.R` | build | Fig 2 draft | 5 |
+| 25 | `25_supplementaries.R` | build | Supp 1-3 draft | 5 |
+
+**Renumber note (2026-07-06):** the GSVA-overview / trajectory-visualisation
+script was inserted as the new **17** (author-requested read of `gsva_scores.rds`
+before the AP scripts consume it — the H1-vs-H3 discriminator). Everything that
+was 17-24 shifted **+1** to 18-25. No script files moved (none existed yet). The
+Day 3/4/5 sections below and all cross-references use the new numbering.
 
 `12_cell_death_pathway_analysis.R` (branch 2, Tang sets on Wald z) is **done**
 (`cell_death_fgsea.rds`); run as-is, no edit. `08` mitoPPS is done
@@ -192,9 +199,28 @@ demoted; figure plan locked.*
 
 *End Day 2: two-branch cell-death convergence on raw; validated GSVA matrix.*
 
-### Day 3 — Harvest GSVA-dependent results + per-category fGSEA
+### Day 3 — GSVA overview read, then GSVA-dependent results + per-category fGSEA
 
-**17 — `17_ap7_mb_fork_projection.R` (AP7, CENTREPIECE).**
+**17 — `17_gsva_overview.R` (GSVA read; H1-vs-H3 discriminator) [runs first].**
+- Reads: `results/gsva_scores.rds` (902 GSVA-tagged sets x 24 samples).
+- Computes: per set, `lm(score ~ timepoint * myc_status)` on the 24 samples ->
+  coefficient table (`beta_time` = WT/Myc- slope; `beta_myc` = d6; `beta_int` =
+  d12-d6 = the Gate-1 attenuation; derived `d12`, Myc+ slope), interaction p
+  BH-adjusted **within `category_primary`**; 4-column condition-mean matrix
+  (`6W_neg,6W_pos,12W_neg,12W_pos`).
+- Writes: `results/gsva_overview.rds`; `outputs/gsva_overview/` -
+  `<category>_landscape.pdf` (top ~35 sets by interaction p, row-z-scored, WT-slope
+  + interaction row annotations, ComplexHeatmap) per category, plus
+  `<category>_profiles.pdf` (4-point two-line profile) and `<category>_dumbbell.pdf`
+  (d6->d12 gap collapse) for the four trajectory categories
+  (03_mammary_development, 02_myc_signatures, 07_biogenesis_discrimination,
+  08_apoptosis).
+- Rationale: interaction = the attenuation metric (rank on it); the two-line
+  profile shows *which* genotype trajectory moved -> discriminates H1 (Myc+
+  descends) from H3 (Myc- ascends). Feeds the Gate-1 projection hook (13) and
+  sanity-frames dev-composition (19).
+
+**18 — `18_ap7_mb_fork_projection.R` (AP7, CENTREPIECE).**
 - Reads: `results/gsva_scores.rds` (or projects fresh if fork sets excluded from
   15), `data/genesets_from_library/metabric_sets.rds` and/or the mouse fork GMTs.
 - **Build-time check (flag):** confirm the MB1/MB2/MB12 fork signatures'
@@ -206,8 +232,8 @@ demoted; figure plan locked.*
   Myc+ progression shifts samples toward **MB2_UF** specifically (falsifiable).
 - Writes: `results/ap7_mb_fork.rds`, projection plot(s).
 
-**18 — `18_dev_composition.R` (AP1, AP2, AP3, AP4).**
-- Reads: `gsva_scores.rds`, `coldata.rds`, `interaction_results.rds`.
+**19 — `19_dev_composition.R` (AP1, AP2, AP3, AP4).**
+- Reads: `gsva_scores.rds`, `gsva_overview.rds`, `coldata.rds`, `interaction_results.rds`.
 - AP1: WT developmental shift — `MG_*` GSVA + mitoPPS on Myc- 6W vs 12W (mitoPPS
   exists in `mitopps_scores.rds`).
 - AP2: lineage-composition genotype effect — `MG_*` GSVA on all samples,
@@ -217,7 +243,7 @@ demoted; figure plan locked.*
 - AP4: Felsher membership lookup + one GSVA co-variation corr (dose constant).
 - Writes: `results/dev_composition.rds`; feeds the Gate 1 projection hook (13).
 
-**19 — `19_fgsea_percategory.R` (AP6 part 1 + AP-retention/AP-abund inputs).**
+**20 — `20_fgsea_percategory.R` (AP6 part 1 + AP-retention/AP-abund inputs).**
 - Reads: `interaction_results.rds` (rankings from `stat` on the **unshrunken**
   `*_raw` contrasts: `interaction_raw`, `timepoint_pos_raw`, `timepoint_neg_raw`,
   `myc_6W_raw`, `myc_12W_raw`); `by_category/*.gmt`; fresh Hallmark via
@@ -237,7 +263,7 @@ demoted; figure plan locked.*
 
 ### Day 4 — Finish justification + Figure 1
 
-**20 — `20_ap6_permutation_null.R` (AP6 part 2).**
+**21 — `21_ap6_permutation_null.R` (AP6 part 2).**
 - Reads: `interaction_results.rds` (mean |LFC| per gene), MitoCarta membership
   (from `mitopps_scores.rds` gene_to_pathway or `01_mitocarta` GMT), comparator
   sets.
@@ -248,7 +274,7 @@ demoted; figure plan locked.*
   cut-line (section 9 item 3) — include a guarded stub only.
 - Writes: `results/ap6_permutation_null.rds`.
 
-**22 — `22_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
+**23 — `23_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
 alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 `.rds`. Writes `outputs/figures/figure1_draft.pdf`.
 
@@ -256,7 +282,7 @@ alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 
 ### Day 5 — Figure 2 + supplementaries + draft text
 
-**21 — `21_reframe_mtdna_abund_retention.R` (reframe, feeds Supp 3).**
+**22 — `22_reframe_mtdna_abund_retention.R` (reframe, feeds Supp 3).**
 - AP-mtDNA: off `mitopps_scores.rds` synthetic mtDNA pathway — mtDNA-encoded vs
   nuclear OXPHOS split, per-complex correlations (per-complex detail is cut-line
   5).
@@ -269,13 +295,13 @@ alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 - Reads: `fgsea_percategory.rds`, `mitopps_scores.rds`, `fgsea_results.rds`,
   `fgsea_xs_results.rds`. Writes `results/reframe_supp3.rds`.
 
-**23 — `23_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
+**24 — `24_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
 discrimination (MYC_SPECIFIC/CORE/DEVELOPMENTAL from `07_*` GMT) + divergence
 timing (AP5). Writes `outputs/figures/figure2_draft.pdf`.
 
-**24 — `24_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
+**25 — `25_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
 cell-death convergence, from 14/16/12) - Supp 2 (permutation null + comparator
-panel + QC/provenance, from 20/19) - Supp 3 (mtDNA split + abund panel, from 21).
+panel + QC/provenance, from 21/20) - Supp 3 (mtDNA split + abund panel, from 22).
 Optional **AP8** tail block (cross-sample CV of mito-fork score) only if the
 selection arm survived Gate 2. Writes `outputs/figures/supp{1,2,3}_draft.pdf`.
 
@@ -286,7 +312,7 @@ figure legends.
 
 ## Cut-lines (plan section 9, drop first if behind)
 
-1. AP3/AP4 fine detail - 2. AP8 (script 24 tail) - 3. ROAST/CAMERA (stub in 20)
+1. AP3/AP4 fine detail - 2. AP8 (script 25 tail) - 3. ROAST/CAMERA (stub in 21)
 - 4. comparator breadth -> proliferation only - 5. Supp 3 per-complex detail -
 6. figure polish. **Not a cut-line:** the branch-1 raw re-run (16) — it feeds
 Gate 2 and runs regardless.
@@ -301,11 +327,14 @@ Gate 2 and runs regardless.
   the binomial output differs from the shrunken run only as expected.
 - **GSVA (15):** score-distribution sanity (Gaussian, no all-NA sets); confirm
   log-scale input (VST), all-samples-one-run; spot-check a known dev set.
-- **AP7 (17):** confirm fork-set species resolved to mouse; check MB2_UF shift
+- **GSVA overview (17):** confirm `beta_myc == d6` (lm vs group-means agree); the
+  four trajectory categories' two-line profiles separate H1 (Myc+ down) from H3
+  (Myc- up); landscapes show <=~35 rows after the interaction-p cut.
+- **AP7 (18):** confirm fork-set species resolved to mouse; check MB2_UF shift
   direction is testable/falsifiable.
-- **Per-category fGSEA (19):** confirm BH is within-run (not pooled); spot-check
+- **Per-category fGSEA (20):** confirm BH is within-run (not pooled); spot-check
   one category's padj against a manual `p.adjust`.
-- **Permutation null (20):** confirm bins are expression x dispersion; null is
+- **Permutation null (21):** confirm bins are expression x dispersion; null is
   direction-agnostic (|LFC|).
 - Each script's `if (FALSE)` sandbox holds the line-by-line inspection calls.
 
@@ -318,7 +347,7 @@ Gate 2 and runs regardless.
   builder into the trunk is a Block B task.
 - **01 tidy** — deferred (or dropped); `gene_sets_list.rds` stays alive for
   10/11 in Block A.
-- **MB-fork species** — resolve mouse mapping at 17's first line.
+- **MB-fork species** — resolve mouse mapping at 18's first line.
 - Housekeeping (plan section 10): `NES_paradox_explanation.md` "liver" mislabel;
   mitoPPS outlier call; stray `output/` (singular) dir; stale `branch_manifest.md`
   — tidy when convenient, not gating.
