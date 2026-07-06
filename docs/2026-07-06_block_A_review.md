@@ -38,6 +38,8 @@ analysis are OPEN (see below).
 | 19 | dev_composition | 6f9c128 | Myc=biogenesis (Felsher~bio 0.90, geno p=3.7e-6); suppresses basal (p=0.016); anti-parallel to lineage development; WT mito reallocation |
 | 20 | fgsea_percategory | 2f278c9 | MitoCarta NES 2.18 (padj 1e-55); attenuation-via-convergence (timepoint_pos mito down, timepoint_neg mito up) |
 | 21 | ap6_permutation_null | e370d1e | HARD "why mito": mito/OXPHOS most preferentially altered vs expression-matched null; proliferation does NOT survive |
+| 22 | reframe_mtdna_abund_retention | afcddfe | mtDNA-up/nuclear-down WT reallocation; abund lens-split time-dependent (6W selective SD 0.14 -> 12W uniform 0.10, fGSEA NES flat 2.2); retention: mito/biogenesis convergence per-category |
+| 23 | death_timing_substrate | 2140b37 | Myc death-coupling substrate-gated: priming p=0.038, ~3x at 6W, Gate2 p=0.023; mitonuclear imbalance peaks 6W_pos, death coupling 0.75->0.07; prolif coupling invariant; p53 null |
 
 ## Hypotheses -> verdict
 
@@ -77,12 +79,24 @@ analysis are OPEN (see below).
    (p=0.016); its lineage effect is anti-parallel to the WT developmental direction
    (AP3 rho=-0.28) - decoupling the metabolic arm (rides it) from the lineage arm
    (opposes it).
+6. **Myc's death-coupling is substrate-gated through mitochondrial state (script
+   23).** Myc raises pro-apoptotic priming (genotype p=0.038; myc_6W PRO module
+   p=0.041) ~3x more at 6W than 12W, and it attenuates (Gate 2 p=0.023). The
+   mechanism: a MITONUCLEAR IMBALANCE (nuclear - mtDNA OXPHOS mitoPPS) peaks at
+   6W_pos (+0.50) and its coupling to death priming is strong at 6W (r=0.75) and
+   GONE at 12W (r=0.07); biogenesis-death coupling decays 0.77->0.56; proliferation-
+   death coupling is INVARIANT (0.68->0.65 - so the timing is mito, not generic
+   proliferation). The 12W decoupling IS the loss of killing. Powered anchors =
+   the priming genotype effect + Gate 2; the couplings are striking within-timepoint
+   directional (n=12, survivor-biased, uncorrected). Bridges the external IHC 6W-
+   death phenotype to the mito thesis. p53/ARF null; the rheostat is BCL2-family.
 
 ### Tier 2 - directional / method-independent, NOT per-set significant
 - Program-trajectory texture, cross-validated GSVA-vs-count rho=0.66.
 - Apoptosis pro-death front-loading at 6W (Gate 2 + CDC_PRODEATH_CICD, four-method
   convergent: int_p 0.036 / camera 0.037 / roast 0.020 / mean_int_stat -1.06).
-- Biogenesis-death decoupling over time (intersections category).
+- Biogenesis-death decoupling over time (intersections category; now mechanised by
+  script 23 - the mitonuclear-imbalance coupling, see Tier-1 item 6).
 
 ### Tier 3 - NOT claimed / refuted
 - Per-set and interaction significance (n=6/group floor, confirmed across lm /
@@ -127,14 +141,21 @@ Tier 1.
   against it; MB2_UF/LP as the dedifferentiation endpoint. Lead: 19 + AP7. Novel and
   mechanistic, but the lineage results are partly descriptive (basal p=0.016 is the
   one powered anchor).
-- **D. Cell-death / mito-decision-point frame (contingent).** The mito state gates
-  apoptotic sensitivity (6W-permissive). Only viable if the DEFERRED death-timing
-  analysis lands (IHC phenotype is solid; see below). Currently Tier 2 - not a lead
-  yet.
+- **D. Cell-death / mito-decision-point frame.** The mito state gates apoptotic
+  sensitivity (6W-permissive). UPGRADED by script 23 (2026-07-07): no longer
+  contingent - it now has a powered anchor (Myc pro-death priming p=0.038; Gate 2
+  p=0.023) AND a mechanism (mitonuclear imbalance peaks at 6W_pos, its death
+  coupling r=0.75->0.07). D connects to A: the SAME preferential-mito amplification
+  (AP6.2) that defines the Myc footprint produces, at 6W, the imbalanced state that
+  gates death. "Mitochondria integrate oncogenic and metabolic programs to shape
+  progression" - this IS the integration, mechanised. Still bounded (causal death
+  phenotype is external/IHC; this is substrate characterisation, survivor-biased).
+  Now a strong secondary thread / main-figure hook, not just discussion.
 
-Leading recommendation: **A as the lead**, B and C woven in as the mechanism, D held
-for the deferred analysis / discussion. Title verb "integrate" holds; drop
-"licenses/permits."
+Leading recommendation: **A as the lead**, B and C woven in as the mechanism, and
+**D promoted from held-for-discussion to a secondary thread with a main-figure
+hook** (the mitonuclear-imbalance-at-6W_pos panel bridges Fig 1's mito thesis to
+the death phenotype). Title verb "integrate" holds; drop "licenses/permits."
 
 ## Proposed figure split (draft)
 
@@ -153,13 +174,15 @@ for the deferred analysis / discussion. Title verb "integrate" holds; drop
 
 1. **Framing** - confirm A as lead ("integrate / preferentially amplify"), drop
    permission?
-2. **Cell death - main figure or supplementary?** (STILL OPEN.) Gate 2 flagged it a
-   main-figure candidate, but it is Tier-2 directional here, and the CAUSAL 6W-death
-   phenotype is the deferred IHC-anchored analysis, not the current transcriptomics.
-   Options: (a) keep a cell-death main panel on the Gate-2 + front-loading evidence;
-   (b) demote to Supp 1 and make the death story a dedicated follow-up (the deferred
-   analysis) - cleaner given the n=6 floor; (c) a hybrid: apoptosis appears in Fig 2
-   only as the biogenesis-death decoupling, full death analysis in Supp.
+2. **Cell death - main figure or supplementary?** (REFRAMED by script 23,
+   2026-07-07.) The death story now has a mechanistic spine (mitonuclear imbalance
+   peaks 6W_pos; death coupling 0.75->0.07) + powered anchors (Myc priming p=0.038;
+   Gate 2 p=0.023), so it is no longer merely Tier-2. RECOMMENDED = hybrid (c+):
+   the mitonuclear-imbalance-at-6W_pos panel goes MAIN (Fig 1 or 2, as the mito->
+   death bridge for the "integrate" title), the full death analysis (BH3:BCL2
+   rheostat, branches 12/16, Gate 2, H1-H4) goes to a strong Supp. The CAUSAL death
+   phenotype stays external (IHC); we frame the transcriptomics as substrate. Author
+   to confirm which main figure hosts the imbalance panel.
 3. **Script 22** (mtDNA / abund / retention -> Supp 3) - RESOLVED 2026-07-06b: run
    now to finish Block A (being built).
 4. **Deferred death-timing analysis** - RESOLVED 2026-07-06b: run BEFORE the
