@@ -28,14 +28,32 @@
 #   We fit all 902 sets at once by ordinary least squares on the shared design
 #   matrix (identical to per-set lm(); no moderation).
 #
+# Statistical caveat + validation:
+#   The per-set lm interaction is underpowered (n=6/group; interactions are the
+#   lowest-power contrast) and nothing survives BH within category. The library
+#   sets also overlap heavily (set algebra), so per-set "consistency" is inflated
+#   by non-independence. PART 6 therefore adds two correlation-aware / independent
+#   checks on the SAME data before any of this is trusted for figure text:
+#     (a) CAMERA (competitive, inter-gene-correlation aware) + ROAST (self-
+#         contained rotation) on the gene-level interaction contrast, per set and
+#         per category (union meta-set = one powered test per category); and
+#     (b) a cross-check correlating each set's GSVA beta_int (d12 - d6) against the
+#         mean DESeq2 interaction Wald stat of its member genes -- convergence of
+#         the GSVA trajectory with the independent count-level interaction.
+#
 # Input:
-#   - results/gsva_scores.rds : list(scores [set x 24], set_meta, sample_meta, ...)
+#   - results/gsva_scores.rds : list(scores [set x 24], set_meta, sample_meta,
+#                                     expr_mat [symbol x 24 VST], pathways)
+#   - results/interaction_results.rds : $interaction_raw (DESeq2 interaction Wald)
+#   - results/ortholog_table.rds : ENSMUSG -> mouse symbol (for the stat mapping)
 #
 # Output:
-#   - results/gsva_overview.rds : list(coef_table, cond_means, trajectory_categories)
+#   - results/gsva_overview.rds : list(coef_table [+ camera/roast/mean_int_stat],
+#                                     cond_means, cat_camera, crosscheck, ...)
 #   - outputs/gsva_overview/<category>_landscape.pdf        (all categories)
 #   - outputs/gsva_overview/<category>_profiles.pdf         (trajectory cats)
 #   - outputs/gsva_overview/<category>_dumbbell.pdf         (trajectory cats)
+#   - outputs/gsva_overview/crosscheck_beta_int_vs_gene_interaction.pdf
 # =============================================================================
 
 source(here::here("scripts", "00_setup_packages.R"))
@@ -48,6 +66,17 @@ gsva_out    <- readRDS(here::here("results", "gsva_scores.rds"))
 scores      <- gsva_out$scores                       # set x sample (24)
 set_meta    <- gsva_out$set_meta                     # set_name / category_primary / ...
 sample_meta <- as.data.frame(gsva_out$sample_meta)
+expr_mat    <- gsva_out$expr_mat                     # symbol x 24 VST (full universe)
+pathways    <- gsva_out$pathways                     # mouse-symbol gene-set lists
+
+# Gene-level validation inputs (PART 6). Fail early with a clear message if an
+# older gsva_scores.rds (without expr_mat/pathways) is present -- re-run 15.
+if (is.null(expr_mat) || is.null(pathways)) {
+  stop("gsva_scores.rds lacks expr_mat/pathways; re-run scripts/15_gsva_scoring.R ",
+       "(it now stores them for the gene-level tests in script 17 PART 6).")
+}
+interaction_raw <- readRDS(here::here("results", "interaction_results.rds"))$interaction_raw
+ortholog        <- readRDS(here::here("results", "ortholog_table.rds"))
 
 stopifnot(all(c("group", "myc_status", "timepoint") %in% colnames(sample_meta)))
 
@@ -312,7 +341,118 @@ message(sprintf("Wrote trajectory panels for: %s",
                 paste(present, collapse = ", ")))
 
 # =============================================================================
-# PART 6: SAVE OVERVIEW OBJECT
+# PART 6: GENE-LEVEL VALIDATION (CAMERA / ROAST + cross-check)
+# =============================================================================
+# The per-set GSVA lm interaction is underpowered and its cross-set "consistency"
+# is inflated by set overlap. These gene-level tests are correlation-aware /
+# independent, on the SAME VST matrix + design used for the GSVA scores.
+
+# Align the VST matrix columns to the model rows (both are dds order, but assert).
+stopifnot(all(rownames(sample_meta) %in% colnames(expr_mat)))
+expr_mat <- expr_mat[, rownames(sample_meta), drop = FALSE]
+
+# Restrict the gene-set list to the sets that were actually scored (= coef_table).
+pathways_scored <- pathways[names(pathways) %in% coef_table$set_name]
+idx <- limma::ids2indices(pathways_scored, rownames(expr_mat))
+
+# --- (a) CAMERA: competitive, inter-gene-correlation aware, interaction contrast
+# inter.gene.cor = NA estimates the ACTUAL per-set correlation (vs the fixed 0.01
+# preset), so the test genuinely corrects for the set overlap that inflates the
+# per-set GSVA "consistency"; the estimate is reported in camera_cor.
+cam <- limma::camera(expr_mat, idx, design = X, contrast = int_col,
+                     inter.gene.cor = NA)
+cam_df <- tibble::as_tibble(cam, rownames = "set_name") |>
+  dplyr::select(set_name,
+                camera_ngenes = NGenes, camera_cor = Correlation,
+                camera_dir = Direction, camera_p = PValue, camera_fdr = FDR)
+
+# --- (a) ROAST: self-contained rotation test (does the set move at all?)
+roa <- limma::mroast(expr_mat, idx, design = X, contrast = int_col,
+                     nrot = 9999, set.statistic = "mean")
+roa_df <- tibble::as_tibble(roa, rownames = "set_name") |>
+  dplyr::select(set_name,
+                roast_dir = Direction, roast_p = PValue, roast_fdr = FDR)
+
+# --- Category-level CAMERA: union meta-set per category = one powered test each
+cats_all  <- sort(unique(coef_table$category_primary))
+meta_sets <- lapply(cats_all, function(cc) {
+  sets <- coef_table$set_name[coef_table$category_primary == cc]
+  unique(unlist(pathways_scored[sets], use.names = FALSE))
+})
+names(meta_sets) <- cats_all
+meta_idx  <- limma::ids2indices(meta_sets, rownames(expr_mat))
+cat_camera <- tibble::as_tibble(
+  limma::camera(expr_mat, meta_idx, design = X, contrast = int_col,
+                inter.gene.cor = NA),
+  rownames = "category_primary"
+)
+
+# --- (b) Cross-check: per-set mean DESeq2 interaction Wald stat vs GSVA beta_int
+int_df <- tibble::as_tibble(as.data.frame(interaction_raw), rownames = "ensembl_gene_id")
+ens2sym <- ortholog |>
+  dplyr::select(ensembl_gene_id, external_gene_name) |>
+  dplyr::filter(!is.na(external_gene_name), external_gene_name != "") |>
+  dplyr::distinct(ensembl_gene_id, .keep_all = TRUE)
+# Map ENSMUSG -> symbol; collapse duplicate symbols to the highest-baseMean gene
+# (matches the most-expressed-transcript rule used to build expr_mat in 15).
+gene_stat <- int_df |>
+  dplyr::inner_join(ens2sym, by = "ensembl_gene_id") |>
+  dplyr::filter(!is.na(stat)) |>
+  dplyr::arrange(external_gene_name, dplyr::desc(baseMean)) |>
+  dplyr::distinct(external_gene_name, .keep_all = TRUE)
+stat_by_symbol <- stats::setNames(gene_stat$stat, gene_stat$external_gene_name)
+
+mean_int_stat <- vapply(pathways_scored, function(g) {
+  s <- stat_by_symbol[intersect(g, names(stat_by_symbol))]
+  if (length(s) == 0) NA_real_ else mean(s)
+}, numeric(1))
+set_mean_stat <- tibble::tibble(set_name = names(mean_int_stat),
+                                mean_int_stat = unname(mean_int_stat))
+
+# Fold the gene-level results into coef_table; BH camera within category too.
+coef_table <- coef_table |>
+  dplyr::left_join(cam_df, by = "set_name") |>
+  dplyr::left_join(roa_df, by = "set_name") |>
+  dplyr::left_join(set_mean_stat, by = "set_name") |>
+  dplyr::group_by(category_primary) |>
+  dplyr::mutate(camera_padj_within_cat = stats::p.adjust(camera_p, method = "BH")) |>
+  dplyr::ungroup()
+
+# Convergence: GSVA beta_int (d12 - d6) should track the count-level interaction.
+cc_df <- coef_table |> dplyr::filter(!is.na(mean_int_stat), !is.na(beta_int))
+overall_cc <- suppressWarnings(
+  stats::cor.test(cc_df$beta_int, cc_df$mean_int_stat, method = "spearman"))
+per_cat_cc <- cc_df |>
+  dplyr::group_by(category_primary) |>
+  dplyr::summarise(
+    n   = dplyr::n(),
+    rho = suppressWarnings(stats::cor(beta_int, mean_int_stat, method = "spearman")),
+    .groups = "drop"
+  )
+
+p_cc <- ggplot2::ggplot(cc_df,
+    ggplot2::aes(x = mean_int_stat, y = beta_int, colour = category_primary)) +
+  ggplot2::geom_hline(yintercept = 0, linewidth = 0.3, colour = "grey70") +
+  ggplot2::geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey70") +
+  ggplot2::geom_point(alpha = 0.6, size = 1) +
+  ggplot2::geom_smooth(method = "lm", se = FALSE, colour = "black",
+                       linewidth = 0.5, formula = y ~ x) +
+  ggplot2::labs(
+    title = "GSVA trajectory vs count-level interaction (convergence check)",
+    subtitle = sprintf("Spearman rho = %.3f, p = %.2g (all %d sets)",
+                       overall_cc$estimate, overall_cc$p.value, nrow(cc_df)),
+    x = "mean DESeq2 interaction Wald stat (member genes)",
+    y = "GSVA beta_int (d12 - d6)") +
+  ggplot2::theme_bw(base_size = 9)
+ggplot2::ggsave(
+  file.path(out_dir, "crosscheck_beta_int_vs_gene_interaction.pdf"),
+  p_cc, width = 8, height = 5.5)
+
+message(sprintf("CAMERA/ROAST done; cross-check Spearman rho = %.3f (p = %.2g)",
+                overall_cc$estimate, overall_cc$p.value))
+
+# =============================================================================
+# PART 7: SAVE OVERVIEW OBJECT
 # =============================================================================
 
 overview_out <- list(
@@ -320,12 +460,18 @@ overview_out <- list(
   cond_means            = cond_means,
   group_order           = group_order,
   trajectory_categories = present,
+  cat_camera            = cat_camera,
+  crosscheck            = list(overall = overall_cc, per_category = per_cat_cc),
   n_sets                = nrow(scores),
   notes                 = paste(
-    "coef_table: per-set lm(score ~ timepoint*myc_status) OLS.",
-    "beta_int = d12 - d6 (Gate-1 attenuation, the rank metric);",
-    "beta_time = Myc- (WT) slope; myc_slope = Myc+ slope.",
-    "int_padj_within_cat = BH within category_primary.")
+    "coef_table: per-set lm(score ~ timepoint*myc_status) OLS (beta_int = d12 - d6,",
+    "the Gate-1 attenuation / rank metric; beta_time = WT slope; myc_slope = Myc+",
+    "slope; int_padj_within_cat = BH within category). PLUS gene-level validation:",
+    "camera_* (competitive, correlation-aware) + roast_* (self-contained) on the",
+    "interaction contrast; mean_int_stat = mean DESeq2 interaction Wald of member",
+    "genes; cat_camera = category union meta-set CAMERA; crosscheck = Spearman of",
+    "beta_int vs mean_int_stat. Gene-level tests are the trustworthy layer; the",
+    "per-set GSVA lm is underpowered / overlap-inflated and directional only.")
 )
 saveRDS(overview_out, here::here("results", "gsva_overview.rds"))
 message("Saved results/gsva_overview.rds")
@@ -360,7 +506,7 @@ if (FALSE) {
         )
       ) |>
       dplyr::select(set_name, d6, d12, beta_time, myc_slope, beta_int,
-                    int_p, int_padj_within_cat, mech) |>
+                    int_p, camera_p, camera_fdr, roast_p, mean_int_stat, mech) |>
       head(12) |>
       print()
   }
@@ -368,6 +514,25 @@ if (FALSE) {
   # Landscape row counts after the top-35 cut (readable?)
   ct |> dplyr::count(category_primary) |> print(n = Inf)
 
-  # Confirm output PDFs exist
+  # --- Gene-level validation (the trustworthy layer) ---
+  # Category-level CAMERA: one powered, correlation-aware test per category.
+  ov$cat_camera |> dplyr::arrange(PValue) |> print(n = Inf)
+
+  # How many individual sets survive CAMERA FDR < 0.05 (vs zero for the GSVA lm)?
+  ct |> dplyr::summarise(
+    camera_sig   = sum(camera_fdr < 0.05, na.rm = TRUE),
+    roast_sig    = sum(roast_fdr  < 0.05, na.rm = TRUE),
+    lm_int_sig   = sum(int_padj_within_cat < 0.05, na.rm = TRUE)
+  ) |> print()
+
+  # Convergence: does the GSVA trajectory track the count-level interaction?
+  ov$crosscheck$overall                      # overall Spearman rho + p
+  ov$crosscheck$per_category |> dplyr::arrange(dplyr::desc(abs(rho))) |> print(n = Inf)
+
+  # Do CAMERA and the GSVA lm agree on the movers? (rank concordance)
+  suppressWarnings(stats::cor(ct$camera_p, ct$int_p, method = "spearman",
+                              use = "complete.obs"))
+
+  # Confirm output PDFs exist (incl. the cross-check scatter)
   list.files(here::here("outputs", "gsva_overview"), pattern = "\\.pdf$")
 }

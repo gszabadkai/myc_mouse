@@ -174,7 +174,11 @@ gsva_out <- list(
   sample_meta         = sample_meta,
   n_sets_scored       = nrow(gsva_scores),
   n_symbols_collapsed = n_symbols_collapsed,
-  input_scale         = "VST (log); kcdf=Gaussian; opposite of mitoPPS (linear)"
+  input_scale         = "VST (log); kcdf=Gaussian; opposite of mitoPPS (linear)",
+  # Also stored so downstream gene-level tests (script 17 ROAST/CAMERA +
+  # cross-check) use EXACTLY the matrix + set lists that produced the scores.
+  expr_mat            = expr_mat,   # symbol x 24 VST (full universe)
+  pathways            = pathways    # GSVA-tagged mouse-symbol gene-set lists
 )
 
 saveRDS(gsva_out, here::here("results", "gsva_scores.rds"))
