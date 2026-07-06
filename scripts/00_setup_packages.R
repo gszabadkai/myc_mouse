@@ -17,7 +17,8 @@ bioc_packages <- c(
   "DESeq2", "IHW", "ashr", "apeglm", "biomaRt",
   "ComplexHeatmap", "circlize",
   "PoiClaClu", "limma", "edgeR", "variancePartition",
-  "fgsea", "gprofiler2"               
+  "fgsea", "gprofiler2",
+  "GSVA"             # per-sample gene-set scoring (15_gsva_scoring.R)
 )
 
 # Load or install CRAN packages
