@@ -143,10 +143,11 @@ for the deferred analysis / discussion. Title verb "integrate" holds; drop
 - **Fig 2 - the biogenesis program and its attenuation:** Felsher~bio + Category-7
   discrimination (07) + attenuation-via-convergence (20 timepoint contrasts, AP1
   mito reallocation 19).
-- **Supplementary:** cell death (Gate 2 + branches 12/16 + apoptosis front-loading);
-  lineage composition (basal suppression, luminal crossover, 19); GSVA trajectory
-  validation + the honest boundary (17); mtDNA / abund / retention (script 22,
-  PENDING).
+- **Supplementary:** cell death (Gate 2 + branches 12/16 + apoptosis front-loading)
+  + the death-timing substrate model (BH3:BCL2/p53 rheostat, decoupling, H1-H4,
+  script 23); lineage composition (basal suppression, luminal crossover, 19); GSVA
+  trajectory validation + the honest boundary (17); mtDNA / abund / retention
+  (script 22).
 
 ## Open decisions for the author
 
@@ -159,13 +160,17 @@ for the deferred analysis / discussion. Title verb "integrate" holds; drop
    (b) demote to Supp 1 and make the death story a dedicated follow-up (the deferred
    analysis) - cleaner given the n=6 floor; (c) a hybrid: apoptosis appears in Fig 2
    only as the biogenesis-death decoupling, full death analysis in Supp.
-3. **Script 22** (mtDNA / abund / retention -> Supp 3) - run now to finish Block A,
-   or defer to Block B?
-4. **Deferred death-timing analysis** (BH3-only:BCL2 balance + p53 readiness on the
-   WT substrate; biogenesis-death decoupling) - before or after the figures? See
-   memory `myc-death-timing-question` for the full design + the honest bulk-RNA
-   ceiling.
-5. **Block B** - move to the figure scripts (renumbered 23/24/25) after 1-4?
+3. **Script 22** (mtDNA / abund / retention -> Supp 3) - RESOLVED 2026-07-06b: run
+   now to finish Block A (being built).
+4. **Deferred death-timing analysis** - RESOLVED 2026-07-06b: run BEFORE the
+   figures (its result shapes the final interpretation). Built as the new
+   **script 23** (`23_death_timing_substrate.R`), covering all four hypotheses
+   (H1 BH3:BCL2/p53 rheostat, H2 biogenesis-death decoupling, H3
+   proliferation-apoptosis coupling, H4 selection/CV), anchored on the WT
+   `timepoint_neg` substrate. See memory `myc-death-timing-question` for the full
+   design + the honest bulk-RNA ceiling.
+5. **Block B** - move to the figure scripts (renumbered **24/25/26** after the
+   death-timing insert) once 22 + 23 land and the narrative is locked.
 
 ## The deferred death-timing thread (do not lose)
 
@@ -180,8 +185,11 @@ current flow by author decision.
 ## Remaining build items
 
 - **Script 22** - reframe mtDNA / abund / retention (Supp 3 inputs). Off
-  mitopps_scores + fgsea_percategory.
-- **Scripts 23/24/25** - Figure 1, Figure 2, Supplementaries (Block B; after the
-  narrative is locked here).
-- **AP8 / CV** - optional selection (H4) lens; only if the selection arm is pursued.
-- **Deferred death-timing analysis** - see above.
+  mitopps_scores + fgsea_percategory. IN BUILD (2026-07-06b).
+- **Script 23** - death-timing substrate model (H1-H4, WT-substrate-anchored;
+  integrates cell-death branches + Gate 2 + apoptosis/intersection trajectories).
+  IN BUILD (2026-07-06b), before the figures.
+- **Scripts 24/25/26** - Figure 1, Figure 2, Supplementaries (Block B; after the
+  narrative is locked here). Renumbered from 23/24/25 by the death-timing insert.
+- **AP8 / CV** - the selection (H4) lens now lives inside script 23; the optional
+  mito-fork CV tail stays a script-26 option only if the selection arm is pursued.

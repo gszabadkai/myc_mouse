@@ -105,15 +105,24 @@ scripts read existing `.rds`; build scripts add new computation.
 | 20 | `20_fgsea_percategory.R` | build | AP6.1, AP-retention, AP-abund | 3 |
 | 21 | `21_ap6_permutation_null.R` | build | AP6.2 | 4 |
 | 22 | `22_reframe_mtdna_abund_retention.R` | reframe | AP-mtDNA, AP-abund, AP-retention | 4-5 |
-| 23 | `23_figure1.R` | build | Fig 1 draft | 4 |
-| 24 | `24_figure2.R` | build | Fig 2 draft | 5 |
-| 25 | `25_supplementaries.R` | build | Supp 1-3 draft | 5 |
+| 23 | `23_death_timing_substrate.R` | build | deferred death-timing (H1-H4) -> Supp | 5 |
+| 24 | `24_figure1.R` | build | Fig 1 draft | 5 |
+| 25 | `25_figure2.R` | build | Fig 2 draft | 5 |
+| 26 | `26_supplementaries.R` | build | Supp 1-3 draft | 5 |
 
 **Renumber note (2026-07-06):** the GSVA-overview / trajectory-visualisation
 script was inserted as the new **17** (author-requested read of `gsva_scores.rds`
 before the AP scripts consume it — the H1-vs-H3 discriminator). Everything that
 was 17-24 shifted **+1** to 18-25. No script files moved (none existed yet). The
 Day 3/4/5 sections below and all cross-references use the new numbering.
+
+**Renumber note (2026-07-06b):** the deferred death-timing analysis was pulled
+forward (author decision) to run *before* the figures, because its result shapes
+the final interpretation/narrative. It is inserted as the new **23**
+(`23_death_timing_substrate.R`, all four hypotheses H1-H4, anchored on the WT
+`timepoint_neg` substrate — see memory `myc-death-timing-question`). The figure
+scripts shifted **+1**: `23_figure1`->24, `24_figure2`->25,
+`25_supplementaries`->26. Script **22** is unchanged. No script files moved.
 
 `12_cell_death_pathway_analysis.R` (branch 2, Tang sets on Wald z) is **done**
 (`cell_death_fgsea.rds`); run as-is, no edit. `08` mitoPPS is done
@@ -274,7 +283,7 @@ demoted; figure plan locked.*
   cut-line (section 9 item 3) — include a guarded stub only.
 - Writes: `results/ap6_permutation_null.rds`.
 
-**23 — `23_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
+**24 — `24_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
 alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 `.rds`. Writes `outputs/figures/figure1_draft.pdf`.
 
@@ -295,15 +304,36 @@ alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 - Reads: `fgsea_percategory.rds`, `mitopps_scores.rds`, `fgsea_results.rds`,
   `fgsea_xs_results.rds`. Writes `results/reframe_supp3.rds`.
 
-**24 — `24_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
+**23 — `23_death_timing_substrate.R` (build; deferred death-timing, pulled
+forward before the figures).** One integrated 6W-death SUBSTRATE model spanning
+cell-death branch 1 (16), branch 2 (12), Gate 2 (14), and the script-17
+apoptosis/intersection trajectories. Anchored on the WT `timepoint_neg` substrate
+(the tissue the acute inducible-Myc pulse hits — Myc off pre-tamoxifen); the
+chronic-Myc+ layer (`timepoint_pos`, `myc_6W`) is secondary and survivor-biased.
+Covers all four hypotheses:
+- **H1** BH3-only : anti-apoptotic BCL2 rheostat + p53/ARF readiness on the WT
+  substrate (priming index falls 6W->12W = less-primed older tissue). Lead.
+- **H2** biogenesis-death decoupling over time (ER/PGC1a-couples vs Myc-uncouples).
+- **H3** proliferation-apoptosis coupling (oncogene-induced apoptosis at 6W).
+- **H4** selection / survivor culling via cross-sample CV narrowing (weakest arm).
+- Reads: `interaction_results.rds`, `mitopps_scores.rds`,
+  `gate2_apoptosis_readout.rds`, `cell_death_fgsea.rds`,
+  `cell_death_*_raw.csv`, `gsva_scores.rds`, `gsva_overview.rds`,
+  `ortholog_table.rds`, fresh Hallmark P53_PATHWAY (msigdbr). Writes
+  `results/death_timing_substrate.rds`, `outputs/death_timing/`. Honest ceiling:
+  bulk RNA + survivor bias + n=6 -> substrate association, not causation. Feeds a
+  Supp panel and the discussion; see memory `myc-death-timing-question`.
+
+**25 — `25_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
 discrimination (MYC_SPECIFIC/CORE/DEVELOPMENTAL from `07_*` GMT) + divergence
 timing (AP5). Writes `outputs/figures/figure2_draft.pdf`.
 
-**25 — `25_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
-cell-death convergence, from 14/16/12) - Supp 2 (permutation null + comparator
-panel + QC/provenance, from 21/20) - Supp 3 (mtDNA split + abund panel, from 22).
-Optional **AP8** tail block (cross-sample CV of mito-fork score) only if the
-selection arm survived Gate 2. Writes `outputs/figures/supp{1,2,3}_draft.pdf`.
+**26 — `26_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
+cell-death convergence + death-timing substrate model, from 14/16/12/23) - Supp 2
+(permutation null + comparator panel + QC/provenance, from 21/20) - Supp 3 (mtDNA
+split + abund panel, from 22). Optional **AP8** tail block (cross-sample CV of
+mito-fork score) only if the selection arm survived Gate 2 / H4 (script 23).
+Writes `outputs/figures/supp{1,2,3}_draft.pdf`.
 
 **Draft text (author):** AP0 intro framing, results prose with gaps flagged,
 figure legends.
