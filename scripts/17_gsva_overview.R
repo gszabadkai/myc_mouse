@@ -54,6 +54,15 @@
 #   - outputs/gsva_overview/<category>_profiles.pdf         (trajectory cats)
 #   - outputs/gsva_overview/<category>_dumbbell.pdf         (trajectory cats)
 #   - outputs/gsva_overview/crosscheck_beta_int_vs_gene_interaction.pdf
+#   - outputs/gsva_overview/perm_contrast_biogenesis_vs_mammary.pdf
+#   - outputs/gsva_overview/mechanism_biogenesis_vs_development.pdf
+#
+# PART 6b (between-category permutation) is the powered test: are program CLASSES
+#   on DIFFERENT trajectories (biogenesis/Myc decline vs lineage rise)? Gene-level,
+#   pre-defined categories, sample-label rotation null (correlation-aware).
+# PART 6c (per-sample coupling) asks whether developmental re-differentiation
+#   ABSORBS the Myc biogenesis advantage (Myc drive is constant, so this is about
+#   the substrate, not inhibition of Myc activity).
 # =============================================================================
 
 source(here::here("scripts", "00_setup_packages.R"))
@@ -452,6 +461,137 @@ message(sprintf("CAMERA/ROAST done; cross-check Spearman rho = %.3f (p = %.2g)",
                 overall_cc$estimate, overall_cc$p.value))
 
 # =============================================================================
+# PART 6b: BETWEEN-CATEGORY TRAJECTORY CONTRAST (correlation-aware permutation)
+# =============================================================================
+# The per-set "vs zero" interaction is underpowered; the powered, decision-
+# relevant question is whether program CLASSES follow DIFFERENT trajectories
+# (biogenesis/Myc DECLINE vs lineage RISE). This is a large effect (mean
+# interaction-t ~ -0.8 vs +0.9), tested at the gene level on PRE-DEFINED library
+# categories (not data-selected sets -> not circular).
+#
+# Metric per gene: the VST-based interaction t (same substrate as the GSVA
+# scores), by fast OLS with the treatment-contrast design X (int_col). Null:
+# permute SAMPLE labels (rotate the design) so gene-gene correlation is preserved
+# -- gene-label shuffling would be anticonservative under the 0.25-0.36 inter-
+# gene correlation we measured. The statistic is a DIFFERENCE of category means,
+# so any main-effect leakage under permutation cancels between the two groups.
+
+perm_trajectory_contrast <- function(genesA, genesB, B = 4999, seed = 1) {
+  gA <- setdiff(intersect(genesA, rownames(expr_mat)), genesB)  # exclusive to A
+  gB <- setdiff(intersect(genesB, rownames(expr_mat)), genesA)  # exclusive to B
+  Ysub  <- t(expr_mat[c(gA, gB), , drop = FALSE])               # samples x genes
+  lab_A <- seq_along(gA); lab_B <- length(gA) + seq_along(gB)
+  XtXi  <- solve(crossprod(X))          # invariant to row permutation of X
+  vdiag <- XtXi[int_col, int_col]
+  df_r  <- nrow(X) - ncol(X)
+  tvec  <- function(design) {
+    b   <- XtXi %*% crossprod(design, Ysub)
+    res <- Ysub - design %*% b
+    s2  <- colSums(res^2) / df_r
+    b[int_col, ] / sqrt(vdiag * s2)
+  }
+  del   <- function(tv) mean(tv[lab_A]) - mean(tv[lab_B])
+  d_obs <- del(tvec(X))
+  set.seed(seed)
+  d_null <- vapply(seq_len(B),
+                   function(i) del(tvec(X[sample.int(nrow(X)), , drop = FALSE])),
+                   numeric(1))
+  list(nA = length(gA), nB = length(gB), delta_obs = d_obs,
+       p_perm = (1 + sum(abs(d_null) >= abs(d_obs))) / (B + 1), d_null = d_null)
+}
+
+onco_metab <- unique(c(meta_sets[["Biogenesis_discrimination"]],
+                       meta_sets[["MYC_signatures"]],
+                       meta_sets[["MitoCarta"]]))
+contr_specs <- list(
+  "Biogenesis_discrimination vs Mammary_development" =
+    list(meta_sets[["Biogenesis_discrimination"]], meta_sets[["Mammary_development"]]),
+  "MYC_signatures vs Mammary_development" =
+    list(meta_sets[["MYC_signatures"]], meta_sets[["Mammary_development"]]),
+  "Oncogenic-metabolic vs Mammary_development" =
+    list(onco_metab, meta_sets[["Mammary_development"]])
+)
+perm_res <- lapply(contr_specs, function(s) perm_trajectory_contrast(s[[1]], s[[2]]))
+perm_contrasts <- tibble::tibble(
+  contrast  = names(perm_res),
+  nA        = vapply(perm_res, `[[`, integer(1), "nA"),
+  nB        = vapply(perm_res, `[[`, integer(1), "nB"),
+  delta_obs = vapply(perm_res, `[[`, numeric(1), "delta_obs"),
+  p_perm    = vapply(perm_res, `[[`, numeric(1), "p_perm")
+)
+
+prim <- perm_res[[1]]
+p_perm_plot <- ggplot2::ggplot(data.frame(d = prim$d_null), ggplot2::aes(x = d)) +
+  ggplot2::geom_histogram(bins = 60, fill = "grey80", colour = "grey60") +
+  ggplot2::geom_vline(xintercept = prim$delta_obs, colour = "#D73027", linewidth = 1) +
+  ggplot2::labs(
+    title = "Between-category trajectory contrast (permutation null)",
+    subtitle = sprintf("Biogenesis vs Mammary-development: observed delta = %.3f, p = %.4f (%d vs %d genes)",
+                       prim$delta_obs, prim$p_perm, prim$nA, prim$nB),
+    x = "mean interaction-t difference (biogenesis - mammary) under label rotation",
+    y = "count") +
+  ggplot2::theme_bw(base_size = 9)
+ggplot2::ggsave(file.path(out_dir, "perm_contrast_biogenesis_vs_mammary.pdf"),
+                p_perm_plot, width = 7.5, height = 4.5)
+
+message("Permutation contrasts:")
+print(perm_contrasts)
+
+# =============================================================================
+# PART 6c: IS THE DEVELOPMENTAL TRAJECTORY THE 'CULPRIT'? (per-sample coupling)
+# =============================================================================
+# Constant Myc drive (MYC_signatures stable) means development does not inhibit
+# Myc ACTIVITY. Test instead whether developmental re-differentiation ABSORBS the
+# Myc biogenesis advantage: (i) across samples, is a biogenesis composite anti-
+# correlated with a developmental composite; (ii) does adjusting for the
+# developmental score REMOVE the 6W->12W biogenesis decline within Myc+ (i.e.
+# development statistically accounts for the window closing)?
+
+cat_of   <- stats::setNames(set_meta$category_primary, set_meta$set_name)
+sets_bio <- rownames(scores)[cat_of[rownames(scores)] == "Biogenesis_discrimination"]
+sets_dev <- rownames(scores)[cat_of[rownames(scores)] == "Mammary_development"]
+bio_score <- colMeans(scores[sets_bio, , drop = FALSE])   # per-sample composite
+dev_score <- colMeans(scores[sets_dev, , drop = FALSE])
+
+mech_df <- tibble::tibble(
+  sample     = colnames(scores),
+  group      = sample_meta$group,
+  myc_status = sample_meta$myc_status,
+  timepoint  = sample_meta$timepoint,
+  bio        = bio_score,
+  dev        = dev_score
+)
+
+mech_cor <- mech_df |>
+  dplyr::group_by(myc_status) |>
+  dplyr::summarise(
+    n           = dplyr::n(),
+    rho_bio_dev = suppressWarnings(stats::cor(bio, dev, method = "spearman")),
+    .groups     = "drop"
+  )
+
+# Within Myc+: does the developmental composite account for the biogenesis drop?
+posd <- mech_df |> dplyr::filter(myc_status == "pos")
+tc   <- list(timepoint = "contr.treatment")   # force treatment coding for coef name
+m1   <- stats::lm(bio ~ timepoint, data = posd, contrasts = tc)
+m2   <- stats::lm(bio ~ timepoint + dev, data = posd, contrasts = tc)
+tp_effect <- c(unadjusted   = unname(stats::coef(m1)["timepoint12W"]),
+               adj_for_dev  = unname(stats::coef(m2)["timepoint12W"]))
+
+p_mech <- ggplot2::ggplot(mech_df, ggplot2::aes(x = dev, y = bio, colour = group)) +
+  ggplot2::geom_point(size = 2) +
+  ggplot2::labs(
+    title = "Biogenesis vs developmental program (per sample)",
+    subtitle = "Absorption predicts anti-correlation; dev covariate should shrink the Myc+ 6W->12W biogenesis drop",
+    x = "Mammary_development composite GSVA", y = "Biogenesis_discrimination composite GSVA") +
+  ggplot2::theme_bw(base_size = 9)
+ggplot2::ggsave(file.path(out_dir, "mechanism_biogenesis_vs_development.pdf"),
+                p_mech, width = 7, height = 5)
+
+message(sprintf("Myc+ biogenesis 6W->12W effect: unadjusted %.3f, adj-for-dev %.3f",
+                tp_effect["unadjusted"], tp_effect["adj_for_dev"]))
+
+# =============================================================================
 # PART 7: SAVE OVERVIEW OBJECT
 # =============================================================================
 
@@ -462,6 +602,8 @@ overview_out <- list(
   trajectory_categories = present,
   cat_camera            = cat_camera,
   crosscheck            = list(overall = overall_cc, per_category = per_cat_cc),
+  perm_contrasts        = perm_contrasts,
+  mechanism             = list(cor = mech_cor, tp_effect = tp_effect, data = mech_df),
   n_sets                = nrow(scores),
   notes                 = paste(
     "coef_table: per-set lm(score ~ timepoint*myc_status) OLS (beta_int = d12 - d6,",
@@ -533,6 +675,15 @@ if (FALSE) {
   suppressWarnings(stats::cor(ct$camera_p, ct$int_p, method = "spearman",
                               use = "complete.obs"))
 
-  # Confirm output PDFs exist (incl. the cross-check scatter)
+  # --- The powered claim: do program CLASSES move oppositely? (permutation) ---
+  ov$perm_contrasts |> print()             # delta_obs strongly negative + p_perm
+
+  # --- Is development the 'culprit'? (per-sample coupling) ---
+  ov$mechanism$cor                         # bio~dev Spearman per genotype (expect neg, esp pos)
+  ov$mechanism$tp_effect                   # Myc+ biogenesis 6W->12W: unadjusted vs adj-for-dev
+  # If |adj_for_dev| << |unadjusted|, the developmental composite statistically
+  # accounts for the Myc+ biogenesis window closing (absorption).
+
+  # Confirm output PDFs exist (incl. cross-check, permutation, mechanism)
   list.files(here::here("outputs", "gsva_overview"), pattern = "\\.pdf$")
 }
