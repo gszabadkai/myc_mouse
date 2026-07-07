@@ -25,7 +25,7 @@ narrative/figure decisions. The figure scripts (Block B) and script 22 are not
 yet built. Cell-death main-vs-supp placement and the deferred death-timing
 analysis are OPEN (see below).
 
-## Analysis inventory (scripts 13-21, with the load-bearing result)
+## Analysis inventory (scripts 13-25, with the load-bearing result)
 
 | # | Script | Commit | Key result |
 |---|--------|--------|-----------|
@@ -40,6 +40,8 @@ analysis are OPEN (see below).
 | 21 | ap6_permutation_null | e370d1e | HARD "why mito": mito/OXPHOS most preferentially altered vs expression-matched null; proliferation does NOT survive |
 | 22 | reframe_mtdna_abund_retention | afcddfe | mtDNA-up/nuclear-down WT reallocation; abund lens-split time-dependent (6W selective SD 0.14 -> 12W uniform 0.10, fGSEA NES flat 2.2); retention: mito/biogenesis convergence per-category |
 | 23 | death_timing_substrate | 2140b37 | Myc death-coupling substrate-gated: priming p=0.038, ~3x at 6W, Gate2 p=0.023; mitonuclear imbalance peaks 6W_pos, death coupling 0.75->0.07; prolif coupling invariant; p53 null |
+| 24 | biogenesis_discrimination | ef6b04a | Within-mito imbalance = mitoPPS alone (fGSEA separate). mtnuc imbalance peaks 6W_pos (+0.56), inverts by 12W; WT = nuclear-assembly(6W)->mtDNA-running(12W); Chaperones fall -> UPR^mt REFUTED. Cat-7: Myc drives MYC=ER/PGC1a biogenesis (co-opts ESRRA/NRF1/GABPA; ESR1 antagonised). Cat-9: CORE/MITO_NU death-coupling highest 6W |
+| 25 | developmental_substrate_death | b50e00a | Substrate matures on 2 coupled axes: mito (imbalance resolution ~88% mtDNA-driven, genotype-shared) + cell-state (lineage shift underpowered p>0.18, BUT per-sample stem/MASC death-coupled 0.78 at 6W). Part B: bio_comp 0.83 > MASC 0.78 > imbalance 0.67 couple to death, all decouple by 12W. Culling: sd_pro/sd_bio narrow, Myc+ more |
 
 ## Hypotheses -> verdict
 
@@ -192,8 +194,31 @@ the death phenotype). Title verb "integrate" holds; drop "licenses/permits."
    proliferation-apoptosis coupling, H4 selection/CV), anchored on the WT
    `timepoint_neg` substrate. See memory `myc-death-timing-question` for the full
    design + the honest bulk-RNA ceiling.
-5. **Block B** - move to the figure scripts (renumbered **24/25/26** after the
-   death-timing insert) once 22 + 23 land and the narrative is locked.
+5. **Block B** - move to the figure scripts (now **26/27/28** after the
+   biogenesis-discrimination + developmental-substrate inserts) once the narrative
+   is locked.
+
+**Review discussion RESOLVED (2026-07-07, `docs/BlockA_review_discussion.md`,
+scripts 24 + 25 commits ef6b04a + b50e00a).** All four author points answered:
+- **Pt 1 (per-pathway mito detail):** imbalance = mitoPPS ALONE (fGSEA is a
+  SEPARATE importance axis - corrected). Within-mito Level2-group map anchored on
+  the WT substrate; mtDNA-encoded split from nuclear so the mitonuclear imbalance
+  is not masked. WT matures nuclear-assembly(6W)->mtDNA-running(12W); Chaperones
+  fall -> UPR^mt/ISR frame REFUTED.
+- **Pt 2 (Myc vs ER/PGC1a biogenesis):** not separable by trajectory - Myc CO-OPTS
+  the ER/PGC1a machinery (ESRRA/NRF1/GABPA TFs co-move with MYC; ESR1 antagonised,
+  re-emerges 12W). Stated as "consistent with", not causal.
+- **Pt 3/4a/4e (development = the why; "something in the background must change"):**
+  the substrate matures on two coupled axes - MITO (mtDNA rebalancing, robust,
+  ~88% mtDNA-driven, genotype-shared) + CELL-STATE (per-sample stem/MASC content
+  death-coupled 0.78 at 6W, though the lineage-population SHIFT is underpowered
+  n=6). The changing background is the mito state + stem content, not the BCL2
+  baseline (reconciles 23's flat baseline).
+- **Pt 4b (mtDNA rise):** now wired in - imbalance resolution ~88% mtDNA-rise.
+- **Pt 4c (culling):** dispersion of death priming + biogenesis narrows 6W->12W,
+  more in Myc+ = survivor convergence.
+- **Pt 4d (where ER/PGC1a-kills lands):** balanced CORE/MITO_NU biogenesis-death
+  intersections are most death-coupled at 6W (r 0.77/0.83 > MYC_SPECIFIC 0.66).
 
 ## The deferred death-timing thread (do not lose)
 
@@ -207,12 +232,10 @@ current flow by author decision.
 
 ## Remaining build items
 
-- **Script 22** - reframe mtDNA / abund / retention (Supp 3 inputs). Off
-  mitopps_scores + fgsea_percategory. IN BUILD (2026-07-06b).
-- **Script 23** - death-timing substrate model (H1-H4, WT-substrate-anchored;
-  integrates cell-death branches + Gate 2 + apoptosis/intersection trajectories).
-  IN BUILD (2026-07-06b), before the figures.
-- **Scripts 24/25/26** - Figure 1, Figure 2, Supplementaries (Block B; after the
-  narrative is locked here). Renumbered from 23/24/25 by the death-timing insert.
-- **AP8 / CV** - the selection (H4) lens now lives inside script 23; the optional
-  mito-fork CV tail stays a script-26 option only if the selection arm is pursued.
+- **Scripts 22-25** - DONE (commits afcddfe / 2140b37 / ef6b04a / b50e00a). Block A
+  analysis complete; the review discussion is resolved (see above).
+- **Scripts 26/27/28** - Figure 1, Figure 2, Supplementaries (Block B; after the
+  narrative is locked here). Renumbered from 24/25/26 by the biogenesis +
+  developmental-substrate inserts.
+- **AP8 / CV** - the selection (H4) lens lives inside scripts 23 + 25; the optional
+  mito-fork CV tail stays a script-28 option only if the selection arm is pursued.
