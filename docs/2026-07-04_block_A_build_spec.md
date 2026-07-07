@@ -106,9 +106,11 @@ scripts read existing `.rds`; build scripts add new computation.
 | 21 | `21_ap6_permutation_null.R` | build | AP6.2 | 4 |
 | 22 | `22_reframe_mtdna_abund_retention.R` | reframe | AP-mtDNA, AP-abund, AP-retention | 4-5 |
 | 23 | `23_death_timing_substrate.R` | build | deferred death-timing (H1-H4) -> Supp | 5 |
-| 24 | `24_figure1.R` | build | Fig 1 draft | 5 |
-| 25 | `25_figure2.R` | build | Fig 2 draft | 5 |
-| 26 | `26_supplementaries.R` | build | Supp 1-3 draft | 5 |
+| 24 | `24_biogenesis_discrimination.R` | build | review pts 1/2/4d: 3-lens mito detail, Myc-vs-ER lanes, Cat-9 death coupling, TF lanes | 5 |
+| 25 | `25_developmental_substrate_death.R` | build | review pts 3/4a/4b/4c/4e: developmental substrate = death "why" (augments 23) | 5 |
+| 26 | `26_figure1.R` | build | Fig 1 draft | 5 |
+| 27 | `27_figure2.R` | build | Fig 2 draft | 5 |
+| 28 | `28_supplementaries.R` | build | Supp 1-3 draft | 5 |
 
 **Renumber note (2026-07-06):** the GSVA-overview / trajectory-visualisation
 script was inserted as the new **17** (author-requested read of `gsva_scores.rds`
@@ -123,6 +125,17 @@ the final interpretation/narrative. It is inserted as the new **23**
 `timepoint_neg` substrate — see memory `myc-death-timing-question`). The figure
 scripts shifted **+1**: `23_figure1`->24, `24_figure2`->25,
 `25_supplementaries`->26. Script **22** is unchanged. No script files moved.
+
+**Renumber note (2026-07-07):** resolving the author's Block A review discussion
+(`docs/BlockA_review_discussion.md`) added two dedicated analysis scripts *before*
+the figures: **24** `24_biogenesis_discrimination.R` (per-pathway three-lens mito
+detail = fGSEA NES / MitoPathway abundance / MitoPPS; Myc-vs-ER Cat-7 lanes; Cat-9
+biogenesis x death coupling; TF driver lanes) and **25**
+`25_developmental_substrate_death.R` (developmental substrate as the death-timing
+"why"; augments 23, which stays intact). Both read only already-scored
+`.rds`/GMT/CSV. The figure scripts shifted **+2**: `24_figure1`->26,
+`25_figure2`->27, `26_supplementaries`->28. Scripts 22/23 unchanged; script 20 not
+re-run (its `fgsea_percategory.rds` is read by 24). No script files moved.
 
 `12_cell_death_pathway_analysis.R` (branch 2, Tang sets on Wald z) is **done**
 (`cell_death_fgsea.rds`); run as-is, no edit. `08` mitoPPS is done
@@ -283,7 +296,7 @@ demoted; figure plan locked.*
   cut-line (section 9 item 3) — include a guarded stub only.
 - Writes: `results/ap6_permutation_null.rds`.
 
-**24 — `24_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
+**26 — `26_figure1.R` (draft).** MB-fork projection (AP7) + preferential-
 alteration panel (AP6) + WT developmental mito shift (AP1). Reads the Day 2-4
 `.rds`. Writes `outputs/figures/figure1_draft.pdf`.
 
@@ -324,11 +337,35 @@ Covers all four hypotheses:
   bulk RNA + survivor bias + n=6 -> substrate association, not causation. Feeds a
   Supp panel and the discussion; see memory `myc-death-timing-question`.
 
-**25 — `25_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
+**24 — `24_biogenesis_discrimination.R` (build; review pts 1/2/4d).** Reframe on
+already-scored sets, no re-computation. Part A: per-pathway three-lens mito picture
+(fGSEA NES vs transcriptome / MitoPathway abundance / MitoPPS reprioritisation),
+reusing script-09 `mitopps_fgsea_comparison` + adding the abundance lens; display
+first, then frame (imbalance signature = fGSEA-negative-but-mitoPPS-positive;
+UPR^mt/ISR a candidate). Part B: Myc-vs-ER/PGC1a Cat-7 lanes (which biogenesis is
+active when). Part C: Cat-9 biogenesis x death coupling (places the external
+"ER/PGC1a kills" result). Part D: TF driver lanes (Cat-6 + Gray/CHEA shortlist).
+Reads `fgsea_percategory.rds`, `mitopps_fgsea_comparison.rds`,
+`interaction_fgsea_mitopps.rds`, `mitopps_scores.rds`, `gsva_overview.rds`, the
+`06/07/09` GMTs, `gray_chea_mito_tf_shortlist.csv`, `death_timing_substrate.rds`.
+Writes `results/biogenesis_discrimination.rds`, `outputs/biogenesis_discrimination/`.
+
+**25 — `25_developmental_substrate_death.R` (build; review pts 3/4a/4b/4c/4e;
+augments 23).** Establishes the developmental substrate — not chronic-Myc
+adaptation — as the death-timing driver (Myc-ER acute anchor). Part A: WT
+`timepoint_neg` 6W->12W composition shift. Part B: composition x death-priming/
+imbalance coupling (the changing "background" = composition, not the BCL2 baseline).
+Part C: mtDNA developmental resolution of the imbalance (mtDNA-rise vs nuclear-fall
+decomposition, genotype-shared). Part D: culling + composition (strengthen H4).
+Reads `dev_composition.rds`, `death_timing_substrate.rds`, `reframe_supp3.rds`,
+`mitopps_scores.rds`, `gsva_scores.rds`, `interaction_results.rds`. Writes
+`results/developmental_substrate_death.rds`, `outputs/dev_substrate_death/`.
+
+**27 — `27_figure2.R` (draft).** Lineage-composition GSVA (AP2) + Category 7
 discrimination (MYC_SPECIFIC/CORE/DEVELOPMENTAL from `07_*` GMT) + divergence
 timing (AP5). Writes `outputs/figures/figure2_draft.pdf`.
 
-**26 — `26_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
+**28 — `28_supplementaries.R` (draft).** Supp 1 (apoptosis PRO/ANTI + two-branch
 cell-death convergence + death-timing substrate model, from 14/16/12/23) - Supp 2
 (permutation null + comparator panel + QC/provenance, from 21/20) - Supp 3 (mtDNA
 split + abund panel, from 22). Optional **AP8** tail block (cross-sample CV of
