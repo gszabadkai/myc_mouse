@@ -307,6 +307,64 @@ set_group_means <- scores_long |>
                    se = stats::sd(gsva) / sqrt(dplyr::n()), .groups = "drop")
 
 # =============================================================================
+# PART C2: STATE-LEVEL SIGNIFICANCE + EFFECT SIZE (powered vs directional)
+# =============================================================================
+# Per-sample composite per MAIN state, then three tests that separate the powered
+# from the directional. IMPORTANT caveats: composite p's are INDICATIVE only -- the
+# sets within a state are correlated (r ~ 0.25-0.36 measured in script 17), so the
+# composite is not independent replication; the WT sample-level test is n=6/timepoint.
+# Report effect size (Cohen's d vs pooled within-group SD) + per-set consistency +
+# cross-modality agreement (directional DE, ATAC) alongside the p-values.
+#   wt_*      : WT (Myc-) 6W->12W substrate shift. NB the data do NOT support a BMYO
+#               expansion (flat); the WT change is luminal (LASP/LHS) DECLINE.
+#   geno_*    : Myc genotype MAIN effect (pooled over time) -- the POWERED layer.
+#   int_*     : timepoint:myc INTERACTION -- the time-dependent flip (directional at n=6).
+
+state_comp <- scores_long |>
+  dplyr::filter(state != "other") |>
+  dplyr::group_by(sample, state, group, timepoint, myc_status) |>
+  dplyr::summarise(comp = mean(gsva), .groups = "drop")
+
+beta_time_by_state <- coef_tbl |>
+  dplyr::filter(set_name %in% dev_sets) |>
+  dplyr::transmute(set = set_name, beta_time) |>
+  dplyr::left_join(dplyr::select(annot, set, state), by = "set")
+
+state_stat_one <- function(st) {
+  d   <- state_comp |> dplyr::filter(state == st)
+  gm  <- tapply(d$comp, d$group, mean)
+  wsd <- sqrt(mean(tapply(d$comp, d$group, stats::var)))          # pooled within-group SD
+  wt  <- summary(stats::lm(comp ~ timepoint,
+                 dplyr::filter(d, myc_status == "neg")))$coefficients["timepoint12W", ]
+  mp  <- summary(stats::lm(comp ~ timepoint,
+                 dplyr::filter(d, myc_status == "pos")))$coefficients["timepoint12W", ]
+  ma  <- summary(stats::lm(comp ~ myc_status + timepoint, d))$coefficients["myc_statuspos", ]
+  mi  <- summary(stats::lm(comp ~ timepoint * myc_status, d))$coefficients["timepoint12W:myc_statuspos", ]
+  bt  <- beta_time_by_state$beta_time[beta_time_by_state$state == st]; bt <- bt[is.finite(bt)]
+  tibble::tibble(
+    state = st, within_sd = wsd,
+    wt_shift = unname(wt["Estimate"]), wt_d = unname(wt["Estimate"]) / wsd,
+    wt_p = unname(wt["Pr(>|t|)"]),
+    wt_setfrac_down = mean(bt < 0), wt_set_t_p = stats::t.test(bt)$p.value,
+    mycpos_shift = unname(mp["Estimate"]), mycpos_p = unname(mp["Pr(>|t|)"]),
+    myc6 = unname(gm["6W_pos"] - gm["6W_neg"]), myc12 = unname(gm["12W_pos"] - gm["12W_neg"]),
+    d6 = unname(gm["6W_pos"] - gm["6W_neg"]) / wsd,
+    d12 = unname(gm["12W_pos"] - gm["12W_neg"]) / wsd,
+    geno_beta = unname(ma["Estimate"]), geno_p = unname(ma["Pr(>|t|)"]),
+    int_beta = unname(mi["Estimate"]), int_p = unname(mi["Pr(>|t|)"]))
+}
+state_stats <- dplyr::bind_rows(lapply(c("BMYO", "LASP", "LHS"), state_stat_one)) |>
+  dplyr::mutate(
+    myc_verdict = dplyr::case_when(
+      geno_p < 0.05 ~ "powered (genotype main effect)",
+      int_p  < 0.10 ~ "directional (interaction trend, n=6 floor)",
+      TRUE          ~ "null / weak"),
+    wt_verdict = dplyr::case_when(
+      abs(wt_d) < 0.15   ~ "flat (no shift)",
+      wt_set_t_p < 0.01  ~ "directional (consistent per-set; ns at sample level)",
+      TRUE               ~ "weak"))
+
+# =============================================================================
 # PART D: FIGURES
 # =============================================================================
 geno_cols <- c(neg = "#4575B4", pos = "#D73027")
@@ -388,11 +446,34 @@ p_cont <- ggplot2::ggplot(state_profile,
   ggplot2::geom_point(size = 2) +
   ggplot2::scale_colour_manual(values = geno_cols) +
   ggplot2::labs(title = "Three-state MEC profile by condition (Gray 2025 consensus)",
-    subtitle = "mean GSVA over sets per MEC type; replaces the single HR-LP scalar",
+    subtitle = "mean GSVA over sets per MEC type; WT loses luminal (LASP/LHS), BMYO flat (no expansion)",
     x = "consensus MEC type (BMYO / LASP / LHS)", y = "mean GSVA") +
   ggplot2::theme_bw(base_size = 10)
 ggplot2::ggsave(file.path(out_dir, "continuum_profile.pdf"), p_cont,
                 width = 7.5, height = 5)
+
+# --- D6: state-level shifts + significance (WT / Myc@6W / Myc@12W) -------------
+stat_long <- state_stats |>
+  dplyr::transmute(state, `WT 6->12` = wt_shift, `Myc@6W` = myc6, `Myc@12W` = myc12) |>
+  tidyr::pivot_longer(-state, names_to = "contrast", values_to = "shift") |>
+  dplyr::mutate(state = factor(state, levels = c("BMYO", "LASP", "LHS")),
+                contrast = factor(contrast, levels = c("WT 6->12", "Myc@6W", "Myc@12W")))
+stat_lab <- state_stats |>
+  dplyr::transmute(state = factor(state, levels = c("BMYO", "LASP", "LHS")),
+    lab = sprintf("geno p=%.2g | int p=%.2g\nWT p=%.2g (%.0f%% sets down)\nMyc d: %.2f / %.2f",
+                  geno_p, int_p, wt_p, 100 * wt_setfrac_down, d6, d12))
+p_stat <- ggplot2::ggplot(stat_long, ggplot2::aes(x = contrast, y = shift, fill = contrast)) +
+  ggplot2::geom_col() +
+  ggplot2::geom_hline(yintercept = 0, colour = "grey40") +
+  ggplot2::facet_wrap(~ state) +
+  ggplot2::geom_text(data = stat_lab, ggplot2::aes(x = 2, y = Inf, label = lab),
+                     inherit.aes = FALSE, vjust = 1.2, size = 2.5, lineheight = 0.9) +
+  ggplot2::labs(title = "State-level shifts + significance (composite GSVA)",
+    subtitle = "p's INDICATIVE (sets correlated, n=6/tp); d = Cohen's d vs within-group SD",
+    x = NULL, y = "composite GSVA shift") +
+  ggplot2::theme_bw(base_size = 9) +
+  ggplot2::theme(legend.position = "none")
+ggplot2::ggsave(file.path(out_dir, "state_stats.pdf"), p_stat, width = 8, height = 4)
 
 # --- D4: ensemble convergence vector (Myc effect vs WT axis, per set) ----------
 # rho computed on the three MAIN states only; 'other' shown for observation (squares).
@@ -443,6 +524,7 @@ dev_out <- list(
   convergence     = list(overall = conv_overall, by_source = conv_by_source,
                          by_state = conv_by_state, by_state_fine = conv_by_state_fine),
   state_profile   = state_profile,
+  state_stats     = state_stats,
   source_state_profile = source_state_profile,
   subgroup_profile = subgroup_profile,
   set_group_means = set_group_means,
@@ -464,8 +546,13 @@ dev_out <- list(
     "plotted for observation). directional_pairs = GRAY UP-DN net; chung_pairs =",
     "CHUNG ATAC OPEN-CLOSED net (BASAL/LP/ML -> BMYO/LASP/LHS); both per contrast per",
     "lens, lineage-tagged. 'other' subdivided by state_fine (subgroup_profile + per-",
-    "subgroup trajectory PDFs). Ceiling: GSVA per-set contrasts powered (24 samples);",
-    "fGSEA adds importance; n=6/group -> interaction directional; association not causation.")
+    "subgroup trajectory PDFs). state_stats = per-state composite significance +",
+    "effect size: WT 6W->12W is luminal (LASP/LHS) DECLINE with BMYO FLAT (no basal",
+    "expansion; d~0.5-0.6 luminal, ~79% sets down, sample-level ns at n=6/tp, per-set",
+    "correlated so indicative); Myc BMYO suppression POWERED (geno p~0.02, d~0.8-1.2);",
+    "LHS flip DIRECTIONAL (interaction p~0.09, cross-modality corroborated). Ceiling:",
+    "GSVA per-set contrasts powered (24 samples); fGSEA adds importance; n=6/group ->",
+    "interaction directional; composite p's indicative (correlated sets); association not causation.")
 )
 saveRDS(dev_out, here::here("results", "dev_program_myc_integration.rds"))
 message("Saved results/dev_program_myc_integration.rds")
@@ -500,9 +587,14 @@ if (FALSE) {
   dp$class_tally |> tidyr::pivot_wider(names_from = class, values_from = n,
                                        values_fill = 0) |> print(n = Inf)
 
-  # C. three-state MEC profile + the 'other' subgroup profiles
+  # C. three-state MEC profile + per-state significance / effect size
   dp$state_profile |> tidyr::pivot_wider(names_from = state, values_from = mean_gsva) |>
     print(n = Inf)
+  # WT substrate (BMYO flat? luminal decline?) + Myc powered-vs-directional verdicts
+  dp$state_stats |> dplyr::select(state, wt_shift, wt_d, wt_p, wt_setfrac_down,
+    wt_set_t_p, wt_verdict) |> print()
+  dp$state_stats |> dplyr::select(state, myc6, myc12, d6, d12, geno_p, int_p,
+    myc_verdict) |> print()
   dp$subgroup_profile |> tidyr::pivot_wider(names_from = state_fine, values_from = mean_gsva) |>
     print(width = Inf)
 

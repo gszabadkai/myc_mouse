@@ -89,18 +89,25 @@ GRAY UP-DN nets (lineage-tagged); `other` subdivided by `state_fine` (subgroup_p
 
 ### Outcome (2026-07-08, sourced clean in Positron; committed)
 
-Three independent lenses converge. WT gland matures toward BMYO / loses luminal;
-Myc bends OFF that axis: convergence rho(Myc,WT) = -0.08 at 6W (orthogonal) ->
--0.44 at 12W (oppositional). Per state: BMYO -0.27 -> -0.71 (Myc suppresses basal,
-deepening), LASP +0.35 -> +0.21 (spared/parallel), LHS -0.14 -> -0.44. Profile
-Myc-effect: BMYO -0.15/-0.21, LASP -0.05/+0.09, LHS -0.15/+0.17 = the **LHS flip**
-(6W suppress -> 12W elevate, against the WT LHS decline). Corroborated by the GRAY
-directional nets (Myc -> low-estrogen + TEB/proliferative, strongest in BMYO) and
-the CHUNG ATAC OPEN-CLOSED nets (Myc closes basal chromatin, opens LP early, opens
-ML/LHS by 12W). Reading: at 6W a broad off-axis identity suppression; by 12W a
-specific **anti-BMYO / pro-LHS reprogramming**. Ceiling: per-set GSVA contrasts
-powered (24 samples); n=6 interaction directional; association not causation.
-Output = the developmental figure substrate for Block B.
+Three independent lenses converge. **The WT (Myc-) 6W->12W substrate loses luminal
+(LASP/LHS) programs while BMYO stays FLAT -- a relative rebalancing by luminal
+DECLINE, NOT a basal expansion** (BMYO wt_d=0.07, p=0.90; LASP d=-0.60, LHS d=-0.49,
+~79% of sets down, per-set t p~1e-5 but sample-level composite ns at n=6/tp; consistent
+with the literature -- no reported pubertal->adult BMYO expansion). Myc bends OFF that
+substrate: convergence rho(Myc,WT) = -0.08 at 6W (orthogonal) -> -0.44 at 12W
+(oppositional). Per state (state_stats): **BMYO suppression POWERED** (Myc effect
+-0.15/-0.21, d~0.8-1.2, genotype main p=0.020); **LHS flip DIRECTIONAL** (-0.15/+0.17,
+interaction p=0.089 -- trend, not the p-value but cross-modality agreement carries it);
+LASP near-null. Corroborated by GRAY directional nets (Myc -> LESS-DIFFERENTIATED /
+low-expression state + TEB/proliferative end-bud, strongest in BMYO) and CHUNG ATAC
+OPEN-CLOSED nets (Myc closes basal chromatin, opens LP early, opens ML/LHS by 12W).
+NOMENCLATURE NOTE: GRAY `HEVSLE` = **High-Expression vs Low-Expression** subgroups
+within each lineage (Gray et al. 2023) = a more/less DIFFERENTIATION-state axis, NOT
+high/low estrogen (the library catalog `mammary_dev_sets_catalog.md` mislabels it as
+estrogen -- read it as expression/differentiation). Reading: at 6W a broad off-axis
+identity suppression; by 12W a specific **anti-BMYO / pro-LHS reprogramming**. Ceiling:
+main effects powered (24 samples); interaction directional at n=6/tp; composite p's
+indicative (sets correlated); association not causation. Figure substrate for Block B.
 
 Artifacts: `scripts/26_dev_program_myc_integration.R`,
 `data/dev_mec_annotation.csv` (curated MEC annotation),
