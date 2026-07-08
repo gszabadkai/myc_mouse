@@ -112,3 +112,42 @@ indicative (sets correlated); association not causation. Figure substrate for Bl
 Artifacts: `scripts/26_dev_program_myc_integration.R`,
 `data/dev_mec_annotation.csv` (curated MEC annotation),
 `results/dev_program_myc_integration.rds`, `outputs/dev_program_myc_integration/*`.
+
+---
+
+## Issue #2 — Endogenous Myc & the pubertal TEB/proliferative phenotype
+
+**Status:** DONE (script 27, sourced clean, committed). 2026-07-08.
+
+**Question.** It is reported that endogenous Myc is instrumental in the WT for the
+pubertal proliferative phenotype (esp. TEBs). Quantify that endogenous role and show
+the Myc+ transgene AMPLIFIES the same program. Reframe on already-scored GSVA (no
+re-run). Six per-sample program composites: `myc` (MYC_signatures 17-set), `felsher`,
+`hallmark_v2`, `prolif` (Proliferation 14), `myc_in_teb` (TFT_MYC_GRAY_*_TEB = MYC
+targets in the Gray TEB context), `teb_ductal` (MG_TEB_VS_DUCTAL UP-DN). Decomposition:
+ENDOGENOUS = WT 6W->12W temporal; TRANSGENE = Myc genotype main effect.
+
+### Outcome
+
+- **Endogenous Myc gates the pubertal program (WT).** Within WT, Myc activity tightly
+  tracks proliferation (r=0.93), Myc-in-TEB (0.88), TEB-ductal (0.87), tightest at 6W
+  (0.77-0.92). All six programs 6W>12W in WT (directional, ns at n=6/tp). Consistent
+  with the literature.
+- **Transgene amplifies it (POWERED).** Myc-target activity d=2.3-3.0 (p<1e-5),
+  proliferation d=1.0 (p=0.02), Myc-in-TEB d=1.6 (p=6e-4); 6W_pos = the most TEB/
+  proliferative state. The pure TEB phenotype is amplified SPECIFICALLY at 6W (6W_pos
+  +0.41 vs 6W_neg +0.05; Myc boost ~4x larger at 6W than 12W -> pooled TEB geno p=0.14
+  weak because time-concentrated), fitting TEBs as a pubertal structure (ties to the
+  Issue #1 6W substrate).
+- **Saturation nuance.** Within Myc+ the coupling loosens (r 0.87->0.55) and the
+  Myc->phenotype slope flattens (1.65->0.83): endogenous Myc is rate-limiting in WT;
+  the transgene exceeds that range -> amplification of LEVELS to a saturating high,
+  not a proportional continuation of the endogenous dose-response. Interaction ns ->
+  the transgene boost is ~additive over time (except TEB, 6W-concentrated).
+- Ceiling: transgene powered (main effect); endogenous directional (n=6/tp);
+  composite p's/correlations use correlated sets (indicative); endogenous-establishes-
+  TEB is a literature claim -> WT co-variation + amplification shown, not causation.
+  Hallmark_V1 not scored (V2 + Felsher + 15 targets used).
+
+Artifacts: `scripts/27_myc_endogenous_amplification.R`,
+`results/myc_endogenous_amplification.rds`, `outputs/myc_endogenous_amplification/*`.
