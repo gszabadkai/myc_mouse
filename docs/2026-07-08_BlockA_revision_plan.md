@@ -151,3 +151,107 @@ ENDOGENOUS = WT 6W->12W temporal; TRANSGENE = Myc genotype main effect.
 
 Artifacts: `scripts/27_myc_endogenous_amplification.R`,
 `results/myc_endogenous_amplification.rds`, `outputs/myc_endogenous_amplification/*`.
+
+---
+
+## Issue #3 — Is the MYC effect REALLY "primarily mitochondrial"?
+
+**Status:** DONE (script 28, sourced clean, committed). 2026-07-10.
+
+### The problem (what was wrong)
+
+The synthesis leads with "Myc preferentially amplifies mitochondrial biogenesis"
+(theme B / model lead A), resting on AP6.1 (`20`, MitoCarta NES 2.18) and AP6.2 (`21`,
+MitoCarta the top permutation-null z). The critique: mito NES is high, but the MYC
+signature is ALSO high and spans many arms (ribosome biogenesis, proliferation,
+metabolism) -- does mito have independent substance, or is "MYC effect = mitochondrial"
+just restating "MYC effect = MYC targets"?
+
+### The reframe (decisions locked)
+
+The one word "primarily" does two jobs; split them.
+- **Q1 PREFERENTIAL?** AP6.2's mito-#1 rank is size-confounded: z inflates with set
+  size (MitoCarta n=1041 z=19.3 vs OXPHOS n=185 z=10.9 at ~equal effect). Report the
+  size-fair metrics -- effect MAGNITUDE and housekeeping-corrected RELATIVE EXCESS over
+  the matched null -- and add a powered per-sample Cohen's-d ranking across all arms
+  incl. central metabolism.
+- **Q2 CENTRAL?** Not "is mito enriched" but "is mito a CORE, phenotype-coupled arm or
+  a bystander riding MYC dose?" Couple each mito / metabolic axis to the phenotypic
+  OUTCOMES already measured -- MB2 tumorigenic fork (AP7/`18`), mito death priming
+  (`23`), TEB/dedifferentiation (Issue #1/#2), proliferation -- then test whether the
+  coupling SURVIVES removing the generic MYC axis (PARTIAL correlation vs the Felsher
+  core = the 67-gene MYC phenotype core with mito stripped: 61 genes, 8% mito, 0%
+  OXPHOS). Central = coupled AND survives deconfounding. Metabolic axes added per the
+  cancer-metabolism remit. Full reframe on already-scored GSVA + saved composites.
+
+### Deliverable
+
+`scripts/28_myc_mito_centrality.R` (Parts 1-D): per-sample panel (3 mito arms:
+all/OXPHOS-core/biogenesis; 3 MYC identity; proliferation; 12 central metabolic axes;
+3 outcomes). Part A1 = reframe the AP6.2 null (magnitude + relative excess, no
+recompute); A2 = powered genotype Cohen's d ranking. Part B = coupling (axis x outcome,
+overall + by genotype + by timepoint) + partial correlation | Felsher core / prolif +
+metabolic-centrality summary. Writes `results/myc_mito_centrality.rds`,
+`outputs/myc_mito_centrality/*.pdf`.
+
+### Outcome (2026-07-10, sourced clean in Positron; committed)
+
+**Q1 -- "primarily mitochondrial" does NOT hold as literally-#1 on either lens.**
+Size-fair matched-null excess (6W): MYC-targets 0.65 ~ OXPHOS-core 0.64 >
+MitoCarta-wholesale 0.51 (mito #1 by the size-confounded z but #3 by excess) > E2F >
+Metabolism > Proliferation; MYC-targets OVERTAKE at 12W (0.69 vs OXPHOS 0.44 vs mito
+0.29). Powered genotype Cohen's d: hallmark_v2 3.0 > felsher 2.7 > mito_biogenesis 2.6 ~
+mito_all 2.57 > amino-acid 2.35 ~ glutamine 2.34 ~ myc_sig 2.32 > mito_oxphos 2.11 ~ tca
+2.09 ~ one-carbon 2.05 ~ glycolysis 2.01 ~ nucleotide 1.99 ~ oxphos_met 1.94 > ... >
+prolif 1.01 > redox 0.08. Mito is a BROAD top tier with MYC-targets ahead and central
+metabolism co-equal -- NOT uniquely the biggest arm. -> soften to "the OXPHOS/biogenesis
+core is top-tier, co-equal with the MYC-target core," not "the single most preferential."
+
+**Q2 -- centrality is REAL, ROBUST, and specific to the OXPHOS + biosynthetic core.**
+Raw couplings are all high (everything rides MYC dose); the test is what survives
+partialling out MYC dose. Deconfounded against BOTH the Felsher core AND the full 17-set
+MYC composite (the strongest proxy), and cross-checked within WT (no transgene varying):
+**10 ROBUST central couplings, all in the bioenergetic-biosynthetic core** --
+`mito_oxphos` -> prolif (raw 0.86 / |fullMYC 0.59 / WT 0.89), teb-dediff (0.67/0.44/0.86),
+priming (0.57/0.32/0.34); `nucleotide` -> prolif (0.85/0.54/0.92), priming
+(0.63/0.49/0.53), teb (0.63/0.32/0.91); `oxphos_met` (independent set source) + `tca` ->
+prolif (0.37, 0.32). The mito BIOGENESIS/translation arm and MitoCarta-WHOLESALE are
+BYSTANDERS -- coupling collapses under both proxies (biog->teb 0.52->-0.03; ->prolif
+0.74->0.11). The MB2 tumorigenic fork collapses for ALL mito arms (fork = MYC-dose-driven
+for mito) but is robustly tracked by a DISTINCT metabolic signature: `cholesterol`/
+mevalonate (+0.40) and `redox` (-0.50, even within WT; redox barely moved by Myc, d=0.08
+-> a coupled-but-not-a-target axis). Dissociation: biogenesis tracks MYC-signature dose;
+OXPHOS + nucleotide + TCA co-vary with the phenotype along an axis ORTHOGONAL to
+MYC-signature activity and detectable within WT -- a sharper, better-supported version of
+"mitochondria integrate (not merely read out) oncogenic + metabolic programs."
+
+**Interpretation ceiling (critical -- baked into script notes + the Q2 figure).**
+Surviving the partial means the phenotype signal is ORTHOGONAL to the MYC-signature axis,
+NOT that it is MYC-INDEPENDENT or causal. Proxy under-capture, a non-linear MYC route, and
+a common cause (e.g. cell-state composition) all survive too; DIRECTION is unidentified.
+rho_pmyc + within-WT tighten "beyond MYC dose" but cannot establish independence or
+mediation. Co-variation says NOTHING about NECESSITY (a MYC-readout arm may still be
+required). Q1 powered (24 samples); Q2 per-sample association at n=6/group, correlated
+sets; priming mito-defined (mito<->priming partly circular; nucleotide<->priming is the
+non-circular corroborator). Definitive test is genetic. Association layer -> Block B.
+
+Paper-ready framing: *Myc raises all mitochondrial arms, but their coupling to the
+tumorigenic phenotype is dissociable -- ribosome/mtDNA biogenesis tracks MYC-signature
+dose, whereas OXPHOS (with nucleotide synthesis and the TCA cycle) co-varies with
+proliferation, dedifferentiation and death priming along an axis orthogonal to
+MYC-signature activity and detectable within wild-type tissue. This identifies the
+respiratory/biosynthetic core, not mitochondrial biogenesis per se, as the arm most
+tightly linked to the phenotype. Whether this reflects a MYC-independent input or is
+required for tumorigenesis is not resolved by these associations.*
+
+Artifacts: `scripts/28_myc_mito_centrality.R`, `results/myc_mito_centrality.rds`,
+`outputs/myc_mito_centrality/*` (q1_preferentiality_reframed, q1_genotype_effect_ranking,
+q2_coupling_heatmap, q2_partial_correlation, metabolic_centrality).
+
+### Downstream flag (later issue)
+
+The mito-arm decomposition (OXPHOS core vs biogenesis/translation) and the "central
+metabolic axes" (nucleotide/TCA/cholesterol/redox) are new framings not in the synthesis
+model. When the synthesis / model-lead wording is revised (parked framing decision),
+replace "primarily mitochondrial" (theme B / lead A) with the dissociable-arms claim
+above. Do not touch the synthesis doc now.
