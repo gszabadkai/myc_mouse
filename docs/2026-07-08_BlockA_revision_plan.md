@@ -345,3 +345,82 @@ absolute levels), not a fall in nuclear OXPHOS transcript. Within wild-type tiss
 trajectory co-varies with the developmental and ER/PGC1a-biogenesis programs, nominating a
 partly MYC-independent developmental input as a hypothesis for what re-prioritises the
 mitochondrial compartment.*
+
+---
+
+## Issue #5 — Can MYC-independent factors EXPLAIN the OXPHOS attenuation?
+
+**Status:** DONE (script 30, sourced clean, committed). 2026-07-11.
+
+### The problem (why Issue #4 Part D was the wrong instrument)
+
+Issue #4 Part D found the WT OXPHOS trajectory co-varies within WT with the developmental
+luminal axis (partial 0.71) and ER/PGC1a TF activity (0.70-0.83). The author then asked the
+sharper question: can we "blame" MYC-independent factors (developmental, other TFs) to FULLY
+EXPLAIN the reduction? Part D tested LEVEL association (does the axis track OXPHOS?), NOT
+whether the axis ABSORBS the attenuation. The attenuation IS a MODERATION phenomenon -- the
+genotype (Myc) effect depends on timepoint = the genotype x time INTERACTION (b_int).
+"Explaining the reduction" = does conditioning on a candidate MYC-independent axis SHRINK
+b_int toward 0? Issue #5 runs that test and states the ceiling.
+
+### Deliverable
+
+`scripts/30_attenuation_moderation.R` (reframe on script 29's saved `$defs` set-lists; same
+composite()/comp_gsva() construction so the baseline b_int reproduces absolute_stats; no
+DESeq/GSVA re-run). Part A baseline b_int per outcome. Part B covariate absorption per axis
+(refit `outcome ~ tp*myc + axis + tp:axis`; report delta_b_int as the STABLE primary metric,
+absorption_frac = 1 - b_int_adj/b_int_base with the caveat it is unstable at a small
+baseline, int_survives_p, delta_R2, nested LRT). Part C stratified case bootstrap (R=2000,
+`boot`; `mediation` not installed) -> percentile CI on delta_b_int and absorption_frac. Part
+D within-WT (n=12) OXPHOS slope before/after holding dev + TF (the script-17 analogue). Part
+E "what would settle it" (inducible Myc, TF perturbation, single-cell, ATAC/ChIP). Outcomes:
+`oxphos_abs` (VST nuclear-OXPHOS, powered/mtDNA-clean) + `oxphos_gsva` (secondary). Axes:
+dev_luminal + tf_biogenesis (primary), prolif + mtdna_reprior (secondary), dev+tf combined.
+Artifacts: `results/attenuation_moderation.rds`, `outputs/attenuation_moderation/*`
+(B_bint_before_after, C_absorption_fraction_bootCI, C_delta_bint_bootCI,
+D_withinwt_slope_absorption).
+
+### Outcome (2026-07-11, sourced clean in Positron; committed)
+
+**The answer is NO: no MYC-independent axis absorbs the attenuation.** Baseline b_int on the
+powered outcome oxphos_abs = -0.279 (p 0.607, directional -- reproduces Issue #4 absolute_stats
+exactly); on oxphos_gsva ~0 (0.003), so its absorption fraction is undefined and read via
+delta only.
+
+- **Part B.** Conditioning on the developmental + TF axes together leaves the attenuation
+  essentially UNTOUCHED (b_int -0.279 -> -0.322, delta -0.043). dev_luminal ALONE makes it
+  LARGER (-0.279 -> -0.721, delta -0.442) -- the same co-drive signature as script 17
+  (removing a program Myc co-drives EXPOSES more Myc effect, it does not absorb it).
+  tf_biogenesis / prolif / mtdna flip or shrink the point estimate but none toward a clean 0.
+- **Part C (the honest ceiling).** EVERY delta_b_int bootstrap CI straddles 0 (e.g. dev+tf
+  [-1.39, 1.31]; dev_luminal [-1.17, 0.40]) -- so at n=24 there is no RELIABLE movement of the
+  attenuation in either direction: no evidence of absorption, and even the "enlarges it"
+  point estimate is not significant. The absorption FRACTION CIs are uninterpretably wide
+  (spanning +-10 to +-18) because the baseline interaction is directional -- "fully explains"
+  (frac~1) is nowhere distinguishable.
+- **Level-association is NOT moderation.** Every axis LRT is significant (lrt_p 5e-4 to
+  1e-10): the axes DO add explanatory variance for OXPHOS LEVEL -- they just do not absorb the
+  genotype x time INTERACTION. This is exactly why Part D of Issue #4 (level association) was
+  the wrong instrument for the "explains the attenuation" question.
+- **Part D.** Within WT (n=12) the OXPHOS 6W->12W slope only shrinks ~29% (oxphos_abs
+  -0.454 -> -0.323) / ~19% (gsva) when dev + TF are held -- it PERSISTS, the OXPHOS analogue of
+  script 17's biogenesis non-absorption.
+
+**CEILING (critical).** Candidate axes are ENDOGENOUS (Myc drives dev/TF too) -> absorption
+estimates are BIASED; n=6/group; collinear axes; the baseline interaction is itself ns. This
+test BOUNDS the claim -- it cannot prove a MYC-independent cause, and a large absorption
+fraction must NOT be read as "development explains it" (report the CI + endogeneity caveat
+together). The identifying evidence is experimental (Part E: inducible Myc off/on, TF
+perturbation, single-cell/deconvolution, ATAC/ChIP).
+
+Paper-ready framing: *We tested directly whether conditioning on MYC-independent developmental
+or ER/PGC1a-biogenesis programs absorbs the genotype x time interaction that constitutes the
+attenuation. It does not: holding both axes leaves the interaction essentially unchanged, and
+conditioning on the developmental axis alone enlarges rather than shrinks it -- the programs
+co-vary with mitochondrial output rather than antagonising Myc (consistent with the earlier
+finding that development co-drives, not absorbs, the biogenesis trajectory). These axes remain
+associated with OXPHOS level but do not account for the attenuation, and at this sample size
+the analysis bounds rather than resolves a MYC-independent contribution; distinguishing a
+fading transgene effect from a fixed developmental ceiling requires inducible and perturbation
+experiments.* This CLOSES the "can we blame MYC-independent factors" question at the level
+these bulk data can answer.
