@@ -255,3 +255,93 @@ metabolic axes" (nucleotide/TCA/cholesterol/redox) are new framings not in the s
 model. When the synthesis / model-lead wording is revised (parked framing decision),
 replace "primarily mitochondrial" (theme B / lead A) with the dissociable-arms claim
 above. Do not touch the synthesis doc now.
+
+---
+
+## Issue #4 — What IS the 6W->12W attenuation? (the "NES paradox")
+
+**Status:** DONE (script 29, sourced clean, committed). 2026-07-11.
+
+### The problem (what was fuzzy, and an error caught mid-scoping)
+
+Gate 1 established the genotype effect SHRINKS ~2-fold 6W->12W and that it is biological
+(effect-size, not power). But "attenuation" stayed fuzzy because two rulers get read as
+one, and there was a live confusion: fGSEA NES of the Myc-vs-WT contrast is FLAT across
+age yet the divergence shrinks (the "NES paradox"). During scoping the author caught a real
+error in the working explanation: an aggregate "WT mito rises +0.82 with age -> converges
+onto Myc" claim. That +0.82 is a MEDIAN over 63 heterogeneous MitoCarta fGSEA sets and is an
+ARTIFACT of averaging opposite-direction arms. It is RETRACTED (see below).
+
+### The resolution (two rulers, pathway-resolved)
+
+- **NES is RANK-based / magnitude-blind** -- it asks "are these genes at the TOP of this
+  contrast?" (yes at both ages). It measures identity/priority, NOT size. Using NES flatness
+  to argue "no attenuation" is a category error; using an all-MitoCarta NES median hides
+  opposite-direction pathways.
+- **What SHRINKS is MAGNITUDE** (raw |LFC|). DE count 2777->239 (Gate 1); per-pathway here.
+- **mtDNA is contained** (verified): the fGSEA MITOCARTA_OXPHOS set is already nuclear (zero
+  mt-* genes); mtDNA bias lives only in the GSVA MITOCARTA_ALL composite and mitoPPS.
+- **TPM skipped for a STATISTICAL reason** (not a data gap): within-gene between-group
+  z-scores make gene length a per-gene constant that cancels, so TPM == log-CPM in shape.
+  Part B uses VST + normalized-counts + log-CPM.
+
+### Deliverable
+
+`scripts/29_attenuation_decomposition.R` (reframe on fitted DESeq2 contrasts, GSVA, mitoPPS,
+fGSEA; VST/log-CPM are deterministic transforms, no re-fit). Part A decomposition + two-ruler
+NES-paradox figure, PATHWAY-RESOLVED. Part B ABSOLUTE nuclear-OXPHOS levels across 4 groups on
+3 normalizations (the un-done check). Part C mitoPPS-vs-absolute reconciliation. Part D
+first-pass within-WT regulator regression. Artifacts: `results/attenuation_decomposition.rds`,
+`outputs/attenuation_decomposition/*` (A_nes_paradox_two_rulers, A_convergence_temporal_by_pathway,
+B_nuclear_oxphos_heatmap_vst, B_absolute_composite_trajectory, C_mitopps_vs_absolute,
+D_regulator_partials_within_wt).
+
+### Outcome (2026-07-11, sourced clean in Positron; committed)
+
+**A -- the correction is vindicated in the LFC data, not just NES.** Signed temporal LFC:
+OXPHOS FALLS in BOTH genotypes (OXPHOS_SUBUNITS WT -0.25 / Myc+ -0.39; OXPHOS -0.13 / -0.28),
+while the biosynthetic arm RISES in WT (amino-acid +0.18, lipid +0.12) and is flat/down in
+Myc+. There is NO WT developmental OXPHOS rise; the aggregate "+0.82" was averaging these
+opposite arms. Genotype NES is flat/high at both ages (2.2-3.5, higher at 12W) confirming the
+rank ruler is magnitude-blind. **The magnitude attenuation is carried MORE by the mito/
+metabolic arms than the MYC-target core** (attn ratio 12W/6W on the 6W-divergent set ~0.53
+for OXPHOS/TCA/nucleotide vs 0.74-0.77 for MYC-targets; DE collapse OXPHOS 63->2, ribosome
+54->3 vs MYC-targets 40->17) -- a matter of DEGREE, quantified on |LFC|, not exclusivity.
+
+**B -- absolute nuclear-OXPHOS mRNA (the crux answer).** Myc RAISES nuclear OXPHOS in absolute
+mRNA: genotype Cohen's d ~1.27 (VST/normcnt, p~0.004; logCPM d 0.84 p 0.048), ROBUST across all
+3 normalizations (per-gene group-mean Spearman 0.997-0.99998). Nuclear OXPHOS DECLINES with age
+in both genotypes but only DIRECTIONALLY (WT beta -0.45 p 0.21; Myc+ -0.73 p 0.11 -- ns at
+n=6/tp). So **mitoPPS "OXPHOS down" is NOT an absolute-mRNA drop at the genotype level** -- Myc
+elevates nuclear OXPHOS mRNA; the mitoPPS signal is within-compartment reprioritisation. This is
+the defensible "mitoPPS = ratio, absolute = level" argument.
+
+**C -- reconciliation: the mitonuclear shift is REAL in absolute mRNA.** Both lenses agree in
+shape: nuclear OXPHOS peaks at 6W_pos (mitoPPS z +1.21 / absolute z +1.31) and drops by 12W;
+mtDNA-encoded OXPHOS is lowest at 6W_pos and rises to 12W in both lenses (mitoPPS z -1.22->+0.37
+/ absolute -1.14->+1.23). So script-24's "nuclear-led assembly at 6W -> mtDNA-completed running
+metabolism at 12W" is confirmed in absolute levels. Honest divergence: at 12W_pos nuclear OXPHOS
+is mitoPPS-deprioritised (0.955, <1) while absolute sits near baseline (+0.05) = reprioritisation
+without a level drop.
+
+**D -- first-pass regulators (HYPOTHESIS-GENERATING, within WT, n=12).** The WT OXPHOS trajectory
+tracks BOTH the developmental luminal axis (partial r 0.71) and ER/PGC1a TF activity
+(ESRRA/NRF1/GABPA; partial r 0.70-0.83), model R^2 0.86-0.89; mtDNA reprioritisation negative/ns.
+Candidate MYC-independent inputs = developmental + ER/PGC1a program. The Issue #3 non-MYC OXPHOS
+axis stays OPEN (not pre-answered); TF causality would need ATAC/ChIP not in these data.
+
+**Retraction logged:** the "Issue #4 closes the Issue #3 loop via a WT developmental OXPHOS rise"
+gloss is WRONG (OXPHOS falls in WT) and is retracted; it did not affect the committed Issue #3
+result (partial-correlation centrality does not depend on it). Memory
+[[issue4-attenuation-scoped]] and [[block-a-day1-gates]] corrected.
+
+Paper-ready framing: *The 6W->12W attenuation is a shrinking of effect MAGNITUDE, not of program
+identity: Myc engages the same top programs at both ages (flat rank enrichment) but the
+wild-type<->Myc gap roughly halves, carried disproportionately by the mitochondrial/metabolic
+arms (OXPHOS, TCA, nucleotide) rather than the MYC-target core. In absolute mRNA Myc raises
+nuclear OXPHOS subunits (robust across normalizations); the mitoPPS "OXPHOS reduction" is a
+within-compartment reprioritisation (nuclear-led at 6W, mtDNA-completed by 12W -- confirmed in
+absolute levels), not a fall in nuclear OXPHOS transcript. Within wild-type tissue the OXPHOS
+trajectory co-varies with the developmental and ER/PGC1a-biogenesis programs, nominating a
+partly MYC-independent developmental input as a hypothesis for what re-prioritises the
+mitochondrial compartment.*
