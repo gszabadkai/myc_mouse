@@ -424,3 +424,88 @@ the analysis bounds rather than resolves a MYC-independent contribution; disting
 fading transgene effect from a fixed developmental ceiling requires inducible and perturbation
 experiments.* This CLOSES the "can we blame MYC-independent factors" question at the level
 these bulk data can answer.
+
+---
+
+## Issue #6 — A citable MECHANISM for the OXPHOS attenuation
+
+**Status:** DONE (script 31, sourced clean, committed). 2026-07-12.
+
+### The problem (compression re-describes; we need a mechanism)
+
+Issues #4/#5 fixed WHAT the attenuation is (magnitude compression, not rank; Myc raises
+absolute nuclear OXPHOS) and that no dev/TF axis ABSORBS the interaction. But "compression"
+only renames the attenuation -- the author wanted a CITABLE mechanism. The restatement ("the
+MYC signal is not reduced, it acts on a different background") splits into three non-exclusive
+mechanisms: moving background (WT converges), Myc-fade (front-loaded), and global response
+compression (breadth reduction). A read-only check showed the breadth reduction is real but
+modest (SD ratio 0.83) and concentrated in the strong responders (the DE-count collapse -91%
+is a tail/threshold artifact overstating a -20% magnitude compression) -- so compression alone
+is not the citable mechanism.
+
+### The resolution (an exact identity separates two mechanisms)
+
+The attenuation per gene IS the interaction: `myc_12W - myc_6W == timepoint_pos -
+timepoint_neg` (verified, cor = 1.0000). Aligned to Myc's induction direction d = sign(myc_6W),
+the gap-shrink splits cleanly into **WT-convergence** (`d*timepoint_neg`, WT matures toward
+Myc -- the moving background) and **Myc-fade** (`d*timepoint_pos`, oncogenic retreat).
+
+### Deliverable
+
+`scripts/31_attenuation_mechanism.R` (reframe on fitted contrasts + GSVA; no re-run). Part A =
+convergence/fade decomposition (POWERED, contrast-level, all genes) over two universes
+(6W-divergent padj<0.1; and effect |LFC6|>0.5, selection-independent) x roster programs + pooled
+proliferation/mammary-luminal. Part B = broadened-TF absorption (biogenesis/E2F/ESR1/lipogenic/
+data-driven mito panel) extending Issue #5, plus a compositional diagnostic (each TF axis's
+Myc+ 6W->12W slope vs the OXPHOS fade). Part C (deconvolution) DEFERRED. Artifacts:
+`results/attenuation_mechanism.rds`, `outputs/attenuation_mechanism/*` (A1 convergence_fade_by_
+program, A2 conv_fade_gene_map, A3 conv_fade_shares, B1 tf_bint_before_after, B2 tf_delta_bint_
+bootCI, B3 tf_temporal_vs_oxphos_fade).
+
+### Outcome (2026-07-12, sourced clean in Positron; committed)
+
+**A -- the mechanism (powered, robust across both universes).** Globally the attenuation is
+**~66% Myc-fade, ~34% WT-convergence** (42.8% convergence on the effect universe). It is
+**PROGRAM-SPECIFIC:** WT-convergence is real for the biosynthetic arm (amino-acid conv 37%,
+lipid 41%, nucleotide 31%; TCA 20%) and for pooled mammary-luminal (36%) -- the wild-type gland
+matures onto the same biosynthetic axis Myc drives. But it is ABSENT/NEGATIVE for OXPHOS (conv
+-11 to -39%; WT diverges, the gap closes purely by fade, fade% >100) and for the MYC-target
+core (conv -60 to -63%), which is ALSO the LEAST attenuated (atten 0.17-0.19 vs 0.28-0.50) --
+i.e. the MYC identity core is PROTECTED. Pooled proliferation attenuates by PURE fade (conv
+~0%, fade 100%). Every sign reproduces on the selection-independent effect universe -> not a
+significance-selection artifact. This is the powered, gene-level resolution of the old H1
+(front-loaded fade) vs H3 (WT catch-up) question (Gate 1 / script 17 left it directional-only):
+H1-dominant (66% fade) with a real, biosynthetic-arm-specific H3 minority.
+
+**B -- broadened-TF absorption (BOUNDED) + a compositional hint.** No broadened TF axis reliably
+absorbs the attenuation -- every delta_b_int bootstrap CI straddles 0 (Issue #5 ceiling holds);
+ESR1 does not even associate (lrt_p 0.83). The numerical standout is tf_e2f (proliferation/cell-
+cycle): it moves b_int on oxphos_abs from -0.279 to -0.028 (point-estimate ~90% absorption) --
+but NOT significant (CI [-0.64, 2.17]), a hint not a result. Compositional diagnostic: the
+OXPHOS fade is Myc+ slope -0.91; the axes co-declining most are tf_mito_panel (-0.60), lipogenic
+(-0.46), E2F (-0.36), while ESR1 RISES (+0.42). So proliferation/mito-TF activity fades
+alongside OXPHOS -- SUPPORTING (not proving) that the dominant Myc-fade is partly compositional
+dilution of the shrinking proliferative/TEB compartment.
+
+**C -- DEFERRED (settle_it).** Reference deconvolution of the proliferative/TEB FRACTION (needs
+an external mouse-mammary sc atlas e.g. Bach 2017 GSE106273 + MuSiC/Bisque; not on disk) is the
+next step; single-cell/snRNA-seq or TF perturbation is the definitive test.
+
+**CEILING.** Part A is POWERED and the identity is exact -> the convergence/fade split is solid
+but DESCRIPTIVE of the transcriptional change (composition still confounds the fade term; not a
+per-cell causal claim). Part B is BOUNDED exactly as Issue #5 (endogenous TFs, n=6/group,
+directional baseline). The E2F/proliferation co-decline is a hypothesis-generating pointer to
+composition, to be settled by deconvolution/single-cell.
+
+Paper-ready framing: *The genotype gap does not close uniformly. Decomposing the exact
+genotype x time interaction into a wild-type-convergence term and a Myc-fade term shows the
+attenuation is ~two-thirds attenuation of the oncogenic program on the aging substrate and
+~one-third wild-type developmental convergence -- the latter confined to the biosynthetic/
+metabolic arm (amino-acid, lipid, nucleotide), where the maturing wild-type gland ramps onto
+the same program Myc drives. OXPHOS and the core MYC-target program show no such convergence
+(wild-type diverges), and the MYC identity core is the least attenuated of all -- selectively
+buffered. The dominant Myc-fade co-occurs with a collapse of proliferative and mitochondrial-TF
+activity, consistent with (but not proof of) dilution of the shrinking proliferative
+compartment; resolving per-cell fade from compositional dilution requires single-cell or
+deconvolution data.* This gives a CITABLE two-mechanism account of the attenuation and scopes
+the one remaining ambiguity to a defined next experiment.
