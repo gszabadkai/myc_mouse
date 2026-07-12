@@ -5,7 +5,10 @@ Purpose: Read-only structural reference for the ongoing pipeline
 consolidation. The working directory holds a mix of files from both
 branches; this document is the authoritative map of what belongs where.
 	
-important: this file is a previous state, here only for reference - consolidation ongoing
+important: this file is a previous state, here only for reference - HISTORICAL. Superseded by
+the 2026-07-12 consolidation: `analysis-exploratory` now holds the reviewed Block A (scripts
+00-31, tag `block-a-reviewed` @ 4b82a82) and `paper-figures` (Block B) is branched off it. See
+CLAUDE.md "Branches" for the current model.
 
 
 > **No files were moved, renamed, or deleted to produce this manifest.**

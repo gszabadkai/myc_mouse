@@ -16,13 +16,15 @@ paper: Menegollo, Bentham et al., Cancer Res 2024 (CAN-23-3172).
 
 Two-pipeline consolidation is done: `new-analysis` is the trunk (scripts 00-12);
 main's removed scripts are archived byte-identical in `scripts/archive_main_pipeline/`.
-Active work is the finalisation in `docs/myc_mouse_finalisation_plan.md`, built in two
-phases:
-- **Block A** — broad exploratory: gates + full action-point menu across all
-  sets/methods/contrasts, plus the raw re-runs. Review against the hypotheses, then
-  decide what the paper says.
-- **Block B** — focused: re-code only the narrative-selected analyses and figures for
-  the writeup. The later submission-quality pass, not the current draft.
+The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
+- **Block A** — broad exploratory (scripts 13-25) + the step-by-step revision (Issues
+  #1-6, scripts 26-31). **DONE and reviewed** (2026-07-12): synthesised in
+  `docs/2026-07-12_BlockA_revision_synthesis_and_figure_plan.md`; the reviewed commit is
+  tagged `block-a-reviewed` (4b82a82) and now lives on `analysis-exploratory` (00-31).
+- **Block B** — CURRENT: publication figures for the writeup, on the `paper-figures`
+  branch (off `block-a-reviewed`). Two main + supplementary figures, re-rendering the
+  Block A outputs (do not re-run 26-31). The figure-content partition awaits the author's
+  narrative; git finalisation is complete.
 
 ## Workflow — "Option A" (do not deviate)
 
@@ -40,12 +42,14 @@ phases:
 
 ## Branches, worktrees, git discipline
 
-Branch model:
-- `new-analysis` — stable trunk (scripts 00-12).
-- `analysis-exploratory` — Block A active development (off `new-analysis`). Current
-  working branch; broad runs and raw re-runs land here.
-- `paper-figures` — Block B, created later off the reviewed Block A commit. Do not
-  create until after the Block A review.
+Branch model (updated 2026-07-12 after the Block A revision consolidation):
+- `new-analysis` — stable trunk (scripts 00-12). Unchanged.
+- `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
+  the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
+- `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
+  Figure scripts 32+ land here.
+- `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
+  `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.
 
 Worktrees:
