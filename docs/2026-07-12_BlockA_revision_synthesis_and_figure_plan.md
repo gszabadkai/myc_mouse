@@ -52,8 +52,13 @@ pieces of this did not survive the scrutiny of Issues #1-6.
    `attenuation = WT-convergence + Myc-fade`: ~66% **Myc-fade** (oncogenic retreat) + ~34%
    **WT-convergence**, the convergence confined to the **biosynthetic arm** (WT matures onto the
    same axis). OXPHOS and the MYC-target core show NO convergence (close by fade alone), and the
-   MYC identity core is the LEAST attenuated -- selectively BUFFERED. The fade co-occurs with a
-   collapse of proliferation/mito-TF activity -> a COMPOSITIONAL hint (dilution of the shrinking
+   MYC identity core is the LEAST attenuated -- selectively BUFFERED. The fade itself is not
+   monolithic: for the fade-led programs it decomposes into a SHARED developmental decline (also
+   seen in WT) plus a MYC-SPECIFIC excess, and only the excess constitutes the attenuation (a
+   shared decline cancels in the gap; OXPHOS ~72-90% Myc-specific -- see the fade-narration note
+   under Supp Fig B). The fade co-occurs with a collapse of proliferation/mito-TF activity, and
+   the Myc-specific excess reads as DE-AMPLIFICATION of the Myc-built proliferative/high-OXPHOS
+   compartment -> a COMPOSITIONAL hint (dilution of the shrinking
    proliferative/TEB compartment), to be settled by deconvolution/single-cell (deferred;
    `docs/deconvolution_subproject_plan.md`).
 
@@ -120,6 +125,50 @@ attenuates in magnitude via a two-thirds fade of the oncogenic program on a matu
 proliferative substrate and a one-third convergence of wild-type tissue onto the same
 biosynthetic axis, with the MYC identity core selectively buffered and no measured
 MYC-independent axis accounting for it.*
+
+### Narration for the fade-led panels (B2/B3): shared-developmental vs Myc-specific
+
+A reviewer/reader can reasonably ask a second question about "fade": if these pathways ALSO
+decline in wild-type with age, is the Myc+ decline just the tissue's normal developmental
+down-trend? The answer, and the guardrail it imposes on the caption, uses only values already
+in `results/attenuation_mechanism.rds` (NO new analysis) via the identity
+
+  `Myc+ temporal slope  =  shared-developmental (= WT slope)  +  Myc-specific (= the attenuation)`
+
+A decline SHARED by both genotypes CANCELS in the genotype gap, so it cannot create the
+attenuation; the attenuation is, by construction, the Myc-SPECIFIC excess (Myc+ falls beyond the
+shared developmental trend). This split is meaningful only where BOTH arms decline (same sign);
+the biosynthetic/convergence programs are the opposite-sign case where WT RISES to meet Myc.
+
+Fade-led programs (both arms decline), from the divergent set:
+
+| program | Myc+ slope | shared-developmental (WT) | Myc-specific (= attenuation) | shared % |
+|---|---|---|---|---|
+| OXPHOS subunits | -0.39 | -0.11 | **-0.28** | 28% |
+| OXPHOS (core) | -0.34 | -0.03 | **-0.30** | 10% |
+| MYC-target V2 | -0.31 | -0.12 | **-0.19** | 38% |
+| MYC Felsher | -0.27 | -0.11 | **-0.17** | 39% |
+| proliferation (pooled) | -0.32 | 0.00 | **-0.31** | ~0% |
+
+Three reads this licenses:
+1. **The fade is mostly Myc-specific** (OXPHOS 72-90%, proliferation ~100%): the WT decline
+   contextualizes but does not account for the gap-shrink. So the caption should say *"Myc+
+   rides the shared developmental decline and falls FURTHER; the further part IS the
+   attenuation"* -- NOT "Myc's effect exhausts."
+2. **Proliferation is ~100% Myc-specific** (WT proliferation is flat at the gene level) -- the
+   purest de-amplification; consistent with Myc having built the proliferative compartment at
+   6W that then collapses.
+3. **The MYC-target core has the HIGHEST shared fraction (~38%)** and the smallest Myc-specific
+   excess -- its shared component is the endogenous pubertal Myc/proliferation program winding
+   down in wild-type with age (ties directly to Issue #2). This is the flip side of "MYC core
+   is buffered": less of its (already small) decline is Myc-specific.
+
+**Why this ADDS something (not just a relabel):** it (a) prevents over-reading "fade" as
+Myc-specific exhaustion, and (b) reframes the Myc-specific excess as DE-AMPLIFICATION of the
+Myc-built proliferative/high-OXPHOS compartment -- which is precisely the compositional-dilution
+hypothesis that panel B6 hints at and the deconvolution sub-project would test. Implementation:
+a caption note + optionally a small stacked-bar re-render of B2 (shared vs Myc-specific per
+fade-led program) at final-figure time; values are already computed, no re-analysis.
 
 ### Notes for the draft -> final transition
 - **Overlap to resolve at final:** B5 can also draw on `attenuation_moderation/B_bint_before_after.pdf`
