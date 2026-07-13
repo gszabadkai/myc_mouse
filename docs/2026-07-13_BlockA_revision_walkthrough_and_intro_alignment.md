@@ -389,22 +389,37 @@ Clause-by-clause verdict (SUPPORTED / NUANCE / REWORD):
 | 4 | "MYC ... interacts with the transcriptional trajectory of normal mammary development" | #1, #2 | SUPPORTED -- Myc bends off the maturing WT axis; amplifies the endogenous pubertal program. "plays a part and interacts" is well-calibrated. |
 | 5 | "leading to a robust increase in mitochondrial biogenesis" | #3, #4 | NUANCE -- true and POWERED (biogenesis d ~2.6; absolute nuclear OXPHOS d ~1.27), but biogenesis is the MYC-DOSE-tracking BYSTANDER; the phenotype-coupled arm is OXPHOS/nucleotide/TCA. Precision, not contradiction. |
 | 6 | "key mitochondrial pathways are selective[ly] reprioritised" | #4 (mitoPPS), #3 | SUPPORTED -- the reprioritisation (nuclear-led -> mtDNA-completed) is a central finding. |
-| 7 | "holding OXPHOS restrained" | #4 | REWORD -- "restrained" must be RELATIVE (mitoPPS reprioritisation + a directional temporal decline), because absolute nuclear-OXPHOS mRNA is RAISED by Myc (d ~1.27). |
-| 8 | "Reduced abundance of OXPHOS complexes is associated with a desensitisation to MYC-induced apoptosis, opening a permissive window ... at the adult developmental stage" | #4, #6, death-timing | REWORD / SOURCE the first half; SUPPORTED for the window. |
+| 7 | "holding OXPHOS restrained" | #4, #6 | NUANCE (author's intent = the TIME axis) -- over 6->12W the Myc+ gland pulls its elevated OXPHOS back down (a de-amplification). Valid on the time axis; NOT a genotype-level suppression (vs WT, Myc RAISES OXPHOS, d ~1.27). Keep, but scope to "over the adult transition." |
+| 8 | "Reduced abundance of OXPHOS complexes ..." (author confirmed: the Myc+ 6->12W temporal decline) | #4, #6, death-timing | NUANCE -- the temporal decline is real (subunits -0.39, core -0.34) and its shared/specific split is POWERED, but it is 72-90% MYC-SPECIFIC, NOT a reflection of WT development; and it is a NUCLEAR-subunit decline while mtDNA-encoded OXPHOS RISES (a mitonuclear rebalancing). Window: SUPPORTED. |
 
 ### The three tensions to resolve
 
-**(A) "holding OXPHOS restrained" and "reduced abundance of OXPHOS complexes" vs Issue #4.** This is
-the sharpest one. At the mRNA level Issue #4 shows the OPPOSITE of an absolute reduction: Myc RAISES
-nuclear-OXPHOS subunit transcript (genotype d ~1.27, robust across three normalisations). The
-"restraint" that IS in the data is (i) RELATIVE -- mitoPPS deprioritises nuclear OXPHOS within the
-compartment (0.955 at 12W_pos) -- and (ii) TEMPORAL -- a directional (ns) decline with age in both
-genotypes. So "holding OXPHOS restrained" is defensible only as RELATIVE/reprioritisation restraint,
-and "reduced ABUNDANCE of OXPHOS COMPLEXES" is NOT a transcriptional claim this RNA-seq supports. If
-"reduced abundance of OXPHOS complexes" is meant at the PROTEIN / complex / functional level (blot,
-respirometry, the Menegollo et al. 2024 companion), it must be attributed to that data -- not to this
-transcriptome, which would otherwise read as self-contradictory. **Author to confirm which level is
-meant; the rewrite below marks that slot.**
+**(A) "holding OXPHOS restrained" / "reduced abundance of OXPHOS complexes" -- resolved by axis
+(author clarified: the TIME axis, Myc+ 6W->12W).** The apparent contradiction with Issue #4 was an
+axis ambiguity, now settled. There are two ORTHOGONAL axes and both hold at once: on the GENOTYPE
+axis Myc RAISES nuclear-OXPHOS transcript (d ~1.27, powered); on the TIME axis, within Myc+, nuclear-
+OXPHOS subunit transcript DECLINES 6W->12W (subunits slope -0.39, core -0.34). The author's "reduced
+abundance" is the TIME-axis decline -- so there is NO self-contradiction. Three points must be baked
+into the wording, however:
+
+1. **It is largely MYC-SPECIFIC, not a reflection of normal development.** Decomposing the Myc+ 6->12W
+   slope into a shared-developmental (= WT) part + a Myc-specific excess (Issue #6 fade-narration):
+   OXPHOS subunits -0.39 = -0.11 shared (28%) + **-0.28 Myc-specific (72%)**; OXPHOS core -0.34 =
+   -0.03 shared (10%) + **-0.30 Myc-specific (90%)**. WT OXPHOS barely declines over this window, so
+   the drop is 72-90% a Myc-specific DE-AMPLIFICATION of the elevated OXPHOS program -- NOT the gland
+   "reflecting the WT developmental trajectory." (Contrast the biosynthetic arm -- amino-acid, lipid
+   -- where the WT DOES converge; OXPHOS is precisely the arm where it does not.) This de-amplification
+   is the compositional-dilution pointer (the Myc-built high-OXPHOS/proliferative compartment shrinking
+   with maturation). The shared/specific SPLIT is powered (gene-level, all genes); the sample-level
+   composite slope itself is directional/ns at n=6/tp (Myc+ p ~0.11).
+2. **It is a NUCLEAR-subunit decline; mtDNA-encoded OXPHOS RISES 6->12W** (absolute z -1.14 -> +1.23).
+   At the transcript level this is a mitonuclear REBALANCING (nuclear-led assembly at 6W ->
+   mtDNA-completed at 12W), so "reduced abundance of assembled OXPHOS complexes" does not follow
+   cleanly from the transcriptome -- nuclear subunit SUPPLY falls while mtDNA subunits rise.
+3. **Whether assembled OXPHOS complex abundance actually falls is a PROTEIN/functional question**
+   (blot, respirometry, the Menegollo et al. 2024 companion). If the intro's "reduced abundance of
+   OXPHOS complexes" is meant at that level, cite that data; if it is meant transcriptionally, scope it
+   to the Myc-specific nuclear-subunit de-amplification over the adult transition, per point 1-2.
 
 **(B) "central to how transformation proceeds" vs the Issue #3 ceiling.** Issue #3 establishes
 centrality as COUPLING that survives deconfounding against MYC dose and is present within WT -- a
@@ -435,11 +450,13 @@ as the broad-footprint context.
 > weeks) even as OXPHOS transcript abundance is maintained. The respiratory and biosynthetic core
 > (OXPHOS together with nucleotide and TCA-cycle metabolism), rather than mitochondrial biogenesis per
 > se, is the arm most tightly coupled to the proliferative, dedifferentiated and apoptosis-primed
-> phenotype, along an axis separable from generic MYC-target activity. This relative restraint of
-> OXPHOS -- and, at the protein level, a reduced abundance of assembled OXPHOS complexes [COMPANION
-> REF / DIRECT DATA -- see tension A] -- is associated with a desensitisation to MYC-induced
-> apoptosis, opening a permissive window for tumourigenesis as the gland matures into its adult
-> developmental stage.
+> phenotype, along an axis separable from generic MYC-target activity. As the gland matures into its
+> adult stage, the Myc+ epithelium de-amplifies this elevated OXPHOS program (a largely Myc-specific
+> decline in nuclear-encoded OXPHOS-subunit transcript over six-to-twelve weeks, distinct from the
+> minimal wild-type developmental change) [and, at the protein level, a reduced abundance of assembled
+> OXPHOS complexes -- COMPANION REF / DIRECT DATA, see tension A]; this lower-OXPHOS adult state is
+> associated with a desensitisation to MYC-induced apoptosis, opening a permissive window for
+> tumourigenesis.
 
 Per-change rationale:
 - "not uniform" kept; split the run-on so each claim stands (readability).
@@ -451,10 +468,14 @@ Per-change rationale:
 - "respiratory and biosynthetic core ... rather than mitochondrial biogenesis per se ... separable
   from generic MYC-target activity" -- fixes tensions B and C (names the phenotype-coupled core;
   frames centrality as coupling).
-- "at the protein level, a reduced abundance of assembled OXPHOS complexes [COMPANION REF]" -- keeps
-  the author's OXPHOS-reduction -> apoptosis point but attributes the ABSOLUTE reduction to protein
-  data, resolving the contradiction with the transcriptome. **If there is no protein/functional
-  source, drop this bracket and rely on the relative-restraint clause alone.**
+- "de-amplifies this elevated OXPHOS program (a largely Myc-specific decline ... distinct from the
+  minimal wild-type change)" -- this is the author's intended TIME-axis reading of "reduced abundance,"
+  made precise: it is 72-90% Myc-specific (Issue #6), NOT a reflection of WT development, and it is a
+  nuclear-subunit decline (mtDNA rises). See tension A.
+- "[at the protein level, a reduced abundance of assembled OXPHOS complexes -- COMPANION REF]" -- keep
+  ONLY if there is protein/respirometry data; the transcriptome shows a mitonuclear rebalancing, not an
+  unambiguous drop in assembled complexes. If there is no protein source, drop this bracket and rely on
+  the transcript-level de-amplification clause alone.
 - "permissive window ... adult developmental stage" kept (SUPPORTED by #6). Optionally add the
   mechanism: "-- a window that widens as the oncogenic program fades on the aging substrate while the
   wild-type gland converges onto the same biosynthetic axis." (~2/3 fade, ~1/3 convergence; #6.)
