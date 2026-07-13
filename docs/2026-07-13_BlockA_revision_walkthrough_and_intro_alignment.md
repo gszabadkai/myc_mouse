@@ -390,6 +390,18 @@ cells that did NOT die -- which makes any Myc death-engagement we DO see a conse
   (PRO-ANTI genotype effect +0.32, p = 0.038; myc_6W PRO module +0.20, p = 0.041), ~3x more at 6W
   than 12W (group-mean gap +0.48 vs +0.15). p53/ARF is NULL -- the rheostat is the BCL2 family, not
   p53. (Survivor bias makes this a conservative floor.)
+  - **p19ARF / p53 axis, explicitly re-tested at gene level (2026-07-13 follow-up, read-only on the
+    saved raw contrasts).** The canonical Myc-antiapoptosis escape -- p19ARF induction driving p53,
+    then its loss/relief permitting survival -- does NOT explain the 12W death drop. ARF is not lost:
+    `Cdkn2a` is MORE Myc-induced at 12W (myc6 +0.14 -> myc12 +0.53; interaction independent-filtered,
+    so no q, but direction is anti-hypothesis; mRNA cannot separate p19ARF from p16INK4a). p53 is not
+    disengaged: `Mdm2` is flat (no added braking) and the p53 TARGET panel is not coordinately reduced
+    at 12W -- `Cdkn1a`/p21 is less suppressed (+0.33) and `Zmat3`/`Eda2r`/`Phlda3`/`Trp53inp1`/`Sesn2`
+    rise; p53 output looks intact-to-higher. The only hit is `Bbc3`/Puma (myc6 +0.26 -> myc12 -0.28,
+    interaction z -2.6, padj 0.84) with `Bax` trailing (-0.23) -- both pro-apoptotic BCL2-family
+    EFFECTORS, i.e. the BH3 rheostat downstream of p53, not a p53-activity failure. Nothing survives
+    FDR (all int_q ~1). => Corroborates "p53/ARF null" and localises the fade to the BCL2-family
+    effector arm coupled to the mitonuclear-imbalance spine, not to an upstream ARF/p53 switch.
 - **H2 (mitonuclear imbalance) = the MECHANISM (the standout).** The nuclear-minus-mtDNA OXPHOS
   mitoPPS imbalance peaks at 6W_pos (+0.50, the death-permissive group); its coupling to PRO priming
   is r = 0.75 (p = 0.005) at 6W -> 0.07 (p = 0.82) at 12W. Two-lens nuance mirroring Issue #4: Myc
