@@ -390,8 +390,9 @@ cells that did NOT die -- which makes any Myc death-engagement we DO see a conse
   (PRO-ANTI genotype effect +0.32, p = 0.038; myc_6W PRO module +0.20, p = 0.041), ~3x more at 6W
   than 12W (group-mean gap +0.48 vs +0.15). p53/ARF is NULL -- the rheostat is the BCL2 family, not
   p53. (Survivor bias makes this a conservative floor.)
-  - **p19ARF / p53 axis, explicitly re-tested at gene level (2026-07-13 follow-up, read-only on the
-    saved raw contrasts).** The canonical Myc-antiapoptosis escape -- p19ARF induction driving p53,
+  - **p19ARF / p53 axis, explicitly re-tested at gene level (2026-07-13; canonicalised as script 23
+    PART 2b -> `death_timing_substrate.rds$h1$arf_p53`, figure `h1c_arf_p53_axis.pdf`).** The
+    canonical Myc-antiapoptosis escape -- p19ARF induction driving p53,
     then its loss/relief permitting survival -- does NOT explain the 12W death drop. ARF is not lost:
     `Cdkn2a` is MORE Myc-induced at 12W (myc6 +0.14 -> myc12 +0.53; interaction independent-filtered,
     so no q, but direction is anti-hypothesis; mRNA cannot separate p19ARF from p16INK4a). p53 is not

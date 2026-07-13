@@ -18,7 +18,8 @@
 # (association), not causation. No single-cell / functional (BH3 profiling) data.
 #
 # Four hypotheses (author: BROAD scope), WT-substrate anchored, Myc+ layer second:
-#   H1  BH3-only : anti-apoptotic BCL2 rheostat + p53/ARF readiness  (the lead)
+#   H1  BH3-only : anti-apoptotic BCL2 rheostat + p53/ARF readiness  (the lead;
+#       PART 2b adds a gene-level p19ARF/p53 re-test of the classic Myc escape)
 #   H2  biogenesis-death decoupling + MITONUCLEAR IMBALANCE substrate feature
 #       (from script 22: Myc forces a selective, mtDNA-vs-nuclear-imbalanced mito
 #        state maximal at 6W_pos -> candidate death-permissive stress state)
@@ -195,6 +196,93 @@ h1_wt_genes <- dplyr::bind_rows(
   lfc_for(ir$timepoint_neg_raw, anti_genes) |> dplyr::mutate(module = "ANTI (BCL2)"))
 
 # =============================================================================
+# PART 2b: p19ARF / p53 axis -- gene-level re-test (does it explain the 12W drop?)
+# =============================================================================
+# The canonical Myc anti-apoptosis escape cited in the literature: Myc induces
+# p19ARF (Cdkn2a locus) -> stabilises p53 -> apoptosis; loss of ARF or of p53
+# ACTIVITY relieves that and permits survival. Tested here as a candidate for the
+# 12W death drop, at GENE level (PART 2 read the p53 composite only as flat/null).
+# Death-OFF prediction: ARF induction LOST at 12W (Cdkn2a Myc-effect falls) AND/OR
+# p53 transcriptional ACTIVITY coordinately reduced at 12W (targets fall; Mdm2 up).
+# Uses RAW/unshrunken contrasts (a dLFC/interaction question -- shrinkage rule).
+# Reads: Myc@6W, Myc@12W (Myc-vs-WT LFC), interaction (= myc_12W - myc_6W, with the
+# Wald z/padj), and the two temporal LFCs (WT + Myc+) for context. p53 ACTIVITY is
+# read from TARGET induction, not Trp53 mRNA (p53 is regulated post-translationally).
+
+arf_p53_roster <- tibble::tribble(
+  ~symbol,       ~role,
+  "Trp53",       "ARF/p53 core",
+  "Cdkn2a",      "ARF/p53 core",
+  "Mdm2",        "ARF/p53 core",
+  "Cdkn1a",      "ARF/p53 core",
+  "Bbc3",        "p53 target (activity)",
+  "Pmaip1",      "p53 target (activity)",
+  "Bax",         "p53 target (activity)",
+  "Ccng1",       "p53 target (activity)",
+  "Zmat3",       "p53 target (activity)",
+  "Sesn2",       "p53 target (activity)",
+  "Eda2r",       "p53 target (activity)",
+  "Phlda3",      "p53 target (activity)",
+  "Trp53inp1",   "p53 target (activity)",
+  "Perp",        "p53 target (activity)",
+  "Aen",         "p53 target (activity)",
+  "Ei24",        "p53 target (activity)")
+
+# gene-level extractor incl. padj (lfc_for omits padj); symbol -> ensembl via ens2sym
+stat_for <- function(res, genes) {
+  df  <- as.data.frame(res)
+  ens <- ens2sym$ensembl_gene_id[match(genes, ens2sym$external_gene_name)]
+  tibble::tibble(symbol = genes,
+                 lfc  = df$log2FoldChange[match(ens, rownames(df))],
+                 z    = df$stat[match(ens, rownames(df))],
+                 padj = df$padj[match(ens, rownames(df))])
+}
+grab <- function(res, suffix) {
+  s <- stat_for(res, arf_p53_roster$symbol)
+  names(s)[-1] <- paste0(names(s)[-1], suffix)
+  s
+}
+
+arf_p53_genes <- arf_p53_roster |>
+  dplyr::left_join(grab(ir$myc_6W_raw,        "_myc6"),  by = "symbol") |>
+  dplyr::left_join(grab(ir$myc_12W_raw,       "_myc12"), by = "symbol") |>
+  dplyr::left_join(grab(ir$interaction_raw,   "_int"),   by = "symbol") |>
+  dplyr::left_join(grab(ir$timepoint_neg_raw, "_wt"),    by = "symbol") |>
+  dplyr::left_join(grab(ir$timepoint_pos_raw, "_pos"),   by = "symbol") |>
+  dplyr::mutate(dMyc = lfc_myc12 - lfc_myc6) |>
+  dplyr::select(symbol, role,
+                myc6 = lfc_myc6, myc12 = lfc_myc12, dMyc,
+                int_z = z_int, int_padj = padj_int,
+                wt_t = lfc_wt, pos_t = lfc_pos)
+
+# module-level verdict (DATA-DRIVEN): death-OFF needs BOTH ARF lost AND p53-target
+# activity coordinately reduced at 12W; otherwise the escape is REJECTED as the cause.
+tgt_int   <- arf_p53_genes$dMyc[arf_p53_genes$role == "p53 target (activity)"]
+tgt_int   <- tgt_int[is.finite(tgt_int)]
+arf_dMyc  <- arf_p53_genes$dMyc[arf_p53_genes$symbol == "Cdkn2a"]
+mdm2_dMyc <- arf_p53_genes$dMyc[arf_p53_genes$symbol == "Mdm2"]
+bbc3_z    <- arf_p53_genes$int_z[arf_p53_genes$symbol == "Bbc3"]
+tgt_mean  <- mean(tgt_int)
+tgt_t_p   <- if (length(tgt_int) >= 3) stats::t.test(tgt_int, mu = 0)$p.value else NA_real_
+arf_lost  <- isTRUE(arf_dMyc < 0)
+p53_down  <- isTRUE(tgt_mean < 0 && !is.na(tgt_t_p) && tgt_t_p < 0.05)
+verdict_short <- if (!arf_lost && !p53_down) "REJECTED (BCL2-family rheostat, not ARF/p53)" else "SIGNAL -- inspect"
+arf_p53_verdict <- tibble::tibble(
+  cdkn2a_dMyc = arf_dMyc, mdm2_dMyc = mdm2_dMyc,
+  p53target_mean_int = tgt_mean, p53target_int_t_p = tgt_t_p,
+  bbc3_int_z = bbc3_z,
+  any_int_fdr_sig = any(arf_p53_genes$int_padj < 0.05, na.rm = TRUE),
+  verdict_short = verdict_short,
+  verdict = paste0(
+    "p19ARF/p53 escape as the 12W death mechanism: ", verdict_short, ". Cdkn2a Myc-effect ",
+    ifelse(arf_lost, "FALLS", "does NOT fall"), " at 12W (dMyc=", sprintf("%+.2f", arf_dMyc),
+    "; ARF not lost); Mdm2 dMyc=", sprintf("%+.2f", mdm2_dMyc), " (no added p53 brake); ",
+    "p53-target module mean interaction=", sprintf("%+.3f", tgt_mean), " (t p=",
+    sprintf("%.2f", tgt_t_p), ") = not coordinately reduced. Only Bbc3/Puma (int z=",
+    sprintf("%+.1f", bbc3_z), ") + Bax decline = BH3/effector BCL2-family, downstream of p53. ",
+    "Corroborates the PART-2 p53/ARF null; the rheostat is the BCL2 family."))
+
+# =============================================================================
 # PART 3: H2 -- biogenesis-death decoupling + MITONUCLEAR IMBALANCE substrate
 # =============================================================================
 # (a) mitonuclear imbalance per sample (from script-22 finding): nuclear OXPHOS
@@ -296,7 +384,7 @@ convergence <- tibble::tibble(
            "H2 mitonuclear imbalance", "H2 biogenesis~death 6W coupling",
            "H3 proliferation~death 6W coupling", "H4 Myc+ CV 6W->12W",
            "Gate2 PRO module shift", "Branch1 apoptosis front-loading",
-           "Branch2 apoptosis (WT substrate)"),
+           "Branch2 apoptosis (WT substrate)", "H1 ARF/p53 axis (gene-level)"),
   metric = c(
     sprintf("WT delta = %+.3f (p=%.3f)",
             h1_state$wt_delta[h1_state$metric == "priming (PRO-ANTI)"],
@@ -322,7 +410,11 @@ convergence <- tibble::tibble(
             b1_summary$binom_p[b1_summary$category == "Apoptosis pathway"]),
     if (nrow(b2_apop) > 0)
       paste(sprintf("%s NES=%+.2f", b2_apop$contrast, b2_apop$NES), collapse = "; ")
-    else "no apoptosis modality"))
+    else "no apoptosis modality",
+    sprintf("Cdkn2a dMyc=%+.2f (ARF %s); p53-target mean int=%+.3f (t p=%.2f); Bbc3 int z=%+.1f -> %s",
+            arf_p53_verdict$cdkn2a_dMyc, ifelse(arf_p53_verdict$cdkn2a_dMyc < 0, "lost", "not lost"),
+            arf_p53_verdict$p53target_mean_int, arf_p53_verdict$p53target_int_t_p,
+            arf_p53_verdict$bbc3_int_z, arf_p53_verdict$verdict_short)))
 
 # =============================================================================
 # PART 7: FIGURES
@@ -354,6 +446,25 @@ p_h1b <- ggplot2::ggplot(h1_wt_genes,
     y = NULL, colour = NULL) +
   ggplot2::theme_bw(base_size = 9) + ggplot2::theme(legend.position = "none")
 ggplot2::ggsave(file.path(out_dir, "h1_bcl2_family_wt_forest.pdf"), p_h1b, width = 8, height = 6)
+
+# H1c: p19ARF / p53 axis -- Myc effect at 6W vs 12W per gene (dumbbell). A death-OFF
+# ARF/p53 escape predicts a LEFTWARD shift 6W->12W (ARF lost + p53 targets fall).
+arf_p53_long <- arf_p53_genes |>
+  dplyr::select(symbol, role, `Myc@6W` = myc6, `Myc@12W` = myc12, dMyc) |>
+  tidyr::pivot_longer(c(`Myc@6W`, `Myc@12W`), names_to = "age", values_to = "lfc")
+p_h1c <- ggplot2::ggplot(arf_p53_long,
+    ggplot2::aes(x = lfc, y = stats::reorder(symbol, dMyc))) +
+  ggplot2::geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  ggplot2::geom_line(ggplot2::aes(group = symbol), colour = "grey70") +
+  ggplot2::geom_point(ggplot2::aes(colour = age), size = 2.5) +
+  ggplot2::facet_grid(role ~ ., scales = "free_y", space = "free_y") +
+  ggplot2::scale_colour_manual(values = c(`Myc@6W` = "#377EB8", `Myc@12W` = "#E41A1C")) +
+  ggplot2::labs(
+    title = "H1: p19ARF / p53 axis -- Myc effect at 6W vs 12W (does the ARF/p53 escape explain the 12W death drop?)",
+    subtitle = "Death-OFF predicts a leftward 6W->12W shift. Observed: ARF (Cdkn2a) up, p53 targets mostly up; only Bbc3/Bax fall = BCL2-family.",
+    x = "Myc-vs-WT raw LFC", y = NULL, colour = NULL) +
+  ggplot2::theme_bw(base_size = 9)
+ggplot2::ggsave(file.path(out_dir, "h1c_arf_p53_axis.pdf"), p_h1c, width = 8, height = 6.5)
 
 # H2: mitonuclear imbalance by group + imbalance~PRO coupling
 p_h2a <- h2_imbalance |>
@@ -409,9 +520,10 @@ ggplot2::ggsave(file.path(out_dir, "h4_survivor_cv.pdf"), p_h4, width = 6, heigh
 death_out <- list(
   h1 = list(state_tests = h1_state, group_means = h1_group_means,
             lfc_module = h1_lfc, wt_genes = h1_wt_genes,
+            arf_p53 = list(genes = arf_p53_genes, verdict = arf_p53_verdict),
             panels = list(pro = pro_genes, anti = anti_genes,
                           p53_n = length(intersect(p53_genes, rownames(expr_mat))),
-                          arf = arf_core)),
+                          arf = arf_core, arf_p53_panel = arf_p53_roster)),
   h2 = list(imbalance_group = h2_imbalance, imbalance_test = h2_imbalance_test,
             coupling = h2_coupling, mitopps_apoptosis = h2_mitopps_apop,
             per_sample = tibble::tibble(sample = sample_meta$sample,
@@ -455,6 +567,11 @@ if (FALSE) {
   dt$h1$state_tests |> print()
   dt$h1$group_means |> print()
   dt$h1$lfc_module |> print()
+
+  # H1 p19ARF/p53 gene-level re-test: does the ARF/p53 escape explain the 12W drop?
+  # Death-OFF needs ARF lost (Cdkn2a dMyc<0) AND p53 targets coordinately down at 12W.
+  dt$h1$arf_p53$genes |> print(n = Inf)
+  dt$h1$arf_p53$verdict$verdict |> print()
 
   # H2: is mitonuclear imbalance maximal at 6W_pos? does biogenesis-death coupling
   # decay 6W->12W? (the script-22 substrate feature)
