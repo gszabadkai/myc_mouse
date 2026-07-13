@@ -1,11 +1,12 @@
 # Block A revision, point by point -- what we did, what we found, and how it aligns with the introduction
 
 Written 2026-07-13, branch `paper-figures` (@ 5c00c5e). Audience: the author, building the
-manuscript narrative. This is the TEACHING layer for the step-by-step Block A revision (Issues
-#1-6, scripts 26-31). It restates each issue in plain terms with the effect sizes, defines every
-gene set precisely (source + what genes it covers; full glossary in Section 6), and then confronts
-the whole body of findings against the broad-overview paragraph drafted for the Introduction,
-ending with a proposed reconciled rewrite.
+manuscript narrative. This is the TEACHING layer for Block A: the step-by-step revision (Issues
+#1-6, scripts 26-31; Section 1) AND the cell-death / death-timing spine (scripts 12/14/16/23-25;
+Section 1B) that the Introduction's closing sentence rests on. It restates each piece in plain terms
+with the effect sizes, defines every gene set precisely (source + what genes it covers; full glossary
+in Section 6), and then confronts the whole body of findings against the broad-overview paragraph
+drafted for the Introduction, ending with a proposed reconciled rewrite.
 
 - The dense chronological record is `docs/2026-07-08_BlockA_revision_plan.md` (the running log; all
   numbers here trace to its verified outcome sections and to scripts 26-31).
@@ -348,7 +349,95 @@ Resolving that requires single-cell / deconvolution.
 
 ---
 
-## 2. The through-line (Issues #1-6 as one arc)
+## 1B. The cell-death / death-timing spine (Block A exploratory: scripts 12, 14, 16, 23-25)
+
+The six revision issues (Section 1) are the mode-of-action half of Block A. The OTHER half --
+produced earlier in Block A exploratory, and the direct support for the Introduction's closing
+sentence -- is the cell-death / death-timing spine. It is the substrate the revision built on
+(Issue #3 uses the death-`priming` axis as a phenotypic outcome), so it belongs in this walkthrough.
+
+### The external phenotype that anchors it (independent of this RNA-seq)
+
+In a PARALLEL Myc-ER tamoxifen-inducible model (no RNA-seq there), an acute Myc pulse at 6W causes
+MUCH more cell death than the same pulse at 12W (IHC). Constant acute pulse, different tissue age =>
+the death is **substrate-gated by developmental stage**, not by Myc dose. Our chronic MMTV-Myc
+RNA-seq cannot see the inducible phenotype but CHARACTERISES the 6W-vs-12W substrate the pulse hits.
+Because Myc is off pre-tamoxifen there, the cleanest readout of the death-permissive state is the WT
+`timepoint_neg` contrast; the chronic-Myc+ layer is secondary and SURVIVOR-BIASED (we sequence the
+cells that did NOT die -- which makes any Myc death-engagement we DO see a conservative floor).
+
+### Two cell-death lenses + a decision gate (scripts 12, 14, 16 -- both branches, neither canonical)
+
+- **Branch 1 -- directional binomial on RAW dLFC (script 16).** Tests the a priori hypothesis that
+  pro-death genes are induced more by Myc at 6W and pro-survival more at 12W, on
+  `cell_death_genes_consolidated` using the metric `myc_6W_log2FC - myc_12W_log2FC` (RAW/unshrunken,
+  per the shrinkage rule). Result: **NULL** (52.7% in the predicted direction, p = 0.27) -- no
+  genome-wide directional pro/anti asymmetry. A clean negative that keeps the story honest.
+- **Branch 2 -- Tang 2024 15-RCD fGSEA (script 12).** fGSEA of 15 regulated-cell-death modalities
+  (Tang et al. 2024) on the Wald z of five contrasts. Result: **DIRECTIONAL** -- the apoptosis
+  modality has temporal_pos NES -1.38 (padj 0.016): the apoptotic program DECLINES in Myc+ with age.
+- **Gate 2 -- decision-point vs readout (script 14).** Asks whether the pro-apoptotic module shifts
+  COORDINATELY on the interaction (selection / active decision) or only as isolated genes (passive
+  readout). Result: **CONFIRMED coordinated shift** (Apoptosis-PRO module t p = 0.023) -> the
+  DECISION-POINT framing survives; cell death stays a main-figure candidate.
+
+### The death-timing SUBSTRATE model (script 23) -- four hypotheses, WT-anchored
+
+- **"WT substrate de-primes with age" is REFUTED.** WT baseline BH3:BCL2 priming is flat/slightly
+  rising (6W_neg -0.24 -> 12W_neg -0.08). The gating is NOT in the WT baseline -- do not anchor the
+  story there.
+- **H1 (BH3/BCL2 rheostat) CONFIRMED as Myc COUPLING, and powered.** Myc raises pro-apoptotic priming
+  (PRO-ANTI genotype effect +0.32, p = 0.038; myc_6W PRO module +0.20, p = 0.041), ~3x more at 6W
+  than 12W (group-mean gap +0.48 vs +0.15). p53/ARF is NULL -- the rheostat is the BCL2 family, not
+  p53. (Survivor bias makes this a conservative floor.)
+- **H2 (mitonuclear imbalance) = the MECHANISM (the standout).** The nuclear-minus-mtDNA OXPHOS
+  mitoPPS imbalance peaks at 6W_pos (+0.50, the death-permissive group); its coupling to PRO priming
+  is r = 0.75 (p = 0.005) at 6W -> 0.07 (p = 0.82) at 12W. Two-lens nuance mirroring Issue #4: Myc
+  raises PRO expression ABSOLUTELY (+0.20) but RELATIVELY de-prioritises Apoptosis-PRO within the mito
+  compartment (mitoPPS diff -0.21, padj 0.022) -- biogenesis crowds it out.
+- **H3 (proliferation-death) REFUTED as the cause.** prolif~death coupling is INVARIANT (0.68 ->
+  0.65): the timing is a mito/biogenesis phenomenon, not generic proliferation.
+- **H4 (selection/culling) DIRECTIONAL, weakest.** Cross-sample dispersion of priming narrows
+  6W->12W, more in Myc+ (sd_pro ratio 0.42 vs 0.60) -- consistent with, but not proof of, culling.
+
+### The developmental "why" (scripts 24-25) -- what matures in the substrate
+
+- **The developmental SUBSTRATE (not chronic-Myc adaptation) sets the timing, on two COUPLED axes.**
+  (1) MITO axis (ROBUST): the mitonuclear imbalance resolves 6W->12W, ~88% by mtDNA RISING (WT 89% /
+  Myc 87%) -- genotype-shared developmental maturation (nuclear-led assembly at 6W -> mtDNA-completed
+  running metabolism at 12W; the same mitonuclear handover as Issue #4). (2) CELL-STATE axis:
+  progenitor/luminal down, basal up, but DIRECTIONAL and underpowered (all p > 0.18) -- do not claim a
+  significant composition shift.
+- **Which background axis tracks death (script 25 Part B).** At 6W, per-sample coupling to pro-death
+  priming: biogenesis 0.83 > stem/MASC content 0.78 > mitonuclear imbalance 0.67 -- ALL decouple by
+  12W. So the mito imbalance is NOT the sole death-coupled axis; stem/progenitor content is comparably
+  coupled (vindicating "composition matters"). A coupled death-permissive STATE, not separable causes.
+- **Where "ER/PGC1a biogenesis" lands (script 24).** Myc co-opts the ER/PGC1a machinery
+  (ESRRA/NRF1/GABPA co-move with MYC; ESR1/ER antagonised, re-emerges at 12W); balanced CORE/MITO_NU
+  biogenesis-death intersections are most death-coupled at 6W (r 0.77 / 0.83).
+
+### The spine, in one line (and how it meets the OXPHOS thread)
+
+At 6W the young substrate is death-PERMISSIVE: stem-rich, mitonuclear-IMBALANCED (nuclear OXPHOS
+running ahead of mtDNA), biogenesis-primed, and all three tightly coupled to pro-apoptotic priming --
+so Myc's induction lands as oncogene-induced apoptosis (killing). By 12W the substrate has MATURED
+(mtDNA caught up, imbalance resolved, cells differentiated, priming/biogenesis converged), the death
+coupling COLLAPSES (r 0.75 -> 0.07), and Myc's killing fades. **The 12W decoupling IS the loss of
+killing** -- the desensitisation that opens the permissive window. Crucially this is the SAME
+mitonuclear maturation as the OXPHOS thread: the 6W nuclear-led-assembly imbalance (Issue #4) is the
+death-permissive state, and its resolution -- together with the Myc-specific OXPHOS de-amplification
+over the same window (tension A) -- is what desensitises the adult gland. The OXPHOS reprioritisation
+and the apoptosis desensitisation are two faces of one developmental mitochondrial maturation.
+
+**Ceiling.** Bulk RNA, one timepoint per age, n=6/group, SURVIVOR BIAS. This characterises the
+death-permissive STATE (association) and cannot prove causation or fully resolve mechanism; BH3
+profiling / single-cell / caspase-by-state would be needed. Correlated axes (mito, stem, biogenesis)
+are not separable at this n. The branch-1 null and the p53/ARF null are firm; the couplings and H4
+culling are directional.
+
+---
+
+## 2. The through-line (Issues #1-6 + the death spine as one arc)
 
 A constitutively expressed Myc AMPLIFIES the normal pubertal proliferative/biosynthetic program of
 the mammary gland (strongest at 6W, the TEB-rich window) rather than creating a new one, bending the
@@ -363,8 +452,14 @@ while reprioritising the compartment (nuclear-led assembly at 6W -> mtDNA-comple
 attenuation is a loss of MAGNITUDE (not rank), which no MYC-independent developmental/TF axis absorbs
 (they co-drive) (#4-5); decomposed exactly, it is ~2/3 oncogenic fade + ~1/3 wild-type convergence
 onto the shared biosynthetic axis, sparing the buffered MYC core, and the fade co-occurs with a
-collapse of proliferative/mito-TF activity -- a compositional hint that opens a permissive adult
-window for tumourigenesis (#6).
+collapse of proliferative/mito-TF activity -- a compositional hint (#6). This mitochondrial
+maturation is also the death spine (scripts 12/14/16/23-25): at 6W the mitonuclear-imbalanced,
+biogenesis-primed, stem-rich substrate is tightly coupled to pro-apoptotic priming, so Myc's
+induction lands as oncogene-induced apoptosis (killing); by 12W the imbalance resolves (mtDNA catches
+up), the death coupling collapses (r 0.75 -> 0.07), Myc's killing fades, and the desensitised adult
+gland is the permissive window for tumourigenesis. The OXPHOS reprioritisation and the apoptosis
+desensitisation are two faces of the SAME developmental mitochondrial maturation -- which is the
+causal spine of the Introduction's closing sentence.
 
 ---
 
@@ -436,6 +531,22 @@ the phenotype-coupled core is respiratory/biosynthetic (OXPHOS + nucleotide + TC
 name the respiratory/biosynthetic core as the phenotype-linked arm, and keep the biogenesis increase
 as the broad-footprint context.
 
+### The apoptosis / permissive-window clause -- SUPPORTED (the death spine, Section 1B)
+
+The final clause -- "associated with a desensitisation to MYC-induced apoptosis, opening a permissive
+window ... at the adult developmental stage" -- is the best-supported half of the sentence, and it is
+what makes the OXPHOS thread matter. The death-timing spine gives it a mechanism, not just an
+association: at 6W the mitonuclear-imbalanced substrate is tightly coupled to pro-apoptotic priming
+(r 0.75, p 0.005) and Myc engages that priming (~3x stronger at 6W; PRO-ANTI p 0.038); by 12W the
+imbalance resolves, the coupling collapses (r -> 0.07), the apoptotic program declines (branch-2 NES
+-1.38), and Myc's killing fades -- the desensitisation. The permissive window IS that 12W decoupled
+state. So the intro's causal chain (mitochondrial state -> apoptosis desensitisation -> permissive
+window) is directly backed. Two guardrails for the wording: (i) the desensitisation is carried by the
+mitonuclear-imbalance RESOLUTION and biogenesis-death DECOUPLING, of which the OXPHOS de-amplification
+(tension A) is one face -- not by "reduced OXPHOS complexes" acting alone; (ii) it is an ASSOCIATION
+in survivor-biased bulk (the model characterises the death-permissive STATE), so phrase the link as
+"associated with," exactly as the draft already does. Do NOT overstate to causation.
+
 ---
 
 ## 4. Proposed reconciled rewrite (a suggestion -- accept, trim, or edit)
@@ -476,9 +587,15 @@ Per-change rationale:
   ONLY if there is protein/respirometry data; the transcriptome shows a mitonuclear rebalancing, not an
   unambiguous drop in assembled complexes. If there is no protein source, drop this bracket and rely on
   the transcript-level de-amplification clause alone.
-- "permissive window ... adult developmental stage" kept (SUPPORTED by #6). Optionally add the
-  mechanism: "-- a window that widens as the oncogenic program fades on the aging substrate while the
-  wild-type gland converges onto the same biosynthetic axis." (~2/3 fade, ~1/3 convergence; #6.)
+- "desensitisation to MYC-induced apoptosis ... permissive window ... adult developmental stage" kept
+  -- now SUPPORTED with a mechanism by the death spine (Section 1B): the 6W mitonuclear-imbalanced
+  substrate is death-coupled and Myc engages apoptosis there; by 12W the imbalance resolves, the
+  coupling collapses (r 0.75 -> 0.07) and killing fades. Optionally make it explicit: "-- as the
+  mitonuclear imbalance that couples the young gland to Myc-induced apoptosis resolves, the adult
+  gland is desensitised." Keep "associated with" (survivor-biased bulk = association).
+- Optional mechanistic tail for the attenuation: "-- a window that widens as the oncogenic program
+  fades on the aging substrate (~2/3) while the wild-type gland converges onto the same biosynthetic
+  axis (~1/3)." (#6.)
 
 ---
 
@@ -493,6 +610,11 @@ Per-change rationale:
 - **Causality (#3, #5).** The phenotype-coupled respiratory core is orthogonal-to-MYC-dose, not
   proven MYC-independent or necessary; the identifying tests are inducible Myc, TF perturbation, and
   ATAC/ChIP.
+- **The death spine is survivor-biased association (Section 1B).** We sequence the cells that did NOT
+  die, at one timepoint per age, n=6 -- so the death-permissive STATE is characterised but not the
+  causal act of killing; the mito / stem / biogenesis death-coupled axes are not separable at this n.
+  BH3 profiling, caspase-by-state, or single-cell would resolve it. The external Myc-ER inducible
+  phenotype (kills more at 6W) is the anchor these bulk data explain but do not themselves reproduce.
 
 ---
 
@@ -517,7 +639,9 @@ sets; they are NOT new gene sets.
 | `MITOCARTA_AMINO_ACID_METABOLISM` | MitoCarta3.0 | MitoCarta pathway | 90 | Mitochondrial amino-acid metabolism (biosynthetic arm). |
 | `MITOCARTA_LIPID_METABOLISM` | MitoCarta3.0 | MitoCarta pathway | 126 | Mitochondrial lipid metabolism (biosynthetic arm). |
 | `MITOCARTA_MITOCHONDRIAL_RIBOSOME` | MitoCarta3.0 | MitoCarta pathway | 83 | Mitoribosome (biogenesis/translation arm). |
-| `MITOCARTA_APOPTOSIS_PRO` / `_ANTI` | MitoCarta3.0 | MitoCarta pathway | 25 / 9 | Pro- / anti-apoptotic mito genes; `priming` = PRO - ANTI. |
+| `MITOCARTA_APOPTOSIS_PRO` / `_ANTI` | MitoCarta3.0 | MitoCarta pathway | 25 / 9 | Pro- / anti-apoptotic mito genes; the death-`priming` axis = PRO - ANTI (Issue #3 outcome; death spine H1/H2). |
+| Tang 2024 15-RCD modalities | Tang et al. 2024 (Comput Struct Biotechnol J), human -> mouse orthologs | cell death (`data/cell-death/*.csv`) | 15 sets | Regulated-cell-death modalities (Apoptosis, Ferroptosis, Necroptosis, Pyroptosis, Autophagy-dep, Cuproptosis, Disulfidptosis, etc.); branch-2 fGSEA (script 12). |
+| `cell_death_genes_consolidated` | Consolidated RCD list, mapped via MyGene.info + HomoloGene (not remapped) | cell death (`data/cell-death/`) | -- | Pro-/anti-death annotated gene list for the branch-1 directional binomial (script 16). |
 | `MYC_HALLMARK_MYC_TARGETS_V2` | Felsher MYC compendium GMX (snapshot) | Felsher compendium | 54 | MSigDB Hallmark MYC targets V2. |
 | `MYC_felsher_integrative_signature` | Felsher integrative signature (snapshot) | Felsher integrative | 61 | Mito-STRIPPED MYC phenotype core (8% mito, 0% OXPHOS) -- the deconfounding proxy in #3. |
 | `MYC_signatures` (category) | Felsher compendium (e.g. `MYC_MUHAR_MYC_SIGNATURE`, 88) | MYC_signatures | 17 sets | The `myc` composite: 17 MYC-target/signature sets. |
@@ -546,6 +670,11 @@ sets; they are NOT new gene sets.
   sets; `tf_biogenesis` = ESRRA/GABPA/NRF1_MITO; `mtdna_reprior` = mtDNA-encoded OXPHOS mitoPPS.
 - **Issue #6 (script 31:113-199).** Roster as listed in Issue #6 above; broadened TF axes `tf_e2f`,
   `tf_esr1`, `tf_lipogenic`, `tf_mito_panel` as defined above.
+- **Death spine (scripts 23-25).** `priming` = MITOCARTA_APOPTOSIS_PRO minus ANTI (pro-apoptotic
+  balance); `mitonuclear_imbalance` = nuclear minus mtDNA-encoded OXPHOS mitoPPS (the death-permissive
+  substrate feature, = the Issue #4 mitonuclear axis); biogenesis/stem (MASC) composites for the
+  per-sample death-coupling in script 25 Part B. Branch 1 (script 16) uses
+  `cell_death_genes_consolidated`; branch 2 (script 12) uses the Tang 15-RCD sets.
 
 ---
 
