@@ -19,7 +19,8 @@
 #
 # Four hypotheses (author: BROAD scope), WT-substrate anchored, Myc+ layer second:
 #   H1  BH3-only : anti-apoptotic BCL2 rheostat + p53/ARF readiness  (the lead;
-#       PART 2b adds a gene-level p19ARF/p53 re-test of the classic Myc escape)
+#       PART 2b adds a gene-level p19ARF/p53 re-test of the classic Myc escape;
+#       PART 5b adds the p53-INDEPENDENT PUMA regulators FOXO3 / PGC1a-ESRRA / HTRA2)
 #   H2  biogenesis-death decoupling + MITONUCLEAR IMBALANCE substrate feature
 #       (from script 22: Myc forces a selective, mtDNA-vs-nuclear-imbalanced mito
 #        state maximal at 6W_pos -> candidate death-permissive stress state)
@@ -237,23 +238,26 @@ stat_for <- function(res, genes) {
                  z    = df$stat[match(ens, rownames(df))],
                  padj = df$padj[match(ens, rownames(df))])
 }
-grab <- function(res, suffix) {
-  s <- stat_for(res, arf_p53_roster$symbol)
+grab <- function(res, suffix, genes) {
+  s <- stat_for(res, genes)
   names(s)[-1] <- paste0(names(s)[-1], suffix)
   s
 }
+# assemble a per-gene table (LFC/z/padj across the 5 raw contrasts) for a roster
+contrast_table <- function(genes) {
+  tibble::tibble(symbol = genes) |>
+    dplyr::left_join(grab(ir$myc_6W_raw,        "_myc6",  genes), by = "symbol") |>
+    dplyr::left_join(grab(ir$myc_12W_raw,       "_myc12", genes), by = "symbol") |>
+    dplyr::left_join(grab(ir$interaction_raw,   "_int",   genes), by = "symbol") |>
+    dplyr::left_join(grab(ir$timepoint_neg_raw, "_wt",    genes), by = "symbol") |>
+    dplyr::left_join(grab(ir$timepoint_pos_raw, "_pos",   genes), by = "symbol") |>
+    dplyr::mutate(dMyc = lfc_myc12 - lfc_myc6) |>
+    dplyr::select(symbol, myc6 = lfc_myc6, myc12 = lfc_myc12, dMyc,
+                  int_z = z_int, int_padj = padj_int, wt_t = lfc_wt, pos_t = lfc_pos)
+}
 
 arf_p53_genes <- arf_p53_roster |>
-  dplyr::left_join(grab(ir$myc_6W_raw,        "_myc6"),  by = "symbol") |>
-  dplyr::left_join(grab(ir$myc_12W_raw,       "_myc12"), by = "symbol") |>
-  dplyr::left_join(grab(ir$interaction_raw,   "_int"),   by = "symbol") |>
-  dplyr::left_join(grab(ir$timepoint_neg_raw, "_wt"),    by = "symbol") |>
-  dplyr::left_join(grab(ir$timepoint_pos_raw, "_pos"),   by = "symbol") |>
-  dplyr::mutate(dMyc = lfc_myc12 - lfc_myc6) |>
-  dplyr::select(symbol, role,
-                myc6 = lfc_myc6, myc12 = lfc_myc12, dMyc,
-                int_z = z_int, int_padj = padj_int,
-                wt_t = lfc_wt, pos_t = lfc_pos)
+  dplyr::left_join(contrast_table(arf_p53_roster$symbol), by = "symbol")
 
 # module-level verdict (DATA-DRIVEN): death-OFF needs BOTH ARF lost AND p53-target
 # activity coordinately reduced at 12W; otherwise the escape is REJECTED as the cause.
@@ -360,6 +364,109 @@ h4_cv <- tibble::tibble(
   tidyr::separate(group, into = c("timepoint", "myc_status"), sep = "_", remove = FALSE)
 
 # =============================================================================
+# PART 5b: p53-INDEPENDENT PUMA regulators (FOXO3 / PGC1a-ESRRA / HTRA2 / AP-1)
+# =============================================================================
+# PART 2b showed the 12W PUMA(Bbc3) loss is NOT a p53/ARF effect. PUMA has p53-
+# INDEPENDENT drivers (docs/library_reference/PUMA-and-its-relationships.md): FOXO3a
+# (the main p53-independent activator, growth-factor-withdrawal), GATED by PGC-1a
+# (abundant PGC1a complexes with FOXO3a and SUPPRESSES its apoptotic output; loss of
+# PGC1a unleashes FOXO3a->PUMA), with FOXO co-targets Bim/Noxa/BNIP3, the antioxidant
+# survival arm (Sod2/Cat), and the mitochondrial executioner HTRA2 (TFs: p53, HSF1,
+# AP-1, Sp1, YY1). Two lenses, both on RAW contrasts / already-scored GSVA:
+#   A. regulator+target GENE panel across contrasts (does a FOXO3->PUMA->HTRA2 module
+#      co-move with Bbc3? does PGC1a RISE as a brake? do Bim/Noxa co-fall?)
+#   B. per-sample TF-SIGNATURE activity (FOXO / PGC1a-ESRRA / AP-1): trajectory +
+#      coupling to Bbc3 and PRO priming (is the gene co-movement backed by TF ACTIVITY?)
+
+# --- A. regulator + target gene panel -------------------------------------
+puma_reg_roster <- tibble::tribble(
+  ~symbol,     ~role,
+  "Bbc3",      "PUMA (anchor)",
+  "Foxo1",     "FOXO driver",
+  "Foxo3",     "FOXO driver",
+  "Foxo4",     "FOXO driver",
+  "Ppargc1a",  "PGC1a (brake)",
+  "Ppargc1b",  "PGC1a (brake)",
+  "Esrra",     "PGC1a effector",
+  "Nrf1",      "PGC1a effector",
+  "Gabpa",     "PGC1a effector",
+  "Bcl2l11",   "FOXO BH3 co-target",
+  "Pmaip1",    "FOXO BH3 co-target",
+  "Bnip3",     "FOXO BH3 co-target",
+  "Bnip3l",    "FOXO BH3 co-target",
+  "Sod2",      "FOXO-PGC1a survival",
+  "Cat",       "FOXO-PGC1a survival",
+  "Htra2",     "executioner",
+  "Hsf1",      "HTRA2 TF",
+  "Jun",       "AP-1 / HTRA2 TF",
+  "Fos",       "AP-1 / HTRA2 TF",
+  "Sp1",       "HTRA2 TF",
+  "Yy1",       "HTRA2 TF")
+puma_reg_genes <- puma_reg_roster |>
+  dplyr::left_join(contrast_table(puma_reg_roster$symbol), by = "symbol")
+
+gv <- function(sym, col) {
+  v <- puma_reg_genes[[col]][puma_reg_genes$symbol == sym]; if (length(v) == 0) NA_real_ else v
+}
+foxo3_tracks_puma <- isTRUE(gv("Foxo3", "dMyc") < 0 && gv("Bbc3", "dMyc") < 0 &&
+                            sign(gv("Foxo3", "int_z")) == sign(gv("Bbc3", "int_z")))
+htra2_tracks      <- isTRUE(gv("Htra2", "dMyc") < 0)
+pgc1a_brake_up    <- isTRUE(gv("Ppargc1a", "dMyc") > 0 || gv("Esrra", "dMyc") > 0)  # rise = brake
+foxo_puma_select  <- isTRUE(gv("Bcl2l11", "dMyc") >= -0.1 && gv("Pmaip1", "dMyc") >= -0.1) # Bim/Noxa NOT co-falling
+
+# --- B. per-sample TF-signature activity ----------------------------------
+gmt_lib   <- fgsea::gmtPathways(here::here("data", "genesets_from_library",
+                                           "mammary_mito_myc_metab_v1_mouse.gmt"))
+avg_scores <- function(sn) {
+  sn <- intersect(sn, rownames(scores))
+  if (!length(sn)) return(rep(NA_real_, ncol(scores)))
+  colMeans(scores[sn, , drop = FALSE])
+}
+foxo3_sig <- comp_expr(gmt_lib[["TFT_FOXO3_CHUNG"]])                       # FOXO3 target activity
+foxo_sig  <- comp_expr(unique(unlist(gmt_lib[c("TFT_FOXO1_CHUNG", "TFT_FOXO3_CHUNG",
+                                               "TFT_FOXO4_CHUNG")])))
+pgc1a_sig <- avg_scores(c("ESRRA_MITO", "NRF1_MITO", "GABPA_MITO"))        # PGC1a effector activity
+ap1_sig   <- avg_scores(grep("^TFT_(JUN|JUNB|FOS|FOSB|FOSL2)_GRAY", rownames(scores), value = TRUE))
+bbc3_expr <- if ("Bbc3" %in% rownames(expr_mat)) expr_mat["Bbc3", ] else rep(NA_real_, ncol(expr_mat))
+
+puma_coupling <- dplyr::bind_rows(
+  cor_within(foxo3_sig, bbc3_expr, "FOXO3 sig ~ Bbc3"),
+  cor_within(foxo_sig,  bbc3_expr, "FOXO(1/3/4) sig ~ Bbc3"),
+  cor_within(pgc1a_sig, bbc3_expr, "PGC1a/ESRRA sig ~ Bbc3"),
+  cor_within(ap1_sig,   bbc3_expr, "AP-1 sig ~ Bbc3"),
+  cor_within(foxo3_sig, pro_state, "FOXO3 sig ~ PRO priming"))
+puma_sig_traj <- dplyr::bind_cols(
+  tibble::tibble(signature = c("FOXO3", "FOXO(1/3/4)", "PGC1a/ESRRA", "AP-1")),
+  dplyr::bind_rows(test_geno(foxo3_sig), test_geno(foxo_sig),
+                   test_geno(pgc1a_sig), test_geno(ap1_sig)))
+
+# does the TF ACTIVITY confirm the gene co-movement? (FOXO3 sig declines AND couples 6W)
+foxo3_r6 <- puma_coupling$r[puma_coupling$pair == "FOXO3 sig ~ Bbc3" & puma_coupling$timepoint == "6W"]
+foxo3_int <- puma_sig_traj$int_beta[puma_sig_traj$signature == "FOXO3"]
+foxo3_activity_confirms <- isTRUE(foxo3_int < 0 && foxo3_r6 > 0.4)
+
+puma_reg_verdict <- tibble::tibble(
+  foxo3_dMyc = gv("Foxo3", "dMyc"), bbc3_dMyc = gv("Bbc3", "dMyc"),
+  htra2_dMyc = gv("Htra2", "dMyc"), esrra_dMyc = gv("Esrra", "dMyc"),
+  bim_dMyc = gv("Bcl2l11", "dMyc"), noxa_dMyc = gv("Pmaip1", "dMyc"),
+  foxo3_sig_r6 = foxo3_r6, foxo3_sig_int = foxo3_int,
+  foxo3_tracks_puma = foxo3_tracks_puma, pgc1a_brake_up = pgc1a_brake_up,
+  foxo_puma_selective = foxo_puma_select, foxo3_activity_confirms = foxo3_activity_confirms,
+  verdict = paste0(
+    "p53-INDEPENDENT PUMA regulators. GENE level: a FOXO3/PUMA/HTRA2 module is ",
+    "coordinately Myc-induced at 6W and withdrawn by 12W (Foxo3 dMyc=", sprintf("%+.2f", gv("Foxo3","dMyc")),
+    ", int z=", sprintf("%+.1f", gv("Foxo3","int_z")), "; Bbc3 int z=", sprintf("%+.1f", gv("Bbc3","int_z")),
+    "; Htra2 dMyc=", sprintf("%+.2f", gv("Htra2","dMyc")), ") -- concordant, directional. ",
+    "PGC1a-BRAKE model ", ifelse(pgc1a_brake_up, "SUPPORTED", "REJECTED"),
+    " (ESRRA dMyc=", sprintf("%+.2f", gv("Esrra","dMyc")), "/PGC1a dMyc=", sprintf("%+.2f", gv("Ppargc1a","dMyc")),
+    " -- co-decline, do NOT rise). FOXO program is ", ifelse(foxo_puma_select, "PUMA-SELECTIVE", "broad"),
+    " (Bim dMyc=", sprintf("%+.2f", gv("Bcl2l11","dMyc")), ", Noxa dMyc=", sprintf("%+.2f", gv("Pmaip1","dMyc")),
+    "). CAVEAT (SIGNATURE level): FOXO3 target ACTIVITY does ", ifelse(foxo3_activity_confirms, "", "NOT "),
+    "confirm -- 6W coupling to Bbc3 r=", sprintf("%.2f", foxo3_r6), ", trajectory int=", sprintf("%+.3f", foxo3_int),
+    " -> the gene co-movement is consistent with DE-AMPLIFICATION of the 6W death-primed compartment ",
+    "rather than a proven FOXO3-activity cascade. Association, n=6, no FDR."))
+
+# =============================================================================
 # PART 6: BRANCH INTEGRATION + CONVERGENCE READ
 # =============================================================================
 # Branch 1 (raw binomial, delta = myc_6W - myc_12W; SUPPORTING = pro-death front-
@@ -384,7 +491,8 @@ convergence <- tibble::tibble(
            "H2 mitonuclear imbalance", "H2 biogenesis~death 6W coupling",
            "H3 proliferation~death 6W coupling", "H4 Myc+ CV 6W->12W",
            "Gate2 PRO module shift", "Branch1 apoptosis front-loading",
-           "Branch2 apoptosis (WT substrate)", "H1 ARF/p53 axis (gene-level)"),
+           "Branch2 apoptosis (WT substrate)", "H1 ARF/p53 axis (gene-level)",
+           "H1 p53-indep PUMA (FOXO3/PGC1a)"),
   metric = c(
     sprintf("WT delta = %+.3f (p=%.3f)",
             h1_state$wt_delta[h1_state$metric == "priming (PRO-ANTI)"],
@@ -414,7 +522,12 @@ convergence <- tibble::tibble(
     sprintf("Cdkn2a dMyc=%+.2f (ARF %s); p53-target mean int=%+.3f (t p=%.2f); Bbc3 int z=%+.1f -> %s",
             arf_p53_verdict$cdkn2a_dMyc, ifelse(arf_p53_verdict$cdkn2a_dMyc < 0, "lost", "not lost"),
             arf_p53_verdict$p53target_mean_int, arf_p53_verdict$p53target_int_t_p,
-            arf_p53_verdict$bbc3_int_z, arf_p53_verdict$verdict_short)))
+            arf_p53_verdict$bbc3_int_z, arf_p53_verdict$verdict_short),
+    sprintf("Foxo3 dMyc=%+.2f (int z=%+.1f) ~ Bbc3 int z=%+.1f; Htra2 dMyc=%+.2f; ESRRA dMyc=%+.2f (brake %s); FOXO3-activity r6W=%.2f -> %s",
+            puma_reg_verdict$foxo3_dMyc, gv("Foxo3", "int_z"), gv("Bbc3", "int_z"),
+            puma_reg_verdict$htra2_dMyc, puma_reg_verdict$esrra_dMyc,
+            ifelse(puma_reg_verdict$pgc1a_brake_up, "up", "co-decline"), puma_reg_verdict$foxo3_sig_r6,
+            ifelse(puma_reg_verdict$foxo3_activity_confirms, "activity-confirmed", "gene-only (de-amplification)"))))
 
 # =============================================================================
 # PART 7: FIGURES
@@ -465,6 +578,38 @@ p_h1c <- ggplot2::ggplot(arf_p53_long,
     x = "Myc-vs-WT raw LFC", y = NULL, colour = NULL) +
   ggplot2::theme_bw(base_size = 9)
 ggplot2::ggsave(file.path(out_dir, "h1c_arf_p53_axis.pdf"), p_h1c, width = 8, height = 6.5)
+
+# H1d: p53-independent PUMA regulators -- Myc effect at 6W vs 12W (FOXO3/PUMA/HTRA2)
+puma_reg_long <- puma_reg_genes |>
+  dplyr::select(symbol, role, `Myc@6W` = myc6, `Myc@12W` = myc12, dMyc) |>
+  tidyr::pivot_longer(c(`Myc@6W`, `Myc@12W`), names_to = "age", values_to = "lfc")
+p_h1d <- ggplot2::ggplot(puma_reg_long,
+    ggplot2::aes(x = lfc, y = stats::reorder(symbol, dMyc))) +
+  ggplot2::geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  ggplot2::geom_line(ggplot2::aes(group = symbol), colour = "grey70") +
+  ggplot2::geom_point(ggplot2::aes(colour = age), size = 2.4) +
+  ggplot2::facet_grid(role ~ ., scales = "free_y", space = "free_y") +
+  ggplot2::scale_colour_manual(values = c(`Myc@6W` = "#377EB8", `Myc@12W` = "#E41A1C")) +
+  ggplot2::labs(
+    title = "H1: p53-independent PUMA regulators -- Myc effect at 6W vs 12W",
+    subtitle = "FOXO3/PUMA(Bbc3)/HTRA2 co-induced at 6W, withdrawn by 12W; PGC1a/ESRRA co-decline (no rising brake); Bim/Noxa flat (PUMA-selective).",
+    x = "Myc-vs-WT raw LFC", y = NULL, colour = NULL) +
+  ggplot2::theme_bw(base_size = 8)
+ggplot2::ggsave(file.path(out_dir, "h1d_puma_regulators.pdf"), p_h1d, width = 8, height = 8)
+
+# H1e: TF-signature ACTIVITY coupling to Bbc3 by timepoint (does activity confirm the genes?)
+p_h1e <- puma_coupling |>
+  dplyr::mutate(timepoint = factor(timepoint, levels = c("6W", "12W"))) |>
+  ggplot2::ggplot(ggplot2::aes(x = r, y = pair, fill = timepoint)) +
+  ggplot2::geom_vline(xintercept = 0, linetype = "dashed", colour = "grey50") +
+  ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.7), width = 0.6) +
+  ggplot2::scale_fill_manual(values = c(`6W` = "#377EB8", `12W` = "#E41A1C")) +
+  ggplot2::labs(
+    title = "H1: TF-signature activity coupling to PUMA (Bbc3), by timepoint",
+    subtitle = "FOXO3 target-activity does NOT track Bbc3 at 6W -> the Foxo3-gene co-movement is not a confirmed FOXO3-activity cascade",
+    x = "within-timepoint Pearson r", y = NULL, fill = NULL) +
+  ggplot2::theme_bw(base_size = 9)
+ggplot2::ggsave(file.path(out_dir, "h1e_puma_tf_signature_coupling.pdf"), p_h1e, width = 7, height = 4)
 
 # H2: mitonuclear imbalance by group + imbalance~PRO coupling
 p_h2a <- h2_imbalance |>
@@ -532,6 +677,9 @@ death_out <- list(
                                         bio_comp = bio_comp, pro_comp = pro_comp)),
   h3 = list(coupling = h3_coupling),
   h4 = list(cv = h4_cv),
+  puma_regulators = list(genes = puma_reg_genes, coupling = puma_coupling,
+                         sig_traj = puma_sig_traj, verdict = puma_reg_verdict,
+                         roster = puma_reg_roster),
   branches = list(branch1 = b1_summary, branch2 = b2_summary, branch2_apoptosis = b2_apop,
                   gate2 = gate2$summary),
   convergence = convergence,
@@ -572,6 +720,13 @@ if (FALSE) {
   # Death-OFF needs ARF lost (Cdkn2a dMyc<0) AND p53 targets coordinately down at 12W.
   dt$h1$arf_p53$genes |> print(n = Inf)
   dt$h1$arf_p53$verdict$verdict |> print()
+
+  # H1 p53-INDEPENDENT PUMA regulators (FOXO3 / PGC1a-ESRRA / HTRA2 / AP-1):
+  # gene-level module co-movement vs TF-signature ACTIVITY confirmation.
+  dt$puma_regulators$genes |> print(n = Inf)
+  dt$puma_regulators$coupling |> print()
+  dt$puma_regulators$sig_traj |> print()
+  dt$puma_regulators$verdict$verdict |> print()
 
   # H2: is mitonuclear imbalance maximal at 6W_pos? does biogenesis-death coupling
   # decay 6W->12W? (the script-22 substrate feature)

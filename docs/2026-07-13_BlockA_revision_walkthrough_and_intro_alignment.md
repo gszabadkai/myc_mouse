@@ -403,6 +403,24 @@ cells that did NOT die -- which makes any Myc death-engagement we DO see a conse
     EFFECTORS, i.e. the BH3 rheostat downstream of p53, not a p53-activity failure. Nothing survives
     FDR (all int_q ~1). => Corroborates "p53/ARF null" and localises the fade to the BCL2-family
     effector arm coupled to the mitonuclear-imbalance spine, not to an upstream ARF/p53 switch.
+  - **p53-INDEPENDENT PUMA regulators, gene + signature (2026-07-13; canonicalised as script 23
+    PART 5b -> `death_timing_substrate.rds$puma_regulators`, figures `h1d_puma_regulators.pdf`,
+    `h1e_puma_tf_signature_coupling.pdf`).** PUMA (Bbc3) has p53-independent drivers
+    (`docs/library_reference/PUMA-and-its-relationships.md`): FOXO3a (gated by a PGC-1a brake), FOXO
+    BH3 co-targets Bim/Noxa, and the executioner HTRA2. *Positive:* at GENE level a FOXO3 / PUMA /
+    HTRA2 module is coordinately Myc-induced at 6W and withdrawn by 12W -- `Foxo3` mirrors `Bbc3`
+    almost exactly (Foxo3 dMyc -0.49, interaction z -2.7; Bbc3 z -2.6) and `Htra2` is the most
+    6W-induced gene in the panel (+1.49 -> dMyc -0.55). A coherent p53-independent candidate for the
+    PUMA loss. *Negative / bounding:* (i) the textbook PGC-1a BRAKE is REJECTED -- ESRRA/PGC1a do NOT
+    rise as a brake, they CO-DECLINE (Esrra dMyc -0.32); (ii) the FOXO output is PUMA-SELECTIVE, not
+    the full program (Bim/Bcl2l11 dMyc -0.04, Noxa +0.19, antioxidant Sod2/Cat flat); (iii) crucially,
+    the FOXO3 target-ACTIVITY signature (TFT_FOXO3_CHUNG, 38 genes) does NOT track Bbc3 at 6W (r -0.14,
+    ns) nor decline (trajectory interaction +0.07, p 0.76) -- so the `Foxo3`-gene co-movement is NOT
+    confirmed as a FOXO3-activity cascade. => Net: the p53-independent FOXO3/HTRA2 module co-moves with
+    PUMA (strengthening "a BH3/effector arm is de-amplified"), but the balance of evidence (activity
+    flat, PGC1a co-declining, program PUMA-selective) reads as DE-AMPLIFICATION of the 6W death-primed
+    compartment rather than a specific TF-activity switch -- consistent with the compositional spine.
+    Directional, n=6, nothing survives FDR.
 - **H2 (mitonuclear imbalance) = the MECHANISM (the standout).** The nuclear-minus-mtDNA OXPHOS
   mitoPPS imbalance peaks at 6W_pos (+0.50, the death-permissive group); its coupling to PRO priming
   is r = 0.75 (p = 0.005) at 6W -> 0.07 (p = 0.82) at 12W. Two-lens nuance mirroring Issue #4: Myc
