@@ -513,7 +513,181 @@ if (nrow(pair_nets) > 0) {
 }
 
 # =============================================================================
-# PART E: SAVE
+# PART E: SELECTION / DEATH-DROPOUT BOUNDING
+# =============================================================================
+# The Issue #1 BMYO suppression (and the LASP interaction) is read as a PER-CELL
+# state change. The competing read is COMPOSITIONAL DROPOUT: high-MYC cells of a
+# lineage DIE (oncogene-induced apoptosis), so bulk carries fewer of that lineage's
+# transcripts -- an apparent per-cell repression that is really survivor bias. Bulk
+# cannot separate fraction x per-cell; this PART BOUNDS the confound on already-scored
+# data (no re-fit), single-cell / FACS-sorted-basal / deconvolution SETTLES it.
+# Three lenses:
+#   E0  LASP heterogeneity: the STATE interaction is net positive, but the luminal-
+#       progenitor / secretory-precursor ARM carries the negative 12W interaction. Split
+#       LASP by biological identity (name pattern) -- NOT by the interaction sign -- so
+#       the death-coupling of the arm is a non-circular test.
+#   E1/E2 per-sample coupling of each MEC lineage/arm composite to pro-death priming
+#       (results/developmental_substrate_death.rds). Reading: a lineage that is DROPPED
+#       OUT by death must sit ON the death-permissive axis (|rho| large); a lineage with
+#       |rho| ~ 0 is OFF that axis -> dropout cannot manufacture its repression. (Sign is
+#       secondary and survivor-biased; magnitude = membership in the death axis.)
+#   E3  marker-overlap enrichment: is each lineage's PROGRAM even pro-death-gene-rich?
+#       If BMYO markers are not enriched for pro-death genes, BMYO cells dying would not
+#       surface as this signature.
+# NB the composites here use FINAL state (BMYO/LASP/LHS), matching PART C2 state_stats.
+
+# --- E0: LASP luminal-progenitor arm split (biological identity, not int sign) ------
+# LASP = luminal adaptive secretory precursor. Split off its luminal-progenitor /
+# secretory-precursor MARKERS (LAPRO, LP-open ATAC, alveolar-secretory / -progenitor)
+# by identity -- NOT by the interaction sign (that would be circular for the coupling
+# test). This 4-set arm is where the negative 12W interaction concentrates (Myc induces
+# it at 6W then the induction fades) and it maps onto the death-coupled LP/ALV composites
+# and the deconvolution-plan "shrinking luminal-progenitor compartment". The alveolar
+# DIFFERENTIATION clusters (GarciaSola ALV_C*) and the ATAC CLOSED pole are deliberately
+# left in LASP_rest (mixed / sign-inverting), so LASP_prog stays a clean progenitor lens.
+lasp_prog_pattern <- "LAPRO|LP_OPEN|ALVSEC|ALVPROG"
+lineage_arm <- annot |>
+  dplyr::mutate(arm = dplyr::case_when(
+    state == "LASP" & grepl(lasp_prog_pattern, set) ~ "LASP_prog",
+    state == "LASP"                                 ~ "LASP_rest",
+    state %in% c("BMYO", "LHS")                     ~ as.character(state),
+    TRUE                                            ~ "other")) |>
+  dplyr::select(set, arm)
+arm_levels <- c("BMYO", "LASP_prog", "LASP_rest", "LHS")
+
+# per-set interaction within LASP, sorted -- shows the empirical split behind the arm
+lasp_perset_int <- dual_matrix |>
+  dplyr::filter(state == "LASP", contrast == "interaction") |>
+  dplyr::left_join(lineage_arm, by = "set") |>
+  dplyr::select(set, arm, gsva_effect, fgsea_NES) |>
+  dplyr::arrange(gsva_effect)
+
+# arm-level interaction + Myc@6W/@12W (GSVA + fGSEA) = the "LASP near-null" correction
+arm_contrast <- dual_matrix |>
+  dplyr::left_join(lineage_arm, by = "set") |>
+  dplyr::filter(arm %in% arm_levels,
+                contrast %in% c("Myc@6W", "Myc@12W", "interaction")) |>
+  dplyr::group_by(arm, contrast) |>
+  dplyr::summarise(n_sets   = dplyr::n_distinct(set),
+                   gsva_mean = mean(gsva_effect, na.rm = TRUE),
+                   gsva_negfrac = mean(gsva_effect < 0, na.rm = TRUE),
+                   fgsea_mean = mean(fgsea_NES, na.rm = TRUE), .groups = "drop") |>
+  dplyr::mutate(arm = factor(arm, levels = arm_levels),
+                contrast = factor(contrast, levels = c("Myc@6W", "Myc@12W", "interaction")))
+
+# --- E1: per-sample MEC lineage/arm composites (mean GSVA over sets in arm) ---------
+arm_comp <- scores_long |>
+  dplyr::left_join(lineage_arm, by = "set") |>
+  dplyr::filter(arm %in% arm_levels) |>
+  dplyr::group_by(sample, arm, group, timepoint, myc_status) |>
+  dplyr::summarise(comp = mean(gsva), .groups = "drop")
+
+# --- E2: couple each arm composite to pro-death priming + mitonuclear imbalance -----
+# pro_comp / mitonuclear_imbalance are per-sample from the death spine (script 25 < 26,
+# so the rds exists at run time). Spearman within timepoint (12 samples/tp, pooled over
+# genotype -- the same convention as developmental_substrate_death$death_coupling).
+dsd      <- readRDS(here::here("results", "developmental_substrate_death.rds"))
+death_ps <- dsd$per_sample |>
+  dplyr::select(sample, pro_comp, mitonuclear_imbalance)
+n_match  <- length(intersect(arm_comp$sample, death_ps$sample))
+message(sprintf("Death-priming join: %d/%d samples matched",
+                n_match, dplyr::n_distinct(arm_comp$sample)))
+
+arm_death <- arm_comp |> dplyr::left_join(death_ps, by = "sample")
+death_coupling_mec <- arm_death |>
+  dplyr::group_by(arm, timepoint) |>
+  dplyr::summarise(
+    n       = dplyr::n(),
+    rho_pro = suppressWarnings(stats::cor(comp, pro_comp, method = "spearman")),
+    rho_imb = suppressWarnings(stats::cor(comp, mitonuclear_imbalance, method = "spearman")),
+    .groups = "drop") |>
+  dplyr::mutate(arm = factor(arm, levels = arm_levels))
+
+# --- E3: marker-overlap enrichment vs the pro-death gene roster ---------------------
+# Lineage program panel = union of genes in that arm's MG_* sets (from the master
+# library GMT). Universe = all genes in the library GMT (13,407; the curated gene
+# space). Fisher (one-sided greater) vs the 512 pro-death genes restricted to universe.
+# Ceiling: gene-set overlap is NOT cell death -- a bounding proxy for "is this program
+# intrinsically death-gene-rich", not a per-cell measurement.
+gmt_lib  <- fgsea::gmtPathways(here::here("data", "genesets_from_library",
+                                          "mammary_mito_myc_metab_v1_mouse.gmt"))
+universe <- unique(unlist(gmt_lib, use.names = FALSE))
+cd_cons  <- readRDS(here::here("data", "cell_death_genes_consolidated.rds"))
+prodeath <- cd_cons |>
+  dplyr::filter(effect == "pro-death", !is.na(mouse_symbol)) |>
+  dplyr::pull(mouse_symbol) |> unique()
+prodeath <- intersect(prodeath, universe)
+
+arm_sets <- split(lineage_arm$set, lineage_arm$arm)[arm_levels]
+enrich_one <- function(sets) {
+  panel <- intersect(unique(unlist(gmt_lib[sets], use.names = FALSE)), universe)
+  a <- length(intersect(panel, prodeath))            # in panel & pro-death
+  b <- length(panel) - a                             # in panel, not pro-death
+  cc <- length(prodeath) - a                          # pro-death, not in panel
+  d <- length(universe) - a - b - cc                  # neither
+  ft <- stats::fisher.test(matrix(c(a, b, cc, d), nrow = 2), alternative = "greater")
+  tibble::tibble(n_panel = length(panel), n_prodeath_in = a,
+                 frac_prodeath = a / length(panel),
+                 odds_ratio = unname(ft$estimate), p = ft$p.value)
+}
+marker_overlap <- dplyr::bind_rows(lapply(arm_levels, function(a)
+  dplyr::mutate(enrich_one(arm_sets[[a]]), arm = a))) |>
+  dplyr::mutate(base_rate = length(prodeath) / length(universe),
+                arm = factor(arm, levels = arm_levels)) |>
+  dplyr::relocate(arm)
+
+# --- E4: data-driven verdict --------------------------------------------------------
+rho_at <- function(a, tp) {
+  v <- death_coupling_mec$rho_pro[death_coupling_mec$arm == a &
+                                  death_coupling_mec$timepoint == tp]
+  if (length(v)) v[1] else NA_real_
+}
+or_at  <- function(a) marker_overlap$odds_ratio[marker_overlap$arm == a][1]
+bmyo_uncoupled <- max(abs(rho_at("BMYO", "6W")), abs(rho_at("BMYO", "12W"))) < 0.25
+lasp_prog_coupled <- max(rho_at("LASP_prog", "6W"), rho_at("LASP_prog", "12W"), na.rm = TRUE) > 0.30
+selection_bound_verdict <- sprintf(paste(
+  "BMYO death-dropout %s: BMYO is %s the death-permissive axis (pro-death coupling",
+  "rho=%.2f/%.2f at 6W/12W, marker-panel pro-death OR=%.2f) -> the BMYO suppression",
+  "reads as PER-CELL, not culling. LASP luminal-progenitor arm %s (rho=%.2f/%.2f) ->",
+  "death-dropout NOT excludable for that arm (the deconvolution target). Bulk bounds;",
+  "single-cell / FACS-sorted-basal settles. n=6/group."),
+  ifelse(bmyo_uncoupled, "UNSUPPORTED", "POSSIBLE"),
+  ifelse(bmyo_uncoupled, "OFF", "ON"),
+  rho_at("BMYO", "6W"), rho_at("BMYO", "12W"), or_at("BMYO"),
+  ifelse(lasp_prog_coupled, "sits ON the death axis", "is weakly coupled"),
+  rho_at("LASP_prog", "6W"), rho_at("LASP_prog", "12W"))
+message(selection_bound_verdict)
+
+# --- E5: figures --------------------------------------------------------------------
+# E5a: coupling of each lineage/arm to pro-death priming (the primary bound)
+p_couple <- ggplot2::ggplot(death_coupling_mec,
+    ggplot2::aes(x = arm, y = rho_pro, fill = timepoint)) +
+  ggplot2::geom_col(position = ggplot2::position_dodge(0.7), width = 0.65) +
+  ggplot2::geom_hline(yintercept = 0, colour = "grey40") +
+  ggplot2::geom_hline(yintercept = c(-0.25, 0.25), linetype = "dotted", colour = "grey60") +
+  ggplot2::scale_fill_manual(values = c(`6W` = "#7FBF7B", `12W` = "#762A83")) +
+  ggplot2::labs(
+    title = "Lineage composite vs pro-death priming (death-dropout bound)",
+    subtitle = paste0("Spearman within timepoint (n=12/tp, pooled genotype); |rho|~0 = OFF the death axis ",
+                      "(dropout cannot explain the repression); BMYO is the OFF case"),
+    x = "MEC lineage / LASP arm", y = "Spearman rho vs pro_comp") +
+  ggplot2::theme_bw(base_size = 10)
+ggplot2::ggsave(file.path(out_dir, "e_selection_bound.pdf"), p_couple, width = 7.5, height = 5)
+
+# E5b: LASP arm split -- state interaction is +, the LP/ALV arm is - (the correction)
+p_arm <- ggplot2::ggplot(arm_contrast,
+    ggplot2::aes(x = arm, y = gsva_mean, fill = contrast)) +
+  ggplot2::geom_col(position = ggplot2::position_dodge(0.7), width = 0.65) +
+  ggplot2::geom_hline(yintercept = 0, colour = "grey40") +
+  ggplot2::labs(
+    title = "LASP heterogeneity: the luminal-progenitor arm carries the negative 12W interaction",
+    subtitle = "mean GSVA effect over sets in each lineage/arm; LASP net-positive but LASP_prog negative (Myc induction fades)",
+    x = "MEC lineage / LASP arm", y = "mean GSVA effect") +
+  ggplot2::theme_bw(base_size = 10)
+ggplot2::ggsave(file.path(out_dir, "e_lasp_arm_split.pdf"), p_arm, width = 8, height = 4.5)
+
+# =============================================================================
+# PART F: SAVE
 # =============================================================================
 dev_out <- list(
   annot           = annot,
@@ -531,6 +705,13 @@ dev_out <- list(
   directional_pairs = directional_pairs,
   chung_pairs     = chung_pairs,
   pair_nets       = pair_nets,
+  selection_bound = list(
+    lasp_perset_int = lasp_perset_int,
+    arm_contrast    = arm_contrast,
+    arm_comp        = arm_comp,
+    death_coupling  = death_coupling_mec,
+    marker_overlap  = marker_overlap,
+    verdict         = selection_bound_verdict),
   notes = paste(
     "Issue #1 reframe: all 179 MG_* dev sets resolved individually. Annotation is the",
     "author's hand curation (data/dev_mec_annotation.csv). state = final consensus MEC",
@@ -552,7 +733,17 @@ dev_out <- list(
     "correlated so indicative); Myc BMYO suppression POWERED (geno p~0.02, d~0.8-1.2);",
     "LHS flip DIRECTIONAL (interaction p~0.09, cross-modality corroborated). Ceiling:",
     "GSVA per-set contrasts powered (24 samples); fGSEA adds importance; n=6/group ->",
-    "interaction directional; composite p's indicative (correlated sets); association not causation.")
+    "interaction directional; composite p's indicative (correlated sets); association not causation.",
+    "PART E (selection_bound) BOUNDS the death-dropout confound (could the BMYO/LASP",
+    "repression be dying high-MYC cells, not per-cell change?): BMYO composite is",
+    "UNCOUPLED from pro-death priming (rho~0.13-0.15, off the death-permissive axis) and",
+    "its program is not pro-death-enriched (OR~0.9, ns) -> BMYO suppression reads as",
+    "PER-CELL. LASP splits: the STATE interaction is net positive but the 4-set luminal-",
+    "progenitor arm (LAPRO/LP_OPEN/ALVSEC/ALVPROG) carries the negative 12W interaction",
+    "(Myc induction fades), sits ON the death axis (rho~0.87@6W) and is pro-death-enriched",
+    "(OR~1.6) -> dropout NOT excludable for that arm (= the deconvolution-plan target).",
+    "Bulk bounds, single-cell settles. See selection_bound$verdict; docs/2026-07-13",
+    "walkthrough Issue #1 + Sec 5.")
 )
 saveRDS(dev_out, here::here("results", "dev_program_myc_integration.rds"))
 message("Saved results/dev_program_myc_integration.rds")
@@ -606,4 +797,17 @@ if (FALSE) {
 
   # D. outputs (per-source main trajectories + per-subgroup 'other' + heatmaps + nets)
   list.files(here::here("outputs", "dev_program_myc_integration"), pattern = "\\.pdf$")
+
+  # E. selection / death-dropout bound
+  cat(dp$selection_bound$verdict, "\n")
+  # E0: LASP is heterogeneous -- arm-level interaction (state +, LP/ALV arm -)
+  dp$selection_bound$arm_contrast |>
+    dplyr::filter(contrast == "interaction") |> print()
+  dp$selection_bound$lasp_perset_int |> print(n = Inf)          # the per-set split
+  # E2: the primary bound -- BMYO OFF the death axis (|rho|~0), LP/ALV ON it
+  dp$selection_bound$death_coupling |>
+    tidyr::pivot_wider(names_from = timepoint,
+                       values_from = c(rho_pro, rho_imb, n)) |> print()
+  # E3: is each program pro-death-gene-rich? (BMYO expected NOT enriched)
+  dp$selection_bound$marker_overlap |> print()
 }

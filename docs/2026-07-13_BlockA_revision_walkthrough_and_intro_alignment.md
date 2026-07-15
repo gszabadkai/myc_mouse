@@ -77,13 +77,50 @@ are library sets in `mammary_mito_myc_metab_v1_mouse.gmt`.
   (orthogonal) -> -0.44 at 12W (oppositional).
 - Per state: **BMYO suppression is POWERED** (Myc effect -0.15/-0.21, d ~0.8-1.2, genotype main
   p = 0.020); **LHS flip is DIRECTIONAL** (-0.15 at 6W -> +0.17 at 12W, interaction p = 0.089 --
-  carried by cross-modality agreement, not the p-value); LASP near-null. Corroborated by the GRAY
+  carried by cross-modality agreement, not the p-value). Corroborated by the GRAY
   directional nets (Myc -> less-differentiated / TEB-proliferative end) and CHUNG ATAC (Myc closes
   basal chromatin, opens luminal by 12W).
+- **LASP is heterogeneous (corrects the earlier "LASP near-null").** As a whole state the LASP
+  interaction is net POSITIVE (GSVA +0.14, Myc@12W +0.09). But its 4-set **luminal-progenitor /
+  secretory-precursor arm** (`MG_LAPRO_SAEKI`, `MG_LP_OPEN_CHUNG_ATAC`,
+  `MG_LUMINAL_ALVSEC/ALVPROG_GARCIASOLA`) carries a NEGATIVE interaction -- all four sets, mean
+  -0.07 GSVA and negative fGSEA importance at 12W -- i.e. Myc INDUCES the progenitor program at 6W
+  (Myc@6W +0.31) and that induction FADES by 12W (+0.24). The alveolar-differentiation clusters
+  (`MG_ALV_C*`) and the ATAC CLOSED pole net positive and dominate the state average, hiding the arm.
+  This progenitor arm is the thread the selection bound (below) picks up.
 
 **Interpretation + ceiling.** At 6W Myc imposes a broad off-axis identity suppression; by 12W a
 specific **anti-BMYO / pro-LHS** reprogramming. Main effects powered (24 samples); the interaction
 is directional at n=6/tp; composites use correlated sets. Association, not causation.
+
+**Selection / death-dropout bounding (script 26 PART E -> `dev_program_myc_integration.rds$selection_bound`;
+figures `e_selection_bound.pdf`, `e_lasp_arm_split.pdf`).** The BMYO suppression is asserted as a
+PER-CELL state change, but the competing read is **compositional dropout**: high-MYC BMYO cells DIE
+(oncogene-induced apoptosis), so the survivor bulk carries fewer BMYO transcripts -- an apparent
+per-cell repression that is really selection. Bulk cannot separate fraction x per-cell, but two
+already-computed lenses BOUND it (single-cell / FACS-sorted-basal SETTLES). Reading rule: a lineage
+that death culls must sit ON the death-permissive axis (large |coupling|) and carry a death-gene-rich
+program; |coupling| ~ 0 means the lineage is OFF that axis and dropout cannot manufacture its
+repression. Results:
+- **BMYO reads as PER-CELL, not dropout.** Its per-sample composite is essentially UNCOUPLED from the
+  pro-death priming score (`pro_comp` from the death spine, script 25): Spearman rho ~ 0.15 (6W) /
+  0.13 (12W) MEC-native, corroborating the even lower script-19 `BASAL_comp` coupling (-0.03 / -0.04)
+  -- BMYO is OFF the death-permissive axis. And the BMYO program is NOT pro-death-gene-enriched
+  (marker overlap vs the 512 pro-death genes of `cell_death_genes_consolidated`: OR 0.92, p = 0.81;
+  panel pro-death fraction 0.034 vs base rate 0.036). Two independent facts already cut against a
+  BMYO-death route: the MMTV-LTR drives the transgene in LUMINAL epithelium (so the high-MYC cells are
+  luminal, not basal), and Myc CLOSES basal chromatin within cells (CHUNG ATAC) -- a per-cell
+  remodeling signature, and the WT basal composite RISES with age rather than falling. Convergent:
+  the BMYO suppression is a per-cell identity change.
+- **The LASP luminal-progenitor arm is the residual candidate (dropout NOT excludable).** That 4-set
+  arm is the MOST death-coupled of any lineage (rho ~ 0.87 at 6W, 0.62 at 12W) AND is pro-death-gene-
+  enriched (OR 1.60, p = 0.006) -- and it is exactly the arm whose Myc induction FADES over the window
+  (the negative interaction above). So for the luminal-progenitor compartment (unlike BMYO) death-
+  driven dropout of Myc-induced cells cannot be excluded, and this is precisely the "shrinking
+  luminal-progenitor" compartment the deconvolution plan already targets.
+- **Ceiling.** These are association-level bounds at n=6/tp on survivor-biased bulk; gene-set overlap
+  is not cell death and within-timepoint coupling pools genotype. The definitive separation of
+  fraction x per-cell needs single-cell / FACS-sorted compartments / deconvolution (Section 5).
 
 ---
 
@@ -636,6 +673,14 @@ Per-change rationale:
   weakening with dilution of the shrinking Myc-built proliferative/TEB compartment. Bulk bounds it;
   the E2F/proliferation co-decline points to composition. Settled by deconvolution / single-cell --
   parked plan in `docs/deconvolution_subproject_plan.md`.
+- **Lineage repression: per-cell vs death-dropout (#1, script 26 PART E).** BOUNDED, not fully
+  settled. BMYO suppression is per-cell (BMYO off the death axis, rho ~0.14; program not pro-death-
+  enriched, OR 0.92) -- dropout does not explain it. The residual candidate is the LASP luminal-
+  progenitor arm, which IS death-coupled (rho ~0.87) and pro-death-enriched (OR 1.60) and whose Myc
+  induction fades -- there, death-driven dropout of Myc-induced cells cannot be excluded. This is the
+  same shrinking-luminal-progenitor compartment as the #6 fade; `docs/deconvolution_subproject_plan.md`
+  already lists basal + luminal-progenitor as fractions to estimate, so both settle together (single-
+  cell / FACS-sorted-basal / deconvolution).
 - **Protein-level OXPHOS (tension A).** Whether OXPHOS COMPLEX abundance is reduced is a
   protein/functional question; source it to the blot / Menegollo companion, not this RNA-seq.
 - **Causality (#3, #5).** The phenotype-coupled respiratory core is orthogonal-to-MYC-dose, not
