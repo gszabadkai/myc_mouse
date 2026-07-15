@@ -580,7 +580,7 @@ Clause-by-clause verdict (SUPPORTED / NUANCE / REWORD):
 | 1 | "MYC is reported to stimulate overall mitochondrial biogenesis" (prior/literature framing) | #3, #4 | SUPPORTED -- accurate as background; our data also confirm biogenesis rises. |
 | 2 | "its effect on the mitochondrial transcriptome is not uniform" | #3, #4 | SUPPORTED -- dissociable arms (#3); OXPHOS falls while biosynthetic rises in WT (#4). |
 | 3 | "the dynamics of mitochondrial pathway reprioritisation is central to how transformation proceeds" | #3 (Q2), #4 | NUANCE -- centrality is COUPLING-level (partial-corr, orthogonal to MYC dose), not demonstrated causality/necessity. Keep, but flag as association. |
-| 4 | "MYC ... interacts with the transcriptional trajectory of normal mammary development" | #1, #2 | SUPPORTED -- Myc bends off the maturing WT axis; amplifies the endogenous pubertal program. "plays a part and interacts" is well-calibrated. |
+| 4 | "MYC ... interacts with the transcriptional trajectory of normal mammary development" | #1, #2 | SUPPORTED -- Myc bends off the maturing WT axis; amplifies the endogenous pubertal program. "plays a part and interacts" is well-calibrated. STRENGTHENED (Issue #1 PART E): the interaction is adjudicated per lineage into three routes -- BMYO by a genuine per-cell fade (de-basalisation), the LASP state by WT-decline convergence, LHS by a per-cell gain -- and is a real cell-intrinsic reprogramming, NOT a selection artifact (dropout survives only in the death-coupled luminal-progenitor arm). |
 | 5 | "leading to a robust increase in mitochondrial biogenesis" | #3, #4 | NUANCE -- true and POWERED (biogenesis d ~2.6; absolute nuclear OXPHOS d ~1.27), but biogenesis is the MYC-DOSE-tracking BYSTANDER; the phenotype-coupled arm is OXPHOS/nucleotide/TCA. Precision, not contradiction. |
 | 6 | "key mitochondrial pathways are selective[ly] reprioritised" | #4 (mitoPPS), #3 | SUPPORTED -- the reprioritisation (nuclear-led -> mtDNA-completed) is a central finding. |
 | 7 | "holding OXPHOS restrained" | #4, #6 | NUANCE (author's intent = the TIME axis) -- over 6->12W the Myc+ gland pulls its elevated OXPHOS back down (a de-amplification). Valid on the time axis; NOT a genotype-level suppression (vs WT, Myc RAISES OXPHOS, d ~1.27). Keep, but scope to "over the adult transition." |
@@ -653,7 +653,9 @@ in survivor-biased bulk (the model characterises the death-permissive STATE), so
 > Although MYC is reported to stimulate overall mitochondrial biogenesis, we find that its effect on
 > the mitochondrial transcriptome is not uniform. A constitutively expressed Myc amplifies the normal
 > pubertal proliferative and biosynthetic program of the mammary gland rather than creating a new one,
-> and within the mitochondrial compartment it does not act as a uniform biogenic switch: it raises
+> reshaping epithelial lineage identity cell-intrinsically -- repressing the basal-myoepithelial and
+> driving the hormone-sensing luminal program -- rather than by selective loss of Myc-high cells; and
+> within the mitochondrial compartment it does not act as a uniform biogenic switch: it raises
 > mitochondrial biogenesis and absolute nuclear-encoded OXPHOS transcript, yet REALLOCATES resources
 > across mitochondrial pathways -- deprioritising OXPHOS RELATIVE to the rest of the compartment (a
 > mitonuclear shift from nuclear-led assembly at six weeks to mtDNA-completed metabolism at twelve
@@ -672,6 +674,13 @@ Per-change rationale:
 - "not uniform" kept; split the run-on so each claim stands (readability).
 - "amplifies ... rather than creating a new one" -- adds the #1-2 result (the developmental
   interaction the paragraph gestures at).
+- "reshaping epithelial lineage identity cell-intrinsically ... rather than by selective loss of
+  Myc-high cells" -- adds the Issue #1 PART E adjudication: the lineage reprogramming decomposes into
+  per-cell fade (BMYO de-basalisation; off the death axis, rho ~0.14, not pro-death-enriched),
+  WT-convergence (the LASP state), and a per-cell LHS gain -- selection/dropout survives only in the
+  death-coupled luminal-progenitor arm. Answers the "is the basal repression just dying cells?"
+  reviewer worry inside the sentence. Drop the clause if the intro should stay strictly mitochondrial;
+  it is defensible but optional. See Issue #1 PART E + Section 5.
 - "raises ... absolute nuclear-encoded OXPHOS transcript, yet REALLOCATES ... deprioritising OXPHOS
   RELATIVE ... even as ... abundance is maintained" -- fixes tension A at the transcript level (do
   not imply an absolute mRNA drop).
