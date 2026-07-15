@@ -122,6 +122,37 @@ repression. Results:
   is not cell death and within-timepoint coupling pools genotype. The definitive separation of
   fraction x per-cell needs single-cell / FACS-sorted compartments / deconvolution (Section 5).
 
+**Hypothesis-proofing: three routes to an apparent lineage shift, adjudicated per lineage.** Any
+Myc-driven change in a lineage's bulk score over 6W->12W can arise three ways, and the machinery now
+separates them. Using the exact interaction identity `interaction = Myc+ trajectory - WT trajectory`
+(state_stats: `int = mycpos_shift - wt_shift`) plus the PART E death lens:
+- **CONVERGENCE** -- the WT background matures and the genotype gap opens/closes with Myc doing nothing
+  per-cell (the `wt_shift` term; the same WT-convergence axis as Issue #6).
+- **FADING (per-cell)** -- the Myc+ tissue's own per-cell program moves (the `mycpos_shift` term):
+  genuine transcriptional reprogramming of surviving cells.
+- **SELECTION (compositional dropout)** -- part of the Myc+ trajectory is not per-cell but loss of a
+  death-primed subpopulation; flagged only where the lineage is death-coupled AND pro-death-enriched.
+
+Each of the three MEC lineages proves out to a DIFFERENT dominant route -- that non-uniformity is the
+result (see `e_selection_bound.pdf`, `e_lasp_arm_split.pdf`, `state_stats.pdf`):
+
+| Lineage / arm | interaction = mycpos - wt | Dominant route | Proof |
+|---|---|---|---|
+| **BMYO** | -0.064 = -0.051 - (+0.013) | **FADING (per-cell repression)** | WT is FLAT (wt_d 0.07 -> no convergence available); OFF the death axis (rho 0.15/0.13) and not pro-death-enriched (OR 0.92 -> selection excluded); powered genotype effect (p 0.020) + Myc CLOSES basal chromatin per-cell (ATAC: WT +0.29 vs Myc -0.33 -> -0.52). A genuine per-cell de-basalisation. |
+| **LASP (state)** | +0.135 = -0.007 - (-0.142) | **CONVERGENCE (WT luminal decline)** | ~100% the WT term: WT loses LASP with age (wt_d -0.68, 79% sets down, per-set t p 4e-5) while Myc+ stays flat (mycpos -0.007). The apparent "Myc gain" is a mirage of the WT falling away -- not Myc per-cell. |
+| &nbsp;&nbsp;-> **LASP luminal-progenitor arm** | -0.071 (all 4 sets negative) | **SELECTION candidate** | The one compartment where dropout is NOT excludable: most death-coupled of any arm (rho 0.87/0.62), pro-death-enriched (OR 1.60, p 0.006); Myc INDUCES it at 6W (+0.31) and the induction FADES by 12W (+0.24) -- a fade that is dropout-compatible. = the deconvolution target. |
+| **LHS** | +0.322 = +0.190 - (-0.132) | **FADING (per-cell GAIN) + convergence** | ~59% a genuine per-cell Myc induction (mycpos +0.19; Myc OPENS ML/luminal chromatin +0.31 at 12W) on top of ~41% WT decline (wt -0.13). Death coupling (0.24 -> 0.73) is secondary and 12W-only -- Myc is actively driving hormone-sensing identity, not culling. |
+
+**The overall proof.** No single mechanism carries the lineage reprogramming; the three MEC identities
+are each dominated by a different route -- BMYO by a per-cell fade (de-basalisation), the LASP state by
+WT-decline convergence, LHS by a per-cell gain. SELECTION survives adjudication in exactly ONE place:
+the LASP luminal-progenitor arm -- consistent with the death spine, where the death-permissive
+compartment is stem/progenitor, not basal or mature-luminal. This extends the Issue #6 mito
+decomposition (which resolved only convergence + fade, no separable selection term) by adding the third
+axis and showing selection is real but LOCAL. The author's original worry -- that the BMYO repression
+is dying high-MYC BMYO cells -- is answered: it is not (BMYO is off the death axis, and MMTV drives MYC
+in luminal not basal cells); the dropout worry belongs to the luminal-progenitor arm instead.
+
 ---
 
 ### Issue #2 (script 27) -- Endogenous Myc, the pubertal TEB program, and amplification
