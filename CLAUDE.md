@@ -25,6 +25,13 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   branch (off `block-a-reviewed`). Two main + supplementary figures, re-rendering the
   Block A outputs (do not re-run 26-31). The figure-content partition awaits the author's
   narrative; git finalisation is complete.
+  - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
+    mitochondrial CONTENT?" in absolute compartment shares. Not a figure script; it
+    predates the narrative because a reviewer will ask regardless. **Figure scripts are
+    33+.** Note its QC gate: **timepoint is perfectly confounded with sequencing cohort**
+    (6W 19-29M reads / MYCF62-65; 12W 10-16M / MYCF52-56; depth ~ timepoint p=4.2e-09),
+    so genotype contrasts are clean and mt-related TEMPORAL claims are exposed. Do not
+    write a figure that rests on an mt-* temporal contrast without flagging it.
 
 ## Workflow — "Option A" (do not deviate)
 
@@ -47,7 +54,7 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Figure scripts 32+ land here.
+  Script 32 (mito content proxies) and the **figure scripts 33+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.

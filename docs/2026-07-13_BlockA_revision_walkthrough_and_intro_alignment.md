@@ -290,6 +290,12 @@ mito-biogenesis TF-activity sets) for Part D.
   mtDNA-completed metabolism at 12W" holds in ABSOLUTE levels. Honest divergence: at 12W_pos nuclear
   OXPHOS is mitoPPS-deprioritised (0.955, <1) while its absolute level sits near baseline (+0.05) =
   reprioritisation WITHOUT a level drop.
+  > **TIME-EXPOSED (added 2026-07-16, script 32 QC gate).** The mtDNA absolute z rise -1.14 -> +1.23 is
+  > a TEMPORAL claim, and timepoint here is **perfectly confounded with sequencing cohort** (6W = 19-29M
+  > reads from MYCF62-65/MYBS10x; 12W = 10-16M from MYCF52-56; depth ~ timepoint p=4.2e-09), while the
+  > mt-* share tracks depth (rho ~ -0.47) and ranges 3.4%-40% across samples. The *genotype* half of
+  > Part B/C is unaffected (depth is genotype-balanced, p=0.41, and litter-controlled). Not correctable
+  > -- with timepoint == cohort no contrast separates them. See the script-32 section above.
 - **D -- first-pass regulators (hypothesis-generating, within WT, n=12).** The WT OXPHOS trajectory
   tracks BOTH the developmental luminal axis (partial r 0.71) and ER/PGC1a TF activity
   (ESRRA/NRF1/GABPA; partial r 0.70-0.83), model R^2 0.86-0.89.
@@ -299,6 +305,110 @@ In absolute mRNA Myc RAISES nuclear OXPHOS; do not say Myc "reduces OXPHOS" -- s
 mitochondrial compartment. Part B is powered (genotype main effect); the age decline and Part D are
 directional / within-WT associations. The retraction did not affect the committed Issue #3 result
 (partial-correlation centrality does not depend on it).
+
+---
+
+### Does mitochondrial CONTENT per cell change? (script 32 -- author question, 2026-07-16)
+
+**The question.** The manuscript says Myc drives a "robust increase in mitochondrial biogenesis". A
+reviewer will ask whether that is mitochondrial CONTENT/mass per cell -- actual organelle biogenesis --
+or only a transcriptional PROGRAM. Block A never answered it, and **three objects that sound like they
+did, do not**:
+
+- **`reframe_supp3$abund` (script 22, "AP-abund") is not an abundance measure.** It is the SD/IQR of
+  mitoPPS Myc-effect diffs across 19 OXPHOS pathways (0.140 -> 0.100) = dispersion of *reallocation*,
+  computed on ratio-normalised scores. The finalisation plan glosses it as "uniform biogenesis (an
+  abundance-**like** change)"; the "-like" is load-bearing.
+- **mitoPPS is abundance-BLIND by construction** (`08:404`: "cancels out both total mitochondrial
+  content..."). So `mtnuc_index` -- the mitonuclear-imbalance headline -- is a *priority ratio*: a
+  mitochondrion with 2x of everything scores identically.
+- **`total_mito_score` (`08:1153`, captioned "reflects mito content") was plotted to a PDF and never
+  saved or tested.** It is also `rowSums` over 142 *overlapping* MitoCarta pathways (double-counts
+  genes) and is mtDNA-dominated.
+
+And `bio_comp` (`19:91`) -- the composite behind "the Myc footprint IS a biogenesis program, rho=0.90"
+-- is a mean of **GSVA** scores: rank-based, measures program, not organelle. The only real abundance
+result was Issue #4 Part B, and only for OXPHOS subunits.
+
+**What we did.** Script 32 computes per-sample **compartment shares** (share of transcriptome held by a
+mito gene panel) on raw counts, two denominators (whole transcriptome; and one excluding the 13 mt-*
+genes, which are ~77% of all MitoCarta counts and swing wildly). Genotype x time model mirrors Issue
+#4's `level_stat_one` column-for-column, on `log2(share)`. Pure reframe -- no re-fit, 26-31 untouched.
+
+**Gene sets used.** Library GMT panels (`MITOCARTA_ALL/_NUCLEAR_ENCODED/_MTDNA_ENCODED`,
+`_MITOCHONDRIAL_RIBOSOME`, `_PROTEIN_IMPORT_AND_SORTING`, `_MTDNA_REPLICATION`, `_MTDNA_NUCLEOID`,
+`_TRANSCRIPTION`, `_FISSION`, `_FUSION`, `_OXPHOS_NU/_MT`) -- **the mtDNA-machinery sets have never
+been reported by any script**. Plus `MASS_MARKERS`, a 14-gene hand roster (Vdac1/2/3, Tomm20/22/40,
+Tspo, Cs, Immt, Slc25a3, Timm23/44, Hspa9, Hspd1) = the in-silico stand-in for the TOMM20/VDAC/CS/HSP60
+blot we do not have. This is a **flagged exception** to the "do not rebuild gene sets" rule: the
+library has no mass-marker equivalent.
+
+**Result (genotype axis; all 17 panels leave-one-out stable in sign and significance).**
+- **Myc raises the mitochondrial share of the transcriptome.** Mass markers (chaperone-free) **+27%**
+  (d=1.34, p=0.003); nuclear MitoCarta **+19%** (d=1.16, p=0.008); mitoribosome **+35%** (p=0.0014);
+  protein import **+33%** (p=0.0016); nuclear OXPHOS **+28%** (d=1.15, p=0.009). The mass panel is
+  **coherent**: 13/14 member genes up with Myc, 11 at p<0.05. `Tspo` is the lone non-mover
+  (-0.10, p=0.30) and is reported individually rather than absorbed.
+- **The chaperones are the largest effects and are handled separately.** `Hspd1` (+1.03 log2,
+  p=3.3e-5) and `Hspa9` (+0.73, p=7.5e-5) are standard mass markers **and direct MYC transactivation
+  targets**, so the chaperone arm has a route to elevation the structural arm does not. The
+  **claim-bearing composite excludes them** (+27%); the full panel (+41%) is corroboration only.
+- **Myc does NOT scale mtDNA-encoded output with it** (+6%, p=0.83) -- the script-24 mitonuclear
+  imbalance, now in **absolute share** rather than a mitoPPS ratio. A materially harder claim to attack.
+- **COMMISSIONED BUT UNBUILT (the new finding).** Myc raises the mtDNA-handling machinery *hardest of
+  all*: nucleoid **+22%** (d=2.32, p=8.6e-6), mt-transcription (Tfam/Polrmt/Tfb2m/Tefm) **+43%**
+  (p=8.5e-5), mtDNA-replication **+11%** (p=0.022) -- while mtDNA-encoded output stays flat. So the
+  imbalance is **not Myc neglecting the mtDNA arm**: the machinery to replicate and read mtDNA is
+  commissioned and the output does not follow. Bulk cannot say why (copy number? transcription rate?
+  turnover?); **mtDNA qPCR is the one-experiment test.**
+- **Dynamics:** fusion +16% (p=0.022), fission +5% (ns) -- a mild fusion bias, reported because a
+  reviewer will ask, not because it carries weight.
+- **No interaction anywhere** (all int_p 0.40-0.95): Myc's content effect is constant across the window.
+
+**Reconciliation (PART 5) -- three independent checks.**
+1. **vs Issue #4** (different method entirely -- per-gene VST z-composite vs raw-count share):
+   nuclear OXPHOS d=1.27 vs **1.15**; mtDNA d=0.03 vs **0.09**. Two lenses, same answer on genotype.
+2. **vs script 24's mitoPPS**: the mtDNA component's group-shape agrees perfectly (Spearman 1.0). The
+   nuclear component diverges (0.4) -- which is *exactly* Issue #4 Part C's "reprioritisation without a
+   level drop" at 12W_pos, reappearing independently.
+3. **The chaperone reconciliation.** Script 24's "Chaperones fall -> UPR^mt REFUTED" is a *mitoPPS*
+   result (within-budget prioritisation). In absolute share the chaperones are Myc-elevated (+0.88,
+   p=4e-5) and age-flat (WT temporal +0.05, p=0.87). **Not a contradiction** -- they deprioritise
+   *inside* a reallocating compartment while their absolute share holds. Script 24's result stands.
+
+Script 32 also **rebuilds `total_mito_score` correctly** (`MITOCARTA_ALL` counted once): it comes out
+null (p=0.67), reproducing script 08's null -- and explains it. The mt-* genes are **76.9% of all
+MitoCarta counts**, so the "total" was a noisy mt-* readout wearing a MitoCarta label. Counted mt-free,
+the same compartment gives d=1.16, p=0.008.
+
+**The QC gate -- and the honest limit on the TIME axis (PART 4).** The mt-* share ranges 3.4%-40%
+across samples and tracks library depth (rho ~ -0.47), and **depth is perfectly confounded with
+timepoint**: 6W = 19-29M reads from animals MYCF62-65/MYBS10x; 12W = 10-16M from MYCF52-56, a different
+cohort (depth ~ timepoint **p=4.2e-09**). Within timepoint, depth is genotype-**balanced**
+(p=0.41) and both genotypes occur inside single litters (MYCF62, MYCF52, MYCF56).
+
+> **So the genotype axis is CLEAN and every temporal claim is TIME-EXPOSED -- including Issue #4's
+> "mtDNA absolute z -1.14 -> +1.23", which inherits the same exposure.** Corroborating this rather than
+> explaining it away: scripts 29 and 32 *agree* on genotype but *disagree* on the time axis (WT
+> temporal -0.454 vs +0.094) -- the axis that is confounded is the axis where the lenses part.
+
+The gate **flags rather than corrects**: with timepoint == sequencing cohort there is no contrast that
+separates them, so any "correction" would regress the time effect on itself. There is no RIN or batch
+column on disk. This is a design fact, not a bug.
+
+**Interpretation + the three ceilings.** *Myc increases mitochondrial content per cell -- modestly
+(~25-27% by transcript proxy), coherently across structural, import, ribosomal and OXPHOS arms, and
+without scaling mtDNA output.* This converts the vulnerable "robust increase in mitochondrial
+biogenesis" from an enrichment-score claim into a quantified, bounded one. The ceilings:
+1. **Bulk polyA with no spike-ins and no cell counts cannot measure per-cell content in absolute
+   terms.** DESeq2's median-of-ratios normalisation removes exactly that scale. Every number here is a
+   **share of transcriptome**.
+2. **Myc globally amplifies total RNA per cell**, so a *constant* share would already imply more
+   mitochondria per cell => **+27% is a LOWER BOUND** on the Myc-driven increase, and bulk cannot
+   recover the true one.
+3. **Transcript share is not protein and not organelle volume.** A TOMM20/VDAC/CS blot, mtDNA qPCR, or
+   EM **settles** it; n=6/group. Note this is the *same* orthogonal experiment the protein-level OXPHOS
+   question (tension A) already needs -- one blot answers both.
 
 ---
 
@@ -630,6 +740,27 @@ the phenotype-coupled core is respiratory/biosynthetic (OXPHOS + nucleotide + TC
 name the respiratory/biosynthetic core as the phenotype-linked arm, and keep the biogenesis increase
 as the broad-footprint context.
 
+**STRENGTHENED, and the word "biogenesis" now has a measured referent (script 32).** Until 2026-07-16
+this claim rested entirely on **enrichment scores** -- `bio_comp` is a GSVA composite, mitoPPS is
+abundance-blind by construction, and the one object captioned "reflects mito content" was never tested.
+A reviewer asking "is that mitochondrial content per cell?" would have found nothing. Script 32 answers
+it in **absolute compartment share**: Myc raises mass markers +27% (chaperone-free, d=1.34, p=0.003),
+nuclear MitoCarta +19%, mitoribosome +35%, import +33% -- 13/14 mass-panel genes coherent, all panels
+LOO-stable, genotype axis QC-CLEAN, and independently concordant with Issue #4 (nuclear OXPHOS d=1.15
+vs 1.27 by a different method). So **"biogenesis" can be stated as a bounded content claim rather than
+an enrichment claim** -- with two riders: it is a *share of transcriptome*, hence a **LOWER BOUND**
+(Myc amplifies total RNA per cell, so a flat share would already mean more mitochondria); and it is
+transcript, not protein or organelle volume. The refinement in the paragraph above is unaffected --
+biogenesis rising and biogenesis being a MYC-dose bystander are statements about different things
+(magnitude vs phenotype-coupling), and script 32 sharpens the first without touching the second.
+
+**And it adds a mechanistic hook worth the narrative's attention: COMMISSIONED BUT UNBUILT.** Myc
+raises the mtDNA-handling machinery *hardest of all* (nucleoid d=2.32 p=8.6e-6; mt-transcription
+Tfam/Polrmt/Tfb2m +43% p=8.5e-5) while mtDNA-encoded output stays flat (p=0.83). The mitonuclear
+imbalance is therefore **not Myc ignoring the mtDNA arm** -- it commissions the machinery to replicate
+and read mtDNA and the output does not follow. That is a sharper, more mechanistic statement of the
+paper's existing imbalance finding, and it is one mtDNA-qPCR away from being causal.
+
 ### The apoptosis / permissive-window clause -- SUPPORTED (the death spine, Section 1B)
 
 The final clause -- "associated with a desensitisation to MYC-induced apoptosis, opening a permissive
@@ -723,6 +854,25 @@ Per-change rationale:
   cell / FACS-sorted-basal / deconvolution).
 - **Protein-level OXPHOS (tension A).** Whether OXPHOS COMPLEX abundance is reduced is a
   protein/functional question; source it to the blot / Menegollo companion, not this RNA-seq.
+- **Mitochondrial content is BOUNDED, not measured (script 32).** Myc raises the mito share of the
+  transcriptome (+27% mass markers, chaperone-free, d=1.34, p=0.003; coherent across import/ribosome/
+  OXPHOS arms; genotype axis QC-clean and LOO-stable), but bulk polyA with no spike-ins and no cell
+  counts cannot give per-cell content in absolute terms -- median-of-ratios normalisation removes that
+  scale. And because Myc globally amplifies total RNA per cell, **+27% is a LOWER BOUND**. A
+  TOMM20/VDAC/CS blot, mtDNA qPCR, or EM settles it -- the SAME orthogonal experiment tension A
+  already needs, so one blot answers both.
+- **"Commissioned but unbuilt" (script 32) -- the sharpest open mechanism.** Myc raises the mtDNA
+  machinery hardest of all (nucleoid d=2.32 p=8.6e-6; mt-transcription +43% p=8.5e-5) while
+  mtDNA-encoded output stays flat (p=0.83). Bulk cannot distinguish mtDNA copy number vs
+  mt-transcription rate vs transcript turnover. **mtDNA qPCR is a one-experiment test** and would turn
+  the mitonuclear imbalance from a description into a mechanism.
+- **The TIME axis is cohort-confounded (script 32 QC gate).** Timepoint is perfectly confounded with
+  sequencing cohort (6W 19-29M reads from MYCF62-65/MYBS10x; 12W 10-16M from MYCF52-56; depth ~
+  timepoint p=4.2e-09), and the mt-* share tracks depth (rho ~ -0.47). Genotype contrasts are clean
+  (depth-balanced p=0.41, litter-controlled); **every mt-related TEMPORAL number is exposed**,
+  including Issue #4's "mtDNA absolute z -1.14 -> +1.23". Not correctable at this design -- no contrast
+  separates timepoint from cohort, and there is no RIN/batch column on disk. Flag it in the methods
+  rather than let a reviewer find it.
 - **Causality (#3, #5).** The phenotype-coupled respiratory core is orthogonal-to-MYC-dose, not
   proven MYC-independent or necessary; the identifying tests are inducible Myc, TF perturbation, and
   ATAC/ChIP.
@@ -791,6 +941,16 @@ sets; they are NOT new gene sets.
   substrate feature, = the Issue #4 mitonuclear axis); biogenesis/stem (MASC) composites for the
   per-sample death-coupling in script 25 Part B. Branch 1 (script 16) uses
   `cell_death_genes_consolidated`; branch 2 (script 12) uses the Tang 15-RCD sets.
+- **Mito content (script 32:120-190).** NOT GSVA -- these are **compartment shares**: `100 *
+  colSums(raw counts over the panel) / colSums(raw counts)`, reported on two denominators (whole
+  transcriptome; and one excluding the 13 mt-* genes, which are 76.9% of all MitoCarta counts). Panels
+  are library GMT sets except **`MASS_MARKERS`**, the one hand roster in the corpus: `Vdac1/2/3,
+  Tomm20/22/40, Tspo` (OMM_structural) + `Cs, Immt, Slc25a3, Timm23/44` (matrix_IMM) + `Hspa9, Hspd1`
+  (chaperone). A **flagged exception** to CLAUDE.md's "do not rebuild gene sets" -- the library has no
+  mass-marker equivalent; it is the in-silico stand-in for a TOMM20/VDAC/CS/HSP60 blot. The
+  claim-bearing composite is `MASS_MARKERS_NOCHAP` (chaperones excluded because Hspa9/Hspd1 are
+  standard mass markers **and** direct MYC targets, so they have a confounded route to elevation).
+  Shares are valid BETWEEN samples for a fixed set (gene length cancels), never BETWEEN panels.
 
 ---
 
