@@ -355,12 +355,25 @@ library has no mass-marker equivalent.
   **claim-bearing composite excludes them** (+27%); the full panel (+41%) is corroboration only.
 - **Myc does NOT scale mtDNA-encoded output with it** (+6%, p=0.83) -- the script-24 mitonuclear
   imbalance, now in **absolute share** rather than a mitoPPS ratio. A materially harder claim to attack.
-- **COMMISSIONED BUT UNBUILT (the new finding).** Myc raises the mtDNA-handling machinery *hardest of
-  all*: nucleoid **+22%** (d=2.32, p=8.6e-6), mt-transcription (Tfam/Polrmt/Tfb2m/Tefm) **+43%**
-  (p=8.5e-5), mtDNA-replication **+11%** (p=0.022) -- while mtDNA-encoded output stays flat. So the
-  imbalance is **not Myc neglecting the mtDNA arm**: the machinery to replicate and read mtDNA is
-  commissioned and the output does not follow. Bulk cannot say why (copy number? transcription rate?
-  turnover?); **mtDNA qPCR is the one-experiment test.**
+- **WHERE THE IMBALANCE IS *NOT* -- an informative negative (PART 3b).** The nuclear mito compartment
+  rises by a **median +21%** (934 expressed nuclear-MitoCarta genes), and the mtDNA-dedicated core
+  (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises **with** it, unremarkably: median +13%, **39th
+  percentile** of that distribution, **Wilcoxon p=0.12**. So the imbalance is **not a transcript-level
+  deficit anywhere in the machinery** -- nothing in the transcriptome is the bottleneck. That
+  relocates the cause **downstream of transcript abundance**: mtDNA copy number, transcription rate,
+  or turnover. It is what makes **mtDNA qPCR the discriminating experiment** rather than a
+  nice-to-have.
+  > **RETRACTED (2026-07-16, same day, before any figure depended on it).** The first version of this
+  > section read the set-level `MITOCARTA_TRANSCRIPTION` (+43%, p=8.5e-5) and `MITOCARTA_MTDNA_NUCLEOID`
+  > (+22%, d=2.32) results as **"commissioned but unbuilt"** -- Myc builds the mtDNA machinery and the
+  > output does not follow. That was a **set-composition artifact**. Gene by gene, both effects are
+  > carried by loosely-assigned, strongly-Myc-induced members -- `Mrpl12` **+116%** (a *mitoribosomal*
+  > protein), `Atad3a` **+113%**, `Top1mt` +76%, `Poldip2` +58% -- while the actual core barely moves:
+  > `Tfam` +11% (ns), `Polg` +3% (ns), `Twnk` +1% (ns), `Polg2` -9% (ns); only `Polrmt` +18% is
+  > nominal (p=0.036). The **opposite** story ("Myc *spares* the mtDNA machinery") is equally
+  > unsupported by the Wilcoxon above and is **not** substituted for it. **General lesson for this
+  > corpus: MitoCarta process sets are membership-loose -- any set-level claim about a MECHANISM must
+  > be resolved gene by gene before it is believed.** Script 32 PART 3b now enforces this.
 - **Dynamics:** fusion +16% (p=0.022), fission +5% (ns) -- a mild fusion bias, reported because a
   reviewer will ask, not because it carries weight.
 - **No interaction anywhere** (all int_p 0.40-0.95): Myc's content effect is constant across the window.
@@ -754,12 +767,16 @@ transcript, not protein or organelle volume. The refinement in the paragraph abo
 biogenesis rising and biogenesis being a MYC-dose bystander are statements about different things
 (magnitude vs phenotype-coupling), and script 32 sharpens the first without touching the second.
 
-**And it adds a mechanistic hook worth the narrative's attention: COMMISSIONED BUT UNBUILT.** Myc
-raises the mtDNA-handling machinery *hardest of all* (nucleoid d=2.32 p=8.6e-6; mt-transcription
-Tfam/Polrmt/Tfb2m +43% p=8.5e-5) while mtDNA-encoded output stays flat (p=0.83). The mitonuclear
-imbalance is therefore **not Myc ignoring the mtDNA arm** -- it commissions the machinery to replicate
-and read mtDNA and the output does not follow. That is a sharper, more mechanistic statement of the
-paper's existing imbalance finding, and it is one mtDNA-qPCR away from being causal.
+**And it sharpens the imbalance by an informative NEGATIVE.** The nuclear mito compartment rises by a
+median +21% and the mtDNA-dedicated core (Tfam/Polg/Twnk/Polrmt/Tfb2m...) rises **with** it,
+unremarkably (39th percentile, Wilcoxon p=0.12) -- while mtDNA-encoded output stays flat (p=0.83). So
+the mitonuclear imbalance is **not a transcript-level deficit anywhere in the machinery**: nothing in
+the transcriptome is the bottleneck, and the cause must sit **downstream of transcript abundance**
+(mtDNA copy number, transcription rate, or turnover). Do not write the narrative as though the
+transcriptome explains the imbalance -- it explains the *nuclear* half and demonstrates that the mtDNA
+half is not transcriptionally accounted for. **mtDNA qPCR is the discriminating experiment.**
+(A "commissioned but unbuilt" reading -- Myc builds the mtDNA machinery, output does not follow -- was
+drafted and **retracted the same day** as a set-composition artifact; see the script-32 section.)
 
 ### The apoptosis / permissive-window clause -- SUPPORTED (the death spine, Section 1B)
 
@@ -861,11 +878,20 @@ Per-change rationale:
   scale. And because Myc globally amplifies total RNA per cell, **+27% is a LOWER BOUND**. A
   TOMM20/VDAC/CS blot, mtDNA qPCR, or EM settles it -- the SAME orthogonal experiment tension A
   already needs, so one blot answers both.
-- **"Commissioned but unbuilt" (script 32) -- the sharpest open mechanism.** Myc raises the mtDNA
-  machinery hardest of all (nucleoid d=2.32 p=8.6e-6; mt-transcription +43% p=8.5e-5) while
-  mtDNA-encoded output stays flat (p=0.83). Bulk cannot distinguish mtDNA copy number vs
-  mt-transcription rate vs transcript turnover. **mtDNA qPCR is a one-experiment test** and would turn
-  the mitonuclear imbalance from a description into a mechanism.
+- **The mitonuclear imbalance is NOT transcriptionally explained (script 32 PART 3b) -- the sharpest
+  open mechanism.** The nuclear mito compartment rises a median +21%, the mtDNA-dedicated core rises
+  with it unremarkably (39th percentile, Wilcoxon p=0.12), and mtDNA output stays flat (p=0.83). So no
+  transcript-level bottleneck exists anywhere in the machinery: the cause is **downstream** -- mtDNA
+  copy number, transcription rate, or turnover, which bulk cannot separate. **mtDNA qPCR is a
+  one-experiment test** and would turn the imbalance from a description into a mechanism. (A
+  "commissioned but unbuilt" reading was retracted the same day as a set-composition artifact --
+  Mrpl12/Atad3a/Poldip2/Top1mt carry the set effects, not Tfam/Polg/Twnk.)
+- **Do the genes that follow the mtDNA pattern form a module? (author question, 2026-07-16 -- OPEN.)**
+  First pass says the mtDNA machinery does **not** (above). A transcriptome-wide search is worth doing
+  but carries a trap that must be designed in from the start: the mt-share is depth-confounded, so
+  anything co-varying with it will surface the **RNA-quality module** unless the scan uses partial
+  correlation against depth/complexity and reports the technical module as the named alternative. Not
+  yet built.
 - **The TIME axis is cohort-confounded (script 32 QC gate).** Timepoint is perfectly confounded with
   sequencing cohort (6W 19-29M reads from MYCF62-65/MYBS10x; 12W 10-16M from MYCF52-56; depth ~
   timepoint p=4.2e-09), and the mt-* share tracks depth (rho ~ -0.47). Genotype contrasts are clean

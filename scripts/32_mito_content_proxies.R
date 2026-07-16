@@ -29,14 +29,25 @@
 # Myc raises nuclear-OXPHOS transcript (d=1.27, p=0.005), does nothing to mtDNA-encoded
 # (p=0.94). Never generalised beyond OXPHOS subunits. This script generalises it.
 #
-# THE RESULT THAT CAME OUT OF GENERALISING IT ("commissioned but unbuilt"). Myc raises
-# every NUCLEAR mito arm (mass markers, mitoribosome, import, OXPHOS_NU) AND raises the
-# mtDNA-handling machinery hardest of all -- nucleoid d=2.32 p=9e-6, mt-transcription
-# (Tfam/Polrmt/Tfb2m/Tefm) +43% p=8e-5 -- while mtDNA-encoded OUTPUT stays flat (p=0.83).
-# So the mitonuclear imbalance is NOT Myc neglecting the mtDNA arm: Myc commissions the
-# machinery to replicate and transcribe mtDNA, and the mtDNA-encoded output does not
-# follow. Bulk cannot say why (copy number? mt-transcription rate? turnover?) -- mtDNA
-# qPCR is the one-experiment test.
+# THE RESULT THAT CAME OUT OF GENERALISING IT. Myc raises every NUCLEAR mito arm (mass
+# markers, mitoribosome, import, OXPHOS_NU) -- nuclear compartment median ~+21% -- while
+# mtDNA-encoded OUTPUT stays flat (+6%, p=0.83). Where the imbalance is NOT: it is not a
+# transcript-level deficit in the mtDNA machinery. The mtDNA-dedicated core rises WITH the
+# compartment, unremarkably (39th percentile, Wilcoxon p~0.12; PART 3b). So NOTHING in the
+# transcriptome is the bottleneck -- the cause sits DOWNSTREAM of transcript abundance
+# (mtDNA copy number, transcription rate, or turnover). An informative NEGATIVE: it is
+# what makes mtDNA qPCR the discriminating experiment rather than a nice-to-have.
+#
+# RETRACTED (2026-07-16, same day): an earlier version of this script read the set-level
+# MITOCARTA_TRANSCRIPTION (+43%) / MITOCARTA_MTDNA_NUCLEOID (+22%, d=2.32) results as
+# "Myc COMMISSIONS the mtDNA machinery but the output does not follow". That was a SET-
+# COMPOSITION ARTIFACT -- both sets are carried by loosely-assigned, strongly-Myc-induced
+# members (Mrpl12 +116%, a mitoribosomal protein; Atad3a +113%; Poldip2 +58%; Top1mt +76%)
+# while the actual core barely moves (Tfam +11% ns, Polg +3% ns, Twnk +1% ns, Polg2 -9%
+# ns). PART 3b exists so those set numbers can never be re-read as machinery claims. The
+# opposite story -- "Myc SPARES the mtDNA machinery" -- is equally unsupported and is not
+# made. GENERAL LESSON for this corpus: MitoCarta process sets are membership-loose; any
+# set-level claim about a MECHANISM must be resolved gene by gene before it is believed.
 #
 # WHAT THIS SCRIPT DOES. Pure reframe on fitted/saved data -- no DESeq re-fit, no
 # GSVA/fGSEA re-run, scripts 26-31 untouched. Computes per-sample COMPARTMENT SHARES
@@ -285,6 +296,89 @@ share_stats <- purrr::map_dfr(names(panel_ens), function(p) {
   dplyr::left_join(panel_roster[, c("panel", "tag", "n_genes")], by = "panel")
 
 # =============================================================================
+# PART 3b: GENE-LEVEL GUARD ON THE mtDNA MACHINERY SETS
+# =============================================================================
+# WHY THIS EXISTS (correction, 2026-07-16). The first version of this script read the
+# set-level results for MITOCARTA_TRANSCRIPTION (+43%) and MITOCARTA_MTDNA_NUCLEOID
+# (+22%, d=2.32) as "Myc COMMISSIONS the mtDNA machinery but the output does not follow".
+# That claim was a SET-COMPOSITION ARTIFACT and is RETRACTED. Gene by gene, both set
+# effects are carried entirely by loosely-assigned, strongly-Myc-induced members:
+#   TRANSCRIPTION: Mrpl12 +116% (a MITORIBOSOMAL protein), Top1mt +76%, Mtres1 +50%
+#                  -- while the core is Tfam +11% (ns), Tfb2m +16% (ns), Tefm +18% (ns),
+#                     Mterf1a/1b ~0 (ns); only Polrmt +18% is nominal (p=0.036).
+#   NUCLEOID:      Atad3a +113%, Poldip2 +58% (both multifunctional, mito role secondary)
+#                  -- while the core is Polg +3% (ns), Twnk +1% (ns), Polg2 -9% (ns).
+#
+# The tempting REPLACEMENT claim -- "Myc specifically SPARES the mtDNA machinery" -- is
+# ALSO NOT SUPPORTED and is not made: the 8-gene mtDNA-dedicated core sits at the ~39th
+# percentile of the 934-gene nuclear-MitoCarta Myc-effect distribution, Wilcoxon p~0.12.
+# It is unremarkable, not a distinguishable module.
+#
+# WHAT SURVIVES, and it is the cleaner statement: the nuclear mito compartment rises by a
+# MEDIAN ~+21% and the mtDNA machinery rises WITH it, unremarkably -- yet mtDNA-encoded
+# OUTPUT does not move (+6%, p=0.83). So the mitonuclear imbalance is NOT attributable to
+# a transcript-level deficit ANYWHERE in the machinery. Nothing in the transcriptome is
+# the bottleneck => the cause sits DOWNSTREAM of transcript abundance (mtDNA copy number,
+# transcription rate, or turnover). That is an informative NEGATIVE, and it is what makes
+# mtDNA qPCR the discriminating experiment rather than a nice-to-have.
+#
+# This part exists so the set-level numbers can never be re-read as machinery claims.
+mtdna_core <- c("Tfam", "Polg", "Polg2", "Twnk", "Ssbp1", "Tfb2m", "Polrmt", "Tefm",
+                "Mterf1a", "Mterf2", "Mgme1")
+
+gene_myc_effect <- function(g_ens) {
+  f <- 100 * cts[g_ens, ] / den_nomt
+  co <- summary(stats::lm(log2(f) ~ sm$myc_status + sm$timepoint))$coefficients[
+    "sm$myc_statuspos", ]
+  c(beta = unname(co["Estimate"]), p = unname(co["Pr(>|t|)"]))
+}
+
+# Every member of the three mtDNA-machinery sets, resolved individually.
+machinery_sets <- c("MITOCARTA_TRANSCRIPTION", "MITOCARTA_MTDNA_NUCLEOID",
+                    "MITOCARTA_MTDNA_REPLICATION")
+mtdna_machinery_genes <- purrr::map_dfr(machinery_sets, function(p) {
+  e <- panel_ens[[p]]
+  purrr::map_dfr(e, function(g) {
+    st <- gene_myc_effect(g)
+    tibble::tibble(set = p, gene = sym2ens$mgi_symbol[match(g, sym2ens$gene)],
+                   myc_l2fc = st[["beta"]], myc_pct = 100 * (2^st[["beta"]] - 1),
+                   myc_p = st[["p"]], mean_share = mean(100 * cts[g, ] / den_nomt),
+                   is_core = sym2ens$mgi_symbol[match(g, sym2ens$gene)] %in% mtdna_core)
+  })
+}) |>
+  dplyr::arrange(set, dplyr::desc(myc_l2fc))
+
+# Is the mtDNA-dedicated core distinguishable from the nuclear mito compartment at all?
+# (Expressed genes only -- low-count genes make the log2 share unstable.)
+nuc_ens  <- panel_ens[["MITOCARTA_NUCLEAR_ENCODED"]]
+nuc_expr <- nuc_ens[rowMeans(cts[nuc_ens, , drop = FALSE]) > 50]
+nuc_beta <- vapply(nuc_expr, function(g) gene_myc_effect(g)[["beta"]], numeric(1))
+nuc_sym  <- sym2ens$mgi_symbol[match(names(nuc_beta), sym2ens$gene)]
+in_core  <- nuc_sym %in% mtdna_core
+
+mtdna_core_vs_compartment <- tibble::tibble(
+  n_nuclear_tested   = length(nuc_beta),
+  n_core_tested      = sum(in_core),
+  median_l2fc_all    = stats::median(nuc_beta),
+  median_pct_all     = 100 * (2^stats::median(nuc_beta) - 1),
+  median_l2fc_core   = stats::median(nuc_beta[in_core]),
+  median_pct_core    = 100 * (2^stats::median(nuc_beta[in_core]) - 1),
+  wilcox_p           = suppressWarnings(
+    stats::wilcox.test(nuc_beta[in_core], nuc_beta[!in_core])$p.value),
+  core_percentile    = 100 * mean(nuc_beta < stats::median(nuc_beta[in_core])),
+  # The verdict this table licenses -- deliberately a NEGATIVE, not a story.
+  reads_as = "mtDNA-dedicated core is UNREMARKABLE within the nuclear mito compartment")
+
+message(sprintf(paste0("PART 3b guard: nuclear mito median %+.0f%%; mtDNA core median ",
+                       "%+.0f%% (n=%d, Wilcoxon p=%.2g, %.0fth percentile) -> core is NOT ",
+                       "a distinguishable module. Set-level 'machinery up' = composition."),
+                mtdna_core_vs_compartment$median_pct_all,
+                mtdna_core_vs_compartment$median_pct_core,
+                mtdna_core_vs_compartment$n_core_tested,
+                mtdna_core_vs_compartment$wilcox_p,
+                mtdna_core_vs_compartment$core_percentile))
+
+# =============================================================================
 # PART 4: THE QC GATE -- which claims survive the cohort/depth confound
 # =============================================================================
 # This block does NOT correct the confound. Timepoint is perfectly confounded with
@@ -464,10 +558,14 @@ content_verdict <- sprintf(paste0(
   "mitoribosome %+.0f%% (p=%.2g); panel coherent (%d/%d member genes up with Myc, %d at ",
   "p<0.05). But Myc does NOT scale mtDNA-encoded output with it (%+.0f%%, p=%.2g) -- the ",
   "mitonuclear imbalance of script 24, now in ABSOLUTE SHARE rather than a mitoPPS ratio. ",
-  "COMMISSIONED-BUT-UNBUILT: Myc DOES raise the mtDNA machinery -- nucleoid %+.0f%% ",
-  "(p=%.2g), mt-transcription %+.0f%% (p=%.2g), mtDNA-replication %+.0f%% (p=%.2g) -- so ",
-  "the imbalance is not neglect of the mtDNA arm; the machinery to make and read mtDNA is ",
-  "built and the mtDNA-encoded OUTPUT does not follow. The genotype axis is %s. TIME is ",
+  "WHERE THE IMBALANCE IS *NOT*: it is not a transcript-level deficit in the mtDNA ",
+  "machinery. The nuclear mito compartment rises by a MEDIAN %+.0f%% and the ",
+  "mtDNA-dedicated core (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises WITH it, ",
+  "unremarkably -- median %+.0f%%, %.0fth percentile of that distribution, Wilcoxon ",
+  "p=%.2g. So NOTHING in the transcriptome is the bottleneck; the cause sits DOWNSTREAM ",
+  "of transcript abundance (mtDNA copy number, transcription rate, or turnover), which ",
+  "is what makes mtDNA qPCR the discriminating experiment. (Set-level 'machinery up' ",
+  "readings are composition artifacts -- see PART 3b.) The genotype axis is %s. TIME is ",
   "NOT interpretable here: timepoint is perfectly confounded with sequencing cohort ",
   "(6W %.0f-%.0fM reads, 12W %.0f-%.0fM; depth ~ timepoint p=%.2g vs ~ genotype p=%.2g) ",
   "-- every temporal number, including script 29's mtDNA absolute z rise, inherits this. ",
@@ -478,9 +576,10 @@ content_verdict <- sprintf(paste0(
   pct_of("MITOCARTA_MITOCHONDRIAL_RIBOSOME"),  stat_of("MITOCARTA_MITOCHONDRIAL_RIBOSOME", "geno_p"),
   mass_coherence$n_myc_up, mass_coherence$n_genes, mass_coherence$n_myc_sig,
   pct_of("MITOCARTA_MTDNA_ENCODED"),           stat_of("MITOCARTA_MTDNA_ENCODED", "geno_p"),
-  pct_of("MITOCARTA_MTDNA_NUCLEOID"),          stat_of("MITOCARTA_MTDNA_NUCLEOID", "geno_p"),
-  pct_of("MITOCARTA_TRANSCRIPTION"),           stat_of("MITOCARTA_TRANSCRIPTION", "geno_p"),
-  pct_of("MITOCARTA_MTDNA_REPLICATION"),       stat_of("MITOCARTA_MTDNA_REPLICATION", "geno_p"),
+  mtdna_core_vs_compartment$median_pct_all,
+  mtdna_core_vs_compartment$median_pct_core,
+  mtdna_core_vs_compartment$core_percentile,
+  mtdna_core_vs_compartment$wilcox_p,
   qc_flags$geno_flag[qc_flags$panel == "MASS_MARKERS_NOCHAP"],
   min(qc_sample$depth_M[qc_sample$timepoint == "6W"]),
   max(qc_sample$depth_M[qc_sample$timepoint == "6W"]),
@@ -570,6 +669,8 @@ content_out <- list(
   share_stats       = share_stats,
   mass_per_gene     = mass_per_gene,
   mass_coherence    = mass_coherence,
+  mtdna_machinery_genes     = mtdna_machinery_genes,
+  mtdna_core_vs_compartment = mtdna_core_vs_compartment,
   qc = list(
     per_sample    = qc_sample,
     depth_balance = depth_balance,
@@ -598,12 +699,18 @@ content_out <- list(
     "rebuilt here as total_mito_rebuilt. bio_comp (19:91) is a GSVA composite = program,",
     "not organelle. RESULT: Myc raises the nuclear mito share (mass markers, nuclear",
     "MitoCarta, mitoribosome) and does NOT scale mtDNA-encoded output with it = the",
-    "script-24 mitonuclear imbalance restated in ABSOLUTE SHARE. COMMISSIONED-BUT-UNBUILT:",
-    "Myc raises the mtDNA MACHINERY hardest of all (nucleoid d=2.32; mt-transcription",
-    "Tfam/Polrmt/Tfb2m +43%) while mtDNA-encoded OUTPUT is flat -- so the imbalance is not",
-    "neglect of the mtDNA arm, it is machinery built and output not following. Bulk cannot",
-    "say why (copy number vs transcription rate vs turnover); mtDNA qPCR is the one",
-    "experiment that separates them. MASS_MARKERS is a",
+    "script-24 mitonuclear imbalance restated in ABSOLUTE SHARE. WHERE THE IMBALANCE IS",
+    "NOT (PART 3b): not a transcript-level deficit in the mtDNA machinery -- the nuclear",
+    "compartment median is ~+21% and the mtDNA-dedicated core rises WITH it, unremarkably",
+    "(39th percentile, Wilcoxon p~0.12). Nothing in the transcriptome is the bottleneck =>",
+    "the cause is DOWNSTREAM of transcript abundance (copy number / transcription rate /",
+    "turnover); mtDNA qPCR is the discriminating experiment. RETRACTED same-day: the",
+    "set-level 'Myc commissions the mtDNA machinery' reading (TRANSCRIPTION +43%, NUCLEOID",
+    "d=2.32) was a COMPOSITION ARTIFACT -- carried by Mrpl12 +116% (mitoribosomal), Atad3a",
+    "+113%, Poldip2 +58%, Top1mt +76%, while Tfam/Polg/Twnk/Polg2 barely move. The",
+    "opposite claim ('Myc SPARES the machinery') is equally unsupported and is not made.",
+    "LESSON: MitoCarta process sets are membership-loose -- resolve any set-level",
+    "MECHANISM claim gene by gene before believing it. MASS_MARKERS is a",
     "flagged exception to the 'do not rebuild gene sets' rule -- the library has no",
     "mass-marker set; it is the in-silico stand-in for the TOMM20/VDAC/CS/HSP60 blot we",
     "do not have. Hspa9/Hspd1 are standard mass markers AND direct MYC targets, so the",
@@ -656,13 +763,21 @@ if (FALSE) {
   mc$qc$flags |> print(n = 20)
   mc$loo_sensitivity |> print(n = 20)
 
-  # --- The "commissioned but unbuilt" dissociation: machinery up, output flat ---
+  # --- PART 3b: why the mtDNA-machinery SETS must not be read as machinery claims ---
+  # The set numbers look like "Myc commissions the mtDNA machinery". They are composition.
   mc$share_stats |>
     dplyr::filter(denominator == "share_nomt",
                   panel %in% c("MITOCARTA_MTDNA_NUCLEOID", "MITOCARTA_TRANSCRIPTION",
                                "MITOCARTA_MTDNA_REPLICATION", "MITOCARTA_MTDNA_ENCODED")) |>
     dplyr::mutate(pct_change = 100 * (2^geno_beta - 1)) |>
     dplyr::select(panel, n_genes, pct_change, geno_d, geno_p) |> print()
+
+  # Now the same sets gene by gene -- the set effects live in the NON-core members
+  # (Mrpl12/Atad3a/Poldip2/Top1mt), not in Tfam/Polg/Twnk/Polg2.
+  mc$mtdna_machinery_genes |> print(n = 40)
+
+  # And the core is NOT a distinguishable module (the reason no replacement story is told)
+  mc$mtdna_core_vs_compartment |> as.data.frame() |> print()
 
   # --- PART 5a: why script 08's total_mito_score was null ---
   mc$mt_dominance                 # what fraction of MitoCarta counts are just the 13 mt-*
