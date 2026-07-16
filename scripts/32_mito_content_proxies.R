@@ -55,6 +55,23 @@
 # time model, gates every claim through a library-depth/complexity QC block, and
 # reconciles against the abundance-blind lenses already on disk.
 #
+# WHAT SURVIVED SCRUTINY, AND WHAT DID NOT (read this before quoting anything):
+#   SURVIVES -- the CONTENT claim. Myc raises the mitochondrial share of the
+#     transcriptome (mass markers +27%, nuclear MitoCarta +19%, mitoribosome +35%);
+#     retains ~80% of the effect with BETTER p-values after adjusting for prep-stress
+#     and contamination (script 33). This is what the script is for.
+#   RETRACTED -- the IMBALANCE claim. "Myc does not scale mtDNA output with it = the
+#     script-24 mitonuclear imbalance in absolute share" compared a significant p to a
+#     non-significant p instead of testing the difference. The difference is p=0.57 raw
+#     / p=0.82 adjusted. See PART 3b and the verdict.
+#   RETRACTED -- "commissioned but unbuilt" (set-composition artifact; PART 3b).
+#   RETRACTED -- "depth-confounded / TIME uninterpretable" (a share is depth-invariant
+#     by construction; PART 4).
+#   SUPERSEDED -- the mt-arm interpretation generally: script 33 shows the mt-transcript
+#     share is NOT a mitochondrial readout in these FACS-sorted MECs (nuclear mito genes
+#     move the WRONG way with it) but a prep-quality axis. Read script 33 before using
+#     ANY mtDNA-arm number from here.
+#
 # WHAT IT CANNOT DO (three ceilings, restated in PART 6 and in the saved notes):
 #   (i)   Bulk polyA with no spike-ins and no cell counts CANNOT measure per-cell content
 #         in absolute terms. DESeq2 median-of-ratios normalisation removes exactly that
@@ -636,15 +653,20 @@ content_verdict <- sprintf(paste0(
   "MITOCHONDRIAL CONTENT: Myc RAISES the mitochondrial share of the transcriptome -- ",
   "mass markers (chaperone-free) %+.0f%% (p=%.2g), nuclear MitoCarta %+.0f%% (p=%.2g), ",
   "mitoribosome %+.0f%% (p=%.2g); panel coherent (%d/%d member genes up with Myc, %d at ",
-  "p<0.05). But Myc does NOT scale mtDNA-encoded output with it (%+.0f%%, p=%.2g) -- the ",
-  "mitonuclear imbalance of script 24, now in ABSOLUTE SHARE rather than a mitoPPS ratio. ",
-  "WHERE THE IMBALANCE IS *NOT*: it is not a transcript-level deficit in the mtDNA ",
+  "p<0.05); the effect survives adjustment for prep-stress + contamination (script 33), so ",
+  "it is not a composition artifact. THE mtDNA ARM -- CLAIM RETRACTED 2026-07-16: an ",
+  "earlier verdict read 'Myc does NOT scale mtDNA output (%+.0f%%, p=%.2g)' as the ",
+  "script-24 mitonuclear imbalance restated in absolute share. WITHDRAWN -- that compared ",
+  "a significant p to a non-significant p instead of testing the DIFFERENCE. Tested as a ",
+  "difference (nuclear minus mtDNA, per sample): p=0.57 raw, p=0.82 composition-adjusted. ",
+  "NO imbalance is demonstrable in absolute share; the mtDNA arm is UNDERPOWERED (adjusting ",
+  "for composition moves it +6%% -> +25%%, ns). Script 32 therefore NEITHER supports NOR ",
+  "refutes the imbalance -- and script 33 shows the mt share is not a mitochondrial readout ",
+  "at all. WHERE THE IMBALANCE IS *NOT*: it is not a transcript-level deficit in the mtDNA ",
   "machinery. The nuclear mito compartment rises by a MEDIAN %+.0f%% and the ",
   "mtDNA-dedicated core (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises WITH it, ",
   "unremarkably -- median %+.0f%%, %.0fth percentile of that distribution, Wilcoxon ",
-  "p=%.2g. So NOTHING in the transcriptome is the bottleneck; the cause sits DOWNSTREAM ",
-  "of transcript abundance (mtDNA copy number, transcription rate, or turnover), which ",
-  "is what makes mtDNA qPCR the discriminating experiment. (Set-level 'machinery up' ",
+  "p=%.2g. (Set-level 'machinery up' ",
   "readings are composition artifacts -- see PART 3b.) The genotype axis is %s. ON TIME ",
   "(corrected): depth is NOT a confound -- shares are proportions, depth-invariant by ",
   "construction (as are DESeq2 size factors), and within cohort depth predicts nothing ",

@@ -5,7 +5,11 @@ plan: `docs/myc_mouse_finalisation_plan.md`.
 
 ## What this repo is
 
-Bulk RNA-seq of MMTV-Myc transgenic mice. Four groups x six replicates
+Bulk RNA-seq of **FACS-sorted mammary epithelial cells (MECs)** from MMTV-Myc transgenic
+mice — **not whole tissue**. This matters and was undocumented until 2026-07-16: any
+stromal/endothelial/adipocyte signal is **contamination**, not tissue composition, and
+the sorting itself is a stressor (see the mt-axis note below). No sort-batch, viability
+or RIN metadata exists on disk. Four groups x six replicates
 (`6W_neg`, `6W_pos`, `12W_neg`, `12W_pos`), DESeq2 genotype x timepoint interaction
 model. Investigates Myc-driven transcriptional and mitochondrial changes across the
 two timepoints. Feeds the manuscript "Mitochondria integrate oncogenic and metabolic
@@ -26,14 +30,25 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   Block A outputs (do not re-run 26-31). The figure-content partition awaits the author's
   narrative; git finalisation is complete.
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
-    mitochondrial CONTENT?" in absolute compartment shares. Not a figure script; it
-    predates the narrative because a reviewer will ask regardless. **Figure scripts are
-    33+.** Its QC gate (PART 4): **depth is NOT a confound** — shares are proportions and
-    DESeq2 size factors cancel depth, both by construction; within cohort depth predicts
-    nothing. What is real is (i) 6W/12W depth ranges are disjoint, so batch is aligned
-    with timepoint and not separable (inherent to a cross-sectional design), and (ii) the
-    mt-* share is high-variance (3.4–40%), so mt TEMPORAL claims are **imprecise**.
-    Genotype contrasts are clean (depth-balanced, litter-controlled).
+    mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
+    content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
+    script. **Figure scripts are now 34+.**
+  - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
+    mt-transcript number.** Two hard results: (1) the **mt-transcript share is not a
+    mitochondrial readout** in these sorted MECs — nuclear mito genes move the *wrong way*
+    with it (rho −0.63 to −0.71); it tracks a prep-quality axis marked by the dissociation
+    IEG signature (rho +0.87 at 6W). It is not contamination either (mixing would need a
+    contaminant mt-share >100%). (2) **The per-sample death couplings fail a null**: script
+    25 Part B's couplings to pro_comp (bio_comp 0.83, MASC 0.78, imbalance 0.67) sit at the
+    54th–90th percentile of couplings to all 884 library sets (perm p 0.10–0.50). At n=12
+    everything correlates with everything at ~0.6–0.8. **Any sample-level composite
+    coupling needs an empirical null — the AP6 logic of script 21, which the per-sample
+    analyses never got.**
+  - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
+    genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
+    mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
+    death couplings) is exposed and unresolved. Technical vs biological is **not
+    adjudicable** without sort metadata.
 
 ## Workflow — "Option A" (do not deviate)
 

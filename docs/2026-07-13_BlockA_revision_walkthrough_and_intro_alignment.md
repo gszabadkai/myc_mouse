@@ -357,8 +357,15 @@ library has no mass-marker equivalent.
   p=3.3e-5) and `Hspa9` (+0.73, p=7.5e-5) are standard mass markers **and direct MYC transactivation
   targets**, so the chaperone arm has a route to elevation the structural arm does not. The
   **claim-bearing composite excludes them** (+27%); the full panel (+41%) is corroboration only.
-- **Myc does NOT scale mtDNA-encoded output with it** (+6%, p=0.83) -- the script-24 mitonuclear
-  imbalance, now in **absolute share** rather than a mitoPPS ratio. A materially harder claim to attack.
+- ~~**Myc does NOT scale mtDNA-encoded output with it** (+6%, p=0.83) -- the script-24 mitonuclear
+  imbalance, now in absolute share rather than a mitoPPS ratio.~~
+  > **RETRACTED 2026-07-16 (script 32 verdict + script 33).** This compared a **significant p to a
+  > non-significant p** and called it a difference -- the commonest error in the book. Tested as what
+  > it actually is, a **difference** (nuclear minus mtDNA per sample): **p=0.57 raw, p=0.82
+  > composition-adjusted**. No imbalance is demonstrable in absolute share. The mtDNA arm is simply
+  > underpowered (CV 1.19; adjusting for composition moves it +6% -> +25%, ns). **Script 32 neither
+  > supports nor refutes the imbalance.** And script 33 goes further: the mt-transcript share is not a
+  > mitochondrial readout at all in these FACS-sorted MECs. See the script-33 section below.
 - **WHERE THE IMBALANCE IS *NOT* -- an informative negative (PART 3b).** The nuclear mito compartment
   rises by a **median +21%** (934 expressed nuclear-MitoCarta genes), and the mtDNA-dedicated core
   (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises **with** it, unremarkably: median +13%, **39th
@@ -446,6 +453,73 @@ biogenesis" from an enrichment-score claim into a quantified, bounded one. The c
 3. **Transcript share is not protein and not organelle volume.** A TOMM20/VDAC/CS blot, mtDNA qPCR, or
    EM **settles** it; n=6/group. Note this is the *same* orthogonal experiment the protein-level OXPHOS
    question (tension A) already needs -- one blot answers both.
+
+---
+
+### What IS the mt-transcript axis, and do the death couplings beat a null? (script 33, 2026-07-16)
+
+**The two author questions that forced this.** (1) *"These are PURIFIED MECs -- any other cell type is
+contamination. But why would only mtDNA-coded genes contaminate? Shouldn't the nuclear be there too?"*
+(2) *Is the mt signal a stress artifact, and does the mitonuclear imbalance survive?* Both questions
+are sharper than the analyses they interrogate. **Note the project fact that made this invisible for
+so long: the samples are FACS-sorted MECs, which CLAUDE.md never recorded** -- so a stromal signal had
+been read as tissue composition when it is contamination.
+
+**(A) The mt axis is neither mitochondrial nor contamination -- three independent refutations.**
+1. **Direction.** If mt% measured mitochondrial content, nuclear mito genes would **rise** with it. All
+   four measures **fall** (rho -0.63 to -0.71 within 6W). mt% is not a content readout.
+2. **Arithmetic.** Contamination is only ~3-12% of cells, so mixing would need a contaminant mt-share
+   of **126-737%** to span the observed 3.4-40.1%. Impossible.
+3. **The author's asymmetry (the decisive one).** Nuclear MEC genes track contamination **negatively**
+   (-0.47 to -0.62 = dilution, exactly as mixing predicts) while mt% tracks it **positively** (+0.75).
+   **Mixing cannot produce opposite signs.** The question "shouldn't the nuclear be there as well?"
+   is what breaks the contamination hypothesis open.
+
+What mt% *does* track is a **dominant sample-level axis** marked by the canonical dissociation IEG
+signature (Fos/Jun/Egr1/Atf3/Hspa1a -- van den Brink 2017): **rho +0.87 within 6W**, and adding it
+lifts the mt% R^2 from **0.26 to 0.72**. In FACS-sorted MECs that reads as prep quality.
+
+**(B) The mitonuclear imbalance is mostly that axis.** Script 24's `mtnuc_index`, rebuilt per sample
+(it reproduces: 0.130 / 0.499 / -0.456 / -0.173 vs 24's 0.129 / 0.556 / -0.509 / -0.176), regresses on
+mt% at **r=-0.95, R^2=0.73**. Three-quarters of the imbalance *is* the mt% metric.
+
+**(C) THE LOAD-BEARING RESULT -- the death couplings are not specific.** Script 25 Part B reports
+per-sample couplings to the pro-death composite at 6W as evidence for a death-permissive substrate.
+But with n=12 and one dominant axis, *any* two composites correlate. The test is not "is r big" but
+"is r bigger than an arbitrary gene set gives" -- **the AP6 logic script 21 applied to fGSEA and
+nobody applied to the per-sample couplings.** Null = all 884 GSVA-scored library sets:
+
+| coupling to pro_comp at 6W | rho | null median | percentile | perm p | verdict |
+|---|---|---|---|---|---|
+| mitonuclear imbalance | +0.67 | +0.62 | 61st | **0.49** | **NOT SPECIFIC** |
+| bio_comp | +0.83 | **+0.79** | 54th | **0.50** | **NOT SPECIFIC** |
+| MASC_comp | +0.78 | +0.57 | 90th | 0.10 | marginal |
+| IEG/stress axis | -0.78 | -0.55 | 0.5th | **0.03** | **beats the null** |
+
+Read the `bio_comp` row: r=0.83 looks compelling until you see the null median is **0.79**. In this
+dataset 73-81% of *all* gene sets couple to these axes at |rho|>0.5. **The one axis that beats the
+null is the prep-quality signature itself.** So the published ordering (bio 0.83 > MASC 0.78 >
+imbalance 0.75) is preserved but meaningless -- it is the ordering of an arbitrary draw.
+
+**Crucially, this holds whether the axis is technical or biological.** Specificity is a property of
+the coupling, not of the axis's origin -- so the conclusion does not depend on the adjudication we
+cannot make.
+
+**(D) What is untouched, and what is exposed.**
+- **UNTOUCHED -- every genotype/interaction claim.** The axis is **genotype-independent** (p=0.49), so
+  it cannot bias a Myc contrast. Script 32's content claim retains **79-81%** of its effect with
+  *better* p-values after adjusting for stress + contamination (mass markers +21%, p=0.0006). Issues
+  #1, #2, #3, #5, #6 are genotype/interaction-based and stand.
+- **EXPOSED -- the time-axis mt story.** The axis **is** time-associated (p=0.0003): script 24's
+  mitonuclear narrative, script 22/29's mtDNA time story, and script 25 Part B's death couplings all
+  need re-examination.
+
+**Ceilings -- state them, they are load-bearing.** The samples are FACS-sorted with **no sort-batch,
+viability or RIN metadata on disk**, so the IEG panel is an **inferred** covariate, not a measured one:
+**technical vs biological is NOT resolved**, and PART D records both readings rather than picking. n=12
+within 6W. The null universe (884 library sets) is internally correlated and contains sets overlapping
+`pro_comp`, so the empirical p is indicative rather than exact -- but an observed coupling sitting at
+the **median** needs no precision to read.
 
 ---
 
