@@ -28,10 +28,12 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. Not a figure script; it
     predates the narrative because a reviewer will ask regardless. **Figure scripts are
-    33+.** Note its QC gate: **timepoint is perfectly confounded with sequencing cohort**
-    (6W 19-29M reads / MYCF62-65; 12W 10-16M / MYCF52-56; depth ~ timepoint p=4.2e-09),
-    so genotype contrasts are clean and mt-related TEMPORAL claims are exposed. Do not
-    write a figure that rests on an mt-* temporal contrast without flagging it.
+    33+.** Its QC gate (PART 4): **depth is NOT a confound** — shares are proportions and
+    DESeq2 size factors cancel depth, both by construction; within cohort depth predicts
+    nothing. What is real is (i) 6W/12W depth ranges are disjoint, so batch is aligned
+    with timepoint and not separable (inherent to a cross-sectional design), and (ii) the
+    mt-* share is high-variance (3.4–40%), so mt TEMPORAL claims are **imprecise**.
+    Genotype contrasts are clean (depth-balanced, litter-controlled).
 
 ## Workflow — "Option A" (do not deviate)
 

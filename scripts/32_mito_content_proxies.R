@@ -65,15 +65,31 @@
 #   (iii) Transcript share is not protein and not organelle volume. Blot (TOMM20 / VDAC /
 #         CS / HSP60), mtDNA qPCR, or EM SETTLES it. n = 6/group.
 #
-# THE CONFOUND THAT GATES THE TIME AXIS (PART 4). The mt-* share ranges 3.4%-40% across
-# samples and tracks library depth (rho ~ -0.47), which is PERFECTLY CONFOUNDED with
-# timepoint: 6W = 18.8-29.0M reads from animals MYCF62-65/MYBS10x; 12W = 9.9-16.1M from
-# MYCF52-56, a different cohort. Within timepoint, depth is genotype-BALANCED and both
-# genotypes occur inside single litters (MYCF62, MYCF52, MYCF56). So the GENOTYPE axis is
-# clean and every TEMPORAL claim is cohort/depth-exposed -- including script 29's
-# "mtDNA absolute z -1.14 -> +1.23", which inherits the same exposure. There is no RIN or
-# batch column on disk. This script FLAGS rather than corrects: the confound is a design
-# fact, not a bug to regress away.
+# WHAT LIMITS THE TIME AXIS -- AND WHAT DOES NOT (PART 4; CORRECTED 2026-07-16).
+# DEPTH IS NOT A CONFOUND. An earlier version of this header claimed the mt share "tracks
+# library depth (rho -0.47)" and concluded TIME was uninterpretable. Both RETRACTED. A
+# share is a PROPORTION -- sequencing deeper multiplies numerator and denominator alike --
+# so it is depth-invariant BY CONSTRUCTION, exactly as DESeq2's median-of-ratios size
+# factors are. Depth cannot be a mechanism. Empirically it is not one either: within
+# cohort it predicts nothing (6W rho=-0.06 p=0.87; 12W rho=-0.32 p=0.32); the pooled
+# rho=-0.47 is entirely the gap between two clouds that differ in both depth and mt% -- a
+# POOLING artifact. And 12W is not the degraded cohort: top100 share of non-mt counts is
+# 31% vs 40% at 6W (MORE even), and its lower gene count follows from lower depth.
+#
+# What DOES limit temporal claims, both duller than a confound:
+#   (1) COHORT-ALIGNMENT (inherent, not mt-specific). Depth ranges are DISJOINT (6W
+#       18.8-29.0M from MYCF62-65/MYBS10x; 12W 9.9-16.1M from MYCF52-56) => the ages were
+#       near-certainly different prep/sequencing batches, and batch is perfectly aligned
+#       with timepoint. No common support => not separable. But this is true of ANY
+#       cross-sectional design (different animals per age); the project already lives with
+#       it, and nothing here positively indicates a technical artifact.
+#   (2) IMPRECISION (mt-specific, the real caveat). The mt-* share spans 3.4%-40% across
+#       samples, SD 13 pp within 12W_neg alone. Temporal mt claims are IMPRECISE at n=6.
+# So temporal mt numbers -- incl. script 29's "mtDNA absolute z -1.14 -> +1.23" -- are
+# IMPRECISE and COHORT-ALIGNED, not uninterpretable. GENOTYPE is unaffected: depth is
+# genotype-balanced (p=0.41) and both genotypes sit inside single litters (MYCF62, MYCF52,
+# MYCF56). There is no RIN or batch column on disk. PART 4 DIAGNOSES; there is nothing
+# mechanical to correct.
 #
 # Input:  results/dds_int_run.rds             (fitted DESeq2, sample metadata)
 #         results/count_matrix.rds            (raw counts, 54838 x 24, Ensembl)
@@ -379,11 +395,41 @@ message(sprintf(paste0("PART 3b guard: nuclear mito median %+.0f%%; mtDNA core m
                 mtdna_core_vs_compartment$core_percentile))
 
 # =============================================================================
-# PART 4: THE QC GATE -- which claims survive the cohort/depth confound
+# PART 4: THE QC GATE -- what actually limits the temporal claims (and what does not)
 # =============================================================================
-# This block does NOT correct the confound. Timepoint is perfectly confounded with
-# sequencing cohort, so there is no within-design contrast that separates them: any
-# "correction" would be regressing the time effect on itself. It DIAGNOSES and FLAGS.
+# CORRECTED 2026-07-16 (author challenge: "aren't the DESeq2 normalised values accounted
+# for depth?"). YES -- and so are these shares. THE FIRST VERSION OF THIS BLOCK WAS WRONG.
+#
+# DEPTH IS NOT A CONFOUND, and cannot be one:
+#   - A share is a PROPORTION. Sequencing deeper multiplies numerator and denominator
+#     alike, so `colSums(cts[panel,]) / colSums(cts)` is depth-invariant BY CONSTRUCTION.
+#     DESeq2's median-of-ratios size factors cancel depth for the same reason. There is no
+#     mechanism by which depth CAUSES an mt%.
+#   - Empirically it does not act: WITHIN cohort, depth predicts nothing --
+#     6W rho=-0.056 (p=0.87), 12W rho=-0.315 (p=0.32). The scary pooled rho=-0.469 is
+#     ENTIRELY the gap between two clouds that happen to differ in both depth and mt%
+#     (a pooling artifact, not a signal). `rho_depth` below is retained ONLY to make that
+#     decomposition visible -- read `rho_depth_6W` / `rho_depth_12W`, never the pooled one.
+#   - And 12W is NOT the degraded cohort: top100 share of non-mt counts is 31.0% at 12W vs
+#     40.2% at 6W, i.e. 12W libraries are MORE even. The lower detected-gene count at 12W
+#     (23255 vs 24599) is the expected consequence of lower depth, not of quality.
+#
+# WHAT ACTUALLY LIMITS THE TEMPORAL CLAIMS -- two things, both duller than a confound:
+#   (1) COHORT-ALIGNMENT (inherent, not special to mt). The depth ranges are DISJOINT
+#       (6W 18.8-29.0M vs 12W 9.9-16.1M -- no overlap), so the two ages were near-certainly
+#       different library-prep/sequencing batches, and batch is perfectly aligned with
+#       timepoint. With no common support, batch and time are not separable. But this is
+#       true of ANY cross-sectional design (different animals at each age) and the whole
+#       project already lives with it -- it is not a reason to distrust mt specifically,
+#       and NOTHING here positively indicates a technical artifact.
+#   (2) IMPRECISION (this one IS specific to mt). The mt-* share ranges 3.4%-40% across
+#       samples, SD 13 pp within 12W_neg alone, one sample at 40.1%. Temporal mt claims are
+#       therefore IMPRECISE at n=6/group. That is the honest, defensible caveat.
+#
+# So: temporal mt numbers -- including script 29's mtDNA absolute z rise -- are IMPRECISE
+# and COHORT-ALIGNED, not "uninterpretable". The genotype axis is unaffected either way
+# (depth is genotype-balanced p=0.41, and both genotypes sit inside single litters).
+# This block DIAGNOSES; it does not correct, because there is nothing mechanical to correct.
 
 # --- 4a. Per-sample diagnostics -----------------------------------------------
 nomt_rows <- setdiff(rownames(cts), mt_ens)
@@ -429,9 +475,36 @@ qc_coupling <- purrr::map_dfr(names(panel_ens), function(p) {
     rho_top100   = cor_or_na(s$share_nomt, qc_sample$top100_pct))
 })
 
+# --- 4c-ter. Can depth act AT ALL? The within-cohort test that settles it --------
+# Depth can only be causal if it acts WITHIN a cohort (between cohorts it is collinear
+# with everything else that differs). It does not: both correlations are ~0 and ns. Read
+# with the theory -- a share is a proportion, so depth cancels by construction -- this is
+# the empirical confirmation, not the argument.
+mt_depth_within <- purrr::map_dfr(c("6W", "12W"), function(tp) {
+  i  <- qc_sample$timepoint == tp
+  ct <- suppressWarnings(stats::cor.test(qc_sample$depth_M[i], qc_sample$mt_pct[i],
+                                         method = "spearman"))
+  tibble::tibble(timepoint = tp, n = sum(i), rho = unname(ct$estimate), p = ct$p.value)
+})
+
+# --- 4c-bis. Depth-range separation: the real (and only) design fact ------------
+# Disjoint ranges => no common support => batch and timepoint are not separable. This is
+# what "cohort-aligned" means, and it is the ONLY thing the depth numbers establish.
+depth_ranges <- qc_sample |>
+  dplyr::group_by(timepoint) |>
+  dplyr::summarise(min_M = min(depth_M), max_M = max(depth_M), .groups = "drop")
+depth_overlap <- max(depth_ranges$min_M) <= min(depth_ranges$max_M)   # FALSE = disjoint
+
+# Per-panel dispersion -- the caveat that actually applies to the mt arm.
+share_precision <- shares |>
+  dplyr::group_by(panel, group) |>
+  dplyr::summarise(cv = stats::sd(share_nomt) / mean(share_nomt), .groups = "drop") |>
+  dplyr::group_by(panel) |>
+  dplyr::summarise(max_group_cv = max(cv), .groups = "drop")
+
 # --- 4d. Leave-one-out sensitivity on the most extreme mt sample ---------------
-# The confound's worst case: one sample with an mt share far outside the rest. If a
-# panel's genotype effect depends on it, the panel is not reportable.
+# Worst case for the IMPRECISION caveat: one sample with an mt share far outside the rest.
+# If a panel's genotype effect depends on it, the panel is not reportable.
 loo_sample <- qc_sample$sample[which.max(qc_sample$mt_pct)]
 keep       <- samples != loo_sample
 message(sprintf("Leave-one-out sample (max mt%%): %s (mt %.1f%%, depth %.1fM, %d genes)",
@@ -454,17 +527,24 @@ loo_sensitivity <- purrr::map_dfr(names(panel_ens), function(p) {
 # --- 4e. The flag every downstream statement inherits ---------------------------
 # GENOTYPE contrasts: depth-balanced within timepoint, litter-controlled -> CLEAN,
 #   conditional on surviving leave-one-out.
-# TEMPORAL contrasts: timepoint == sequencing cohort here -> TIME-EXPOSED, always.
+# TEMPORAL contrasts: cohort-aligned (inherent to a cross-sectional design, NOT a special
+#   mt defect and NOT a depth effect -- shares are depth-invariant by construction). The
+#   panel-specific caveat is IMPRECISION, keyed off the observed within-group CV.
 qc_flags <- loo_sensitivity |>
   dplyr::left_join(qc_coupling, by = "panel") |>
+  dplyr::left_join(share_precision, by = "panel") |>
   dplyr::mutate(
     geno_flag = dplyr::case_when(
       !sign_stable | !sig_stable ~ "GENOTYPE: LOO-FRAGILE",
+      # within-cohort depth coupling is the only way depth could act; it does not here
       abs(rho_depth_6W) > 0.6 | abs(rho_depth_12W) > 0.6 ~ "GENOTYPE: depth-coupled within tp",
       TRUE ~ "GENOTYPE: CLEAN"),
-    time_flag = "TIME-EXPOSED (timepoint confounded with sequencing cohort)") |>
-  dplyr::select(panel, geno_flag, time_flag, sign_stable, sig_stable,
-                rho_depth, rho_depth_6W, rho_depth_12W)
+    time_flag = dplyr::if_else(
+      max_group_cv > 0.5,
+      "TIME: cohort-aligned + IMPRECISE (within-group CV > 0.5)",
+      "TIME: cohort-aligned (inherent to cross-sectional design; no artifact indicated)")) |>
+  dplyr::select(panel, geno_flag, time_flag, sign_stable, sig_stable, max_group_cv,
+                rho_depth_6W, rho_depth_12W, rho_depth_pooled = rho_depth)
 
 # =============================================================================
 # PART 5: RECONCILIATION + REBUILT total_mito_score
@@ -565,12 +645,18 @@ content_verdict <- sprintf(paste0(
   "p=%.2g. So NOTHING in the transcriptome is the bottleneck; the cause sits DOWNSTREAM ",
   "of transcript abundance (mtDNA copy number, transcription rate, or turnover), which ",
   "is what makes mtDNA qPCR the discriminating experiment. (Set-level 'machinery up' ",
-  "readings are composition artifacts -- see PART 3b.) The genotype axis is %s. TIME is ",
-  "NOT interpretable here: timepoint is perfectly confounded with sequencing cohort ",
-  "(6W %.0f-%.0fM reads, 12W %.0f-%.0fM; depth ~ timepoint p=%.2g vs ~ genotype p=%.2g) ",
-  "-- every temporal number, including script 29's mtDNA absolute z rise, inherits this. ",
-  "CEILING: shares, not per-cell content; Myc's global RNA amplification makes the share ",
-  "a LOWER BOUND; blot/qPCR/EM settles it."),
+  "readings are composition artifacts -- see PART 3b.) The genotype axis is %s. ON TIME ",
+  "(corrected): depth is NOT a confound -- shares are proportions, depth-invariant by ",
+  "construction (as are DESeq2 size factors), and within cohort depth predicts nothing ",
+  "(6W rho=%+.2f p=%.2f; 12W rho=%+.2f p=%.2f); 12W is also not the degraded cohort ",
+  "(top100 %.0f%% vs %.0f%% at 6W -- MORE even). What IS true: the depth ranges are ",
+  "DISJOINT (6W %.0f-%.0fM vs 12W %.0f-%.0fM) so batch is perfectly aligned with timepoint ",
+  "and not separable -- inherent to any cross-sectional design, and genotype is unaffected ",
+  "(depth ~ timepoint p=%.2g vs ~ genotype p=%.2g) -- and the mt share is HIGH-VARIANCE ",
+  "(%.1f-%.1f%% across samples). So temporal mt numbers, incl. script 29's mtDNA z rise, ",
+  "are IMPRECISE and COHORT-ALIGNED, NOT uninterpretable. CEILING: shares, not per-cell ",
+  "content; Myc's global RNA amplification makes the share a LOWER BOUND; blot/qPCR/EM ",
+  "settles it."),
   pct_of("MASS_MARKERS_NOCHAP"),               stat_of("MASS_MARKERS_NOCHAP", "geno_p"),
   pct_of("MITOCARTA_NUCLEAR_ENCODED"),         stat_of("MITOCARTA_NUCLEAR_ENCODED", "geno_p"),
   pct_of("MITOCARTA_MITOCHONDRIAL_RIBOSOME"),  stat_of("MITOCARTA_MITOCHONDRIAL_RIBOSOME", "geno_p"),
@@ -581,11 +667,18 @@ content_verdict <- sprintf(paste0(
   mtdna_core_vs_compartment$core_percentile,
   mtdna_core_vs_compartment$wilcox_p,
   qc_flags$geno_flag[qc_flags$panel == "MASS_MARKERS_NOCHAP"],
-  min(qc_sample$depth_M[qc_sample$timepoint == "6W"]),
-  max(qc_sample$depth_M[qc_sample$timepoint == "6W"]),
-  min(qc_sample$depth_M[qc_sample$timepoint == "12W"]),
-  max(qc_sample$depth_M[qc_sample$timepoint == "12W"]),
-  depth_time_p, depth_geno_p)
+  mt_depth_within$rho[mt_depth_within$timepoint == "6W"],
+  mt_depth_within$p[mt_depth_within$timepoint == "6W"],
+  mt_depth_within$rho[mt_depth_within$timepoint == "12W"],
+  mt_depth_within$p[mt_depth_within$timepoint == "12W"],
+  mean(qc_sample$top100_pct[qc_sample$timepoint == "12W"]),
+  mean(qc_sample$top100_pct[qc_sample$timepoint == "6W"]),
+  depth_ranges$min_M[depth_ranges$timepoint == "6W"],
+  depth_ranges$max_M[depth_ranges$timepoint == "6W"],
+  depth_ranges$min_M[depth_ranges$timepoint == "12W"],
+  depth_ranges$max_M[depth_ranges$timepoint == "12W"],
+  depth_time_p, depth_geno_p,
+  min(qc_sample$mt_pct), max(qc_sample$mt_pct))
 
 message("\n", strwrap(content_verdict, width = 88) |> paste(collapse = "\n"), "\n")
 
@@ -638,22 +731,41 @@ ggplot2::ggsave(file.path(out_dir, "B_myc_vs_age_axes.pdf"), p_b,
                 width = 9, height = 7)
 
 # --- C: the QC gate, made visible rather than buried ----------------------------
+# Two clouds at disjoint depths. The pooled trend through them is a POOLING ARTIFACT --
+# the within-cohort fits (drawn) are flat, and a share cannot depend on depth anyway.
+# The figure exists to show that, not to imply a depth effect.
 p_c <- ggplot2::ggplot(qc_sample,
                        ggplot2::aes(x = depth_M, y = mt_pct, colour = myc_status,
                                     shape = timepoint)) +
+  ggplot2::geom_smooth(ggplot2::aes(group = timepoint), method = "lm", se = FALSE,
+                       colour = "grey55", linewidth = 0.5, linetype = 2,
+                       formula = y ~ x) +
   ggplot2::geom_point(size = 3, alpha = 0.85) +
   ggplot2::geom_text(ggplot2::aes(label = ifelse(sample == loo_sample, sample, "")),
                      hjust = -0.15, size = 2.5, show.legend = FALSE) +
   ggplot2::scale_colour_manual(values = geno_cols) +
   ggplot2::labs(
-    title = "QC gate: the mtDNA share tracks library depth, and depth tracks TIMEPOINT",
-    subtitle = sprintf(paste("6W and 12W are different sequencing cohorts (depth ~ timepoint",
-                             "p=%.2g; ~ genotype p=%.2g).\nSo genotype contrasts are clean and",
-                             "every temporal claim is exposed. Labelled = leave-one-out sample."),
-                       depth_time_p, depth_geno_p),
+    title = "QC gate: two cohorts at disjoint depths -- NOT a depth effect on the mt share",
+    subtitle = sprintf(paste0(
+      "A share is a proportion, so depth cancels by construction; within cohort it predicts ",
+      "nothing (6W rho=%+.2f p=%.2f; 12W rho=%+.2f p=%.2f -- dashed fits).\nWhat IS true: ",
+      "depth ranges are disjoint (%.1f-%.1fM vs %.1f-%.1fM) => batch is aligned with timepoint ",
+      "and not separable (depth ~ timepoint p=%.2g; ~ genotype p=%.2g, so genotype is clean).\n",
+      "The real caveat on temporal mt claims is IMPRECISION: mt share spans %.1f-%.1f%%. ",
+      "Labelled = leave-one-out sample."),
+      mt_depth_within$rho[mt_depth_within$timepoint == "6W"],
+      mt_depth_within$p[mt_depth_within$timepoint == "6W"],
+      mt_depth_within$rho[mt_depth_within$timepoint == "12W"],
+      mt_depth_within$p[mt_depth_within$timepoint == "12W"],
+      depth_ranges$min_M[depth_ranges$timepoint == "6W"],
+      depth_ranges$max_M[depth_ranges$timepoint == "6W"],
+      depth_ranges$min_M[depth_ranges$timepoint == "12W"],
+      depth_ranges$max_M[depth_ranges$timepoint == "12W"],
+      depth_time_p, depth_geno_p, min(qc_sample$mt_pct), max(qc_sample$mt_pct)),
     x = "library depth (M reads)", y = "mtDNA-encoded share of library (%)",
     colour = "Myc", shape = NULL) +
-  ggplot2::theme_bw(base_size = 10)
+  ggplot2::theme_bw(base_size = 10) +
+  ggplot2::theme(plot.subtitle = ggplot2::element_text(size = 7))
 ggplot2::ggsave(file.path(out_dir, "C_qc_gate.pdf"), p_c, width = 8, height = 5.5)
 
 message("Figures written to ", out_dir)
@@ -672,13 +784,17 @@ content_out <- list(
   mtdna_machinery_genes     = mtdna_machinery_genes,
   mtdna_core_vs_compartment = mtdna_core_vs_compartment,
   qc = list(
-    per_sample    = qc_sample,
-    depth_balance = depth_balance,
-    depth_geno_p  = depth_geno_p,
-    depth_time_p  = depth_time_p,
-    coupling      = qc_coupling,
-    flags         = qc_flags,
-    loo_sample    = loo_sample),
+    per_sample      = qc_sample,
+    depth_balance   = depth_balance,
+    depth_geno_p    = depth_geno_p,
+    depth_time_p    = depth_time_p,
+    depth_ranges    = depth_ranges,
+    depth_overlap   = depth_overlap,      # FALSE = disjoint = batch not separable from time
+    mt_depth_within = mt_depth_within,    # the test that shows depth is NOT a confound
+    share_precision = share_precision,    # the caveat that actually applies (mt CV)
+    coupling        = qc_coupling,
+    flags           = qc_flags,
+    loo_sample      = loo_sample),
   loo_sensitivity   = loo_sensitivity,
   total_mito_rebuilt = total_mito_rebuilt,
   mt_dominance      = mt_dominance,
@@ -720,14 +836,24 @@ content_out <- list(
     "SHARE OF TRANSCRIPTOME. (ii) Myc globally amplifies total RNA per cell, so a constant",
     "share already means more mitochondria per cell -> the share effect is a LOWER BOUND.",
     "(iii) transcript share is not protein and not organelle volume -- blot / mtDNA qPCR /",
-    "EM SETTLES it; n=6/group. QC GATE: timepoint is PERFECTLY confounded with sequencing",
-    "cohort (6W 18.8-29.0M reads from MYCF62-65/MYBS10x; 12W 9.9-16.1M from MYCF52-56) and",
-    "the mt share tracks depth (rho ~ -0.47), so ALL temporal claims are TIME-EXPOSED --",
-    "including script 29's mtDNA absolute z -1.14 -> +1.23. Genotype is depth-balanced",
-    "within timepoint and litter-controlled (both genotypes inside MYCF62/MYCF52/MYCF56)",
-    "-> CLEAN. The gate FLAGS rather than corrects: with timepoint == cohort there is no",
-    "contrast that separates them. See docs/2026-07-13_BlockA_revision_walkthrough_and_",
-    "intro_alignment.md."))
+    "EM SETTLES it; n=6/group. QC GATE (PART 4, CORRECTED 2026-07-16 after the author",
+    "asked 'aren't the DESeq2 normalised values accounted for depth?' -- they are, and so",
+    "are these shares): DEPTH IS NOT A CONFOUND AND CANNOT BE. A share is a PROPORTION, so",
+    "depth cancels by construction (same reason median-of-ratios cancels it), and within",
+    "cohort depth predicts nothing (6W rho=-0.06 p=0.87; 12W rho=-0.32 p=0.32) -- the",
+    "pooled rho=-0.47 is ENTIRELY the gap between two clouds differing in both, a pooling",
+    "artifact. 12W is also NOT the degraded cohort: top100 share 31% vs 40% at 6W = MORE",
+    "even; its lower gene count follows from lower depth. WHAT ACTUALLY LIMITS TIME, both",
+    "duller: (1) COHORT-ALIGNMENT -- depth ranges are DISJOINT (6W 18.8-29.0M / MYCF62-65,",
+    "12W 9.9-16.1M / MYCF52-56) so batch is perfectly aligned with timepoint and not",
+    "separable; but that is inherent to ANY cross-sectional design and is not special to",
+    "mt, and nothing positively indicates an artifact. (2) IMPRECISION -- the mt share",
+    "ranges 3.4-40% (SD 13 pp within 12W_neg), so temporal mt claims are IMPRECISE at",
+    "n=6/group. Temporal mt numbers incl. script 29's mtDNA z -1.14 -> +1.23 are IMPRECISE",
+    "and COHORT-ALIGNED, NOT 'uninterpretable' (an earlier version of this script said",
+    "uninterpretable -- RETRACTED). Genotype is depth-balanced (p=0.41) and",
+    "litter-controlled (both genotypes inside MYCF62/MYCF52/MYCF56) -> CLEAN either way.",
+    "See docs/2026-07-13_BlockA_revision_walkthrough_and_intro_alignment.md."))
 saveRDS(content_out, here::here("results", "mito_content_proxies.rds"))
 message("Saved results/mito_content_proxies.rds")
 
@@ -756,10 +882,18 @@ if (FALSE) {
   mc$share_group_means |>
     dplyr::filter(denominator == "share_nomt") |> print(n = 20)
 
-  # --- PART 4: the QC gate. Which panels survive, and what is time-exposed? ---
+  # --- PART 4: the QC gate. What limits the temporal claims -- and what does NOT ---
   mc$qc$per_sample |> print(n = 24)
   mc$qc$depth_balance |> print()
   c(depth_vs_genotype_p = mc$qc$depth_geno_p, depth_vs_timepoint_p = mc$qc$depth_time_p)
+
+  # Depth is NOT a confound: a share is a proportion (depth cancels by construction), and
+  # within cohort it predicts nothing. The pooled rho is a POOLING artifact of two clouds.
+  mc$qc$mt_depth_within |> print()
+  mc$qc$depth_ranges |> print(); mc$qc$depth_overlap   # FALSE = disjoint = batch ~ time
+
+  # What DOES limit time: cohort-alignment (inherent) + mt imprecision (panel-specific)
+  mc$qc$share_precision |> dplyr::arrange(dplyr::desc(max_group_cv)) |> print(n = 20)
   mc$qc$flags |> print(n = 20)
   mc$loo_sensitivity |> print(n = 20)
 

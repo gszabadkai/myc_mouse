@@ -290,12 +290,16 @@ mito-biogenesis TF-activity sets) for Part D.
   mtDNA-completed metabolism at 12W" holds in ABSOLUTE levels. Honest divergence: at 12W_pos nuclear
   OXPHOS is mitoPPS-deprioritised (0.955, <1) while its absolute level sits near baseline (+0.05) =
   reprioritisation WITHOUT a level drop.
-  > **TIME-EXPOSED (added 2026-07-16, script 32 QC gate).** The mtDNA absolute z rise -1.14 -> +1.23 is
-  > a TEMPORAL claim, and timepoint here is **perfectly confounded with sequencing cohort** (6W = 19-29M
-  > reads from MYCF62-65/MYBS10x; 12W = 10-16M from MYCF52-56; depth ~ timepoint p=4.2e-09), while the
-  > mt-* share tracks depth (rho ~ -0.47) and ranges 3.4%-40% across samples. The *genotype* half of
-  > Part B/C is unaffected (depth is genotype-balanced, p=0.41, and litter-controlled). Not correctable
-  > -- with timepoint == cohort no contrast separates them. See the script-32 section above.
+  > **IMPRECISE + COHORT-ALIGNED (script 32 QC gate; wording corrected 2026-07-16).** The mtDNA
+  > absolute z rise -1.14 -> +1.23 is a TEMPORAL claim and carries two caveats -- neither of which is
+  > a depth artifact (**depth is not a confound**: shares and DESeq2 size factors both cancel it by
+  > construction, and within cohort depth predicts nothing, 6W rho=-0.06 / 12W rho=-0.32, both ns).
+  > (i) The mt-* share is **high-variance** (3.4%-40% across samples), so the rise is **imprecise** at
+  > n=6/group. (ii) The 6W/12W depth ranges are **disjoint** (18.8-29.0M vs 9.9-16.1M), so batch is
+  > perfectly aligned with timepoint and not separable -- inherent to any cross-sectional design, and
+  > no artifact is positively indicated. The *genotype* half of Part B/C is unaffected (depth is
+  > genotype-balanced p=0.41, litter-controlled). Report the rise; do not lean hard on its magnitude.
+  > See the script-32 section above.
 - **D -- first-pass regulators (hypothesis-generating, within WT, n=12).** The WT OXPHOS trajectory
   tracks BOTH the developmental luminal axis (partial r 0.71) and ER/PGC1a TF activity
   (ESRRA/NRF1/GABPA; partial r 0.70-0.83), model R^2 0.86-0.89.
@@ -394,20 +398,40 @@ null (p=0.67), reproducing script 08's null -- and explains it. The mt-* genes a
 MitoCarta counts**, so the "total" was a noisy mt-* readout wearing a MitoCarta label. Counted mt-free,
 the same compartment gives d=1.16, p=0.008.
 
-**The QC gate -- and the honest limit on the TIME axis (PART 4).** The mt-* share ranges 3.4%-40%
-across samples and tracks library depth (rho ~ -0.47), and **depth is perfectly confounded with
-timepoint**: 6W = 19-29M reads from animals MYCF62-65/MYBS10x; 12W = 10-16M from MYCF52-56, a different
-cohort (depth ~ timepoint **p=4.2e-09**). Within timepoint, depth is genotype-**balanced**
-(p=0.41) and both genotypes occur inside single litters (MYCF62, MYCF52, MYCF56).
+**The QC gate -- what limits the TIME axis, and what does not (PART 4).**
 
-> **So the genotype axis is CLEAN and every temporal claim is TIME-EXPOSED -- including Issue #4's
-> "mtDNA absolute z -1.14 -> +1.23", which inherits the same exposure.** Corroborating this rather than
-> explaining it away: scripts 29 and 32 *agree* on genotype but *disagree* on the time axis (WT
-> temporal -0.454 vs +0.094) -- the axis that is confounded is the axis where the lenses part.
+> **CORRECTED 2026-07-16, on the author's challenge ("aren't the DESeq2 normalised values accounted
+> for depth?"). They are -- and so are these shares. The first version of this section was WRONG.**
+> It claimed the mt share "tracks library depth (rho -0.47)" and concluded TIME was **uninterpretable**.
+> Both retracted:
+> - **Depth cannot be a confound here.** A share is a **proportion** -- sequencing deeper multiplies
+>   numerator and denominator alike -- so it is depth-invariant *by construction*, for exactly the same
+>   reason DESeq2's median-of-ratios size factors cancel depth. There is no mechanism.
+> - **Empirically depth does not act.** Within cohort it predicts nothing: 6W rho=-0.06 (p=0.87), 12W
+>   rho=-0.32 (p=0.32). The pooled rho=-0.47 is **entirely** the gap between two clouds that differ in
+>   both depth and mt% -- a pooling artifact, cited as if it were a signal.
+> - **12W is not the degraded cohort.** Top-100 share of non-mt counts is **31% at 12W vs 40% at 6W**
+>   -- 12W libraries are *more* even. The lower detected-gene count at 12W (23,255 vs 24,599) is what
+>   lower depth gives you. The one metric bearing on RNA quality argues *against* the worry that was
+>   raised.
 
-The gate **flags rather than corrects**: with timepoint == sequencing cohort there is no contrast that
-separates them, so any "correction" would regress the time effect on itself. There is no RIN or batch
-column on disk. This is a design fact, not a bug.
+**What actually limits the temporal claims -- two things, both duller than a confound:**
+1. **Cohort-alignment (inherent, not mt-specific).** The depth ranges are **disjoint** (6W 18.8-29.0M
+   from MYCF62-65/MYBS10x; 12W 9.9-16.1M from MYCF52-56), so the two ages were near-certainly
+   different prep/sequencing batches, and batch is perfectly aligned with timepoint. No common support
+   => not separable. **But this is true of any cross-sectional design** (different animals per age);
+   the whole project already lives with it, and nothing positively indicates an artifact.
+2. **Imprecision (mt-specific -- the real caveat).** The mt-* share spans **3.4%-40%** across samples,
+   SD 13 pp within 12W_neg alone, one sample at 40.1%. Temporal mt claims are **imprecise** at n=6.
+
+So Issue #4's "mtDNA absolute z -1.14 -> +1.23" is **imprecise and cohort-aligned, not
+uninterpretable**. The genotype axis is unaffected either way: depth is genotype-**balanced** (p=0.41)
+and both genotypes occur inside single litters (MYCF62, MYCF52, MYCF56). There is no RIN or batch
+column on disk. The gate **diagnoses**; there is nothing mechanical to correct.
+
+*(The scripts 29-vs-32 divergence on the WT temporal beta, -0.454 vs +0.094, was previously cited as
+corroborating a confound. It does not: the two use different denominators and different composites, so
+they are not expected to agree on a temporal slope. Dropped as evidence.)*
 
 **Interpretation + the three ceilings.** *Myc increases mitochondrial content per cell -- modestly
 (~25-27% by transcript proxy), coherently across structural, import, ribosomal and OXPHOS arms, and
@@ -887,18 +911,24 @@ Per-change rationale:
   "commissioned but unbuilt" reading was retracted the same day as a set-composition artifact --
   Mrpl12/Atad3a/Poldip2/Top1mt carry the set effects, not Tfam/Polg/Twnk.)
 - **Do the genes that follow the mtDNA pattern form a module? (author question, 2026-07-16 -- OPEN.)**
-  First pass says the mtDNA machinery does **not** (above). A transcriptome-wide search is worth doing
-  but carries a trap that must be designed in from the start: the mt-share is depth-confounded, so
-  anything co-varying with it will surface the **RNA-quality module** unless the scan uses partial
-  correlation against depth/complexity and reports the technical module as the named alternative. Not
+  First pass says the mtDNA machinery does **not** (above). A transcriptome-wide scan is worth doing.
+  Its real trap is **not** depth (shares cancel depth by construction; see the corrected QC gate) but
+  **cohort structure**: the mt share's biggest swings are between two batch-aligned cohorts, so a scan
+  correlating genes against the mt composite across all 24 samples will mostly rank genes by *cohort
+  membership*. Design it **within timepoint** (where the mt share still spans 3.4-14.9% at 6W), and
+  report the cohort-driven module as the named alternative rather than discovering it at the end. Not
   yet built.
-- **The TIME axis is cohort-confounded (script 32 QC gate).** Timepoint is perfectly confounded with
-  sequencing cohort (6W 19-29M reads from MYCF62-65/MYBS10x; 12W 10-16M from MYCF52-56; depth ~
-  timepoint p=4.2e-09), and the mt-* share tracks depth (rho ~ -0.47). Genotype contrasts are clean
-  (depth-balanced p=0.41, litter-controlled); **every mt-related TEMPORAL number is exposed**,
-  including Issue #4's "mtDNA absolute z -1.14 -> +1.23". Not correctable at this design -- no contrast
-  separates timepoint from cohort, and there is no RIN/batch column on disk. Flag it in the methods
-  rather than let a reviewer find it.
+- **The TIME axis is cohort-aligned and the mt arm is imprecise -- but NOT depth-confounded (script 32
+  QC gate; corrected 2026-07-16).** **Depth is not a confound**: a share is a proportion and DESeq2's
+  size factors cancel depth, both by construction, and within cohort depth predicts nothing (6W
+  rho=-0.06 p=0.87; 12W rho=-0.32 p=0.32) -- the pooled rho=-0.47 is a pooling artifact of two clouds.
+  12W is also not degraded (top100 31% vs 40%). What is real: (i) the 6W/12W depth ranges are
+  **disjoint** (18.8-29.0M vs 9.9-16.1M) so batch is perfectly aligned with timepoint and not
+  separable -- **inherent to any cross-sectional design**, not an mt-specific defect, no artifact
+  indicated; (ii) the mt-* share is **high-variance** (3.4%-40%), so temporal mt claims incl. Issue
+  #4's "mtDNA absolute z -1.14 -> +1.23" are **imprecise** at n=6. Genotype contrasts are clean
+  (depth-balanced p=0.41, litter-controlled). Worth one methods sentence on the batch alignment; do
+  not overstate it as a confound.
 - **Causality (#3, #5).** The phenotype-coupled respiratory core is orthogonal-to-MYC-dose, not
   proven MYC-independent or necessary; the identifying tests are inducible Myc, TF perturbation, and
   ATAC/ChIP.
