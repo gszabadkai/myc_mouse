@@ -5,11 +5,13 @@ plan: `docs/myc_mouse_finalisation_plan.md`.
 
 ## What this repo is
 
-Bulk RNA-seq of **FACS-sorted mammary epithelial cells (MECs)** from MMTV-Myc transgenic
-mice — **not whole tissue**. This matters and was undocumented until 2026-07-16: any
-stromal/endothelial/adipocyte signal is **contamination**, not tissue composition, and
-the sorting itself is a stressor (see the mt-axis note below). No sort-batch, viability
-or RIN metadata exists on disk. Four groups x six replicates
+Bulk RNA-seq of **purified mammary epithelial cells (MECs)** from MMTV-Myc transgenic
+mice — **not whole tissue**. Purification is by **enzymatic dissociation only (no FACS)**.
+This matters and was undocumented until 2026-07-16: any stromal/endothelial/adipocyte
+signal is **contamination**, not tissue composition (~3–12% residual, consistent with no
+sort), and the warm enzymatic digest is itself the stressor that induces the immediate-early
+response (van den Brink 2017) — see the mt-axis note below. No dissociation-batch,
+viability or RIN metadata exists on disk. Four groups x six replicates
 (`6W_neg`, `6W_pos`, `12W_neg`, `12W_pos`), DESeq2 genotype x timepoint interaction
 model. Investigates Myc-driven transcriptional and mitochondrial changes across the
 two timepoints. Feeds the manuscript "Mitochondria integrate oncogenic and metabolic
@@ -34,21 +36,29 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
     script. **Figure scripts are now 34+.**
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
-    mt-transcript number.** Two hard results: (1) the **mt-transcript share is not a
-    mitochondrial readout** in these sorted MECs — nuclear mito genes move the *wrong way*
-    with it (rho −0.63 to −0.71); it tracks a prep-quality axis marked by the dissociation
-    IEG signature (rho +0.87 at 6W). It is not contamination either (mixing would need a
-    contaminant mt-share >100%). (2) **The per-sample death couplings fail a null**: script
+    mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
+    would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
+    *negatively* while mt% tracks it *positively* — mixing cannot give opposite signs). It
+    tracks a dominant axis marked by the dissociation IEG signature (rho +0.87 at 6W).
+    **Whether mt% is MITOCHONDRIAL is NOT settled** — and do NOT resurrect the withdrawn
+    "direction test" (that nuclear mito genes anticorrelate with mt% is *equally* what a
+    real mitonuclear imbalance predicts, so it is evidence for neither; circular, withdrawn
+    2026-07-17). **PART A does not refute the imbalance.** (2) **The per-sample death couplings fail a null**: script
     25 Part B's couplings to pro_comp (bio_comp 0.83, MASC 0.78, imbalance 0.67) sit at the
     54th–90th percentile of couplings to all 884 library sets (perm p 0.10–0.50). At n=12
     everything correlates with everything at ~0.6–0.8. **Any sample-level composite
     coupling needs an empirical null — the AP6 logic of script 21, which the per-sample
-    analyses never got.**
+    analyses never got.** The structural reason: within 6W, **PC1 = 43% of variance and
+    every measure loads on it** (IEG −0.71, proliferation +0.62, contamination −0.62, MYC
+    +0.59) — these are not independent signals. The axis is **mixed** (contamination cannot
+    be biological; proliferation can), so it is neither cleanly technical nor cleanly
+    biological. It is *not* the TEB/proliferative programme (IEG ~ proliferation −0.76 at
+    6W; IEGs *lower* at 6W — both TEB predictions fail).
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
     death couplings) is exposed and unresolved. Technical vs biological is **not
-    adjudicable** without sort metadata.
+    adjudicable** without dissociation-batch/viability metadata.
 
 ## Workflow — "Option A" (do not deviate)
 
@@ -71,7 +81,8 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Script 32 (mito content proxies) and the **figure scripts 33+** land here.
+  Scripts 32-33 (mito content proxies; the mt-axis + coupling null) and the
+  **figure scripts 34+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.

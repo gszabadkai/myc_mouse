@@ -5,7 +5,8 @@
 # =============================================================================
 #
 # WHY THIS EXISTS. The author asked two questions that this corpus never tested:
-#   (1) "These are PURIFIED MECs -- any other cell type is contamination. But why
+#   (1) "These are purified MECs (enzymatic dissociation) -- any other cell type is
+#       contamination. But why
 #       would only mtDNA-coded genes contaminate? Shouldn't the nuclear be there too?"
 #   (2) Is the mt-transcript signal a stress artifact -- and if so, does the
 #       mitonuclear imbalance survive?
@@ -15,15 +16,27 @@
 #
 # THE THREE FINDINGS THIS SCRIPT ESTABLISHES (read-only reframe; nothing re-fitted):
 #
-#   A. mt% IS NOT A MITOCHONDRIAL MEASUREMENT. If it tracked mitochondrial content,
-#      nuclear mito genes would RISE with it. They FALL (rho -0.63 to -0.71 within
-#      6W). And contamination cannot produce it: the contaminating fraction is only
-#      ~3-12% of cells, so to lift mt% from 3.4% to 40.1% the contaminant would need
-#      an mt-share of 187-737% -- impossible. The author's asymmetry is the tell:
-#      nuclear MEC genes track contamination NEGATIVELY (dilution, as mixing
-#      predicts) while mt% tracks it POSITIVELY. Mixing cannot produce opposite
-#      signs. What mt% does track is a dominant sample-level axis marked by the
-#      canonical dissociation IEG signature (rho +0.87 within 6W).
+#   A. mt% IS NOT CONTAMINATION, and it tracks an IEG-marked dominant axis. The
+#      contaminating fraction is only ~3-12% of cells, so to lift mt% from 3.4% to
+#      40.1% by MIXING the contaminant would need an mt-share of 126-737% --
+#      impossible. The author's asymmetry is the tell: nuclear MEC genes track
+#      contamination NEGATIVELY (dilution, as mixing predicts) while mt% tracks it
+#      POSITIVELY. Mixing cannot produce opposite signs. What mt% DOES track is a
+#      dominant sample-level axis marked by the canonical dissociation IEG signature
+#      (rho +0.87 within 6W); adding it lifts the mt% R2 from 0.26 to 0.72.
+#
+#      *** WITHDRAWN (2026-07-17, author's catch) -- the "direction test". ***
+#      An earlier version argued: "if mt% measured mitochondrial content, nuclear
+#      mito genes would RISE with it; they FALL (rho -0.65); therefore mt% is not a
+#      mito readout." THAT IS CIRCULAR. The mitonuclear imbalance IS the claim that
+#      mt-encoded and nuclear-encoded dissociate -- so an anticorrelation is what the
+#      imbalance PREDICTS, not evidence against a mitochondrial reading. The argument
+#      assumed the phenomenon's absence to prove the measurement broken. So THIS
+#      SCRIPT DOES NOT ESTABLISH THAT mt% IS NON-MITOCHONDRIAL, and PART A does NOT
+#      refute the imbalance. mt% may be the mtDNA arm of a real imbalance whose
+#      between-sample variation happens to track the IEG axis; bulk cannot separate
+#      those. The load-bearing result is PART C, which is INDEPENDENT of this
+#      question by construction -- that is now doing more work than intended.
 #
 #   B. THE MITONUCLEAR IMBALANCE IS MOSTLY THAT AXIS. imbalance ~ mt%: r = -0.85,
 #      R^2 = 0.73. Script 24's mtnuc_index is ~three-quarters the mt% metric.
@@ -39,12 +52,36 @@
 # WHAT THIS DOES *NOT* CLAIM. The IEG/mt axis is genotype-INDEPENDENT (p=0.49), so
 # it CANNOT bias any Myc contrast -- every genotype result in the corpus, including
 # script 32's content claim, is untouched. It IS time-associated (p=0.0003), so it
-# entangles the time axis. Whether the axis is TECHNICAL (FACS/dissociation) or
-# BIOLOGICAL is NOT resolved here: the samples are FACS-sorted with no sort-batch,
-# viability or RIN metadata on disk, so the IEG signature is an INFERRED covariate,
-# not a measured one. PART D states both readings. Note the specificity failure in
-# PART C holds under EITHER reading -- it is a property of the coupling, not of the
-# axis's origin. That is why PART C, not PART A, is the load-bearing part.
+# entangles the time axis. Whether the axis is TECHNICAL or BIOLOGICAL is NOT
+# resolved: the samples are ENZYMATICALLY DISSOCIATED (author 2026-07-17 -- NOT
+# FACS-sorted, an earlier version of this header said FACS; warm collagenase digest
+# is precisely what van den Brink 2017 characterised, so the IEG reading is if
+# anything strengthened, while "purified" is weaker -- consistent with the 3-12%
+# residual stroma). No dissociation-batch, viability or RIN metadata is on disk, so
+# the IEG signature is an INFERRED covariate, not a measured one. PART D states both
+# readings. The specificity failure in PART C holds under EITHER -- it is a property
+# of the coupling, not of the axis's origin. That is why PART C, not PART A, is the
+# load-bearing part.
+#
+#   D2 (NEW 2026-07-17, from the author's question "why is mtDNA so closely
+#   correlated with all the others, when those signals look so different?"). Because
+#   THEY ARE NOT DIFFERENT SIGNALS. Within 6W, PC1 of the non-mt transcriptome
+#   explains ~43% of the variance among 12 samples and EVERYTHING loads on it: IEG
+#   -0.71, proliferation +0.62, contamination -0.62, MYC activity +0.59, mt% -0.51.
+#   That is the STRUCTURAL reason the PART C null is flat -- with one axis at 43% and
+#   n=12, pairwise couplings between composites carry almost no information about
+#   specific mechanisms. It is not a quirk of the death sets. Note the axis is MIXED:
+#   contamination (which CANNOT be biological -- it is residual stroma in the prep)
+#   loads on it alongside proliferation (which can). So it is neither cleanly
+#   technical nor cleanly biological, and this script does not pretend otherwise.
+#
+#   D3 (NEW). Are IEGs simply part of the pubertal TEB/proliferative programme (a
+#   good alternative the author raised)? NO -- refuted on direction AND timing. A
+#   growth-factor/TEB reading predicts IEGs POSITIVELY coupled to proliferation and
+#   HIGHER at 6W (the TEB-rich timepoint). Observed: IEG ~ proliferation rho -0.62
+#   (all) / -0.76 (6W); IEG ~ TEB sets -0.57; IEG ~ MYC activity -0.41; and IEG is
+#   LOWER at 6W (0.72/0.60) than 12W (1.03/1.02). Both predictions fail. IEGs here
+#   anticorrelate with the proliferative biology, as an overlay would.
 #
 # Input:  results/mito_content_proxies.rds        (script 32 shares + QC)
 #         results/mitopps_scores.rds              (mitoPPS; mtdna_genes_separated)
@@ -100,7 +137,7 @@ i12 <- qc$timepoint == "12W"
 # =============================================================================
 # CONTAMINATION: in purified MECs these are ~absent, so any signal is foreign cells.
 # IEG/STRESS: the canonical dissociation-artifact panel (van den Brink 2017) -- the
-#   transcriptional response to warm enzymatic digest + FACS. NOT the same as death.
+#   transcriptional response to warm enzymatic digest -- exactly this protocol. NOT death.
 panels <- list(
   endothelial = c("Pecam1", "Cdh5", "Ptprb", "Adgrl4", "Mmrn2", "Sox17", "Tie1",
                   "Kdr", "Egfl7", "Cldn5", "Emcn"),
@@ -158,17 +195,22 @@ arithmetic_refutation <- purrr::map_dfr(c(0.05, 0.10, 0.20, 0.30), function(f) {
                  possible = 100 * m_c <= 100)
 })
 
-# --- A3. The direction test: does mt% behave like mito CONTENT? ----------------
-# If mt% measured mitochondrial content, nuclear mito genes would RISE with it.
-# (This is the cleanest single refutation and needs no assumptions.)
-mt_is_not_content <- asymmetry |>
+# --- A3. The nuclear-vs-mt anticorrelation -- REPORTED, NOT INTERPRETED ---------
+# WITHDRAWN AS EVIDENCE (author's catch, 2026-07-17). This was published here as a
+# "direction test": nuclear mito genes FALL with mt%, so mt% is not a mito readout.
+# That is CIRCULAR -- the mitonuclear imbalance IS the claim that these two arms
+# dissociate, so the anticorrelation is equally what a REAL imbalance predicts. The
+# number is kept because it is a fact about the data; the inference is not.
+mt_vs_nuclear_anticorrelation <- asymmetry |>
   dplyr::filter(!is.na(rho_vs_mtpct_6W)) |>
   dplyr::summarise(n_measures = dplyr::n(),
-                   n_positive = sum(rho_vs_mtpct_6W > 0),
                    median_rho = stats::median(rho_vs_mtpct_6W),
-                   verdict = ifelse(all(rho_vs_mtpct_6W < 0),
-                                    "mt% is NOT a mito-content readout (all nuclear mito measures move the WRONG way)",
-                                    "ambiguous -- inspect"))
+                   reads_as = paste(
+                     "nuclear mito arms anticorrelate with mt% (median rho",
+                     sprintf("%+.2f)", stats::median(rho_vs_mtpct_6W)),
+                     "-- CONSISTENT WITH EITHER a broken mt metric OR a genuine",
+                     "mitonuclear imbalance. NOT evidence for either. Do not cite",
+                     "as a direction test (withdrawn 2026-07-17)."))
 
 # --- A4. What the mt axis DOES track ------------------------------------------
 axis_tracking <- purrr::map_dfr(names(panels), function(n) {
@@ -296,14 +338,73 @@ overadjust_guard <- tibble::tibble(
         axis_design$p_genotype[axis_design$axis == "contamination"]),
   reads_as = "genotype-independent => adjusting cannot remove Myc biology => genotype claims safe")
 
-# --- D3. The adjudication we CANNOT make, stated as such -----------------------
+# --- D2. WHY does everything correlate with everything? The structural answer ----
+# Author's question (2026-07-17): "I'm surprised mtDNA expression is so closely
+# correlated with all the others, since the other signals seem so different." They
+# are not different signals. One axis dominates and every measure is a projection of
+# it -- which is WHY the PART C null is flat. Not a quirk of the death sets.
+vst_mat  <- SummarizedExperiment::assay(
+  DESeq2::vst(readRDS(here::here("results", "dds_int_run.rds")), blind = TRUE))
+vst_mat  <- vst_mat[setdiff(rownames(vst_mat), mt_ens), samples, drop = FALSE]
+v6       <- vst_mat[order(-matrixStats::rowVars(vst_mat[, i6, drop = FALSE]))[1:2000],
+                    i6, drop = FALSE]
+pca6     <- stats::prcomp(t(v6), scale. = TRUE)
+pc_var   <- 100 * summary(pca6)$importance[2, 1:3]
+prolif_c <- colMeans(scores[grep("^PROLIF_", rownames(scores)), , drop = FALSE])
+myc_c    <- colMeans(scores[grep("^MYC_",    rownames(scores)), , drop = FALSE])
+teb_c    <- colMeans(scores[grep("TEB",      rownames(scores)), , drop = FALSE])
+
+dominant_axis <- tibble::tibble(
+  loads_on_PC1 = c("IEG/stress", "proliferation", "contamination", "MYC activity", "mt_pct"),
+  rho = c(cor_p(pca6$x[, 1], stress[i6])[["rho"]],
+          cor_p(pca6$x[, 1], prolif_c[i6])[["rho"]],
+          cor_p(pca6$x[, 1], contam[i6])[["rho"]],
+          cor_p(pca6$x[, 1], myc_c[i6])[["rho"]],
+          cor_p(pca6$x[, 1], log2(mt_pct[i6]))[["rho"]]),
+  p   = c(cor_p(pca6$x[, 1], stress[i6])[["p"]],
+          cor_p(pca6$x[, 1], prolif_c[i6])[["p"]],
+          cor_p(pca6$x[, 1], contam[i6])[["p"]],
+          cor_p(pca6$x[, 1], myc_c[i6])[["p"]],
+          cor_p(pca6$x[, 1], log2(mt_pct[i6]))[["p"]])) |>
+  dplyr::mutate(pc1_variance_pct = unname(pc_var[1]),
+                pc2_variance_pct = unname(pc_var[2]),
+                reads_as = paste0(
+                  "PC1 = ", sprintf("%.0f%%", pc_var[1]), " of within-6W variance and EVERY measure ",
+                  "loads on it => these are not independent signals => pairwise composite ",
+                  "couplings are structurally uninformative at n=12. NOTE the axis is MIXED: ",
+                  "contamination (cannot be biological) loads alongside proliferation (can) -- ",
+                  "so it is neither cleanly technical nor cleanly biological."))
+
+# --- D3. Are IEGs just the pubertal TEB / proliferative programme? --------------
+# The author's alternative (2026-07-17). A growth-factor/TEB reading predicts IEGs
+# POSITIVELY coupled to proliferation and HIGHER at 6W. Both predictions fail.
+ieg_teb_test <- tibble::tibble(
+  test = c("IEG ~ proliferation (all)", "IEG ~ proliferation (6W)",
+           "IEG ~ TEB sets (all)", "IEG ~ MYC activity (all)"),
+  rho = c(cor_p(stress, prolif_c)[["rho"]], cor_p(stress[i6], prolif_c[i6])[["rho"]],
+          cor_p(stress, teb_c)[["rho"]], cor_p(stress, myc_c)[["rho"]]),
+  teb_story_predicts = "POSITIVE") |>
+  dplyr::mutate(consistent_with_teb = rho > 0)
+
+ieg_group_means <- tapply(2^stress, qc$group, mean)[group_levels]
+ieg_teb_verdict <- sprintf(paste0(
+  "IEGs are NOT the TEB/proliferative programme: they anticorrelate with ",
+  "proliferation (rho %+.2f all / %+.2f within 6W) and with TEB sets (%+.2f), and ",
+  "they are LOWER at 6W (%.2f/%.2f) than 12W (%.2f/%.2f) -- the TEB story predicts ",
+  "the opposite on BOTH direction and timing. IEGs here anticorrelate with the ",
+  "proliferative biology, as an overlay would."),
+  ieg_teb_test$rho[1], ieg_teb_test$rho[2], ieg_teb_test$rho[3],
+  ieg_group_means[["6W_neg"]], ieg_group_means[["6W_pos"]],
+  ieg_group_means[["12W_neg"]], ieg_group_means[["12W_pos"]])
+
+# --- D4. The adjudication we CANNOT make, stated as such -----------------------
 technical_vs_biological <- tibble::tribble(
   ~evidence,                                            ~favours,      ~note,
-  "IEG panel is the canonical dissociation signature",  "technical",   "van den Brink 2017; warm digest + FACS induces it in LIVE cells",
+  "IEG panel is the canonical dissociation signature",  "technical",   "van den Brink 2017; warm enzymatic digest induces it in LIVE cells -- exactly this protocol",
   "mt% high = the scRNA-seq stressed/permeabilised tell","technical",   "cytoplasmic mRNA lost, mt transcripts retained in organelle",
   "axis is genotype-independent (p~0.49)",              "either",      "rules out a Myc-driven biological axis; consistent with prep",
   "axis is time-associated (p~0.0003)",                 "either",      "6W/12W are different animal cohorts = different prep sessions",
-  "no sort-batch / viability / RIN metadata on disk",   "unresolvable","FACS-sorted (author, 2026-07-16); the IEG panel is INFERRED, not measured",
+  "no dissociation-batch / viability / RIN metadata",    "unresolvable","enzymatic dissociation, NOT FACS (author 2026-07-17); IEG panel is INFERRED, not measured",
   "PART C specificity failure holds under both",        "n/a",         "the coupling is unremarkable whatever the axis IS -- that is the point")
 
 # =============================================================================
@@ -313,20 +414,36 @@ cn <- function(a, col) coupling_null[[col]][coupling_null$axis == a]
 imb_lab <- "mitonuclear_imbalance (script 24/25)"
 
 axis_verdict <- sprintf(paste0(
-  "THE mt AXIS IS NOT MITOCHONDRIAL AND NOT CONTAMINATION. (a) Direction: if mt%% ",
-  "measured mito content, nuclear mito genes would RISE with it -- all %d fall ",
-  "(median rho %+.2f within 6W). (b) Arithmetic: contamination is ~3-12%% of cells, ",
-  "so mixing would need a contaminant mt-share of %.0f-%.0f%% to span the observed ",
-  "3.4-40.1%% -- IMPOSSIBLE. (c) Asymmetry (the author's point): nuclear MEC genes ",
-  "track contamination NEGATIVELY (dilution) while mt%% tracks it POSITIVELY -- ",
-  "mixing cannot give opposite signs. What mt%% tracks is a dominant sample-level ",
-  "axis marked by the dissociation IEG signature (rho %+.2f within 6W); adding it ",
-  "lifts the mt%% R2 from %.2f to %.2f."),
-  mt_is_not_content$n_measures, mt_is_not_content$median_rho,
+  "THE mt AXIS IS NOT CONTAMINATION -- but whether it is MITOCHONDRIAL is NOT settled ",
+  "here. (a) Arithmetic: contamination is ~3-12%% of cells, so mixing would need a ",
+  "contaminant mt-share of %.0f-%.0f%% to span the observed 3.4-40.1%% -- IMPOSSIBLE. ",
+  "(b) Asymmetry (the author's point): nuclear MEC genes track contamination ",
+  "NEGATIVELY (dilution, as mixing predicts) while mt%% tracks it POSITIVELY -- mixing ",
+  "cannot give opposite signs. What mt%% DOES track is a dominant sample-level axis ",
+  "marked by the dissociation IEG signature (rho %+.2f within 6W); adding it lifts the ",
+  "mt%% R2 from %.2f to %.2f, and that axis is NOT the TEB/proliferative programme ",
+  "(IEG ~ proliferation rho %+.2f within 6W; IEGs LOWER at 6W -- both TEB predictions ",
+  "fail). *** WITHDRAWN: the 'direction test'. *** An earlier verdict argued nuclear ",
+  "mito genes FALL with mt%% (median rho %+.2f) therefore mt%% is not mitochondrial. ",
+  "That is CIRCULAR -- the mitonuclear imbalance IS the claim that these arms ",
+  "dissociate, so the anticorrelation is equally what a REAL imbalance predicts. PART A ",
+  "therefore does NOT refute the imbalance; mt%% may be its mtDNA arm with ",
+  "between-sample variation that happens to track the IEG axis. Bulk cannot separate ",
+  "them. STRUCTURAL CONTEXT: within 6W, PC1 = %.0f%% of variance and EVERY measure ",
+  "loads on it (IEG %+.2f, proliferation %+.2f, contamination %+.2f, MYC %+.2f) -- ",
+  "these are not independent signals, which is WHY the PART C null is flat. The axis is ",
+  "MIXED (contamination cannot be biological; proliferation can), so it is neither ",
+  "cleanly technical nor cleanly biological."),
   min(arithmetic_refutation$required_contaminant_mt_share_pct),
   max(arithmetic_refutation$required_contaminant_mt_share_pct),
   axis_tracking$rho_6W[axis_tracking$panel == "ieg_stress"],
-  mt_variance_model$r2[1], mt_variance_model$r2[2])
+  mt_variance_model$r2[1], mt_variance_model$r2[2],
+  ieg_teb_test$rho[2], mt_vs_nuclear_anticorrelation$median_rho,
+  dominant_axis$pc1_variance_pct[1],
+  dominant_axis$rho[dominant_axis$loads_on_PC1 == "IEG/stress"],
+  dominant_axis$rho[dominant_axis$loads_on_PC1 == "proliferation"],
+  dominant_axis$rho[dominant_axis$loads_on_PC1 == "contamination"],
+  dominant_axis$rho[dominant_axis$loads_on_PC1 == "MYC activity"])
 
 coupling_verdict <- sprintf(paste0(
   "THE DEATH COUPLING IS NOT SPECIFIC. The mitonuclear imbalance is %.0f%% the mt%% ",
@@ -417,8 +534,9 @@ p_c <- axis_tracking |>
   ggplot2::labs(
     title = "What the mt-transcript share actually tracks (within 6W)",
     subtitle = paste("The IEG/dissociation panel leads. Epithelial markers fall.",
-                     "In PURIFIED MECs this is a prep-quality axis,\nnot a mitochondrial one --",
-                     "and nuclear mito genes move the WRONG way for a content readout."),
+                     "In enzymatically dissociated MECs this axis is prep-linked.\nWhether it is",
+                     "technical or biological is NOT settled -- and the nuclear/mt anticorrelation",
+                     "\nis NOT evidence either way (a real imbalance predicts it too)."),
     x = "Spearman rho vs mt% (within 6W)", y = NULL, fill = NULL) +
   ggplot2::theme_bw(base_size = 10)
 ggplot2::ggsave(file.path(out_dir, "C_what_mt_tracks.pdf"), p_c, width = 7.5, height = 4)
@@ -433,7 +551,7 @@ axis_out <- list(
   panel_share             = panel_share,
   asymmetry               = asymmetry,
   arithmetic_refutation   = arithmetic_refutation,
-  mt_is_not_content       = mt_is_not_content,
+  mt_vs_nuclear_anticorrelation = mt_vs_nuclear_anticorrelation,  # NOT a direction test (withdrawn)
   axis_tracking           = axis_tracking,
   mt_variance_model       = mt_variance_model,
   axis_design             = axis_design,
@@ -445,6 +563,10 @@ axis_out <- list(
   null_distributions      = null_distributions,
   genotype_untouched      = genotype_untouched,
   overadjust_guard        = overadjust_guard,
+  dominant_axis           = dominant_axis,
+  ieg_teb_test            = ieg_teb_test,
+  ieg_group_means         = ieg_group_means,
+  ieg_teb_verdict         = ieg_teb_verdict,
   technical_vs_biological = technical_vs_biological,
   axis_verdict            = axis_verdict,
   coupling_verdict        = coupling_verdict,
@@ -474,7 +596,8 @@ axis_out <- list(
     "WHAT IS EXPOSED: the axis IS time-associated (p~0.0003), so script 24's",
     "mitonuclear narrative, script 22/29's mtDNA time story, and script 25's",
     "per-sample death couplings all need re-examination. CEILINGS: samples are",
-    "FACS-sorted with NO sort-batch/viability/RIN metadata on disk, so the IEG panel",
+    "ENZYMATICALLY DISSOCIATED (not FACS; author 2026-07-17) with NO batch/viability/RIN",
+    "metadata on disk, so the IEG panel",
     "is an INFERRED covariate, not a measured one -- technical vs biological is NOT",
     "resolved. n=12 within 6W. The null universe is the 884 GSVA-scored library sets,",
     "which are correlated with each other, so the empirical p is indicative, not",
@@ -497,7 +620,9 @@ if (FALSE) {
   # --- PART A: the author's question, answered three ways ---
   ax$asymmetry |> print()              # opposite signs => not mixing
   ax$arithmetic_refutation |> print()  # required contaminant mt-share > 100% => impossible
-  ax$mt_is_not_content |> print()      # nuclear mito genes move the WRONG way
+  ax$mt_vs_nuclear_anticorrelation |> print()   # a FACT, not a direction test (withdrawn)
+  ax$dominant_axis |> print()          # WHY everything correlates: PC1 ~43%, all measures load
+  ax$ieg_teb_test |> print(); cat(strwrap(ax$ieg_teb_verdict, 88), sep="\n")  # IEGs are not TEB
   ax$axis_tracking |> print()          # what mt% DOES track: the IEG panel leads
   ax$mt_variance_model |> print()      # R2 0.23 -> 0.72 once the axis is added
 

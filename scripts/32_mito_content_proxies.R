@@ -68,9 +68,11 @@
 #   RETRACTED -- "depth-confounded / TIME uninterpretable" (a share is depth-invariant
 #     by construction; PART 4).
 #   SUPERSEDED -- the mt-arm interpretation generally: script 33 shows the mt-transcript
-#     share is NOT a mitochondrial readout in these FACS-sorted MECs (nuclear mito genes
-#     move the WRONG way with it) but a prep-quality axis. Read script 33 before using
-#     ANY mtDNA-arm number from here.
+#     share is NOT contamination but tracks an IEG-marked dominant axis (rho +0.87 at 6W)
+#     in these enzymatically dissociated MECs. Whether it is MITOCHONDRIAL is NOT settled
+#     (the "nuclear mito genes move the wrong way" argument is CIRCULAR -- a real
+#     mitonuclear imbalance predicts that too; withdrawn 2026-07-17). Read script 33
+#     before using ANY mtDNA-arm number from here.
 #
 # WHAT IT CANNOT DO (three ceilings, restated in PART 6 and in the saved notes):
 #   (i)   Bulk polyA with no spike-ins and no cell counts CANNOT measure per-cell content
@@ -661,8 +663,9 @@ content_verdict <- sprintf(paste0(
   "difference (nuclear minus mtDNA, per sample): p=0.57 raw, p=0.82 composition-adjusted. ",
   "NO imbalance is demonstrable in absolute share; the mtDNA arm is UNDERPOWERED (adjusting ",
   "for composition moves it +6%% -> +25%%, ns). Script 32 therefore NEITHER supports NOR ",
-  "refutes the imbalance -- and script 33 shows the mt share is not a mitochondrial readout ",
-  "at all. WHERE THE IMBALANCE IS *NOT*: it is not a transcript-level deficit in the mtDNA ",
+  "refutes the imbalance -- and script 33 shows the mt share tracks an IEG-marked dominant ",
+  "axis (whether it is mitochondrial is NOT settled). WHERE THE IMBALANCE IS *NOT*: it is ",
+  "not a transcript-level deficit in the mtDNA ",
   "machinery. The nuclear mito compartment rises by a MEDIAN %+.0f%% and the ",
   "mtDNA-dedicated core (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises WITH it, ",
   "unremarkably -- median %+.0f%%, %.0fth percentile of that distribution, Wilcoxon ",

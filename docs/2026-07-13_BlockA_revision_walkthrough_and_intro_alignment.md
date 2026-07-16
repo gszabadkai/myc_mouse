@@ -364,8 +364,8 @@ library has no mass-marker equivalent.
   > it actually is, a **difference** (nuclear minus mtDNA per sample): **p=0.57 raw, p=0.82
   > composition-adjusted**. No imbalance is demonstrable in absolute share. The mtDNA arm is simply
   > underpowered (CV 1.19; adjusting for composition moves it +6% -> +25%, ns). **Script 32 neither
-  > supports nor refutes the imbalance.** And script 33 goes further: the mt-transcript share is not a
-  > mitochondrial readout at all in these FACS-sorted MECs. See the script-33 section below.
+  > supports nor refutes the imbalance.** Script 33 then shows the mt share tracks an IEG-marked
+  > dominant axis -- but does **not** establish that it is non-mitochondrial. See the script-33 section.
 - **WHERE THE IMBALANCE IS *NOT* -- an informative negative (PART 3b).** The nuclear mito compartment
   rises by a **median +21%** (934 expressed nuclear-MitoCarta genes), and the mtDNA-dedicated core
   (Tfam/Polg/Polg2/Twnk/Ssbp1/Tfb2m/Polrmt/Tefm) rises **with** it, unremarkably: median +13%, **39th
@@ -465,19 +465,43 @@ are sharper than the analyses they interrogate. **Note the project fact that mad
 so long: the samples are FACS-sorted MECs, which CLAUDE.md never recorded** -- so a stromal signal had
 been read as tissue composition when it is contamination.
 
-**(A) The mt axis is neither mitochondrial nor contamination -- three independent refutations.**
-1. **Direction.** If mt% measured mitochondrial content, nuclear mito genes would **rise** with it. All
-   four measures **fall** (rho -0.63 to -0.71 within 6W). mt% is not a content readout.
-2. **Arithmetic.** Contamination is only ~3-12% of cells, so mixing would need a contaminant mt-share
+**(A) The mt axis is NOT contamination -- but whether it is MITOCHONDRIAL is NOT settled.**
+1. **Arithmetic.** Contamination is only ~3-12% of cells, so mixing would need a contaminant mt-share
    of **126-737%** to span the observed 3.4-40.1%. Impossible.
-3. **The author's asymmetry (the decisive one).** Nuclear MEC genes track contamination **negatively**
+2. **The author's asymmetry (the decisive one).** Nuclear MEC genes track contamination **negatively**
    (-0.47 to -0.62 = dilution, exactly as mixing predicts) while mt% tracks it **positively** (+0.75).
    **Mixing cannot produce opposite signs.** The question "shouldn't the nuclear be there as well?"
    is what breaks the contamination hypothesis open.
 
 What mt% *does* track is a **dominant sample-level axis** marked by the canonical dissociation IEG
 signature (Fos/Jun/Egr1/Atf3/Hspa1a -- van den Brink 2017): **rho +0.87 within 6W**, and adding it
-lifts the mt% R^2 from **0.26 to 0.72**. In FACS-sorted MECs that reads as prep quality.
+lifts the mt% R^2 from **0.26 to 0.72**. The MECs are purified by **enzymatic dissociation only (no
+FACS)** -- warm digest is precisely what induces that signature, so the prep reading is strengthened,
+while "purified" is weaker (consistent with the 3-12% residual stroma).
+
+> **WITHDRAWN 2026-07-17 (the author's catch) -- the "direction test".** An earlier version of this
+> section argued: *if mt% measured mitochondrial content, nuclear mito genes would rise with it; they
+> fall (rho -0.65); therefore mt% is not a mito readout.* **That is circular.** The mitonuclear
+> imbalance IS the claim that the mt-encoded and nuclear-encoded arms dissociate -- so an
+> anticorrelation is exactly what a **real imbalance predicts**. The argument assumed the phenomenon's
+> absence in order to prove the measurement broken. **PART A does not refute the imbalance**, and mt%
+> may well be its mtDNA arm whose between-sample variation happens to track the IEG axis. Bulk cannot
+> separate those. This is why (C) -- built to be independent of this question -- is load-bearing.
+
+**(A2) Is the IEG axis just the pubertal TEB/proliferative programme?** A good alternative, and it
+fails on **direction and timing** both. A growth-factor/TEB reading predicts IEGs *positively* coupled
+to proliferation and *higher* at 6W (the TEB-rich timepoint). Observed: IEG ~ proliferation **-0.62**
+(all) / **-0.76** (6W); IEG ~ TEB sets -0.57; IEG ~ MYC activity -0.41; and IEGs are **lower** at 6W
+(0.72/0.60) than 12W (1.03/1.02). IEGs here *anticorrelate* with the proliferative biology, as an
+overlay would.
+
+**(A3) Why does everything correlate with everything? (the author's question)** Because these are not
+different signals. Within 6W, **PC1 explains ~43%** of the variance among 12 samples and every measure
+loads on it: IEG **-0.71**, proliferation **+0.62**, contamination **-0.62**, MYC activity **+0.59**,
+mt% **-0.51**. That is the **structural** reason the null in (C) is flat -- not a quirk of the death
+sets. Note the axis is **mixed**: contamination (which *cannot* be biological -- it is residual stroma
+in the prep) loads alongside proliferation (which can). So it is neither cleanly technical nor cleanly
+biological, and this doc does not pretend otherwise.
 
 **(B) The mitonuclear imbalance is mostly that axis.** Script 24's `mtnuc_index`, rebuilt per sample
 (it reproduces: 0.130 / 0.499 / -0.456 / -0.173 vs 24's 0.129 / 0.556 / -0.509 / -0.176), regresses on
@@ -514,8 +538,9 @@ cannot make.
   mitonuclear narrative, script 22/29's mtDNA time story, and script 25 Part B's death couplings all
   need re-examination.
 
-**Ceilings -- state them, they are load-bearing.** The samples are FACS-sorted with **no sort-batch,
-viability or RIN metadata on disk**, so the IEG panel is an **inferred** covariate, not a measured one:
+**Ceilings -- state them, they are load-bearing.** The samples are **enzymatically dissociated (not
+FACS-sorted)** with **no dissociation-batch, viability or RIN metadata on disk**, so the IEG panel is
+an **inferred** covariate, not a measured one:
 **technical vs biological is NOT resolved**, and PART D records both readings rather than picking. n=12
 within 6W. The null universe (884 library sets) is internally correlated and contains sets overlapping
 `pro_comp`, so the empirical p is indicative rather than exact -- but an observed coupling sitting at
