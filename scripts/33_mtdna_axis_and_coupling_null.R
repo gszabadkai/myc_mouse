@@ -323,10 +323,18 @@ genotype_untouched <- purrr::map_dfr(
     y <- log2(s$share_nomt)
     r <- summary(stats::lm(y ~ qc$myc_status + qc$timepoint))$coefficients["qc$myc_statuspos", ]
     a <- summary(stats::lm(y ~ qc$myc_status + qc$timepoint + stress + contam))$coefficients["qc$myc_statuspos", ]
+    # pct_retained = adj_beta / raw_beta. This is a RATIO, so it is meaningless when the
+    # raw effect is ~0 -- the denominator explodes (MITOCARTA_MTDNA_ENCODED printed 388%
+    # for a raw beta of +5.9%, p=0.83, which reads as "the effect grew" when there was no
+    # effect to retain). Defined ONLY where there is a raw effect to retain.
+    keep_ratio <- r[["Pr(>|t|)"]] < 0.05
     tibble::tibble(panel = p,
                    raw_pct = 100 * (2^r[["Estimate"]] - 1), raw_p = r[["Pr(>|t|)"]],
                    adj_pct = 100 * (2^a[["Estimate"]] - 1), adj_p = a[["Pr(>|t|)"]],
-                   pct_retained = 100 * a[["Estimate"]] / r[["Estimate"]])
+                   pct_retained = if (keep_ratio) 100 * a[["Estimate"]] / r[["Estimate"]]
+                                  else NA_real_,
+                   retained_note = if (keep_ratio) NA_character_
+                                   else "raw effect ns -- nothing to retain; ratio undefined")
   })
 
 # --- D2. Over-adjustment check: adjusting for a covariate ON the causal path
