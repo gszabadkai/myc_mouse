@@ -34,7 +34,7 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
-    script. **Figure scripts are now 36+** (34/35 are analysis scripts — see below).
+    script. **Figure scripts are now 37+** (34/35/36 are analysis scripts — see below).
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
     mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
     would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
@@ -108,6 +108,36 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
       Issue #2's **powered half (transgene amplification, a genotype main effect) is untouched.**
     - **The five-question synthesis is `docs/2026-07-18_narrative_synthesis_five_questions.md`** —
       verdicts, numbers, named PDFs, and the gene-set appendix. Read it before writing any figure.
+  - **Script 36** (`36_linear_pathway_coupling.R`) — **THE COUPLING METHOD OF RECORD. Read before
+    quoting any coupling.** Implements the author's two method notes (`docs/GSVA_global_background_
+    and_pathway_coupling.md`; `docs/Gene_set_quantification_for_pathway_correlation.md`). The
+    ceiling is **one global per-sample common-mode axis**: `cor(mito_oxphos, mean of all 884
+    scores)=0.968`; regress that mean out and the ambient drops 0.80→0.13 (~chance). NOT low n
+    (chance floor 0.13), NOT curation (random pairs 0.54), NOT the genotype split (0.83 within
+    `6W_pos`). **Methodological in FORM (GSVA doesn't centre within-sample), biological+technical in
+    ORIGIN** — the residual (design-removed) axis tracks epithelial +0.79 / contamination −0.70
+    (composition/prep) AND proliferation +0.65 / MYC +0.44 (biological). **"Ceiling is mostly Myc
+    dose" (script 35's framing) is REFINED**: the RAW ceiling is part four-group contrast (PC1~group
+    r=0.48), part a within-group common-mode axis — script 36 decomposes them (PART C).
+    - **Method:** primary quantifier is now the **linear mean gene-wise z-score** (its correlation
+      IS average cross-gene covariance); **singscore** = cohort-independent robustness; **GSVA** =
+      continuity. Correction = **design→PC1→residual, factor estimated AFTER the design** (doc 1 §7)
+      + **leave-pair-out** (§4). **NOT mean-subtraction** (equal-loading + sum-to-zero artifact — the
+      script-35-era instability). Gene-level vs score-level design-adjustment agree to ~0.02.
+    - **THE INTERPRETABILITY TRAP:** when an axis IS the global factor (mito_oxphos r²=0.94 with the
+      global mean), removing it leaves ~4% noise — its global-adjusted −0.62 is **noise-on-noise,
+      NOT antagonism**. Read a global-adjusted coupling ONLY where `resid_frac ≥ ~0.10`.
+    - **RESULT (re-ranks script 35):** "OXPHOS is central" is not just at the ceiling, it is
+      **UNTESTABLE** (no separable variance) — the cleanest statement of its failure. **`redox → MB2
+      fork` is the ONE robust testable lead** (global-adj −0.63, same sign −0.62…−0.73 across all 3
+      quantifiers, axis r²=0.03, Myc-independent). **`cholesterol/mevalonate → fork` is DEMOTED** to
+      +0.14 ("separable but weak") — its script-35 96th-pct headline was a raw-ambient artifact.
+      biogenesis-bystander unchanged. **Ranking, not proof** (n=24; nothing beats BH<0.05). §0.5/§0.6
+      of the synthesis doc carry the write-up + hypothesis ledger + the sentence-level fix pattern.
+    - **INFERENCE WEIGHT: ranking + global-factor-as-phenotype, NOT confirmatory CIs** (at n=24 a
+      residual r~0.29 arises under the null). **SCOPE unchanged:** re-ranks EXPLORATORY couplings
+      only; the content result (raw count shares) and attenuation (DESeq2 LFCs) never touch GSVA/
+      these couplings. Author runs 36 (Option A); needs `singscore` (added to `00_setup_packages.R`).
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
@@ -135,8 +165,9 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Scripts 32-35 (mito content proxies; the mt-axis + coupling null; the death-priming
-  reassessment; the correlation ceiling) and the **figure scripts 36+** land here.
+  Scripts 32-36 (mito content proxies; the mt-axis + coupling null; the death-priming
+  reassessment; the correlation ceiling; the linear coupling method of record) and the
+  **figure scripts 37+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.

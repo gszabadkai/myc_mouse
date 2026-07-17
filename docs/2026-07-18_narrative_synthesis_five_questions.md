@@ -43,6 +43,106 @@ through all five answers: **contrasts survived; cross-sectional couplings did no
 
 ---
 
+## 0.5 Where the ceiling comes from — one global per-sample axis
+
+The author's two method notes (`docs/GSVA_global_background_and_pathway_coupling.md`;
+`docs/Gene_set_quantification_for_pathway_correlation.md`) named the ceiling as a **common-mode
+latent factor** and prescribed the fix. **Script 36 implements it and reproduces the origin probes
+as saved fields** (`linear_pathway_coupling.rds$ceiling_probes`; numbers below are the linear
+z-score, GSVA in parentheses):
+
+| candidate | probe | result |
+|---|---|---|
+| low n | chance floor (permute the axis's sample labels) | **0.13** vs observed **0.80** → NO |
+| set curation / overlap | median \|rho\| of **random set pairs** | **0.54** (0.53) → not curation |
+| the Myc genotype split | ambient **within `6W_pos` alone** (contrast gone) | **0.83** → NO, survives it |
+| **one global per-sample axis** | `cor(mito_oxphos, mean of all 884 scores)` | **0.968** (0.955) |
+| " | ambient after regressing the global mean out of every set | **0.13** ≈ chance |
+
+**So the ceiling is a single global per-sample offset that every score rides.** GSVA scores each
+sample against the cohort but does **not centre within a sample**, so any broad shift in a mouse
+lifts every set score together. **Methodological in FORM, biological + technical in ORIGIN.**
+
+**Biological or methodological? Both — and the decomposition is measurable** (script 36 PART C).
+The **raw** PC1 explains **76%** of variance with **79%** of loadings one-signed (a common mode,
+not a contrast) and correlates with the group label at **r=0.48** — so a large part of the raw
+ceiling **is** the four-group design. The **residual** PC1 (design removed first, doc 1 §7) still
+explains **70%**, and its strongest correlates are **epithelial purity +0.79**, **contamination
+−0.70**, **proliferation +0.65**, **MYC activity +0.44**, **IEG/prep −0.31**. That is
+**composition + prep (technical) AND proliferation/MYC (biological), together** — neither cleanly.
+For enzymatically dissociated, non-FACS MECs, an epithelial-purity/stromal-contamination axis is
+exactly the expected prep variation. **It is not noise, and a bigger n or better prep would not
+remove it** — it is the thing a raw coupling mostly measures. Report it as a phenotype **and**
+remove it for specific coupling. Figures: `linear_pathway_coupling/A_ceiling_origin.pdf`,
+`B_global_factor_phenotype.pdf`.
+
+---
+
+## 0.6 Which instrument, and do you have to use the floor
+
+**Do you have to use the floor to generate a hypothesis? No.** Prior + plausibility + a suggestive
+number is enough when the bench does the testing. **The problem was never r=0.75 — it was p=0.005**
+(which asserts a test was passed) and the claim level around it. *But a ceiling-level correlation
+did not nominate the hypothesis; the prior did.* Label such leads **prior-driven** — legitimate and
+honest. The floor is a **ranking tool, not a filter**, and it changes the ranking.
+
+**The instrument itself was wrong for coupling** (doc 2). GSVA's nonlinear competitive score has no
+clean covariance reading. The coupling instrument of record is now the **linear mean gene-wise
+z-score** (its correlation *is* average cross-gene covariance); **singscore** is the
+cohort-independent robustness arm; **GSVA** is kept for continuity. Gene-level vs score-level design
+adjustment agree to ~0.02 (script 36 `gene_vs_score_design`), so the correction is robust. The
+correction is **design → PC1 → residual, with the factor estimated AFTER removing the design**
+(doc 1 §7) and **leave-pair-out** for each tested pair (§4) — **not** mean-subtraction, which
+assumes equal loadings and imposes a sum-to-zero constraint (that was the script-35-era
+instability).
+
+**The interpretability trap this exposes (script 36 PART D).** When an axis *is* the global factor
+— `mito_oxphos` carries **r²=0.94** with the global mean — removing that factor leaves ~**4%** of
+its variance, which is **noise**. Its global-adjusted "coupling" to proliferation prints **−0.62**
+and is sign-consistent across all three quantifiers, **but this is noise-on-noise at n=24, not
+antagonism.** The honest statement of "is OXPHOS central?" is therefore sharper than Q4's:
+**OXPHOS has essentially no variance independent of the broad state, so no separable central
+coupling is testable at all** — which *confirms* "OXPHOS-central fails," and supersedes script 35's
+raw-ambient framing.
+
+**What the principled correction actually nominates** (`linear_pathway_coupling.rds$robustness`,
+global-adjusted, three quantifiers):
+
+| lead | global-adj (z) | across methods | axis r² w/ global mean | verdict |
+|---|---|---|---|---|
+| **redox → MB2 fork** | **−0.63** | −0.62 … −0.73, same sign | **0.03** (90% survives) | **robust, testable — the readable lead** |
+| cholesterol/mevalonate → MB2 fork | +0.14 | +0.14 … +0.27 | 0.54 | separable but **weak** — *demoted* from script 35's 96th-pct headline |
+| mito_oxphos / mito_biogenesis → prolif, teb | (noise) | — | 0.78–0.94 | **untestable — axis IS the global factor** |
+| mito_oxphos → priming (neg. control) | (noise) | sign flips | 0.94 | untestable + circular |
+
+**Lower redox/glutathione capacity tracks the tumorigenic MB2 fork, independently of Myc dose** —
+the one coupling with real independent variance and cross-quantifier agreement. It is a **ranking
+lead for the bench, not a result** (n=24; nothing beats BH<0.05).
+
+**The replication trap.** A ceiling-level lead **will "replicate" in any similar bulk dataset**,
+because the ceiling is a property of the DESIGN + SCORING, not the biology. **Do not validate with
+more bulk — validate orthogonally** (BH3 profiling / mtDNA qPCR / redox assay / the blot).
+
+**The sentence-level fix pattern** (keeps the narrative honest without deleting it):
+> was: *"the imbalance couples to pro-apoptotic priming (r=0.75, p=0.005) — the causal spine…"*
+> becomes: *"the imbalance and pro-apoptotic priming co-vary at 6W (r=0.75). Couplings of this size
+> arise between most programme pairs in this design, so we treat this as hypothesis-generating and
+> test it directly by BH3 profiling (Fig X)."*
+
+**Delete the p, keep the r, name the bar, point at the experiment.**
+
+### Hypothesis ledger
+- **Data-nominated, testable:** `redox → MB2 fork` (robust, Myc-independent — the strongest lead);
+  the `imbalance → priming` **collapse** at 6W→12W (96th pct of Δrho, perm p=0.066 — Pearson-only,
+  circular axis, so a *lead* not a finding).
+- **Data-nominated, weak:** `cholesterol/mevalonate → MB2 fork` (testable but +0.14 once the factor
+  is removed) — still worth a statin/mevalonate bench look given the companion paper's fork.
+- **Prior-nominated, data-consistent:** `Bbc3`/PUMA (right BH3 biology; 1-of-23 is chance, but a
+  fine BH3-profiling hypothesis).
+- **Neither:** "OXPHOS is central" (untestable — axis is the global factor).
+
+---
+
 ## Q1 — Do the attenuation mechanisms hold? **YES, with one refinement.**
 
 The attenuation is the most robust mechanistic result in the paper and nothing this week touched
@@ -191,6 +291,16 @@ targets** — which is why they are readable and the mito arms are not.
 **(5) Multiplicity:** **1 of 96** tests beats BH<0.05; cholesterol → fork is p=0.043 raw but
 **BH=0.35**. **Nothing here is a significant finding** at n=24 with correlated sets.
 
+**(6) The principled linear correction (script 36) CONFIRMS and SHARPENS this — and re-ranks the
+leads.** Under design→PC1→residual on a **linear** score with **leave-pair-out** (see §0.6): the
+mito axes carry **r²≈0.94** with the global mean, so they have essentially no variance independent
+of the broad state — **"OXPHOS is central" is not merely at the ceiling, it is UNTESTABLE**, which
+is the cleanest possible statement of its failure. **`redox → MB2 fork` is promoted to the one
+robust, testable lead** (global-adjusted **−0.63**, same sign −0.62…−0.73 across all three
+quantifiers, axis r²=0.03), while **`cholesterol/mevalonate → fork` is DEMOTED** to +0.14
+("separable but weak") once the factor is removed — its script-35 96th-percentile headline was a
+raw-ambient artifact. The biogenesis-bystander call is unchanged.
+
 **Restate as:** *"Mitochondrial biogenesis is a MYC-dose bystander — once MYC dose is removed it
 tracks nothing. The OXPHOS/nucleotide arm retains residual phenotype co-variation beyond MYC dose,
 but not preferentially."* **Drop the death-priming third entirely** — `priming` is defined at
@@ -251,7 +361,8 @@ r=0.93.** The powered half — the transgene amplification — is untouched.
 | Myc bends **off** the WT developmental axis | **STANDS** | LFC-vector correlation |
 | **Biogenesis is a MYC-dose bystander** | **STANDS (strengthened)** | partial below its own ceiling |
 | "MYC core selectively **buffered**" | **REFINE** | expression effect (z=0.29 vs matched) |
-| "**OXPHOS is central** to phenotype" | **SOFTEN** | partial at the ceiling (68th pct, p=0.32) |
+| "**OXPHOS is central** to phenotype" | **DROP as a coupling** | script 36: axis IS the global factor (r²=0.94) → no separable coupling is testable |
+| **redox → MB2 fork** (Myc-independent) | **LEAD** | script 36: robust global-adjusted −0.63 across 3 quantifiers, axis r²=0.03 |
 | "endogenous Myc **gates** the WT programme" (r=0.93) | **SOFTEN** | 92nd pct of its ceiling, p=0.08 |
 | The **mitonuclear imbalance** (time) | **UNSUPPORTED** | no contrast fitted; all p>0.24 |
 | The **mito→death bridge** | **NOT ESTABLISHED** | circular + fails every null |
@@ -295,6 +406,7 @@ linear-scale normalised counts (ratio-based, content-**blind**); **GSVA** on log
 | Is mitochondrial content really up? | **TOMM20 / VDAC / CS blot** (or EM) | tension A; the lower-bound rider |
 | Is the 6W substrate death-permissive? | **BH3 profiling** | the death mechanism, independent of survivor bias |
 | Is the priming loss compositional? | **single-cell / deconvolution** | Issue #6's B6 pointer |
+| Does redox capacity gate the tumorigenic fork? | **redox/glutathione assay** (GSH:GSSG, ROS) on the fork | the one Myc-independent coupling lead (script 36) |
 | Is the IEG axis technical? | a recorded **dissociation-batch / viability** variable | whether the time axis is usable |
 
 **Two bench experiments — mtDNA qPCR and the blot — close four items between them.**

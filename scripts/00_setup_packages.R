@@ -18,7 +18,8 @@ bioc_packages <- c(
   "ComplexHeatmap", "circlize",
   "PoiClaClu", "limma", "edgeR", "variancePartition",
   "fgsea", "gprofiler2",
-  "GSVA"             # per-sample gene-set scoring (15_gsva_scoring.R)
+  "GSVA",            # per-sample gene-set scoring (15_gsva_scoring.R)
+  "singscore"        # rank-based cohort-independent set scoring (36_linear_pathway_coupling.R)
 )
 
 # Load or install CRAN packages
