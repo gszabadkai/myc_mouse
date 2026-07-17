@@ -531,18 +531,37 @@ atten_excess <- dplyr::bind_rows(lapply(names(death_rosters), function(n)
 # D2. The Issue #6 identity applied to the death sets: shared-developmental vs
 # Myc-specific. A decline SHARED by both genotypes CANCELS in the genotype gap and
 # therefore cannot create an attenuation.
+# MIN_GENES: 5 is not a programme. A 5-gene "decomposition" is 5 genes.
+# ATTEN_FLOOR: conv_pct/fade_pct divide by `atten`. When a set barely attenuates,
+#   that denominator approaches zero and the percentages explode -- APOP_BH3_REACTOME
+#   (atten 0.065) printed conv_pct -310% / fade_pct +410%, which reads as a dramatic
+#   mechanism and is arithmetic noise. THIS IS THE SAME ARTIFACT as script 32's
+#   retracted `pct_retained = 388%` (a ratio quoted where there was no effect to
+#   ratio), reintroduced here by carrying script 31's formula over without checking
+#   that its premise -- a substantial atten -- holds for small death sets. Define the
+#   split ONLY where there is an attenuation to decompose. Note a NEGATIVE conv_pct
+#   is NOT the artifact: for OXPHOS/MYC-core it means WT DIVERGES, which Issue #6
+#   established. The artifact is a small |atten|, not a negative numerator.
+MIN_GENES   <- 10L
+ATTEN_FLOOR <- 0.10   # log2 units; below this the ratio is not interpretable
+
 decomp_one <- function(genes, label, universe_genes) {
   e <- intersect(genes, universe_genes)
   e <- e[!is.na(m6[e]) & !is.na(m12[e]) & !is.na(tn[e]) & !is.na(tp[e]) & m6[e] != 0]
-  if (length(e) < 5) return(NULL)
+  if (length(e) < MIN_GENES) return(NULL)
   d <- sign(m6[e])
   gap6 <- d * m6[e]; gap12 <- d * m12[e]
   wc <- d * tn[e];   mf <- d * tp[e]
   atten <- mean(gap6) - mean(gap12)
+  ok <- abs(atten) >= ATTEN_FLOOR
   tibble::tibble(program = label, n = length(e),
                  gap6 = mean(gap6), gap12 = mean(gap12), atten = atten,
                  wt_conv = mean(wc), myc_fade = mean(mf),
-                 conv_pct = 100 * mean(wc) / atten, fade_pct = 100 * (-mean(mf)) / atten,
+                 conv_pct = if (ok) 100 * mean(wc) / atten else NA_real_,
+                 fade_pct = if (ok) 100 * (-mean(mf)) / atten else NA_real_,
+                 split_note = if (ok) NA_character_ else sprintf(
+                   "atten %.3f < %.2f -- too small to decompose; ratio undefined",
+                   atten, ATTEN_FLOOR),
                  frac_wt_toward = mean(wc > 0), frac_myc_retreat = mean(mf < 0))
 }
 p6adj <- stats::setNames(ir$myc_6W_raw$padj, rownames(ir$myc_6W_raw))
