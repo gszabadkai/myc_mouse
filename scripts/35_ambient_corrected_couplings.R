@@ -398,6 +398,43 @@ p_b <- coupling_vs_ambient |>
   ggplot2::theme_bw(base_size = 9)
 ggplot2::ggsave(file.path(out_dir, "B_excess_over_ambient.pdf"), p_b, width = 11, height = 6)
 
+# C -- THE EXPLAINER PANEL: every published coupling against its own ceiling.
+# The supplementary-methods answer to "why were the couplings discounted?".
+# Rows are drawn only where BOTH the coupling and its ceiling are measured here,
+# so nothing on this panel is borrowed from another axis (the error that produced
+# the retracted "12W is the clean cohort" framing).
+ruler_df <- coupling_vs_ambient |>
+  dplyr::filter(window == "all (n=24, POOLS timepoints)",
+                (axis == "mito_oxphos"     & outcome %in% c("prolif", "priming")) |
+                (axis == "nucleotide"      & outcome == "prolif") |
+                (axis == "mito_biogenesis" & outcome == "prolif") |
+                (axis %in% c("cholesterol", "redox") & outcome == "mb2_fork")) |>
+  dplyr::mutate(
+    label = sprintf("%s -> %s", axis, outcome),
+    label = stats::reorder(label, raw_ambient),
+    beats = dplyr::if_else(abs(rho_raw) > raw_ambient + 0.10,
+                           "clears its ceiling", "at/under its ceiling"))
+
+p_c <- ggplot2::ggplot(ruler_df, ggplot2::aes(y = label)) +
+  ggplot2::geom_col(ggplot2::aes(x = raw_ambient), fill = "grey80", width = 0.55) +
+  ggplot2::geom_point(ggplot2::aes(x = abs(rho_raw), colour = beats), size = 3.2) +
+  ggplot2::geom_segment(ggplot2::aes(x = raw_ambient, xend = abs(rho_raw),
+                                     yend = label, colour = beats),
+                        linewidth = 0.5, linetype = 3) +
+  ggplot2::scale_colour_manual(values = c("clears its ceiling" = "#2A6F5E",
+                                          "at/under its ceiling" = "#D73027")) +
+  ggplot2::scale_x_continuous(limits = c(0, 1)) +
+  ggplot2::labs(
+    title = "Every coupling against its OWN ceiling (n=24)",
+    subtitle = paste("Grey bar = that axis's median |rho| to an ARBITRARY one of the 884 library",
+                     "programmes -- the ceiling.\nPoint = the published coupling. The two that",
+                     "clear it (cholesterol, redox -> MB2 fork) are the two axes Myc does NOT",
+                     "drive\n(redox genotype d=0.08), which is exactly why they are readable."),
+    x = "|Spearman rho|", y = NULL, colour = NULL) +
+  ggplot2::theme_bw(base_size = 10) +
+  ggplot2::theme(legend.position = "bottom")
+ggplot2::ggsave(file.path(out_dir, "C_ceiling_explainer.pdf"), p_c, width = 8, height = 4.5)
+
 message("Figures written to ", out_dir)
 
 # =============================================================================

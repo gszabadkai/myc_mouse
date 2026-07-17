@@ -34,7 +34,7 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
-    script. **Figure scripts are now 35+** (34 is an analysis script — see below).
+    script. **Figure scripts are now 36+** (34/35 are analysis scripts — see below).
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
     mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
     would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
@@ -84,6 +84,30 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
       The only axis that gets this far is the circular one. Ambient context: the median set's
       coupling already falls **0.71 → 0.35** (74% → 11% of sets above |r|=0.5) while **PC1 is
       unchanged (43% → 46%)**.
+  - **Script 35** (`35_ambient_corrected_couplings.R`) — **THE CORRELATION CEILING. Read before
+    quoting any rho.** Every composite here correlates with almost every other, and nobody had
+    measured how much. Median |rho| of an axis to an **arbitrary** one of the 884 library sets:
+    **mito_oxphos 0.82 (6W) / 0.78 (12W); nucleotide 0.82/0.71; tca 0.80/0.78** — but **redox
+    0.41/0.23**. So **a published coupling of 0.8 is what the window hands you.**
+    - **The ceiling is mostly MYC DOSE** (the 6-vs-6 genotype split within each timepoint), with
+      the IEG/prep axis adding at 6W. **`redox` is the control**: not a Myc target (d=0.08), so
+      half the ceiling — **the axes Myc does NOT drive are the only readable ones.**
+    - **"6W is stressed, 12W is clean" is WRONG** — script 34's 0.71→0.35 was the mitonuclear
+      **imbalance**, a mitoPPS **ratio** (a ratio cancels the shared component). Per axis the
+      ceiling barely moves. **Never borrow one axis's ambient for another.**
+    - **Q4 (Issue #3 Q2) — half holds.** A raw ambient is the wrong null (Q2's claim is the
+      **partial**), so 35 builds a **partial ceiling**. **"OXPHOS is CENTRAL" FAILS**: partial
+      →prolif **+0.59 vs a partial ceiling of 0.45** (68th pct, p=0.32); →TEB +0.44 vs 0.45
+      (p=0.51). OXPHOS retains residual co-variation with *everything*. **"biogenesis is a
+      BYSTANDER" HOLDS, harder than published**: +0.11 vs its ceiling 0.22 (27th pct); →TEB −0.03
+      (7th pct) — **below** an arbitrary programme. **The only near-specific couplings are the
+      non-Myc ones**: cholesterol→MB2 fork **+0.40 vs a ceiling of 0.13** (96th pct, p=0.043),
+      redox→fork −0.50 vs 0.22. **1 of 96 tests beats BH<0.05** — nothing is significant at n=24.
+    - **Q5:** Issue #2's "endogenous Myc gates the WT programme" (r=**0.93**) sits at the **92nd
+      percentile of its own ceiling (0.75), p=0.08 — marginal**, and is n=6/cell disaggregated.
+      Issue #2's **powered half (transgene amplification, a genotype main effect) is untouched.**
+    - **The five-question synthesis is `docs/2026-07-18_narrative_synthesis_five_questions.md`** —
+      verdicts, numbers, named PDFs, and the gene-set appendix. Read it before writing any figure.
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
@@ -111,8 +135,8 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Scripts 32-34 (mito content proxies; the mt-axis + coupling null; the death-priming
-  reassessment) and the **figure scripts 35+** land here.
+  Scripts 32-35 (mito content proxies; the mt-axis + coupling null; the death-priming
+  reassessment; the correlation ceiling) and the **figure scripts 36+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.
