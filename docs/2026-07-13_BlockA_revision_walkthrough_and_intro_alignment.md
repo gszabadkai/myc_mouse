@@ -15,6 +15,28 @@ drafted for the Introduction, ending with a proposed reconciled rewrite.
 
 ---
 
+> ## STATUS BANNER — added 2026-07-17. Read `docs/2026-07-17_evidence_audit_and_narrative.md` first.
+>
+> **This doc predates a two-day evidence audit that broke its central bridge.** It is kept intact --
+> including every retraction, marked in place -- because an airbrushed record is how the problem
+> survived this long. But **do not read the arc in §1B / §2 / §3-4 as current**: their last third rests
+> on *"the mitonuclear-imbalanced substrate is coupled to pro-apoptotic priming, so Myc's induction
+> lands as killing"*, and **both halves of that failed**.
+>
+> | | status |
+> |---|---|
+> | Myc raises **mitochondrial content +21-27%** (script 32, p=0.0006 adjusted) | **STANDS** — new, and the strongest thing here |
+> | Myc raises absolute nuclear OXPHOS (d=1.27 / 1.15 by two methods) | **STANDS** |
+> | **Issue #4's attenuation** | **STANDS — and is now PROTECTED**: 12W is not noisier (SD ratio 0.83), SEs ~identical (0.251 vs 0.259), so the DE collapse 1967->135 tracks \|LFC\| 0.268->0.204 = real magnitude loss, not power |
+> | Issues #1, #2, #3, #5, #6 | **STAND** (genotype/interaction contrasts) |
+> | The death **phenotype** (kills at 6W not 12W) | **STANDS** — external IHC/inducible; never depended on this RNA-seq |
+> | **The mitonuclear imbalance** | **UNSUPPORTED** — no contrast was ever fitted; when fitted: time p=0.313, genotype p=0.523, interaction p=0.916, Myc@6W p=0.249 |
+> | **The death couplings** (§1B, script 25 Part B) | **FAIL AN EMPIRICAL NULL** — imbalance perm p=0.49; bio_comp r=0.83 vs **null median 0.79**, p=0.50; only the prep-stress axis beats the null |
+> | **The mito->death bridge** | **NOT ESTABLISHED** — both halves fail independently |
+>
+> *Unsupported is not refuted* (n=6-12). But none of it can be reported as a finding. Five claims were
+> retracted this week (listed in the audit); each is marked at its location below.
+
 ## 0. How to read this
 
 **The experiment.** Bulk RNA-seq, MMTV-Myc transgenic mouse mammary gland, 4 groups x 6 replicates:
@@ -763,26 +785,77 @@ cells that did NOT die -- which makes any Myc death-engagement we DO see a conse
 
 ### The spine, in one line (and how it meets the OXPHOS thread)
 
-At 6W the young substrate is death-PERMISSIVE: stem-rich, mitonuclear-IMBALANCED (nuclear OXPHOS
-running ahead of mtDNA), biogenesis-primed, and all three tightly coupled to pro-apoptotic priming --
-so Myc's induction lands as oncogene-induced apoptosis (killing). By 12W the substrate has MATURED
-(mtDNA caught up, imbalance resolved, cells differentiated, priming/biogenesis converged), the death
-coupling COLLAPSES (r 0.75 -> 0.07), and Myc's killing fades. **The 12W decoupling IS the loss of
-killing** -- the desensitisation that opens the permissive window. Crucially this is the SAME
-mitonuclear maturation as the OXPHOS thread: the 6W nuclear-led-assembly imbalance (Issue #4) is the
-death-permissive state, and its resolution -- together with the Myc-specific OXPHOS de-amplification
-over the same window (tension A) -- is what desensitises the adult gland. The OXPHOS reprioritisation
-and the apoptosis desensitisation are two faces of one developmental mitochondrial maturation.
+> **### RETRACTED AS A MECHANISM, 2026-07-17 (script 33). The paragraph below is the pre-audit text,
+> kept verbatim so the claim and its refutation sit together. Do not quote it.**
+>
+> Both halves of this bridge failed, independently:
+> - **"all three tightly coupled to pro-apoptotic priming"** -> the couplings **fail an empirical null**
+>   (script 33 PART C). Against all 884 library sets at 6W: imbalance +0.67 (null median +0.62, perm
+>   **p=0.49**); **bio_comp +0.83 vs null median +0.79** (p=0.50); MASC_comp +0.78 (p=0.10). 73-81% of
+>   *any* gene sets couple at |rho|>0.5. The only axis that beats the null is the **prep-stress
+>   signature**. Structural cause: within 6W, **PC1=43%** and every measure loads on it.
+> - **"the mitonuclear imbalance ... resolves"** -> the imbalance **has no supported contrast** (script
+>   33 PART E1): time p=0.313, genotype p=0.523, interaction p=0.916, Myc@6W p=0.249. The four group
+>   means were never tested.
+> - **"r 0.75 -> 0.07"** -> the 0.75 endpoint is what an arbitrary gene set gives, so the *collapse* is
+>   not interpretable either.
+>
+> **What survives:** the death PHENOTYPE (Myc kills at 6W, not 12W) — external IHC/inducible data, which
+> never depended on this RNA-seq. **What does not:** that the mitochondrial state is *why*. That is now
+> an OPEN QUESTION (BH3 profiling / caspase-by-state / mtDNA qPCR would settle it), **not** the causal
+> spine of the Introduction's closing sentence. *Unsupported is not refuted* — n=6-12 — but it cannot be
+> reported. See `docs/2026-07-17_evidence_audit_and_narrative.md`.
 
-**Ceiling.** Bulk RNA, one timepoint per age, n=6/group, SURVIVOR BIAS. This characterises the
-death-permissive STATE (association) and cannot prove causation or fully resolve mechanism; BH3
-profiling / single-cell / caspase-by-state would be needed. Correlated axes (mito, stem, biogenesis)
-are not separable at this n. The branch-1 null and the p53/ARF null are firm; the couplings and H4
-culling are directional.
+*(pre-audit text, retained for the record:)* At 6W the young substrate is death-PERMISSIVE: stem-rich,
+mitonuclear-IMBALANCED (nuclear OXPHOS running ahead of mtDNA), biogenesis-primed, and all three
+tightly coupled to pro-apoptotic priming -- so Myc's induction lands as oncogene-induced apoptosis
+(killing). By 12W the substrate has MATURED (mtDNA caught up, imbalance resolved, cells
+differentiated, priming/biogenesis converged), the death coupling COLLAPSES (r 0.75 -> 0.07), and
+Myc's killing fades. **The 12W decoupling IS the loss of killing** -- the desensitisation that opens
+the permissive window. Crucially this is the SAME mitonuclear maturation as the OXPHOS thread: the 6W
+nuclear-led-assembly imbalance (Issue #4) is the death-permissive state, and its resolution --
+together with the Myc-specific OXPHOS de-amplification over the same window (tension A) -- is what
+desensitises the adult gland. The OXPHOS reprioritisation and the apoptosis desensitisation are two
+faces of one developmental mitochondrial maturation.
+
+**Ceiling (pre-audit, and it understated the problem).** Bulk RNA, one timepoint per age, n=6/group,
+SURVIVOR BIAS. This characterises the death-permissive STATE (association) and cannot prove causation
+or fully resolve mechanism; BH3 profiling / single-cell / caspase-by-state would be needed. Correlated
+axes (mito, stem, biogenesis) are not separable at this n. The branch-1 null and the p53/ARF null are
+firm; the couplings and H4 culling are directional. -- **The audit sharpened the middle sentence:
+"correlated axes are not separable at this n" turned out to be the whole story. With PC1 at 43%, the
+couplings do not merely fail to separate; they carry no information about ANY specific mechanism.**
 
 ---
 
 ## 2. The through-line (Issues #1-6 + the death spine as one arc)
+
+> **### REVISED 2026-07-17 — the arc below is PRE-AUDIT and its last third is the retracted bridge.
+> Use the revised arc first; the original is kept beneath it for the record.**
+>
+> **The revised arc (what the evidence supports):**
+>
+> A constitutively expressed Myc **amplifies** the normal pubertal proliferative/biosynthetic programme
+> rather than creating a new one, strongest at 6W, bending the gland off its maturing developmental
+> axis (#1-2). Its footprint is **broad, not narrowly mitochondrial**, and the arm most tightly coupled
+> to the phenotype -- orthogonal to generic MYC dose and visible within WT -- is a specific
+> **respiratory/biosynthetic core** (OXPHOS + nucleotide + TCA), not biogenesis, which merely tracks
+> dose (#3). Myc **increases mitochondrial content** (+21-27%, coherent across structural, import,
+> ribosomal and OXPHOS arms; script 32) and raises **absolute** nuclear-OXPHOS transcript while
+> **reallocating** the compartment -- so "OXPHOS reduction" is relative, not an absolute drop (#4). The
+> 6W->12W **attenuation** is a loss of MAGNITUDE, not rank, which no MYC-independent axis absorbs
+> (#4-5); decomposed exactly, ~2/3 oncogenic fade + ~1/3 wild-type convergence onto the shared
+> biosynthetic axis, sparing the buffered MYC core (#6) -- and it is **not** a power or batch artifact
+> (script 33 PART E2). **Independently**, the gland becomes resistant to Myc-induced apoptosis by 12W
+> (external IHC/inducible phenotype).
+>
+> **The join between those two threads is now an OPEN QUESTION, not a finding.** The claim that the
+> mitonuclear-imbalanced substrate is *why* 6W is death-permissive rests on couplings that fail an
+> empirical null and on an imbalance with no supported contrast. The paper **keeps both halves and
+> loses the bridge**. That is a defensible position -- and a better one than a mechanism a reviewer
+> would dismantle. See `docs/2026-07-17_evidence_audit_and_narrative.md` §3.
+
+*(pre-audit through-line, retained for the record -- its final third is retracted:)*
 
 A constitutively expressed Myc AMPLIFIES the normal pubertal proliferative/biosynthetic program of
 the mammary gland (strongest at 6W, the TEB-rich window) rather than creating a new one, bending the
@@ -901,9 +974,24 @@ half is not transcriptionally accounted for. **mtDNA qPCR is the discriminating 
 (A "commissioned but unbuilt" reading -- Myc builds the mtDNA machinery, output does not follow -- was
 drafted and **retracted the same day** as a set-composition artifact; see the script-32 section.)
 
-### The apoptosis / permissive-window clause -- SUPPORTED (the death spine, Section 1B)
+### The apoptosis / permissive-window clause -- SUPPORTED AS PHENOTYPE, NOT AS MECHANISM
 
-The final clause -- "associated with a desensitisation to MYC-induced apoptosis, opening a permissive
+> **### REVISED 2026-07-17.** The heading used to read "-- SUPPORTED (the death spine, Section 1B)".
+> Split it in two:
+> - **The CLAUSE survives.** "Associated with a desensitisation to MYC-induced apoptosis, opening a
+>   permissive window at the adult developmental stage" rests on the **external IHC / inducible-model
+>   phenotype**, which never depended on this RNA-seq. Keep it.
+> - **Its MECHANISM does not.** The sentence below -- *"The death-timing spine gives it a mechanism, not
+>   just an association"* -- is **retracted**. The spine's mechanistic core (the imbalance->priming
+>   coupling, r=0.75 p=0.005) **fails an empirical null** (perm p=0.49; any gene set gives ~0.62), and
+>   the imbalance itself has **no supported contrast** (all p>0.24). So this RNA-seq supplies an
+>   association at best, and not even that -- the association is not specific.
+> - **Consequence for §4's rewrite:** any sentence joining the mitochondrial thread to the apoptosis
+>   clause as cause-and-effect must go. State the mito->death link as the **open question that motivates
+>   the next experiment** (BH3 profiling / mtDNA qPCR). See the audit doc §3.
+
+*(pre-audit text, retained for the record:)* The final clause -- "associated with a desensitisation to
+MYC-induced apoptosis, opening a permissive
 window ... at the adult developmental stage" -- is the best-supported half of the sentence, and it is
 what makes the OXPHOS thread matter. The death-timing spine gives it a mechanism, not just an
 association: at 6W the mitonuclear-imbalanced substrate is tightly coupled to pro-apoptotic priming
@@ -979,6 +1067,32 @@ Per-change rationale:
 ---
 
 ## 5. What remains open (carried-forward ceilings; non-blocking for the writeup)
+
+> **### 2026-07-17 — four of these are now BLOCKING, not carried-forward. Added at the top because they
+> change what the paper can claim.** Full detail: `docs/2026-07-17_evidence_audit_and_narrative.md`.
+>
+> - **The mitonuclear imbalance is UNTESTED, and fails when tested.** `imbalance ~ timepoint*genotype`:
+>   time p=0.313, genotype p=0.523, interaction p=0.916, Myc@6W p=0.249. The quoted pattern
+>   (0.130/0.499/-0.456/-0.173) is four group means that never had a contrast fitted. *Unsupported, not
+>   refuted* (n=6/group) -- but not reportable. **mtDNA qPCR settles it** at the copy-number level the
+>   transcriptome cannot see.
+> - **Every per-sample coupling in the corpus needs an empirical null.** Script 25 Part B's death
+>   couplings fail one (bio_comp r=0.83 vs **null median 0.79**, p=0.50). At n=12 with PC1=43%,
+>   73-81% of *all* gene sets couple at |rho|>0.5. **The project already built this null for fGSEA
+>   (script 21, AP6) and never applied it per-sample.** Reuse `null_for_axis()` (script 33 PART C)
+>   before reporting ANY sample-level coupling -- scripts 23, 24 PART C and 25 are all exposed.
+> - **The IEG/prep axis is unresolved.** Genotype-**independent** (p=0.49 -> cannot bias any Myc claim)
+>   but time-**associated** (p=0.0003 -> entangles the time axis). MECs are enzymatically dissociated
+>   (no FACS) with **no batch/viability/RIN metadata**, so the IEG panel is inferred, not measured.
+>   Technical vs biological is **not adjudicable**. It does not matter for the null (specificity fails
+>   either way).
+> - **Do not conflate the two PC1s.** The *global* QC PCA (script 02, all 24) gives PC1=35% which is
+>   **not** timepoint (p=0.81), **not** genotype (p=0.96), **not** IEG (rho -0.18). The 43% IEG-loaded
+>   PC1 is *within 6W only*. Different levels.
+>
+> **And one thing that got BETTER:** Issue #4's attenuation is now **protected** -- 12W is not noisier
+> (SD ratio 0.83), SEs are ~identical (0.251 vs 0.259), so the DE collapse 1967->135 tracks |LFC|
+> falling 0.268->0.204 at constant SE. Real magnitude attenuation, not power, not batch.
 
 - **Per-cell fade vs compositional dilution (#6).** The dominant Myc-fade term confounds a per-cell
   weakening with dilution of the shrinking Myc-built proliferative/TEB compartment. Bulk bounds it;

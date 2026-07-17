@@ -416,7 +416,112 @@ technical_vs_biological <- tibble::tribble(
   "PART C specificity failure holds under both",        "n/a",         "the coupling is unremarkable whatever the axis IS -- that is the point")
 
 # =============================================================================
-# PART E: VERDICT
+# PART E: TWO TESTS THE CORPUS NEVER RAN (added 2026-07-17)
+# =============================================================================
+# Both were done ad-hoc in conversation and existed nowhere on disk. They are
+# load-bearing for the narrative, so they belong in a script.
+
+# --- E1. Is the mitonuclear IMBALANCE itself statistically supported? -----------
+# THE TEST THAT WAS NEVER RUN. Script 24 reports mtnuc_index as FOUR GROUP MEANS
+# ("peaks at 6W_pos +0.556, inverts by 12W -0.509") and the corpus has quoted that
+# pattern ever since as though it were a demonstrated effect. It was never subjected
+# to a contrast. Fit one. (Reported as a fact either way -- see the ceiling below:
+# ns at n=6/group is UNSUPPORTED, not REFUTED.)
+imb_fit  <- stats::lm(imbalance ~ qc$timepoint * qc$myc_status)
+imb_fit2 <- stats::lm(imbalance ~ qc$timepoint * qc$myc_status + stress)
+i6_only  <- stats::lm(imbalance[i6] ~ qc$myc_status[i6])
+
+imbalance_own_stats <- tibble::tibble(
+  term = c("timepoint (12W vs 6W)", "genotype (Myc+ vs WT)", "timepoint x genotype",
+           "genotype at 6W only", "timepoint | adjusted for IEG axis"),
+  beta = c(stats::coef(summary(imb_fit))["qc$timepoint12W", "Estimate"],
+           stats::coef(summary(imb_fit))["qc$myc_statuspos", "Estimate"],
+           stats::coef(summary(imb_fit))["qc$timepoint12W:qc$myc_statuspos", "Estimate"],
+           stats::coef(summary(i6_only))[2, "Estimate"],
+           stats::coef(summary(imb_fit2))["qc$timepoint12W", "Estimate"]),
+  p = c(stats::coef(summary(imb_fit))["qc$timepoint12W", "Pr(>|t|)"],
+        stats::coef(summary(imb_fit))["qc$myc_statuspos", "Pr(>|t|)"],
+        stats::coef(summary(imb_fit))["qc$timepoint12W:qc$myc_statuspos", "Pr(>|t|)"],
+        stats::coef(summary(i6_only))[2, "Pr(>|t|)"],
+        stats::coef(summary(imb_fit2))["qc$timepoint12W", "Pr(>|t|)"])) |>
+  dplyr::mutate(significant = p < 0.05)
+
+imbalance_verdict <- sprintf(paste0(
+  "THE MITONUCLEAR IMBALANCE HAS NO SUPPORTED CONTRAST. The pattern the corpus quotes ",
+  "(%.3f / %.3f / %.3f / %.3f -- 'peaks at 6W_pos, inverts by 12W') is FOUR GROUP MEANS ",
+  "that were reported descriptively and never tested. Fitted: timepoint p=%.3f, genotype ",
+  "p=%.3f, interaction p=%.3f, Myc-at-6W p=%.3f -- NOTHING is significant on ANY term, and ",
+  "adjusting for the IEG axis takes the time beta %+.3f -> %+.3f (p=%.3f). CEILING: at ",
+  "n=6/group with mitoPPS variance this is UNSUPPORTED, NOT REFUTED -- the pattern may be ",
+  "real and underpowered. But it cannot be reported as a finding on this evidence, and ",
+  "'peaks at 6W_pos, inverts by 12W' reads as a demonstrated effect when it is a ",
+  "description of four averages with p=%.2f between them. Separately, its coupling to ",
+  "death priming fails the PART C null -- two independent failures."),
+  imbalance_group_means[["6W_neg"]], imbalance_group_means[["6W_pos"]],
+  imbalance_group_means[["12W_neg"]], imbalance_group_means[["12W_pos"]],
+  imbalance_own_stats$p[1], imbalance_own_stats$p[2], imbalance_own_stats$p[3],
+  imbalance_own_stats$p[4], imbalance_own_stats$beta[1], imbalance_own_stats$beta[5],
+  imbalance_own_stats$p[5], imbalance_own_stats$p[1])
+
+# --- E2. Does the IEG/batch axis explain Issue #4's ATTENUATION? ----------------
+# The author's question (2026-07-17): 12W is the higher-IEG cohort -- could that BE the
+# attenuation? Three checks say no, and they PROTECT Issue #4:
+#   (i)   the axis is genotype-INDEPENDENT, so a batch offset cancels inside each
+#         timepoint's Myc-vs-WT contrast -- it cannot bias either endpoint;
+#   (ii)  12W is not noisier (if it were, the DE collapse would be a POWER artifact);
+#   (iii) noise inflates |LFC| rather than shrinking it, so it cannot manufacture an
+#         attenuation of MAGNITUDE in any case.
+dds_a  <- readRDS(here::here("results", "dds_int_run.rds"))
+v_all  <- SummarizedExperiment::assay(DESeq2::vst(dds_a, blind = TRUE))
+expr_k <- rowMeans(DESeq2::counts(dds_a, normalized = TRUE)) > 50
+v_all  <- v_all[expr_k, samples, drop = FALSE]
+
+sd_by_group <- vapply(group_levels, function(g)
+  stats::median(matrixStats::rowSds(v_all[, qc$group == g, drop = FALSE])), numeric(1))
+sd_6  <- matrixStats::rowSds(v_all[, i6, drop = FALSE])
+sd_12 <- matrixStats::rowSds(v_all[, i12, drop = FALSE])
+
+ir <- readRDS(here::here("results", "interaction_results.rds"))
+lfc_se <- purrr::map_dfr(c(myc_6W = "myc_6W_raw", myc_12W = "myc_12W_raw"), function(k) {
+  r <- ir[[k]]; r <- r[!is.na(r$lfcSE), ]
+  tibble::tibble(median_lfcSE = stats::median(r$lfcSE),
+                 median_abs_lfc = stats::median(abs(r$log2FoldChange)),
+                 n_padj_lt_05 = sum(r$padj < 0.05, na.rm = TRUE))
+}, .id = "contrast")
+
+attenuation_not_batch <- list(
+  sd_by_group      = sd_by_group,
+  median_sd_6W     = stats::median(sd_6),
+  median_sd_12W    = stats::median(sd_12),
+  sd_ratio_12W_6W  = stats::median(sd_12) / stats::median(sd_6),
+  sd_wilcox_p      = suppressWarnings(stats::wilcox.test(sd_12, sd_6, paired = TRUE)$p.value),
+  lfc_se           = lfc_se,
+  reads_as = paste(
+    "12W is NOT noisier (sd ratio", sprintf("%.2f", stats::median(sd_12)/stats::median(sd_6)),
+    "-- it is slightly LESS variable) and the Myc-contrast standard errors are ~identical",
+    sprintf("(%.3f at 6W vs %.3f at 12W)", lfc_se$median_lfcSE[1], lfc_se$median_lfcSE[2]),
+    "=> the DE collapse", sprintf("%d -> %d", lfc_se$n_padj_lt_05[1], lfc_se$n_padj_lt_05[2]),
+    "is NOT a power artifact: it tracks median |LFC| falling",
+    sprintf("%.3f -> %.3f", lfc_se$median_abs_lfc[1], lfc_se$median_abs_lfc[2]),
+    "at constant SE = REAL magnitude attenuation. Issue #4 is PROTECTED."))
+
+attenuation_verdict <- sprintf(paste0(
+  "THE IEG/BATCH AXIS DOES NOT EXPLAIN THE ATTENUATION -- Issue #4 is PROTECTED. (i) The ",
+  "axis is genotype-INDEPENDENT (p=%.2f), so a batch offset cancels inside each timepoint's ",
+  "Myc-vs-WT contrast. (ii) 12W is NOT noisier: median within-group SD %.4f (12W) vs %.4f ",
+  "(6W), ratio %.2f -- slightly LESS variable. (iii) Myc-contrast SEs are ~identical (%.3f ",
+  "at 6W vs %.3f at 12W), so the DE collapse %d -> %d is not a power effect; it tracks median ",
+  "|LFC| falling %.3f -> %.3f at constant SE = REAL magnitude attenuation. And noise inflates ",
+  "|LFC| rather than shrinking it, so it could not manufacture this in any case."),
+  axis_design$p_genotype[axis_design$axis == "ieg_stress"],
+  attenuation_not_batch$median_sd_12W, attenuation_not_batch$median_sd_6W,
+  attenuation_not_batch$sd_ratio_12W_6W,
+  lfc_se$median_lfcSE[1], lfc_se$median_lfcSE[2],
+  lfc_se$n_padj_lt_05[1], lfc_se$n_padj_lt_05[2],
+  lfc_se$median_abs_lfc[1], lfc_se$median_abs_lfc[2])
+
+# =============================================================================
+# PART F: VERDICT
 # =============================================================================
 cn <- function(a, col) coupling_null[[col]][coupling_null$axis == a]
 imb_lab <- "mitonuclear_imbalance (script 24/25)"
@@ -477,10 +582,12 @@ coupling_verdict <- sprintf(paste0(
   genotype_untouched$pct_retained[genotype_untouched$panel == "MASS_MARKERS_NOCHAP"])
 
 message("\n", paste(strwrap(axis_verdict, width = 88), collapse = "\n"))
-message("\n", paste(strwrap(coupling_verdict, width = 88), collapse = "\n"), "\n")
+message("\n", paste(strwrap(coupling_verdict, width = 88), collapse = "\n"))
+message("\n", paste(strwrap(imbalance_verdict, width = 88), collapse = "\n"))
+message("\n", paste(strwrap(attenuation_verdict, width = 88), collapse = "\n"), "\n")
 
 # =============================================================================
-# PART F: FIGURES
+# PART G: FIGURES
 # =============================================================================
 
 # --- A: the author's asymmetry, in one panel ----------------------------------
@@ -552,7 +659,7 @@ ggplot2::ggsave(file.path(out_dir, "C_what_mt_tracks.pdf"), p_c, width = 7.5, he
 message("Figures written to ", out_dir)
 
 # =============================================================================
-# PART G: SAVE
+# PART H: SAVE
 # =============================================================================
 axis_out <- list(
   panels                  = panels,
@@ -568,6 +675,10 @@ axis_out <- list(
   imbalance_decomposition = imbalance_decomposition,
   imbalance_group_means   = imbalance_group_means,
   coupling_null           = coupling_null,
+  imbalance_own_stats     = imbalance_own_stats,
+  imbalance_verdict       = imbalance_verdict,
+  attenuation_not_batch   = attenuation_not_batch,
+  attenuation_verdict     = attenuation_verdict,
   null_distributions      = null_distributions,
   genotype_untouched      = genotype_untouched,
   overadjust_guard        = overadjust_guard,
@@ -641,6 +752,15 @@ if (FALSE) {
   # --- PART C: THE NULL. Does any published coupling beat an arbitrary gene set? ---
   ax$coupling_null |> as.data.frame() |> print()
   # read `perm_p` and `empirical_percentile`: ~0.5 / ~50th pct = not specific
+
+  # --- PART E1: is the imbalance itself supported? (the test never run) ---
+  ax$imbalance_own_stats |> print()          # nothing significant on ANY term
+  cat(strwrap(ax$imbalance_verdict, width = 88), sep = "\n")
+
+  # --- PART E2: does the IEG/batch axis explain the attenuation? (it does not) ---
+  ax$attenuation_not_batch$sd_by_group
+  ax$attenuation_not_batch$lfc_se |> print()  # SEs ~identical; |LFC| falls => real
+  cat(strwrap(ax$attenuation_verdict, width = 88), sep = "\n")
 
   # --- PART D: what survives, and the adjudication we cannot make ---
   ax$genotype_untouched |> print()     # Myc content claim intact after adjustment
