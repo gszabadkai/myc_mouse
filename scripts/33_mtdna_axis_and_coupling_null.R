@@ -49,6 +49,15 @@
 #      exactly the AP6 logic script 21 applied to fGSEA -- never applied to the
 #      per-sample couplings. PART C is that null.
 #
+#      *** SCOPE LIMIT (author's challenge 2026-07-17; answered by script 34). ***
+#      This null is computed ENTIRELY WITHIN 6W (idx = i6). It therefore tests a
+#      CROSS-SECTIONAL claim -- "at 6W, the more imbalanced animals are the more
+#      death-primed ones" -- and says NOTHING about the LONGITUDINAL claim the
+#      manuscript actually makes: that priming collapses by 12W. A collapse needs a
+#      DELTA-RHO null (is r_6W - r_12W bigger than an arbitrary set's?), which is
+#      `scripts/34_death_priming_reassessment.R` PART B. Do not cite PART C as
+#      evidence about the collapse; it cannot see it.
+#
 # WHAT THIS DOES *NOT* CLAIM. The IEG/mt axis is genotype-INDEPENDENT (p=0.49), so
 # it CANNOT bias any Myc contrast -- every genotype result in the corpus, including
 # script 32's content claim, is untouched. It IS time-associated (p=0.0003), so it
@@ -266,12 +275,23 @@ imbalance_group_means <- tapply(imbalance, qc$group, mean)[group_levels]
 # =============================================================================
 # PART C: THE COUPLING NULL -- the load-bearing part
 # =============================================================================
-# THE QUESTION script 25 never asked. It reports per-sample couplings to the
-# pro-death composite at 6W (imbalance r=0.75 p=0.005; bio_comp 0.83; MASC 0.78) as
-# evidence for a death-permissive substrate. But with n=12 and one dominant
-# sample-level axis, ANY two composites correlate. The test is not "is r big" but
-# "is r BIGGER THAN what an arbitrary gene set gives" -- the AP6 logic of script 21,
-# applied to sample-level couplings instead of fGSEA.
+# THE QUESTION the death spine never asked. Per-sample couplings to the pro-death
+# composite at 6W are reported as evidence for a death-permissive substrate. But
+# with n=12 and one dominant sample-level axis, ANY two composites correlate. The
+# test is not "is r big" but "is r BIGGER THAN what an arbitrary gene set gives" --
+# the AP6 logic of script 21, applied to sample-level couplings instead of fGSEA.
+#
+# *** ATTRIBUTION CORRECTED 2026-07-17 (script 34). *** An earlier version of this
+# header said script 25 "reports ... imbalance r=0.75 p=0.005". IT DOES NOT.
+#   - r=0.75, p=0.005 is `23_death_timing_substrate.R:326-327` -- PEARSON, via
+#     cor_within(), saved in death_timing_substrate.rds$h2$coupling.
+#   - script 25 Part B (25:140-148) uses stats::cor -- SPEARMAN, and saves NO
+#     p-value at all. Its imbalance figure is 0.671, not 0.75.
+#   - bio_comp 0.83 / MASC 0.78 ARE script 25 Part B (0.825 / 0.776).
+# The null below is SPEARMAN, so it correctly matched 25's number but NOT the
+# famous 23 one. That mismatch is why script 34 runs both methods -- and it
+# matters: the 6W coupling is unremarkable under both, but the COLLAPSE is
+# marginal under Pearson (p=0.066) and null under Spearman (p=0.31).
 #
 # Null universe = all 884 GSVA-scored library sets. For a candidate axis X, compute
 # rho(X, every set) and locate rho(X, pro_comp) in that distribution.

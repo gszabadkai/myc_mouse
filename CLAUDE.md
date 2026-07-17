@@ -34,7 +34,7 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
-    script. **Figure scripts are now 34+.**
+    script. **Figure scripts are now 35+** (34 is an analysis script — see below).
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
     mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
     would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
@@ -54,6 +54,36 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
     be biological; proliferation can), so it is neither cleanly technical nor cleanly
     biological. It is *not* the TEB/proliferative programme (IEG ~ proliferation −0.76 at
     6W; IEGs *lower* at 6W — both TEB predictions fail).
+  - **Script 34** (`34_death_priming_reassessment.R`) — **read this before writing ANY death
+    sentence.** Answers the author's challenge that script 33's null is computed *within 6W*
+    and so cannot see the *longitudinal* claim. Adds the nulls that can. Outcome: **the death
+    arm has no independent transcriptomic support.**
+    - **`pro_comp` IS a MitoCarta set** (`MITOCARTA_APOPTOSIS_PRO`, 25 genes, `08:285-290`), and
+      so is the imbalance — so "the mito state couples to death priming" correlated **mito genes
+      with mito genes**. Every death coupling in the corpus is exposed to this.
+    - **"Myc raises apoptotic priming" (geno p=0.037/0.038) is the mito-CONTENT effect.** vs an
+      expression-matched **MitoCarta** background, APOPTOSIS_PRO rises **+0.196 vs +0.364
+      (z=−2.42, p=0.012)** — i.e. *below average* for a mito gene. Independently reproduces
+      script 23's mitoPPS de-prioritisation (−0.21, padj 0.022). On the **404 non-mito**
+      pro-death genes the effect does not reproduce (**−0.106, p=0.078**, wrong sign).
+    - **The priming interaction was FITTED, SAVED, and NEVER READ**: `death_timing_substrate.rds
+      $h1$state_tests` has carried **PRO int_p=0.177 / priming int_p=0.263** all along. The
+      narrative quoted group means ("~3x more at 6W" = +0.48 vs +0.15) instead.
+    - **Gate 2's p=0.023 is the sole positive and it does not survive**: `mu=0` is the wrong null
+      under a global attenuation (matched null z=−1.27, p=0.21); measured inter-gene cor 0.08 →
+      effective n **8.4, not 23**; CAMERA (its own question, correlation-aware) p=0.298, FDR=0.926.
+    - **The attenuation is GLOBAL**: nothing — death, OXPHOS, or MYC-core — attenuates more than
+      expression-matched genes (all BH p>0.14). So **priming fades because the Myc programme
+      fades** (canonical Evan/Lowe BH3-only biology); no death-specific or mitochondrial gate.
+    - **The Tang NES −1.38 is a SHARED developmental decline** (`temporal_neg` = **−1.31**, 95% as
+      much) → cancels in the genotype gap by Issue #6's identity. Never cite `temporal_pos` alone.
+    - **The one nuance that is NOT flat:** the *collapse* (r 0.75→0.07) sits at the **96th
+      percentile** of Δrho vs all 884 sets, **perm p=0.066**, Fisher z p=0.055 — **marginal, not
+      null**, and better than the 6W coupling ever was. But it is **Pearson-only** (Spearman
+      p=0.31), fails multiplicity, and **evaporates on every non-mito death axis** (p=0.19–0.92).
+      The only axis that gets this far is the circular one. Ambient context: the median set's
+      coupling already falls **0.71 → 0.35** (74% → 11% of sets above |r|=0.5) while **PC1 is
+      unchanged (43% → 46%)**.
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
@@ -81,8 +111,8 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Scripts 32-33 (mito content proxies; the mt-axis + coupling null) and the
-  **figure scripts 34+** land here.
+  Scripts 32-34 (mito content proxies; the mt-axis + coupling null; the death-priming
+  reassessment) and the **figure scripts 35+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.
@@ -176,6 +206,15 @@ Git rules:
 - Use shrinkage (apeglm/ashr) only for MA-plot QC and ranking-agnostic visualisation.
 
 ## Cell death — both branches, neither canonical
+
+**Read `scripts/34_death_priming_reassessment.R` first — both branches are null on the
+interaction, and the death composites are mito-defined (circular).** Two standing traps:
+`pro_comp`/`priming` are built from `MITOCARTA_APOPTOSIS_PRO`/`_ANTI`, so any coupling to a
+mito axis is mito-vs-mito; and branch 1's `binom.test(..., p = 0.5)` is the **wrong null**
+under a global attenuation (every Myc-induced gene has ΔLFC>0 by construction — use the
+genome-wide supporting fraction, script 34 PART G). Also: **`results/death_timing_substrate.rds`
+on disk is STALE** — script 23 as committed builds an 11-row `convergence` table (`23:489-530`);
+the saved object has 9, so Parts 2b/5b have never been run. Re-source 23 before reading it.
 
 Both go into the final analysis; report convergence and divergence, do not pick one.
 - Branch 1 (main `09`, `archive_main_pipeline/09_cell_death_pathway_summary.R`, ported
