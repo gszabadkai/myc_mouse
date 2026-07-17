@@ -440,6 +440,22 @@ B <- 5000L
 # CONDITIONAL question -- e.g. "is APOPTOSIS_PRO special among MitoCarta genes",
 # which is the only way to separate a death effect from the mito-content effect.
 # Query genes are excluded from their own pool.
+#
+# *** READ THIS BEFORE QUOTING ANY p FROM THIS FUNCTION. *** It draws null genes
+# INDEPENDENTLY from their bins, so the null distribution of the mean is too NARROW
+# for real (co-regulated) gene sets -> p_emp is ANTI-CONSERVATIVE, exactly as
+# script 21 documented for AP6.2 ("raw z inflated by inter-gene correlation -> use
+# EFFECT-SIZE ranking, not absolute z"). It matches expression x dispersion; it does
+# NOT match inter-gene correlation. Consequences here:
+#   - A NON-significant result is SAFE (a proper correction only widens the null).
+#     PART D's "nothing is in excess" and PART E's Gate 2 verdict are therefore firm.
+#   - A SIGNIFICANT result is NOT safe on its p alone. Quote the EFFECT SIZE and the
+#     DIRECTION, and require independent corroboration. The two significant results
+#     below (PART F3) both have it: APOPTOSIS_PRO rising HALF as much as the mito
+#     background reproduces script 23's mitoPPS de-prioritisation (-0.21, padj 0.022)
+#     by an independent method.
+# This is the same trap as Gate 2 (PART E), so do not fall into it while reporting
+# Gate 2's failure.
 matched_null <- function(ens, label, metric_col, background = NULL,
                          excess_label = "the global attenuation") {
   qi <- which(gene_tbl$ensembl %in% ens & !is.na(gene_tbl[[metric_col]]))
@@ -700,7 +716,10 @@ fit_axis <- function(y, label) {
 }
 noncircular_stats <- dplyr::bind_rows(
   lapply(names(noncircular_axes), function(n) fit_axis(noncircular_axes[[n]], n))) |>
-  dplyr::mutate(geno_sig = geno_p < 0.05, int_sig = int_p < 0.05)
+  dplyr::mutate(geno_p_bh = stats::p.adjust(geno_p, method = "BH"),
+                int_p_bh  = stats::p.adjust(int_p,  method = "BH"),
+                geno_sig = geno_p_bh < 0.05, int_sig = int_p_bh < 0.05,
+                geno_direction = dplyr::if_else(geno_beta > 0, "Myc RAISES", "Myc LOWERS"))
 
 # F2. Does the IMBALANCE couple to a NON-mito death axis -- and does that survive
 # the delta-rho null? This is the bridge's last chance.
@@ -783,7 +802,13 @@ mito_background_verdict <- {
     "walkthrough:762-764). Two independent methods agree. The walkthrough reported it as a ",
     "'two-lens nuance' alongside the priming claim; it is better read as the EXPLANATION of the ",
     "priming claim. Same membership-looseness that produced the retracted 'commissioned but ",
-    "unbuilt' claim -- see [[mitocarta-sets-are-membership-loose]]."),
+    "unbuilt' claim -- see [[mitocarta-sets-are-membership-loose]]. STATISTICAL CEILING ON ",
+    "THIS ONE, STATED BECAUSE IT IS THE TRAP THIS SCRIPT IS ABOUT: the matched null samples ",
+    "genes INDEPENDENTLY, so p=0.012 is ANTI-CONSERVATIVE (script 21's own AP6.2 caveat -- ",
+    "'raw z inflated by inter-gene correlation'). DO NOT QUOTE THE p. What carries this claim ",
+    "is (a) the EFFECT SIZE -- half the background rise -- and (b) the INDEPENDENT mitoPPS ",
+    "convergence above. Non-significant matched-null results (PARTs D/E) are safe; significant ",
+    "ones need corroboration. This one has it."),
     u$observed[1], u$null_mean[1], u$z[1], u$p_emp_two_sided[1], u$verdict[1],
     c2$observed[1], c2$null_mean[1], c2$z[1], c2$p_emp_two_sided[1], c2$verdict[1])
 }
@@ -792,6 +817,11 @@ noncircular_verdict <- {
   a <- noncircular_stats |> dplyr::filter(grepl("^pro_comp", axis))
   b <- noncircular_stats |> dplyr::filter(grepl("NON-MITO", axis), grepl("z-composite", axis))
   nc <- noncircular_collapse_null
+  # every axis that is NOT the mito-defined published one
+  nnm <- noncircular_stats |>
+    dplyr::filter(!grepl("^pro_comp|MITO-ONLY", axis)) |>
+    dplyr::summarise(n_axes = dplyr::n(), n_neg = sum(geno_beta < 0),
+                     n_sig = sum(geno_beta < 0 & geno_p_bh < 0.05))
   sprintf(paste0(
     "BREAKING THE CIRCULARITY -- AND THIS IS WHERE THE DEATH ARM ACTUALLY DIES. pro_comp IS a ",
     "mitochondrial gene set (MITOCARTA_APOPTOSIS_PRO, 25 genes), and so is the imbalance -- so ",
@@ -804,15 +834,28 @@ noncircular_verdict <- {
     "circular mito axis gives perm p=%.3f, the non-mito pro-death axis p=%.3f, the non-mito ",
     "priming axis p=%.3f, CDC_PRODEATH_APOPTOSIS p=%.3f. The ONLY death axis whose coupling to ",
     "the imbalance collapses more than an arbitrary gene set's is the one that SHARES GENES ",
-    "with the imbalance. That is what a circularity looks like when you test it. See PART F3 ",
-    "(`mito_background_verdict`) for whether the genotype effect itself is just script 32's ",
-    "mito-content effect wearing a death label."),
+    "with the imbalance. That is what a circularity looks like when you test it. AND THE ",
+    "DIRECTION IS THE OPPOSITE OF THE NARRATIVE: ALL %d non-mito/general death axes tested ",
+    "have a NEGATIVE Myc genotype effect (%d of them significant after BH) -- APOP_BH3_REACTOME ",
+    "%+.3f (p=%.3f) and CDC_PRODEATH_APOPTOSIS %+.3f (p=%.3f). On every death axis that is not ",
+    "mito-defined, Myc LOWERS the death programme at 6W rather than raising it. READ THAT WITH ",
+    "THE SURVIVOR BIAS, NOT AROUND IT: we sequence the cells that did NOT die, so the most ",
+    "death-primed cells are missing by construction, and a suppressed-looking survivor pool is ",
+    "exactly what oncogene-induced apoptosis would leave behind. The walkthrough calls survivor ",
+    "bias 'a conservative floor' on Myc's death engagement; these numbers suggest it can INVERT ",
+    "the sign, not merely shrink it. Either way the transcriptome cannot be cited as showing ",
+    "Myc primes for death. See PART F3 (`mito_background_verdict`)."),
     length(ens_of(prodeath_nomito)),
     b$geno_beta[1], b$geno_p[1], a$geno_beta[1], a$geno_p[1], b$int_p[1], a$int_p[1],
     nc$perm_p[grepl("^pro_comp", nc$death_axis)][1],
     nc$perm_p[grepl("pro-death NON-MITO", nc$death_axis)][1],
     nc$perm_p[grepl("priming NON-MITO", nc$death_axis)][1],
-    nc$perm_p[grepl("CDC_PRODEATH_APOPTOSIS", nc$death_axis)][1])
+    nc$perm_p[grepl("CDC_PRODEATH_APOPTOSIS", nc$death_axis)][1],
+    nnm$n_axes[1], nnm$n_sig[1],
+    noncircular_stats$geno_beta[grepl("BH3", noncircular_stats$axis)][1],
+    noncircular_stats$geno_p[grepl("BH3", noncircular_stats$axis)][1],
+    noncircular_stats$geno_beta[grepl("CDC_PRODEATH", noncircular_stats$axis)][1],
+    noncircular_stats$geno_p[grepl("CDC_PRODEATH", noncircular_stats$axis)][1])
 }
 
 # =============================================================================
@@ -847,11 +890,35 @@ binomial_recheck <- dplyr::bind_rows(
   supporting_frac(ens_of(prodeath_all), "pro-death"),
   supporting_frac(ens_of(prodeath_nomito), "pro-death"),
   supporting_frac(ens_of(prosurv_all), "pro-survival")) |>
-  dplyr::mutate(set = c("pro-death ALL (512)", "pro-death NON-MITO (471)",
-                        "pro-survival ALL (587)"), .before = 1) |>
+  dplyr::mutate(set = c(lab("pro-death ALL", ens_of(prodeath_all)),
+                        lab("pro-death NON-MITO", ens_of(prodeath_nomito)),
+                        lab("pro-survival ALL", ens_of(prosurv_all))), .before = 1) |>
   dplyr::mutate(
     genomewide_pct = genomewide_baseline$pct_dLFC_positive,
-    excess_over_genomewide = pct_supporting - genomewide_baseline$pct_dLFC_positive)
+    excess_over_genomewide = pct_supporting - genomewide_baseline$pct_dLFC_positive,
+    verdict = dplyr::if_else(excess_over_genomewide > 0,
+                             "above the genome-wide baseline",
+                             "AT OR BELOW the genome-wide baseline"))
+
+binomial_verdict <- {
+  pd <- binomial_recheck |> dplyr::filter(grepl("pro-death ALL", set))
+  sprintf(paste0(
+    "THE BRANCH-1 BINOMIAL'S NULL WAS NEVER 50%%, AND CORRECTING IT FLIPS THE READ. `16:133` ",
+    "runs binom.test(supporting, total, p = 0.5) on the sign of dLFC = myc_6W - myc_12W. But ",
+    "the Myc programme attenuates GLOBALLY, so dLFC > 0 is what a Myc-INDUCED gene does BY ",
+    "CONSTRUCTION. Measured genome-wide: %.1f%% of expressed genes have dLFC>0 -- and among ",
+    "Myc-INDUCED genes, %.1f%%. THAT is the null, not 50%%. Consequence: the %d pro-death genes ",
+    "are %.1f%% 'supporting', which vs 50%% looks significant (binom p=%.3f) but sits %+.1f ",
+    "points against the genome-wide baseline of %.1f%% => %s. So the pro-death set does not ",
+    "front-load at 6W any more than an average gene does; it front-loads slightly LESS. Script ",
+    "16's published 52.7%%/p=0.27 'clean negative' reached the right conclusion through the ",
+    "wrong null -- and had the set scored a few points higher it would have reported a ",
+    "significant death result that was nothing but the global attenuation."),
+    genomewide_baseline$pct_dLFC_positive,
+    genomewide_baseline$pct_dLFC_positive_among_myc_induced,
+    pd$n[1], pd$pct_supporting[1], pd$binom_p_vs_50[1],
+    pd$excess_over_genomewide[1], genomewide_baseline$pct_dLFC_positive, pd$verdict[1])
+}
 
 # =============================================================================
 # PART H: VERDICTS
@@ -863,7 +930,8 @@ message("\n", paste(strwrap(atten_verdict,      width = 88), collapse = "\n"))
 message("\n", paste(strwrap(tang_verdict,       width = 88), collapse = "\n"))
 message("\n", paste(strwrap(gate2_verdict,      width = 88), collapse = "\n"))
 message("\n", paste(strwrap(noncircular_verdict, width = 88), collapse = "\n"))
-message("\n", paste(strwrap(mito_background_verdict, width = 88), collapse = "\n"), "\n")
+message("\n", paste(strwrap(mito_background_verdict, width = 88), collapse = "\n"))
+message("\n", paste(strwrap(binomial_verdict, width = 88), collapse = "\n"), "\n")
 
 # =============================================================================
 # PART I: FIGURES
@@ -964,6 +1032,7 @@ death_out <- list(
   mito_background_verdict   = mito_background_verdict,
   genomewide_baseline       = genomewide_baseline,
   binomial_recheck          = binomial_recheck,
+  binomial_verdict          = binomial_verdict,
   notes = paste(
     "Block B, author challenge 2026-07-17: 'the main question is whether an increased priming",
     "at 6W is indeed collapsing at 12W, and whether it correlates with mitochondrial",
@@ -1039,8 +1108,9 @@ if (FALSE) {
   cat(strwrap(dp$mito_background_verdict, 88), sep = "\n")
 
   # --- PART G: the binomial's null should never have been 50% ---
-  dp$genomewide_baseline |> as.data.frame() |> print()
+  dp$genomewide_baseline |> as.data.frame() |> print()   # 59.6%, not 50% -- and 94% if Myc-induced
   dp$binomial_recheck |> as.data.frame() |> print()
+  cat(strwrap(dp$binomial_verdict, 88), sep = "\n")
 
   list.files(here::here("outputs", "death_priming_reassessment"), pattern = "\\.pdf$")
 }
