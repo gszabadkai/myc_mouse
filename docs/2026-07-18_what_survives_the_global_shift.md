@@ -173,5 +173,27 @@ both lenses = design-only primary + `G_tech`-removed second lens) reports:
 **independent/safe** column as a *descriptive* statement about the axis-phenotype. The loading
 CHANGE and every per-sample coupling remain exploratory. Nothing here disturbs the backbone.
 
-Script 38 (mitoPPS priming-coupling in ratio space + MYC-vs-PGC1a/ESRRA biogenesis separability) is
-specified but not yet built — it is where the death-priming and PGC1a questions get answered.
+### Script 38 — the death-priming and PGC1a questions, answered (`results/mitopps_priming_pgc1a.rds`)
+
+Both questions are coupling questions, so they were moved into spaces where couplings are readable.
+
+- **mitoPPS space is readable (the author's point 3, confirmed).** The pairwise ratio cancels the
+  global shift, so the mitoPPS ambient is **0.42** (vs GSVA's 0.80); OXPHOS↔global-mean falls from
+  0.97 to 0.46, PC1 from ~72% to 44%. A coupling here is not handed to you by a common mode.
+- **OXPHOS ↔ death-priming: a weak but CLEAN lead.** In mitoPPS ratio space (where Apoptosis-PRO/-ANTI
+  and OXPHOS are nuclear-encoded ratio pathways — no mtDNA-arm border), OXPHOS↔priming (PRO−ANTI) is
+  raw Spearman **+0.45** (null 0.42), design-adjusted **+0.70** (null 0.48) — but only the **52nd
+  percentile** of OXPHOS's couplings (mid-pack), and the genotype δ-interaction is marginal (p=0.08).
+  It is **neither circular nor ceiling-bound** — the honest upgrade over script 34's GSVA-space
+  negative control — so it is a **ranking lead for BH3 profiling**, not a result. priming ≠ death.
+- **MYC- and PGC1a/ESRRA-biogenesis are NOT separable.** PGC1a (as the ESRRA/NRF1/GABPA lanes) and
+  MYC correlate **0.93** and are both strongly Myc-induced (β +0.57 / +0.75). The global-adjusted
+  −0.03 is the script-36 **over-removal trap** (both ARE the global factor; resid_frac 0.01/0.06),
+  not independence. So the hypothesised MYC-vs-PGC1a death contrast **cannot be tested** in this bulk
+  data — all biogenesis axes couple to priming identically and untestably. **That is the answer:** it
+  needs an ESRRA/PGC1a perturbation against the Myc substrate, not more n=24 correlation.
+
+**Inventory consequence.** The one net-positive coupling to survive into a clean space is the weak
+OXPHOS↔priming mitoPPS lead → BH3 profiling. The PGC1a question resolves to a **design conclusion**
+(not separable here → perturbation needed), which is a genuine, reportable result. Neither disturbs
+the backbone.

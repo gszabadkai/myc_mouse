@@ -166,9 +166,26 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
       (`r2_removed_by_tech`). No external QC metadata exists → `G_tech` is an RNA surrogate, not
       measured technical.
     - **SCOPE unchanged:** loading layer only; contrasts (content shares, DESeq2 LFCs, Wald fGSEA)
-      untouched. Ranking + loading-as-phenotype, NOT confirmatory CIs (n=24). **Script 38**
-      (mitoPPS priming-coupling in ratio space + MYC-vs-PGC1a/ESRRA separability) is specified in the
-      plan but not yet built — it answers the death-priming and PGC1a questions.
+      untouched. Ranking + loading-as-phenotype, NOT confirmatory CIs (n=24).
+  - **Script 38** (`38_mitopps_priming_and_pgc1a_biogenesis.R`) — **the death-priming + PGC1a
+    questions, moved into spaces where they are answerable.** Author-run 2026-07-19
+    (`results/mitopps_priming_pgc1a.rds`).
+    - **PART A — mitoPPS space IS readable** (validates the author's point 3): the pairwise ratio
+      cancels the global shift, so the mitoPPS ambient is **0.42** (OXPHOS↔global-mean 0.46, PC1 44%)
+      vs GSVA's **0.80**. The honest null for a mitoPPS coupling is ~0.42, not ~0.8.
+    - **PART B — OXPHOS ↔ death-PRIMING in mitoPPS ratio space is a WEAK but CLEAN lead.** Apoptosis-
+      PRO/-ANTI + OXPHOS are nuclear-encoded ratio pathways (script 08 PART 2c; no mt- genes → no
+      mtDNA-arm border). OXPHOS↔priming (PRO−ANTI) = raw Spearman **+0.45** (null 0.42), design-adj
+      **+0.70** (design-adj null 0.48) — but only the **52nd percentile** of OXPHOS's couplings
+      (mid-pack); genotype δ-interaction marginal (p=0.08). **NEITHER circular NOR ceiling-bound**
+      (unlike script 34's GSVA-space negative control) — a ranking lead for **BH3 profiling**, not a
+      result. priming ≠ death (molecular substrate; phenotype = external IHC/BH3).
+    - **PART C — MYC- and PGC1a/ESRRA-biogenesis are NOT separable.** PGC1a = ESRRA/NRF1/GABPA lanes
+      (coactivator proxy). vs MYC: raw r=**0.93**, both strongly Myc-induced (β +0.57/+0.75). The
+      global-adjusted **−0.03 is the script-36 OVER-REMOVAL trap** (resid_frac 0.01/0.06 — both ARE
+      the global factor), NOT independence. **The hypothesised MYC-vs-PGC1a death contrast (PART D)
+      is UNTESTABLE here** (all biogenesis axes → priming identically, all resid_frac<0.10) — it
+      needs an **ESRRA/PGC1a perturbation** vs the Myc substrate, not n=24 bulk. That is the answer.
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
