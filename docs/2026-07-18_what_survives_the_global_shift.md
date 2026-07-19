@@ -120,3 +120,58 @@ to cancel is the very axis we cannot yet resolve.
    (content, nuclear OXPHOS, the OXPHOS timeline, mitoPPS reallocation, the developmental bending),
    with the couplings and the imbalance framed as qPCR/bench-testable hypotheses rather than
    results.
+
+---
+
+## Update 2026-07-19 — batch = timepoint, and the loading reframe (script 37)
+
+Two developments from the author's low-dimensional-structure doc
+(`docs/Low_dimensional_pathway_structure_and_global_axis_analysis.md`) and a clarification.
+
+### New technical fact: batch = timepoint
+
+The RNA-seq was **two extractions — 6W and 12W processed separately** — so batch is *perfectly
+confounded with timepoint*. This is undocumented-until-now, like the dissociation detail. The
+consequence is mostly reassuring: **genotype is balanced within each batch**, so the design
+`~timepoint*myc_status` **already absorbs the whole batch effect into the timepoint main-effect
+term**. Every genotype and interaction result stays clean (the backbone is safe). Only the **pure
+between-timepoint (developmental) reading is confounded with batch** and cannot be separated from it
+with these data — there is no external batch/RIN/QC metadata. This sharpens, with a mechanism, the
+caution we already held: *genotype clean, time exposed.* Script 37 removes the design first
+everywhere, so its biological axis is orthogonal to both batch and the four-group design.
+
+### The loading reframe (script 37, `results/pathway_loading.rds`)
+
+The author designated **contamination + IEG/prep-stress as technical** (`G_tech`), which supplies
+the anchors the analysis previously lacked. Script 37 (linear z-score; design->PC1->residual axis;
+both lenses = design-only primary + `G_tech`-removed second lens) reports:
+
+- **How low-dimensional: quantified.** PC1 = **76%** of variance, effective dimensionality **1.7**
+  of a possible 23 at n=24, 79% of loadings one-signed. The 884 pathways move along essentially one
+  axis. (`cor(mito_oxphos, global mean)=0.968`, reproducing script 36.)
+- **The positive reframe works, as a LEVEL statement — but the axis is a CORE, not OXPHOS alone.**
+  OXPHOS loads **0.968** on the design-residual axis, but it is **not uniquely central**: it is
+  indistinguishable from a tightly co-loading Myc-metabolic-proliferative cluster (TCA 0.97,
+  nucleotide 0.95, MYC-targets 0.93, biogenesis 0.91, proliferation 0.86) — all of which essentially
+  *are* the axis. So the dominant programme is that whole co-regulated core, and **that is exactly why
+  "OXPHOS is central" stays untestable** (nothing in the cluster is separable from the rest). The
+  loading LEVEL is a robust, defensible *description* of the axis (near-tautological, not a coupling);
+  it answers "OXPHOS in proliferation/tumour state" the only way the data allow. `redox` is a weak
+  loader (42nd pct) — the one axis Myc does not drive.
+- **The loading-CHANGE is a contrast, but only an exploratory lead here.** `S ~ G*genotype*timepoint`
+  makes the loading *change* a genotype contrast (readable where the residual coupling was not).
+  OXPHOS hints at a genotype increase in within-group slope (relative +71%), but this is
+  **exploratory, not a result**: near-collinear slopes at n=6/group, and `mito_biogenesis` shows no
+  such change — not a blanket mito effect.
+- **Both lenses agree, with a NAMED over-correction risk.** The design-only and `G_tech`-removed
+  axes correlate r=0.57. But the anchors are RNA-derived and carry biology: they absorb **r²=0.67 of
+  design-residual proliferation variance** (IEG ↔ proliferation −0.75). So the second lens removes
+  some biology, not only prep noise; the design-only lens stays primary and prep-driven loadings are
+  flagged (`r2_removed_by_tech`).
+
+**Inventory consequence.** The loading LEVEL ("OXPHOS defines the dominant axis") joins the
+**independent/safe** column as a *descriptive* statement about the axis-phenotype. The loading
+CHANGE and every per-sample coupling remain exploratory. Nothing here disturbs the backbone.
+
+Script 38 (mitoPPS priming-coupling in ratio space + MYC-vs-PGC1a/ESRRA biogenesis separability) is
+specified but not yet built — it is where the death-priming and PGC1a questions get answered.

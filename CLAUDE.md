@@ -11,7 +11,13 @@ This matters and was undocumented until 2026-07-16: any stromal/endothelial/adip
 signal is **contamination**, not tissue composition (~3–12% residual, consistent with no
 sort), and the warm enzymatic digest is itself the stressor that induces the immediate-early
 response (van den Brink 2017) — see the mt-axis note below. No dissociation-batch,
-viability or RIN metadata exists on disk. Four groups x six replicates
+viability or RIN metadata exists on disk. **BATCH = TIMEPOINT** (undocumented until
+2026-07-19): the 6W and 12W cohorts were extracted as two separate batches, so batch is
+perfectly confounded with timepoint. Genotype is balanced within each batch, so the
+`~timepoint*myc_status` design absorbs the whole batch effect into the timepoint main
+effect — **genotype/interaction contrasts stay clean; the pure between-timepoint
+(developmental) reading is confounded with batch and not separable** (no QC metadata).
+Four groups x six replicates
 (`6W_neg`, `6W_pos`, `12W_neg`, `12W_pos`), DESeq2 genotype x timepoint interaction
 model. Investigates Myc-driven transcriptional and mitochondrial changes across the
 two timepoints. Feeds the manuscript "Mitochondria integrate oncogenic and metabolic
@@ -34,7 +40,7 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
-    script. **Figure scripts are now 37+** (34/35/36 are analysis scripts — see below).
+    script. **Figure scripts are now 39+** (34/35/36/37 are analysis scripts, 38 planned — see below).
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
     mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
     would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
@@ -138,6 +144,31 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
       residual r~0.29 arises under the null). **SCOPE unchanged:** re-ranks EXPLORATORY couplings
       only; the content result (raw count shares) and attenuation (DESeq2 LFCs) never touch GSVA/
       these couplings. Author runs 36 (Option A); needs `singscore` (added to `00_setup_packages.R`).
+  - **Script 37** (`37_pathway_loading_and_technical_resolution.R`) — **BEHIND the global axis,
+    Parts 1+2 of the author's low-dimensional-structure doc** (`docs/Low_dimensional_pathway_
+    structure_and_global_axis_analysis.md`). Treats the axis as a phenotype to dissect, not noise to
+    delete. Author-run 2026-07-19 (`results/pathway_loading.rds`).
+    - **Low-dimensional, quantified:** linear-z-score PC1 = **76%** of variance, effective
+      dimensionality **1.7** of a possible 23 (n=24), 79% one-signed loadings. `cor(mito_oxphos,
+      global mean)=0.968` (reproduces 36). The 884 pathways move along one dominant axis.
+    - **THE POSITIVE REFRAME (answers "OXPHOS in proliferation"):** as a composite, **OXPHOS is the
+      single strongest-loading programme — it IS the dominant axis** (r=0.968). The loading LEVEL is
+      the ROBUST, defensible statement (near-tautological → a *description* of the axis, not a
+      coupling). `redox` is a weak loader (42nd pct), the one axis Myc does not drive.
+    - **The loading-CHANGE is a contrast but only an EXPLORATORY lead:** `S ~ G*genotype*timepoint`
+      makes loading-change a genotype contrast (readable where the residual coupling was untestable).
+      OXPHOS hints at a genotype increase (rel +71%) but **near-collinear at n=6/group and
+      mito_biogenesis shows none — not a result, a lead.**
+    - **Both-lenses technical correction:** design-only axis (primary) vs contamination+IEG-removed
+      (2nd lens) correlate r=0.57. **NAMED over-correction risk:** the RNA-derived anchors absorb
+      **r²=0.67 of design-residual proliferation variance** (IEG↔prolif −0.75), so the 2nd lens
+      removes some biology; design-only stays primary, prep-driven loadings flagged
+      (`r2_removed_by_tech`). No external QC metadata exists → `G_tech` is an RNA surrogate, not
+      measured technical.
+    - **SCOPE unchanged:** loading layer only; contrasts (content shares, DESeq2 LFCs, Wald fGSEA)
+      untouched. Ranking + loading-as-phenotype, NOT confirmatory CIs (n=24). **Script 38**
+      (mitoPPS priming-coupling in ratio space + MYC-vs-PGC1a/ESRRA separability) is specified in the
+      plan but not yet built — it answers the death-priming and PGC1a questions.
   - **The axis is genotype-INDEPENDENT (p=0.49) but time-associated (p=0.0003).** So every
     genotype/interaction result (Issues #1/#2/#3/#5/#6, the content claim) is safe; the
     mt-related TIME story (script 24's mitonuclear narrative, 22/29's mtDNA rise, 25's
@@ -165,9 +196,9 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
 - `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Scripts 32-36 (mito content proxies; the mt-axis + coupling null; the death-priming
-  reassessment; the correlation ceiling; the linear coupling method of record) and the
-  **figure scripts 37+** land here.
+  Scripts 32-37 (mito content proxies; the mt-axis + coupling null; the death-priming
+  reassessment; the correlation ceiling; the linear coupling method of record; pathway
+  loading + technical resolution) and the **figure scripts 39+** land here.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.
