@@ -573,6 +573,16 @@ mito_universe <- unique(unlist(pw[grep("^MITOCARTA_", names(pw))]))
 library_composition <- mito_classification |>
   dplyr::count(category, class3, name = "n") |>
   dplyr::group_by(category) |> dplyr::mutate(cat_total = sum(n)) |> dplyr::ungroup()
+# provenance: which scored sets are OFF-THE-SHELF MSigDB Hallmark (vs constructed for
+# this project)? A "_AND_" name is a constructed intersection that merely references a
+# Hallmark set, so exclude it -- only pristine Hallmark-derived sets count.
+is_hallmark <- grepl("HALLMARK", mito_classification$set) & !grepl("_AND_", mito_classification$set)
+n_hallmark_total <- sum(is_hallmark)
+hallmark_by_cat <- mito_classification |>
+  dplyr::mutate(is_hallmark = is_hallmark) |>
+  dplyr::group_by(category) |>
+  dplyr::summarise(n_hallmark = sum(is_hallmark), .groups = "drop") |>
+  dplyr::filter(n_hallmark > 0)
 myc_sig_sets <- intersect(set_meta$set_name[set_meta$category_primary == "MYC_signatures"],
                           names(pw))
 myc_sig_mitofrac <- purrr::map_dfr(myc_sig_sets, function(s) {
@@ -597,12 +607,15 @@ library_coverage_verdict <- {
     "mitochondrial gene sets: the MYC_signatures category is 0/%d mito, and Felsher's integrative ",
     "MYC signature is only %d/%d genes mitochondrial (%.0f%%, vs a %.0f%% transcriptome baseline). ",
     "So the Myc-mitochondria link is EMERGENT (co-regulation of the dominant axis), NOT built into ",
-    "the MYC signatures -- the loading argument is about covariation, not a mito-defined MYC set."),
+    "the MYC signatures -- the loading argument is about covariation, not a mito-defined MYC set. ",
+    "PROVENANCE: only %d of the %d scored sets are off-the-shelf MSigDB Hallmark; the library was ",
+    "extensively CONSTRUCTED for this project (~%.0f%% custom)."),
     n_tot, ncat, n_mito, n_tot - n_mito, 100 * n_mito / n_tot, n_const, n_mito,
     n_mito - n_const, length(myc_sig_sets),
     myc_sig_mitofrac$n_mito[myc_sig_mitofrac$set == "MYC_felsher_integrative_signature"],
     myc_sig_mitofrac$n_genes[myc_sig_mitofrac$set == "MYC_felsher_integrative_signature"],
-    100 * felsher_frac, 100 * genome_mito_frac)
+    100 * felsher_frac, 100 * genome_mito_frac,
+    n_hallmark_total, n_tot, 100 * (n_tot - n_hallmark_total) / n_tot)
 }
 message("\n", paste(strwrap(library_coverage_verdict, width = 92), collapse = "\n"), "\n")
 
@@ -916,10 +929,14 @@ comp_df <- library_composition |>
                 class3   = factor(class3, levels = c("non_mito", "construction_MITO", "mitocarta_proper")))
 cat_tot_df <- library_composition |> dplyr::distinct(category, cat_total) |>
   dplyr::mutate(category = factor(category, levels = cat_ord))
+hm_df <- hallmark_by_cat |> dplyr::mutate(category = factor(category, levels = cat_ord))
 p_e1 <- ggplot2::ggplot(comp_df, ggplot2::aes(n, category, fill = class3)) +
   ggplot2::geom_col(colour = "white", linewidth = 0.7) +
   ggplot2::geom_text(data = cat_tot_df, ggplot2::aes(cat_total, category, label = cat_total),
                      inherit.aes = FALSE, hjust = -0.25, size = 3, colour = "grey25") +
+  # mark the off-the-shelf MSigDB Hallmark subset (diamond = count within the category)
+  ggplot2::geom_point(data = hm_df, ggplot2::aes(n_hallmark, category),
+                      inherit.aes = FALSE, shape = 18, size = 2.8, colour = "grey10") +
   ggplot2::scale_fill_manual(values = class_fill, labels = class_lab,
                              breaks = c("mitocarta_proper", "construction_MITO", "non_mito")) +
   ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.10))) +
@@ -927,13 +944,16 @@ p_e1 <- ggplot2::ggplot(comp_df, ggplot2::aes(n, category, fill = class3)) +
     title = sprintf("%d gene sets scored: functional coverage and mitochondrial share",
                     nrow(mito_classification)),
     subtitle = sprintf(paste("%d mito / %d non-mito; but %d of the %d 'mito' are build-tautological",
-                             "_MITO TF lanes,\nso genuine MitoCarta coverage is %d sets. The library is",
-                             "dominated by non-mito programmes."),
+                             "_MITO TF lanes, so genuine MitoCarta = %d.\nDiamond = off-the-shelf MSigDB",
+                             "Hallmark (only %d of %d sets; ~%.0f%% of the library was CONSTRUCTED for",
+                             "this project)."),
                        sum(mito_classification$mito_defined),
                        sum(!mito_classification$mito_defined),
                        sum(mito_classification$is_construction_mito),
                        sum(mito_classification$mito_defined),
-                       sum(mito_classification$mito_defined) - sum(mito_classification$is_construction_mito)),
+                       sum(mito_classification$mito_defined) - sum(mito_classification$is_construction_mito),
+                       n_hallmark_total, nrow(mito_classification),
+                       100 * (nrow(mito_classification) - n_hallmark_total) / nrow(mito_classification)),
     x = "number of gene sets", y = NULL, fill = NULL) +
   ggplot2::theme_minimal(base_size = 10) +
   ggplot2::theme(legend.position = "bottom", panel.grid.major.y = ggplot2::element_blank(),
@@ -1002,6 +1022,8 @@ pl_out <- list(
   substrate_stratification = substrate_stratification,
   enrichment_verdict    = enrichment_verdict,
   library_composition   = library_composition,
+  hallmark_by_cat       = hallmark_by_cat,
+  n_hallmark_total      = n_hallmark_total,
   myc_sig_mitofrac      = myc_sig_mitofrac,
   genome_mito_frac      = genome_mito_frac,
   library_coverage_verdict = library_coverage_verdict,
