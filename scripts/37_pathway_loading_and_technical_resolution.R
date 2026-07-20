@@ -247,6 +247,24 @@ gene_axis_covcor <- purrr::map_dfr(names(pc_scores), function(a)
                         suppressWarnings(stats::cor(pc_scores[[a]], cv, method = "spearman")),
                         numeric(1))))
 
+# what KIND each covariate is (the A3 rows mix three types) + a reader-facing label:
+# design factors; composition/QC marker-read shares (NOT gene sets, built in script 33) +
+# library depth; and the actual pathway-score composites.
+covariate_meta <- tibble::tribble(
+  ~covariate,       ~group,             ~label,
+  "genotype",       "Design",           "genotype (Myc+/WT)",
+  "timepoint",      "Design",           "timepoint (12W/6W)",
+  "epithelial",     "Composition & QC", "epithelial marker share",
+  "immune",         "Composition & QC", "immune marker share",
+  "endothelial",    "Composition & QC", "endothelial marker share",
+  "ieg_prep",       "Composition & QC", "dissociation-stress IEG (prep)",
+  "depth",          "Composition & QC", "library depth (sizeFactor)",
+  "proliferation",  "Pathway score",    "proliferation",
+  "myc",            "Pathway score",    "MYC activity",
+  "oxphos",         "Pathway score",    "OXPHOS",
+  "biogenesis",     "Pathway score",    "mito-biogenesis") |>
+  dplyr::mutate(group = factor(group, levels = c("Design", "Composition & QC", "Pathway score")))
+
 # correspondence: which gene-level axis does the pathway global axis track?
 gene_pathway_correspondence <- tibble::tibble(
   gene_axis = c("gene_PC1", "gene_PC2", "gene_PC3"),
@@ -775,27 +793,35 @@ sample_pca_var <- tibble::tibble(
   pc2_pct = c(100 * v_gene_p[2], 100 * v_path_p[2]),
   pc3_pct = c(100 * v_gene_p[3], 100 * v_path_p[3]))
 
-# A3 -- what each PC axis IS: correlation with technical + biological covariates
+# A3 -- what each PC axis IS: correlation with covariates, grouped by KIND (design /
+# composition & QC marker-shares / pathway scores) so composition markers are not misread
+# as pathways. Left-strip facet pattern as in script 39 figure A.
 cov_order  <- c("genotype", "timepoint", "epithelial", "immune", "endothelial", "ieg_prep",
                 "depth", "proliferation", "myc", "oxphos", "biogenesis")
 axis_order <- c("gene_PC1", "gene_PC2", "gene_PC3", "pathway_PC1")
+lab_order  <- covariate_meta$label[match(cov_order, covariate_meta$covariate)]
 hm_df <- gene_axis_covcor |>
-  dplyr::mutate(covariate = factor(covariate, levels = rev(cov_order)),
-                axis      = factor(axis, levels = axis_order))
-p_a3 <- ggplot2::ggplot(hm_df, ggplot2::aes(axis, covariate, fill = rho)) +
+  dplyr::left_join(covariate_meta, by = "covariate") |>
+  dplyr::mutate(label = factor(label, levels = rev(lab_order)),
+                axis  = factor(axis, levels = axis_order))
+p_a3 <- ggplot2::ggplot(hm_df, ggplot2::aes(axis, label, fill = rho)) +
   ggplot2::geom_tile(colour = "white", linewidth = 0.4) +
   ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", rho)), size = 3) +
+  ggplot2::facet_grid(group ~ ., scales = "free_y", space = "free_y", switch = "y") +
   ggplot2::scale_fill_gradient2(low = "#4575B4", mid = "white", high = "#D73027",
                                 midpoint = 0, limits = c(-1, 1)) +
   ggplot2::labs(
-    title = "What each axis IS: gene-PC1 = composition (genotype-independent), pathway = Myc",
-    subtitle = paste("Spearman correlation of PC sample-scores with covariates. gene-PC1 tracks",
-                     "epithelial/immune\ncomposition NOT genotype; the pathway global axis is the",
-                     "genotype-associated Myc-metabolic program."),
+    title = "What each axis IS: gene-PC1 = composition, pathway-PC1 = Myc",
+    subtitle = paste("Spearman correlation of PC sample-scores with covariates, grouped by kind:",
+                     "design; composition & QC\n(marker-read shares, NOT gene sets) + depth; pathway-score",
+                     "composites. gene-PC1 tracks epithelial/immune\ncomposition NOT genotype; the pathway",
+                     "global axis is the genotype-associated Myc-metabolic program."),
     x = NULL, y = NULL, fill = "rho") +
   ggplot2::theme_minimal(base_size = 10) +
-  ggplot2::theme(panel.grid = ggplot2::element_blank())
-ggplot2::ggsave(file.path(out_dir, "A3_gene_axis_covariates.pdf"), p_a3, width = 7.5, height = 6)
+  ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                 strip.placement = "outside",
+                 strip.text.y.left = ggplot2::element_text(angle = 0, face = "bold"))
+ggplot2::ggsave(file.path(out_dir, "A3_gene_axis_covariates.pdf"), p_a3, width = 8, height = 7)
 
 # A4 -- assign gene-PC1 and gene-PC2 to pathways (fGSEA on their genome-wide loadings)
 if (!is.null(gene_axis_fgsea)) {
@@ -999,6 +1025,7 @@ pl_out <- list(
   dimensionality        = dimensionality,
   sample_pca_var        = sample_pca_var,
   gene_axis_covcor      = gene_axis_covcor,
+  covariate_meta        = covariate_meta,
   gene_pathway_correspondence = gene_pathway_correspondence,
   gene_axis_var         = gene_axis_var,
   gene_axis_fgsea       = gene_axis_fgsea,
@@ -1067,8 +1094,9 @@ if (FALSE) {
   # --- PART A2: gene-level axis identity (what compositing keeps vs drops) ---
   pl$gene_axis_var |> as.data.frame() |> print()
   pl$gene_pathway_correspondence |> as.data.frame() |> print()
-  pl$gene_axis_covcor |> tidyr::pivot_wider(names_from = axis, values_from = rho) |>
-    as.data.frame() |> print()
+  pl$gene_axis_covcor |> dplyr::left_join(pl$covariate_meta, by = "covariate") |>
+    tidyr::pivot_wider(id_cols = c(group, label), names_from = axis, values_from = rho) |>
+    dplyr::arrange(group) |> as.data.frame() |> print()
   if (!is.null(pl$gene_axis_fgsea)) {
     pl$gene_axis_fgsea |> dplyr::group_by(axis) |> dplyr::arrange(NES) |>
       dplyr::slice(c(1:5, (dplyr::n() - 4):dplyr::n())) |> as.data.frame() |> print()
