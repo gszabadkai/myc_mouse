@@ -62,6 +62,37 @@ interplay in HCC). The transferable core for us is **MYC -> NRF1 -> mitochondria
 respiration/mtDNA suppressed despite nuclear mito induction** -- which is the shape of our data
 (nuclear OXPHOS up, mtDNA fraction not tracking it).
 
+## 2b. Tested in our data (script 39, 2026-07-20)
+
+We tested Lesner's specific mechanistic claims against our DESeq2 contrasts
+(`scripts/39_lesner_mechanism_test.R`, `results/lesner_mechanism_test.rds`; figures
+`outputs/lesner/`). Instrument = the CLEAN contrasts (genotype gaps + Myc-specific interaction);
+batch=timepoint so `timepoint_pos/neg` are batch-confounded and the interaction is the clean term.
+
+- **The two HYPOXIA -> MYC-suppression mechanisms do NOT reproduce (they are liver-specific).** M1
+  (HIF-1a -> MXI1 -| MYC) and M2 (HIF-2/EPAS1 -| JUN -> down MYC/TFAM): HYPOXIA is **lower** in Myc+
+  (myc_6W NES -1.34) and does not rise over time (timepoint_pos -1.14, ns); Hif1a is low in Myc+
+  (-0.34); Mxi1 is higher in Myc+ (+0.33) but flat over time (+0.06); Tfam is flat; JUN targets are not
+  suppressed. The one thread is Epas1/HIF-2 rising over time specifically in Myc+ (interaction +0.45),
+  but its predicted downstream fails (Jun rises, not falls; TFAM flat). So the HIF/MXI1/JUN axis does
+  not operate in this mammary model.
+- **The nuclear-OXPHOS time-decline is Myc-specific but NOT hypoxia-linked.** Hallmark OXPHOS: up in
+  Myc+ (myc_6W +2.99) then declines over time Myc-specifically (interaction NES -2.21, padj 7e-11; WT
+  timecourse ns). It falls in lockstep with MYC targets while hypoxia does not rise -> it is the general
+  Myc-programme fade (canonical attenuation), not a hypoxia switch. This is our nuclear-up / mtDNA-arm
+  story on the OXPHOS side and it matches Lesner's "OXPHOS suppressed despite nuclear induction" shape.
+- **Myc raises the mito dynamics/mitophagy machinery (genotype) -- Lesner's downstream observation
+  transfers -- but NOT mitophagy-specifically.** DYNAMICS myc_6W NES +2.23 (padj 1e-8), FUSION +1.85,
+  MITOPHAGY +1.56, FISSION +1.55, AUTOPHAGY +1.62. But vs an expression-matched MitoCarta background
+  the rise is BELOW average for a mito gene (MITOPHAGY z -1.36 p 0.92; DYNAMICS z -2.62 p 1.00) -- the
+  ~20% wholesale mito-content effect, not a mitophagy-specific programme; the big movers (Bnip3/Prkn)
+  rise equally in WT (shared/batch). DRP1/FUNDC1 are only weakly Myc-induced at the gene level.
+
+**Net:** same **MYC -> mitochondrial-turnover machinery** that Lesner report, reached by a **different,
+non-hypoxic route** in this mammary model, and our OXPHOS decline is the Myc-programme attenuation, not
+a hypoxia switch. A clean cross-system contrast to cite -- and a reason the direct-test experiments
+below (mtDNA qPCR, BH3, NRF1/DRP1/FUNDC1 perturbation) are the way to settle mechanism.
+
 ## 3. Experiments / methods it endorses for us
 
 Lesner's toolkit maps almost one-to-one onto the experiments our audit already nominated:
