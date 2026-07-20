@@ -74,6 +74,25 @@ loading is covariation, not primacy (which needs perturbation, not n=24 bulk).
   near-collinear at n=6/group and mito-biogenesis shows no such change -- so this is a **lead, not a
   result**. Do not headline it.
 
+**Where the axis comes from at the gene level -- the entry point (script 37 PART A2, figures
+`A3_gene_axis_covariates.pdf` / `A4_gene_axis_fgsea.pdf`, added 2026-07-20).** The manuscript's
+dominant pathway axis is not an artifact of the compositing; it is the Myc programme, foregrounded.
+Decomposing the *gene*-level PCA shows two distinct axes, and it matters which one the pathway analysis
+keeps. **gene-PC1 (44% of gene variance) is the epithelial-purity vs immune-infiltration COMPOSITION
+axis -- and it is genotype-INDEPENDENT** (rho with genotype 0.02; epithelial +0.84, immune -0.90;
+fGSEA: an immune/inflammation pole against an OXPHOS/MYC-target pole). Its metabolic pole is a
+cell-identity effect (epithelial MECs are mito-dense, infiltrate is not), not Myc dose -- so **this
+44% is what the design and the compositing correctly discard.** The Myc-mitochondrial programme is
+**gene-PC2** (E2F/MYC/proliferation with **OXPHOS + mitochondrial translation/mtRNA biogenesis baked
+in**; fGSEA E2F 1e-52, MYC 1e-45, mito-translation 1e-35). The pathway global axis tracks gene-PC2 more
+than gene-PC1 (0.60 vs 0.44) and **sharpens the genotype separation from 0.26 to 0.66** -- i.e. the
+z-score/compositing step promotes the modest gene-level Myc-mito programme to the dominant axis and
+demotes the composition nuisance. So **mitochondria ride inside the Myc programme (gene-PC2), and
+characterising the discarded axis (gene-PC1) is what proves the global axis is not merely
+contamination.** One caveat that seeds the correlation ceiling: OXPHOS enriches at **both** gene-PC1's
+composition pole and gene-PC2's Myc pole -- the gene-level reason mitochondria correlate with
+everything.
+
 ---
 
 ## 3. OXPHOS vs mito-biogenesis: different genes, different behaviour
