@@ -196,6 +196,113 @@ dimensionality <- purrr::map_dfr(list(zscore = M_z, gsva = M_gsva), function(M) 
 }, .id = "quantifier")
 
 # =============================================================================
+# PART A2: WHAT THE PATHWAY COMPOSITING KEEPS vs DROPS (gene-level axis identity)
+# =============================================================================
+# The author's question: the pathway global axis (76%) is genotype-associated, but the
+# LARGEST gene-level axis (top-500 VST PC1, ~44%) is a different direction -- what is it,
+# and does the pathway axis correspond to gene-level PC2? Characterise the gene-level PCs
+# by (i) correlation with technical + biological covariates, (ii) correspondence to the
+# pathway axis, (iii) fGSEA on their genome-wide loadings. RESULT (gene_axis_verdict):
+# gene-PC1 = epithelial-purity vs immune-infiltration COMPOSITION axis, genotype-
+# INDEPENDENT -> correctly DROPPED. gene-PC2 = the MYC/E2F/proliferation program with
+# OXPHOS + mito-biogenesis baked in, and the pathway axis FOREGROUNDS it (cor 0.60 vs 0.44;
+# genotype 0.26 -> 0.66). The mito programme rides INSIDE the Myc programme, not the
+# composition nuisance. These PCAs are reused by figures A / A2 in PART E.
+grp      <- factor(paste(sm$timepoint, sm$myc_status, sep = "_"),
+                   levels = c("6W_neg", "6W_pos", "12W_neg", "12W_pos"))
+grp_cols <- c("6W_neg" = "#4575B4", "6W_pos" = "#D73027",
+              "12W_neg" = "#91BFDB", "12W_pos" = "#FC8D59")
+v_gene      <- apply(expr, 1, stats::var)
+top500      <- order(v_gene, decreasing = TRUE)[seq_len(min(500L, nrow(expr)))]
+pc_gene     <- stats::prcomp(t(expr[top500, , drop = FALSE]), center = TRUE, scale. = FALSE)
+v_gene_p    <- pc_gene$sdev^2 / sum(pc_gene$sdev^2)
+pc_gene_all <- stats::prcomp(t(expr), center = TRUE, scale. = FALSE)   # robustness: same axis?
+v_gene_all  <- pc_gene_all$sdev^2 / sum(pc_gene_all$sdev^2)
+pc_path     <- stats::prcomp(t(M_z), center = TRUE, scale. = FALSE)
+v_path_p    <- pc_path$sdev^2 / sum(pc_path$sdev^2)
+
+# orient axes so the reported signs are interpretable (epithelial+, proliferation+, myc+)
+orient <- function(v, ref) if (suppressWarnings(stats::cor(v, ref)) < 0) -v else v
+g1 <- orient(pc_gene$x[, 1], share[, "epithelial"])
+g2 <- orient(pc_gene$x[, 2], panel$prolif)
+g3 <- pc_gene$x[, 3]
+p1 <- orient(pc_path$x[, 1], panel$myc_sig)
+
+axis_covariates <- data.frame(
+  genotype      = as.integer(sm$myc_status == "pos"),
+  timepoint     = as.integer(sm$timepoint == "12W"),
+  epithelial    = share[, "epithelial"],
+  immune        = share[, "immune"],
+  endothelial   = share[, "endothelial"],
+  ieg_prep      = share[, "ieg_stress"],
+  depth         = sm$sizeFactor,
+  proliferation = panel$prolif,
+  myc           = panel$myc_sig,
+  oxphos        = panel$mito_oxphos,
+  biogenesis    = panel$mito_biogenesis)
+pc_scores <- data.frame(gene_PC1 = g1, gene_PC2 = g2, gene_PC3 = g3, pathway_PC1 = p1)
+gene_axis_covcor <- purrr::map_dfr(names(pc_scores), function(a)
+  tibble::tibble(axis = a, covariate = names(axis_covariates),
+                 rho = vapply(axis_covariates, function(cv)
+                        suppressWarnings(stats::cor(pc_scores[[a]], cv, method = "spearman")),
+                        numeric(1))))
+
+# correspondence: which gene-level axis does the pathway global axis track?
+gene_pathway_correspondence <- tibble::tibble(
+  gene_axis = c("gene_PC1", "gene_PC2", "gene_PC3"),
+  var_pct   = 100 * v_gene_p[1:3],
+  cor_with_pathway_PC1 = c(suppressWarnings(stats::cor(g1, p1)),
+                           suppressWarnings(stats::cor(g2, p1)),
+                           suppressWarnings(stats::cor(g3, p1))))
+gene_axis_var <- tibble::tibble(
+  space   = c("gene_top500", "gene_all", "pathway_scores"),
+  pc1_pct = c(100 * v_gene_p[1], 100 * v_gene_all[1], 100 * v_path_p[1]),
+  cor_top500_all_PC1 = c(suppressWarnings(stats::cor(pc_gene$x[, 1], pc_gene_all$x[, 1])),
+                         NA_real_, NA_real_))
+
+# fGSEA on the genome-wide loadings of gene-PC1 and gene-PC2 (assign the axes to pathways)
+gene_axis_fgsea <- NULL
+if (requireNamespace("fgsea", quietly = TRUE) &&
+    file.exists(here::here("results", "gene_sets_list.rds"))) {
+  glist <- readRDS(here::here("results", "gene_sets_list.rds"))
+  rank_axis <- function(pcscore) {
+    r <- apply(expr, 1, function(x) suppressWarnings(stats::cor(x, pcscore)))
+    sort(r[is.finite(r)], decreasing = TRUE)
+  }
+  fgsea_axis <- function(pcscore, lab) {
+    set.seed(1)
+    fg <- suppressWarnings(fgsea::fgsea(glist, rank_axis(pcscore),
+                                        minSize = 5, maxSize = 800, eps = 0))
+    tibble::as_tibble(fg[, c("pathway", "NES", "padj", "size")]) |> dplyr::mutate(axis = lab)
+  }
+  gene_axis_fgsea <- dplyr::bind_rows(fgsea_axis(g1, "gene_PC1"), fgsea_axis(g2, "gene_PC2"))
+}
+
+gene_axis_verdict <- {
+  cc <- gene_axis_covcor; gp <- gene_pathway_correspondence
+  gv <- function(a, c) cc$rho[cc$axis == a & cc$covariate == c]
+  sprintf(paste0(
+    "WHAT THE PATHWAY COMPOSITING KEEPS vs DROPS. The largest gene-level axis (top-500 VST PC1, ",
+    "%.0f%% of gene variance) is genotype-INDEPENDENT (rho with genotype %+.2f): it is the ",
+    "epithelial-purity vs immune-infiltration COMPOSITION axis (epithelial %+.2f, immune %+.2f), ",
+    "i.e. the residual dissociation contamination. Its metabolic pole (OXPHOS/MYC-target-high) is a ",
+    "cell-IDENTITY effect -- epithelial MECs are mito-dense, immune infiltrate is not -- NOT Myc ",
+    "dose. This is the axis the design/compositing correctly DROPS. gene-PC2 (%.0f%%) is the MYC/",
+    "E2F/proliferation program (proliferation %+.2f, myc %+.2f) with OXPHOS + mitochondrial ",
+    "translation/mtRNA (biogenesis) baked in by fGSEA -- mitochondria ride INSIDE the Myc program. ",
+    "The pathway global axis tracks gene-PC2 more than gene-PC1 (cor %+.2f vs %+.2f) and SHARPENS ",
+    "its genotype signal (gene-PC2 genotype %+.2f -> pathway-PC1 %+.2f). So compositing foregrounds ",
+    "the Myc-mito program (PC2) and demotes the composition nuisance (PC1). CAVEAT: OXPHOS enriches ",
+    "at BOTH gene-PC1's metabolic pole (composition) AND gene-PC2 (Myc program) -- the gene-level ",
+    "root of why mito correlates with everything (the ceiling)."),
+    gp$var_pct[1], gv("gene_PC1", "genotype"), gv("gene_PC1", "epithelial"), gv("gene_PC1", "immune"),
+    gp$var_pct[2], gv("gene_PC2", "proliferation"), gv("gene_PC2", "myc"),
+    gp$cor_with_pathway_PC1[2], gp$cor_with_pathway_PC1[1],
+    gv("gene_PC2", "genotype"), gv("pathway_PC1", "genotype"))
+}
+message("\n", paste(strwrap(gene_axis_verdict, width = 92), collapse = "\n"), "\n")
+
+# =============================================================================
 # PART B: BATCH / TECHNICAL RESOLUTION -- BOTH LENSES + over-correction check
 # =============================================================================
 # --- B1. batch = timepoint: what the design already absorbs, and what it cannot.
@@ -531,20 +638,6 @@ message("\n", paste(strwrap(enrichment_verdict, width = 92), collapse = "\n"), "
 # =============================================================================
 # PART E: FIGURES
 # =============================================================================
-# --- shared sample PCAs (used by figures A and A2) ----------------------------
-# gene = VST top-500 variable genes (DESeq2::plotPCA convention, matches PCA_vsd.pdf);
-# pathway = the 884-set linear z-score matrix (the source of the 76% claim).
-grp      <- factor(paste(sm$timepoint, sm$myc_status, sep = "_"),
-                   levels = c("6W_neg", "6W_pos", "12W_neg", "12W_pos"))
-grp_cols <- c("6W_neg" = "#4575B4", "6W_pos" = "#D73027",
-              "12W_neg" = "#91BFDB", "12W_pos" = "#FC8D59")
-v_gene   <- apply(expr, 1, stats::var)
-top500   <- order(v_gene, decreasing = TRUE)[seq_len(min(500L, nrow(expr)))]
-pc_gene  <- stats::prcomp(t(expr[top500, , drop = FALSE]), center = TRUE, scale. = FALSE)
-v_gene_p <- pc_gene$sdev^2 / sum(pc_gene$sdev^2)
-pc_path  <- stats::prcomp(t(M_z), center = TRUE, scale. = FALSE)
-v_path_p <- pc_path$sdev^2 / sum(pc_path$sdev^2)
-
 # A -- scree: gene-level PC distribution vs pathway-score PC distribution, on a shared
 # y-scale so the concentration onto PC1 (compositing effect) is directly comparable.
 scree_gene <- tibble::tibble(pc = seq_along(v_gene_p), var = 100 * v_gene_p) |>
@@ -626,6 +719,58 @@ sample_pca_var <- tibble::tibble(
   pc1_pct = c(100 * v_gene_p[1], 100 * v_path_p[1]),
   pc2_pct = c(100 * v_gene_p[2], 100 * v_path_p[2]),
   pc3_pct = c(100 * v_gene_p[3], 100 * v_path_p[3]))
+
+# A3 -- what each PC axis IS: correlation with technical + biological covariates
+cov_order  <- c("genotype", "timepoint", "epithelial", "immune", "endothelial", "ieg_prep",
+                "depth", "proliferation", "myc", "oxphos", "biogenesis")
+axis_order <- c("gene_PC1", "gene_PC2", "gene_PC3", "pathway_PC1")
+hm_df <- gene_axis_covcor |>
+  dplyr::mutate(covariate = factor(covariate, levels = rev(cov_order)),
+                axis      = factor(axis, levels = axis_order))
+p_a3 <- ggplot2::ggplot(hm_df, ggplot2::aes(axis, covariate, fill = rho)) +
+  ggplot2::geom_tile(colour = "white", linewidth = 0.4) +
+  ggplot2::geom_text(ggplot2::aes(label = sprintf("%.2f", rho)), size = 3) +
+  ggplot2::scale_fill_gradient2(low = "#4575B4", mid = "white", high = "#D73027",
+                                midpoint = 0, limits = c(-1, 1)) +
+  ggplot2::labs(
+    title = "What each axis IS: gene-PC1 = composition (genotype-independent), pathway = Myc",
+    subtitle = paste("Spearman correlation of PC sample-scores with covariates. gene-PC1 tracks",
+                     "epithelial/immune\ncomposition NOT genotype; the pathway global axis is the",
+                     "genotype-associated Myc-metabolic program."),
+    x = NULL, y = NULL, fill = "rho") +
+  ggplot2::theme_minimal(base_size = 10) +
+  ggplot2::theme(panel.grid = ggplot2::element_blank())
+ggplot2::ggsave(file.path(out_dir, "A3_gene_axis_covariates.pdf"), p_a3, width = 7.5, height = 6)
+
+# A4 -- assign gene-PC1 and gene-PC2 to pathways (fGSEA on their genome-wide loadings)
+if (!is.null(gene_axis_fgsea)) {
+  clean_nm <- function(x) {
+    x <- gsub("^MSigDB_HALLMARK_", "", x); x <- gsub("^MC_", "MitoCarta: ", x)
+    substr(gsub("_", " ", x), 1, 40)
+  }
+  top_fg <- gene_axis_fgsea |> dplyr::group_by(axis) |>
+    dplyr::mutate(rk = rank(NES, ties.method = "first")) |>
+    dplyr::filter(rk <= 6 | rk > dplyr::n() - 6) |> dplyr::ungroup() |>
+    dplyr::mutate(label    = clean_nm(pathway),
+                  axis_lab = ifelse(axis == "gene_PC1",
+                                    "gene-PC1 (composition)", "gene-PC2 (Myc program)"))
+  p_a4 <- ggplot2::ggplot(top_fg,
+      ggplot2::aes(NES, stats::reorder(interaction(label, axis), NES), fill = NES > 0)) +
+    ggplot2::geom_col() +
+    ggplot2::facet_wrap(~ axis_lab, scales = "free_y") +
+    ggplot2::scale_y_discrete(labels = function(v) sub("\\..*$", "", v)) +
+    ggplot2::scale_fill_manual(values = c("TRUE" = "#D73027", "FALSE" = "#4575B4"),
+                               labels = c("TRUE" = "top pole (+)", "FALSE" = "bottom pole (-)"),
+                               name = NULL) +
+    ggplot2::labs(
+      title = "The gene-level axes assigned to pathways (fGSEA on PC loadings)",
+      subtitle = paste("gene-PC1: epithelial OXPHOS/MYC-target pole vs immune/inflammation pole",
+                       "(composition).\ngene-PC2: MYC/E2F/proliferation + OXPHOS + mito-translation",
+                       "vs myogenesis/EMT (the Myc program)."),
+      x = "normalised enrichment score (NES)", y = NULL) +
+    ggplot2::theme_bw(base_size = 9) + ggplot2::theme(legend.position = "bottom")
+  ggplot2::ggsave(file.path(out_dir, "A4_gene_axis_fgsea.pdf"), p_a4, width = 11, height = 5.5)
+}
 
 # B -- named-axis loading on the PRIMARY axis, coloured by how prep-driven it is.
 # (The two-lens correlation gap is confounded by axis rotation; r2_removed_by_tech
@@ -722,6 +867,11 @@ message("Figures written to ", out_dir)
 pl_out <- list(
   dimensionality        = dimensionality,
   sample_pca_var        = sample_pca_var,
+  gene_axis_covcor      = gene_axis_covcor,
+  gene_pathway_correspondence = gene_pathway_correspondence,
+  gene_axis_var         = gene_axis_var,
+  gene_axis_fgsea       = gene_axis_fgsea,
+  gene_axis_verdict     = gene_axis_verdict,
   dim_verdict           = dim_verdict,
   batch_identifiability = batch_identifiability,
   anchor_design         = anchor_design,
@@ -768,6 +918,7 @@ if (FALSE) {
   pl <- readRDS(here::here("results", "pathway_loading.rds"))
 
   cat(strwrap(pl$dim_verdict,        92), sep = "\n")
+  cat(strwrap(pl$gene_axis_verdict,  92), sep = "\n")
   cat(strwrap(pl$tech_verdict,       92), sep = "\n")
   cat(strwrap(pl$loading_verdict,    92), sep = "\n")
   cat(strwrap(pl$enrichment_verdict, 92), sep = "\n")
@@ -775,6 +926,16 @@ if (FALSE) {
   # --- PART A: dimensionality ---
   pl$dimensionality |> as.data.frame() |> print()
   pl$sample_pca_var |> as.data.frame() |> print()   # gene-level vs pathway-score PC1
+
+  # --- PART A2: gene-level axis identity (what compositing keeps vs drops) ---
+  pl$gene_axis_var |> as.data.frame() |> print()
+  pl$gene_pathway_correspondence |> as.data.frame() |> print()
+  pl$gene_axis_covcor |> tidyr::pivot_wider(names_from = axis, values_from = rho) |>
+    as.data.frame() |> print()
+  if (!is.null(pl$gene_axis_fgsea)) {
+    pl$gene_axis_fgsea |> dplyr::group_by(axis) |> dplyr::arrange(NES) |>
+      dplyr::slice(c(1:5, (dplyr::n() - 4):dplyr::n())) |> as.data.frame() |> print()
+  }
 
   # --- PART B: technical resolution ---
   cat(strwrap(pl$batch_identifiability, 92), sep = "\n")
