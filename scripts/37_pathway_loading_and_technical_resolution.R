@@ -531,24 +531,101 @@ message("\n", paste(strwrap(enrichment_verdict, width = 92), collapse = "\n"), "
 # =============================================================================
 # PART E: FIGURES
 # =============================================================================
-# A -- scree + effective dimensionality (both quantifiers)
-scree_df <- purrr::map_dfr(list(zscore = M_z, gsva = M_gsva), function(M) {
+# --- shared sample PCAs (used by figures A and A2) ----------------------------
+# gene = VST top-500 variable genes (DESeq2::plotPCA convention, matches PCA_vsd.pdf);
+# pathway = the 884-set linear z-score matrix (the source of the 76% claim).
+grp      <- factor(paste(sm$timepoint, sm$myc_status, sep = "_"),
+                   levels = c("6W_neg", "6W_pos", "12W_neg", "12W_pos"))
+grp_cols <- c("6W_neg" = "#4575B4", "6W_pos" = "#D73027",
+              "12W_neg" = "#91BFDB", "12W_pos" = "#FC8D59")
+v_gene   <- apply(expr, 1, stats::var)
+top500   <- order(v_gene, decreasing = TRUE)[seq_len(min(500L, nrow(expr)))]
+pc_gene  <- stats::prcomp(t(expr[top500, , drop = FALSE]), center = TRUE, scale. = FALSE)
+v_gene_p <- pc_gene$sdev^2 / sum(pc_gene$sdev^2)
+pc_path  <- stats::prcomp(t(M_z), center = TRUE, scale. = FALSE)
+v_path_p <- pc_path$sdev^2 / sum(pc_path$sdev^2)
+
+# A -- scree: gene-level PC distribution vs pathway-score PC distribution, on a shared
+# y-scale so the concentration onto PC1 (compositing effect) is directly comparable.
+scree_gene <- tibble::tibble(pc = seq_along(v_gene_p), var = 100 * v_gene_p) |>
+  dplyr::filter(pc <= 12)
+scree_path <- purrr::map_dfr(list(zscore = M_z, gsva = M_gsva), function(M) {
   v <- pc1_oriented(M, global_mean(M))$var
   tibble::tibble(pc = seq_along(v), var = 100 * v)
 }, .id = "quantifier") |> dplyr::filter(pc <= 12)
-p_a <- ggplot2::ggplot(scree_df, ggplot2::aes(pc, var, colour = quantifier)) +
+scree_common <- list(ggplot2::scale_x_continuous(breaks = 1:12),
+                     ggplot2::coord_cartesian(ylim = c(0, 80)),
+                     ggplot2::theme_bw(base_size = 10),
+                     ggplot2::theme(legend.position = "bottom"))
+p_a_gene <- ggplot2::ggplot(scree_gene, ggplot2::aes(pc, var)) +
+  ggplot2::geom_line(colour = "grey30") + ggplot2::geom_point(size = 1.6, colour = "grey30") +
+  ggplot2::labs(title = "Gene level (VST, top-500 variable genes)",
+                subtitle = sprintf("PC1 = %.0f%%: variance spread across many PCs.", 100 * v_gene_p[1]),
+                x = "principal component", y = "variance explained (%)") + scree_common
+p_a_path <- ggplot2::ggplot(scree_path, ggplot2::aes(pc, var, colour = quantifier)) +
   ggplot2::geom_line() + ggplot2::geom_point(size = 1.6) +
   ggplot2::scale_colour_manual(values = c("gsva" = "#4575B4", "zscore" = "#D73027")) +
-  ggplot2::scale_x_continuous(breaks = 1:12) +
-  ggplot2::labs(
-    title = "One dominant axis: the pathway-score matrix is low-dimensional",
-    subtitle = sprintf(paste("z-score PC1 = %.0f%% of variance; effective dimensionality = %.1f of a",
-                             "possible 23 (n=24).\nMany of 884 pathways, but essentially one direction."),
-                       dimensionality$pc1_var_raw_pct[dimensionality$quantifier == "zscore"],
-                       dimensionality$d_eff_raw[dimensionality$quantifier == "zscore"]),
-    x = "principal component", y = "variance explained (%)", colour = NULL) +
-  ggplot2::theme_bw(base_size = 10) + ggplot2::theme(legend.position = "bottom")
-ggplot2::ggsave(file.path(out_dir, "A_scree_dimensionality.pdf"), p_a, width = 7.5, height = 4.5)
+  ggplot2::labs(title = "Pathway-score level (884 library sets)",
+                subtitle = sprintf("z-score PC1 = %.0f%%, effective dim = %.1f: essentially one direction.",
+                                   dimensionality$pc1_var_raw_pct[dimensionality$quantifier == "zscore"],
+                                   dimensionality$d_eff_raw[dimensionality$quantifier == "zscore"]),
+                x = "principal component", y = NULL, colour = NULL) + scree_common
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  p_a <- patchwork::wrap_plots(p_a_gene, p_a_path, nrow = 1) +
+    patchwork::plot_annotation(
+      title = "Compositing concentrates variance: flat gene-level scree vs steep pathway-score scree")
+  ggplot2::ggsave(file.path(out_dir, "A_scree_dimensionality.pdf"), p_a, width = 10, height = 5)
+} else {
+  ggplot2::ggsave(file.path(out_dir, "A_scree_dimensionality.pdf"), p_a_path, width = 7.5, height = 4.5)
+}
+
+# A2 -- sample PCA scatter: gene-level (conventional) vs pathway-score (the 76% claim).
+# Reuses the shared gene/pathway PCAs from figure A. The 76% is a property of the
+# COMPOSITES, not the transcriptome. coord_equal so the collapse onto PC1 is not hidden by
+# the panel aspect ratio; centre = group mean, cloud = 1-SD normal ellipse (n=6/group).
+pca_panel <- function(scores, vpct, ttl) {
+  df  <- data.frame(PC1 = scores[, 1], PC2 = scores[, 2], group = grp)
+  cen <- stats::aggregate(cbind(PC1, PC2) ~ group, df, mean)  # group centroids (means)
+  ggplot2::ggplot(df, ggplot2::aes(PC1, PC2, colour = group)) +
+    # cloud = 1-SD normal data ellipse per group (n=6/group -- a spread, not a CI)
+    ggplot2::stat_ellipse(ggplot2::aes(fill = group), geom = "polygon",
+                          type = "norm", level = 0.68, alpha = 0.12, colour = NA) +
+    ggplot2::geom_point(size = 2.1, alpha = 0.85) +
+    # centre = group mean, drawn as a large ringed marker
+    ggplot2::geom_point(data = cen, ggplot2::aes(PC1, PC2, fill = group),
+                        size = 4.6, shape = 21, colour = "black", stroke = 0.6,
+                        inherit.aes = FALSE) +
+    ggplot2::scale_colour_manual(values = grp_cols) +
+    ggplot2::scale_fill_manual(values = grp_cols) +
+    ggplot2::guides(fill = "none") +
+    ggplot2::coord_equal() +
+    ggplot2::labs(title = ttl,
+                  x = sprintf("PC1 (%.0f%%)", 100 * vpct[1]),
+                  y = sprintf("PC2 (%.0f%%)", 100 * vpct[2]), colour = NULL) +
+    ggplot2::theme_bw(base_size = 10) + ggplot2::theme(legend.position = "bottom")
+}
+p_gene <- pca_panel(pc_gene$x, v_gene_p, "Gene-level PCA (VST, top-500 variable genes)")
+p_path <- pca_panel(pc_path$x, v_path_p, "Pathway-score PCA (884 library sets)")
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  p_a2 <- patchwork::wrap_plots(p_gene, p_path, nrow = 1) +
+    patchwork::plot_annotation(
+      title = "Samples collapse onto one axis in pathway-score space, not in gene space",
+      subtitle = sprintf(paste(
+        "Gene-level PC1 = %.0f%%; averaging genes into 884 correlated pathway scores concentrates",
+        "variance onto the\ncommon mode (pathway-score PC1 = %.0f%%). The dominant axis is a property",
+        "of the composites, not the transcriptome.\nFilled ring = group mean; shaded cloud = 1-SD",
+        "normal ellipse (n=6/group, a spread not a confidence region)."),
+        100 * v_gene_p[1], 100 * v_path_p[1]))
+  ggplot2::ggsave(file.path(out_dir, "A2_sample_pca_gene_vs_pathway.pdf"), p_a2, width = 10, height = 5.5)
+} else {
+  ggplot2::ggsave(file.path(out_dir, "A2_sample_pca_gene.pdf"),    p_gene, width = 5.5, height = 5)
+  ggplot2::ggsave(file.path(out_dir, "A2_sample_pca_pathway.pdf"), p_path, width = 5.5, height = 5)
+}
+sample_pca_var <- tibble::tibble(
+  space = c("gene_vst_top500", "pathway_scores_884"),
+  pc1_pct = c(100 * v_gene_p[1], 100 * v_path_p[1]),
+  pc2_pct = c(100 * v_gene_p[2], 100 * v_path_p[2]),
+  pc3_pct = c(100 * v_gene_p[3], 100 * v_path_p[3]))
 
 # B -- named-axis loading on the PRIMARY axis, coloured by how prep-driven it is.
 # (The two-lens correlation gap is confounded by axis rotation; r2_removed_by_tech
@@ -644,6 +721,7 @@ message("Figures written to ", out_dir)
 # =============================================================================
 pl_out <- list(
   dimensionality        = dimensionality,
+  sample_pca_var        = sample_pca_var,
   dim_verdict           = dim_verdict,
   batch_identifiability = batch_identifiability,
   anchor_design         = anchor_design,
@@ -696,6 +774,7 @@ if (FALSE) {
 
   # --- PART A: dimensionality ---
   pl$dimensionality |> as.data.frame() |> print()
+  pl$sample_pca_var |> as.data.frame() |> print()   # gene-level vs pathway-score PC1
 
   # --- PART B: technical resolution ---
   cat(strwrap(pl$batch_identifiability, 92), sep = "\n")
