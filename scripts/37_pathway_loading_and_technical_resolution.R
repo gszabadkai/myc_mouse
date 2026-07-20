@@ -564,6 +564,48 @@ enrichment_verdict <- {
     ss$n_joined, ss$cor_absload_oxphos_frac, ss$cor_absload_mitoribo_frac)
 }
 
+# --- C4. LIBRARY COVERAGE: what the scored gene sets actually cover ------------
+# For the pathway-loading argument: how many sets were scored, how they divide
+# functionally, and the mitochondrial share -- with the point that MYC's OWN curated
+# signatures (Felsher etc.) are non-mitochondrial gene sets. Reuses mito_classification;
+# the MYC-signature GENE-level mito fraction needs the gene lists + the MitoCarta union.
+mito_universe <- unique(unlist(pw[grep("^MITOCARTA_", names(pw))]))
+library_composition <- mito_classification |>
+  dplyr::count(category, class3, name = "n") |>
+  dplyr::group_by(category) |> dplyr::mutate(cat_total = sum(n)) |> dplyr::ungroup()
+myc_sig_sets <- intersect(set_meta$set_name[set_meta$category_primary == "MYC_signatures"],
+                          names(pw))
+myc_sig_mitofrac <- purrr::map_dfr(myc_sig_sets, function(s) {
+  g <- pw[[s]]
+  tibble::tibble(set = s, n_genes = length(g), n_mito = sum(g %in% mito_universe),
+                 frac_mito = mean(g %in% mito_universe))
+}) |> dplyr::arrange(frac_mito)
+genome_mito_frac <- mean(rownames(expr) %in% mito_universe)   # baseline mito share of the transcriptome
+felsher_frac <- myc_sig_mitofrac$frac_mito[myc_sig_mitofrac$set == "MYC_felsher_integrative_signature"]
+
+library_coverage_verdict <- {
+  n_tot   <- nrow(mito_classification)
+  n_mito  <- sum(mito_classification$mito_defined)
+  n_const <- sum(mito_classification$is_construction_mito)
+  ncat    <- dplyr::n_distinct(mito_classification$category)
+  sprintf(paste0(
+    "LIBRARY COVERAGE: %d gene sets scored across %d functional categories. Mitochondrial share is ",
+    "%d mito / %d non-mito (%.0f%% mito) -- BUT %d of the %d 'mito' sets are build-tautological ",
+    "_MITO TF lanes (MitoCarta subsets by construction), so genuine MitoCarta coverage is %d sets. ",
+    "The library is dominated by non-mito programmes: mammary development (203), TF-target lanes, ",
+    "metabolism, apoptosis, proliferation. CRUCIALLY, MYC's OWN curated signatures are NON-",
+    "mitochondrial gene sets: the MYC_signatures category is 0/%d mito, and Felsher's integrative ",
+    "MYC signature is only %d/%d genes mitochondrial (%.0f%%, vs a %.0f%% transcriptome baseline). ",
+    "So the Myc-mitochondria link is EMERGENT (co-regulation of the dominant axis), NOT built into ",
+    "the MYC signatures -- the loading argument is about covariation, not a mito-defined MYC set."),
+    n_tot, ncat, n_mito, n_tot - n_mito, 100 * n_mito / n_tot, n_const, n_mito,
+    n_mito - n_const, length(myc_sig_sets),
+    myc_sig_mitofrac$n_mito[myc_sig_mitofrac$set == "MYC_felsher_integrative_signature"],
+    myc_sig_mitofrac$n_genes[myc_sig_mitofrac$set == "MYC_felsher_integrative_signature"],
+    100 * felsher_frac, 100 * genome_mito_frac)
+}
+message("\n", paste(strwrap(library_coverage_verdict, width = 92), collapse = "\n"), "\n")
+
 # =============================================================================
 # PART D: VERDICTS
 # =============================================================================
@@ -859,6 +901,75 @@ if (requireNamespace("patchwork", quietly = TRUE)) {
   ggplot2::ggsave(file.path(out_dir, "D2_loading_enrichment_deciles.pdf"),  p_d2, width = 8.5, height = 3.5)
 }
 
+# E -- LIBRARY COVERAGE: functional composition + mito share, and MYC signatures are non-mito.
+# Stacked bar (not a pie -- 9 nested categories) with a 2px white gap between segments; the
+# 3-class palette (proper red / construction orange / non-mito blue) is the validated D-figure
+# palette (CVD dE 17.4). E2 highlights that MYC's own signatures (Felsher) are non-mitochondrial.
+class_fill <- c(non_mito = "#4575B4", construction_MITO = "#FC8D59", mitocarta_proper = "#D73027")
+class_lab  <- c(non_mito = "non-mitochondrial",
+                construction_MITO = "construction _MITO (TF lanes, MitoCarta by build)",
+                mitocarta_proper  = "genuine MitoCarta / OXPHOS")
+cat_ord <- library_composition |> dplyr::distinct(category, cat_total) |>
+  dplyr::arrange(cat_total) |> dplyr::pull(category)
+comp_df <- library_composition |>
+  dplyr::mutate(category = factor(category, levels = cat_ord),
+                class3   = factor(class3, levels = c("non_mito", "construction_MITO", "mitocarta_proper")))
+cat_tot_df <- library_composition |> dplyr::distinct(category, cat_total) |>
+  dplyr::mutate(category = factor(category, levels = cat_ord))
+p_e1 <- ggplot2::ggplot(comp_df, ggplot2::aes(n, category, fill = class3)) +
+  ggplot2::geom_col(colour = "white", linewidth = 0.7) +
+  ggplot2::geom_text(data = cat_tot_df, ggplot2::aes(cat_total, category, label = cat_total),
+                     inherit.aes = FALSE, hjust = -0.25, size = 3, colour = "grey25") +
+  ggplot2::scale_fill_manual(values = class_fill, labels = class_lab,
+                             breaks = c("mitocarta_proper", "construction_MITO", "non_mito")) +
+  ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.10))) +
+  ggplot2::labs(
+    title = sprintf("%d gene sets scored: functional coverage and mitochondrial share",
+                    nrow(mito_classification)),
+    subtitle = sprintf(paste("%d mito / %d non-mito; but %d of the %d 'mito' are build-tautological",
+                             "_MITO TF lanes,\nso genuine MitoCarta coverage is %d sets. The library is",
+                             "dominated by non-mito programmes."),
+                       sum(mito_classification$mito_defined),
+                       sum(!mito_classification$mito_defined),
+                       sum(mito_classification$is_construction_mito),
+                       sum(mito_classification$mito_defined),
+                       sum(mito_classification$mito_defined) - sum(mito_classification$is_construction_mito)),
+    x = "number of gene sets", y = NULL, fill = NULL) +
+  ggplot2::theme_minimal(base_size = 10) +
+  ggplot2::theme(legend.position = "bottom", panel.grid.major.y = ggplot2::element_blank(),
+                 legend.text = ggplot2::element_text(size = 8))
+
+felsher_nm <- "MYC_felsher_integrative_signature"
+p_e2 <- myc_sig_mitofrac |>
+  dplyr::mutate(label = sub("^MYC_", "", set),
+                is_felsher = set == felsher_nm) |>
+  ggplot2::ggplot(ggplot2::aes(100 * frac_mito, stats::reorder(label, frac_mito))) +
+  ggplot2::geom_col(ggplot2::aes(fill = is_felsher), width = 0.75) +
+  ggplot2::geom_vline(xintercept = 100 * genome_mito_frac, linetype = 2, colour = "grey45") +
+  ggplot2::geom_text(ggplot2::aes(label = sprintf("%.0f%%", 100 * frac_mito)),
+                     hjust = -0.2, size = 2.7, colour = "grey25") +
+  ggplot2::scale_fill_manual(values = c("TRUE" = "#D73027", "FALSE" = "grey65"),
+                             labels = c("TRUE" = "Felsher MYC signature", "FALSE" = "other MYC signatures"),
+                             name = NULL) +
+  ggplot2::scale_x_continuous(limits = c(0, 32), expand = ggplot2::expansion(mult = c(0, 0.02))) +
+  ggplot2::labs(
+    title = "MYC's own curated signatures are NON-mitochondrial gene sets",
+    subtitle = sprintf(paste("Fraction of each MYC-signature set's genes that are mitochondrial",
+                             "(MitoCarta). Felsher = %.0f%% mito;\nall sit near the %.0f%% transcriptome",
+                             "baseline (dashed). The Myc-mito link is emergent, not built in."),
+                       100 * felsher_frac, 100 * genome_mito_frac),
+    x = "% of set's genes that are mitochondrial", y = NULL) +
+  ggplot2::theme_minimal(base_size = 9) +
+  ggplot2::theme(legend.position = "bottom", panel.grid.major.y = ggplot2::element_blank())
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  p_e <- patchwork::wrap_plots(p_e1, p_e2, ncol = 1, heights = c(1, 1.15))
+  ggplot2::ggsave(file.path(out_dir, "E_library_coverage.pdf"), p_e, width = 9, height = 9)
+} else {
+  ggplot2::ggsave(file.path(out_dir, "E_library_coverage.pdf"),      p_e1, width = 9, height = 4.5)
+  ggplot2::ggsave(file.path(out_dir, "E2_myc_signatures_nonmito.pdf"), p_e2, width = 9, height = 4.5)
+}
+
 message("Figures written to ", out_dir)
 
 # =============================================================================
@@ -890,6 +1001,10 @@ pl_out <- list(
   construction_gap      = construction_gap,
   substrate_stratification = substrate_stratification,
   enrichment_verdict    = enrichment_verdict,
+  library_composition   = library_composition,
+  myc_sig_mitofrac      = myc_sig_mitofrac,
+  genome_mito_frac      = genome_mito_frac,
+  library_coverage_verdict = library_coverage_verdict,
   ox_gate               = ox_gate,
   n_sets                = length(common_sets),
   notes = paste(
@@ -959,6 +1074,13 @@ if (FALSE) {
   pl$substrate_stratification |> as.data.frame() |> print()
   # top of the full 884-set ranking (mito monopoly + the construction block)
   pl$mito_classification |> head(20) |> as.data.frame() |> print()
+
+  # --- PART C4: library coverage + MYC-signatures are non-mito ---
+  cat(strwrap(pl$library_coverage_verdict, 92), sep = "\n")
+  pl$library_composition |> tidyr::pivot_wider(id_cols = c(category, cat_total),
+    names_from = class3, values_from = n, values_fill = 0) |>
+    dplyr::arrange(dplyr::desc(cat_total)) |> as.data.frame() |> print()
+  pl$myc_sig_mitofrac |> as.data.frame() |> print()
 
   list.files(here::here("outputs", "pathway_loading"), pattern = "\\.pdf$")
 }
