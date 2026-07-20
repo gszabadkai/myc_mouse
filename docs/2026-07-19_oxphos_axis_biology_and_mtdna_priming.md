@@ -53,6 +53,18 @@ that **whole co-regulated core**, and OXPHOS is a leading member of it. This is 
 older "OXPHOS is central to the phenotype" coupling claim is untestable: nothing in the cluster is
 statistically separable from the rest at this n.
 
+**Quantified as a ranking (script 37 PART C3 / figure `D_loading_enrichment_mito.pdf`, added
+2026-07-20).** Ranking all 884 sets by loading: mito-defined sets are **44% of the library (385/884)
+but 100% of the top 100** -- a real, striking enrichment (Wilcoxon |loading| mito vs rest underflows
+double precision, p < 1e-300; median |loading| 0.97 mito vs 0.62 non-mito). But it is **mito-LED,
+not mito-SPECIFIC**: non-mito growth programmes reach 0.95-0.98 (MYC-target/METABRIC breast-cancer
+biclusters 0.98, pentose-phosphate 0.97, nucleotide 0.96) vs the redox control 0.26; and the very top
+is **construction-inflated** -- 94 of the top 100 are the Gray `_MITO` / `_LE_MITO` TF lanes, which are
+MitoCarta subsets *by build* (`TFT_MYC_..._LE_MITO` loads 0.99 at rank 6 while the same TF's non-mito
+lane loads 0.01 at rank 881). So the ranking is **not** an argument for mitochondria-primary
+regulation -- it describes a coordinated Myc anabolic-proliferative-mitochondrial growth state, and
+loading is covariation, not primacy (which needs perturbation, not n=24 bulk).
+
 **What the "Myc effect" means -- two distinct statements.**
 - **Level (robust):** Myc raises OXPHOS (the content effect, +21-27% mitochondrial content; absolute
   nuclear OXPHOS up, d~1.2), and OXPHOS is a top member of the coordinated Myc-driven state. This is
@@ -154,3 +166,19 @@ profiling** is its bench test.
 - **Do not cite:** any within-group loading-*change* by Myc as a result (exploratory, near-collinear).
 - **Untestable here (a design answer):** MYC- vs PGC1a/ESRRA-biogenesis toward death -> ESRRA/PGC1a
   perturbation.
+
+## 6. External validation (added 2026-07-20): Lesner et al.
+
+The MYC nuclear-up / mtDNA-down **discordance** described above is independently established in
+**TCGA (flash-frozen, no dissociation) + mouse HCC + proteomics + mtDNA qPCR** by Lesner et al.
+(bioRxiv 2026.07.13.738248) -- see `docs/2026-07-20_lesner_mtDNA_external_validation.md`. This (a)
+**validates the phenomenon** and kills the "our enzymatic-dissociation artifact" worry for the
+imbalance; (b) **reframes the death arm** as protective **mitophagy / turnover** (MYC->NRF1->DRP1/
+FUNDC1), apoptosis engaged only by forced fusion + BH3 mimetics -- consistent with our finding that
+the mtDNA/imbalance<->priming coupling is the mt% confound and only **nuclear** OXPHOS<->priming is a
+(weak) lead; and (c) **endorses our experimental plan** -- mtDNA qPCR (mt-ND2 / nuclear), a non-mito
+MYC control, BH3 profiling, and NRF1/DRP1/FUNDC1 perturbation (the biogenesis-axis perturbation script
+38 said the MYC-vs-PGC1a death question requires). Honest nuance: Lesner's is a MYC *contrast*; our
+nuclear-up half reproduces as a clean genotype effect but our mtDNA-down half is genotype-independent
+(p~0.49), so Lesner validates the **question** and pinpoints our underpowered arm, it is not a claim
+we demonstrated the contrast on the mtDNA side.

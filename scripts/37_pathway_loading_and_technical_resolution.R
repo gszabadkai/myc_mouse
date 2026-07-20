@@ -306,6 +306,157 @@ cond_loading <- purrr::map_dfr(c("mito_oxphos", "mito_biogenesis", "prolif", "tc
       d_loading_time     = b_gt[1], p_loading_time     = b_gt[2]) # time changes loading?
   })
 
+# --- C3. MITO vs NON-MITO LOADING ENRICHMENT (the "is this mito-primary?" test) --
+# Author's question (2026-07-20): are figure B's axes the actual top loaders, and are
+# there NON-mito sets in the high rankings? If not, that would argue for mitochondria-
+# PRIMARY regulation of early tumorigenesis by the MYC-mito axis. Interrogate ALL
+# common_sets on the PRIMARY axis (|lambda_design| from loading_movement, correlation
+# scale). Three caveats decide it: (1) non-mito growth programmes also load high;
+# (2) the very-top mito block is a BUILD tautology -- the Gray _MITO / _LE_MITO lanes
+# are MitoCarta subsets by construction (docs/library_reference/
+# Gray_et_al_developmental_TFS_selection.md sec 2c), so they load ~1 by mito CONTENT,
+# not by regulator identity; (3) the ranking does not resolve sub-programme (oxphos vs
+# mitoribo vs priming). NO new inputs but the shortlist CSV (read-only base read.csv).
+mito_classification <- loading_movement |>
+  dplyr::transmute(
+    set,
+    lambda_design,
+    abs_load  = abs(lambda_design),
+    category  = dplyr::coalesce(category, ""),
+    name_mito = grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set)) |>
+  dplyr::mutate(
+    mito_defined = category == "MitoCarta" | name_mito |
+                   (category == "Metabolism" &
+                    grepl("OXPHOS|KREBS|TCA|ELECTRON|RESPIRAT", set)),
+    is_construction_mito = name_mito,
+    class3 = dplyr::case_when(
+      category == "MitoCarta" ~ "mitocarta_proper",
+      is_construction_mito    ~ "construction_MITO",
+      mito_defined            ~ "mitocarta_proper",   # metab OXPHOS/TCA sets
+      TRUE                    ~ "non_mito")) |>
+  dplyr::arrange(dplyr::desc(abs_load)) |>
+  dplyr::mutate(load_rank = dplyr::row_number())
+
+top_frac <- function(k) {
+  k <- min(k, nrow(mito_classification)); mean(mito_classification$mito_defined[seq_len(k)])
+}
+top100_class <- mito_classification$class3[seq_len(min(100, nrow(mito_classification)))]
+wilc_mito <- suppressWarnings(stats::wilcox.test(
+  mito_classification$abs_load[mito_classification$mito_defined],
+  mito_classification$abs_load[!mito_classification$mito_defined]))
+
+mito_enrichment <- tibble::tibble(
+  n_sets                   = nrow(mito_classification),
+  n_mito                   = sum(mito_classification$mito_defined),
+  base_rate_mito           = mean(mito_classification$mito_defined),
+  frac_mito_top50          = top_frac(50),
+  frac_mito_top100         = top_frac(100),
+  frac_mito_top200         = top_frac(200),
+  top100_mitocarta_proper  = sum(top100_class == "mitocarta_proper"),
+  top100_construction_mito = sum(top100_class == "construction_MITO"),
+  top100_non_mito          = sum(top100_class == "non_mito"),
+  wilcox_p_mito_vs_rest    = wilc_mito$p.value,
+  median_absload_mito      = stats::median(mito_classification$abs_load[mito_classification$mito_defined]),
+  median_absload_nonmito   = stats::median(mito_classification$abs_load[!mito_classification$mito_defined]))
+
+# the genuinely-non-mito top loaders, with a coarse programme label for the figure
+prog_label <- function(s) dplyr::case_when(
+  grepl("NUCLEOTIDE|PURINE|PYRIMIDINE", s)                          ~ "nucleotide",
+  grepl("PENTOSE|_PPP|PPP_", s)                                     ~ "pentose-phosphate",
+  grepl("E2F|CELL_CYCLE|MITOTIC|PROLIF|MKI67|_G2M|DNA_REPLICATION", s) ~ "proliferation",
+  grepl("METABRIC|BICLUSTER|_MB[0-9]|BREAST", s)                    ~ "breast-cancer-METABRIC",
+  grepl("MYC", s)                                                   ~ "MYC-target",
+  grepl("TEB|DUCT|^MG_|GRAY|ALVEOL|LASP|LHS|BMYO|MAMMARY", s)       ~ "mammary-dev",
+  TRUE                                                              ~ "other")
+nonmito_top_loaders <- mito_classification |>
+  dplyr::filter(!mito_defined) |>
+  dplyr::slice_head(n = 15) |>
+  dplyr::mutate(programme = prog_label(set)) |>
+  dplyr::select(load_rank, set, lambda_design, abs_load, programme, category)
+
+# CONSTRUCTION tautology proof: per TF, the top _MITO lane vs the lowest non-_MITO lane
+construction_gap <- purrr::map_dfr(c("MYC", "E2F1", "ESRRA"), function(tf) {
+  mlane <- mito_classification |>
+    dplyr::filter(grepl(sprintf("^TFT_%s_GRAY_.*_MITO$", tf), set)) |>
+    dplyr::arrange(dplyr::desc(abs_load))
+  blane <- mito_classification |>
+    dplyr::filter(grepl(sprintf("^TFT_%s_GRAY_", tf), set), !grepl("_MITO$", set)) |>
+    dplyr::arrange(abs_load)
+  tibble::tibble(
+    tf               = tf,
+    n_mito_lanes     = nrow(mlane),
+    n_base_lanes     = nrow(blane),
+    top_mito_lane    = if (nrow(mlane)) mlane$set[1]           else NA_character_,
+    top_mito_loading = if (nrow(mlane)) mlane$lambda_design[1] else NA_real_,
+    top_mito_rank    = if (nrow(mlane)) mlane$load_rank[1]     else NA_integer_,
+    low_base_lane    = if (nrow(blane)) blane$set[1]           else NA_character_,
+    low_base_loading = if (nrow(blane)) blane$lambda_design[1] else NA_real_,
+    low_base_rank    = if (nrow(blane)) blane$load_rank[1]     else NA_integer_)
+})
+
+# does the ranking STRATIFY sub-programme? Join the _MITO lanes to the CHEA3 shortlist
+# and correlate |loading| with the oxphos / mitoribo / apop-balance content. Read-only
+# base read.csv; wrapped so a name mismatch degrades to NA rather than breaking the run.
+substrate_stratification <- tryCatch({
+  sl <- utils::read.csv(here::here("data", "genesets_from_library",
+                                   "gray_chea_mito_tf_shortlist.csv"), stringsAsFactors = FALSE)
+  sl$key <- paste(sl$TF, sl$context, sep = "|")
+  parse_key <- function(s) {
+    core  <- sub("^TFT_", "", sub("_MITO$", "", s))          # <TF>_GRAY_<CONTEXT>
+    parts <- strsplit(core, "_GRAY_", fixed = TRUE)[[1]]
+    if (length(parts) != 2L) return(NA_character_)
+    paste(parts[1], parts[2], sep = "|")
+  }
+  mm <- mito_classification |> dplyr::filter(is_construction_mito, grepl("_GRAY_", set))
+  mm$key <- vapply(mm$set, parse_key, character(1))
+  j <- dplyr::inner_join(mm, sl, by = "key")
+  floor_div <- function(a, b) a / pmax(b, 1)                 # denominator floor
+  j <- dplyr::mutate(j, oxphos_frac   = floor_div(n_oxphos,   n_mito_total),
+                        mitoribo_frac = floor_div(n_mitoribo, n_mito_total))
+  tibble::tibble(
+    n_joined                  = nrow(j),
+    cor_absload_oxphos_frac   = suppressWarnings(stats::cor(j$abs_load, j$oxphos_frac)),
+    cor_absload_mitoribo_frac = suppressWarnings(stats::cor(j$abs_load, j$mitoribo_frac)),
+    cor_absload_apop_balance  = suppressWarnings(stats::cor(j$abs_load, j$apop_balance)),
+    median_absload_joined     = stats::median(j$abs_load))
+}, error = function(e) tibble::tibble(
+    n_joined = 0L, cor_absload_oxphos_frac = NA_real_, cor_absload_mitoribo_frac = NA_real_,
+    cor_absload_apop_balance = NA_real_, median_absload_joined = NA_real_))
+
+enrichment_verdict <- {
+  me <- mito_enrichment
+  ss <- substrate_stratification
+  cg <- construction_gap |> dplyr::filter(tf == "MYC")
+  nm <- nonmito_top_loaders |> dplyr::slice_head(n = 3)
+  wilc_p_str <- if (is.na(me$wilcox_p_mito_vs_rest)) "NA" else
+    if (me$wilcox_p_mito_vs_rest < 1e-300) "<1e-300" else
+      sprintf("%.1e", me$wilcox_p_mito_vs_rest)
+  sprintf(paste0(
+    "MITO-LED BUT NOT MITO-SPECIFIC -- NOT an argument for mitochondria-PRIMARY regulation. ",
+    "Figure B plots 11 CURATED composites, not the empirical top loaders (the true top loaders ",
+    "are the Gray TFT_*_LE_MITO lanes at ~0.99). Across all %d sets, mito-defined sets are %.0f%% ",
+    "of the library but %.0f%% of the top 100 and %.0f%% of the top 200 -- a real, striking ",
+    "enrichment (Wilcoxon |loading| mito vs rest p=%s). BUT: (1) non-mito growth programmes load ",
+    "nearly as high -- the top non-mito loaders are %s, up to |loading| %.2f, vs the redox control ",
+    "~0.26; (2) the very top is CONSTRUCTION-inflated -- the top 100 splits MitoCarta-proper %d / ",
+    "build-tautological _MITO %d / non-mito %d, and %s loads %.3f (rank %d) while the SAME TF's ",
+    "non-mito lane %s loads %.3f (rank %d), so loading tracks mito gene CONTENT not the regulator; ",
+    "(3) the ranking does NOT stratify sub-programme -- across %d _MITO lanes cor(|loading|,",
+    "oxphos_frac)=%.3f, cor(|loading|,mitoribo_frac)=%.3f (both weak; the lanes saturate at the ",
+    "mito ceiling, so oxphos vs biogenesis is not resolved). => the dominant axis is a ",
+    "coordinated Myc anabolic-proliferative-mitochondrial ",
+    "GROWTH state; loading = COVARIATION, not primacy. A primacy claim needs perturbation, not ",
+    "n=24 bulk. (The nuclear-up/mtDNA-down discordance this axis describes is independently ",
+    "established in TCGA + mouse HCC: Lesner et al., bioRxiv 2026.07.13.738248.)"),
+    me$n_sets, 100 * me$base_rate_mito, 100 * me$frac_mito_top100, 100 * me$frac_mito_top200,
+    wilc_p_str,
+    paste(nm$programme, collapse = ", "), max(nonmito_top_loaders$abs_load),
+    me$top100_mitocarta_proper, me$top100_construction_mito, me$top100_non_mito,
+    cg$top_mito_lane, cg$top_mito_loading, cg$top_mito_rank,
+    cg$low_base_lane, cg$low_base_loading, cg$low_base_rank,
+    ss$n_joined, ss$cor_absload_oxphos_frac, ss$cor_absload_mitoribo_frac)
+}
+
 # =============================================================================
 # PART D: VERDICTS
 # =============================================================================
@@ -372,9 +523,10 @@ loading_verdict <- {
     100 * rxp$median_pctile_of_abs_loading)
 }
 
-message("\n", paste(strwrap(dim_verdict,     width = 92), collapse = "\n"))
-message("\n", paste(strwrap(tech_verdict,    width = 92), collapse = "\n"))
-message("\n", paste(strwrap(loading_verdict, width = 92), collapse = "\n"), "\n")
+message("\n", paste(strwrap(dim_verdict,        width = 92), collapse = "\n"))
+message("\n", paste(strwrap(tech_verdict,       width = 92), collapse = "\n"))
+message("\n", paste(strwrap(loading_verdict,    width = 92), collapse = "\n"))
+message("\n", paste(strwrap(enrichment_verdict, width = 92), collapse = "\n"), "\n")
 
 # =============================================================================
 # PART E: FIGURES
@@ -435,6 +587,56 @@ p_c <- ggplot2::ggplot(cond_pts, ggplot2::aes(G, S, colour = group)) +
   ggplot2::theme_bw(base_size = 9) + ggplot2::theme(legend.position = "bottom")
 ggplot2::ggsave(file.path(out_dir, "C_condition_dependent_loading.pdf"), p_c, width = 9, height = 4.5)
 
+# D -- mito vs non-mito loading enrichment across all 884 sets (author's question)
+class_cols <- c(mitocarta_proper = "#D73027", construction_MITO = "#FC8D59", non_mito = "#4575B4")
+redox_ref  <- stats::median(mito_classification$abs_load[mito_classification$set %in% axis_sets$redox])
+med_ref    <- stats::median(mito_classification$abs_load)
+lab_df     <- nonmito_top_loaders |> dplyr::slice_head(n = 6)
+p_d1 <- ggplot2::ggplot(mito_classification,
+                        ggplot2::aes(load_rank, abs_load, colour = class3)) +
+  ggplot2::geom_point(size = 0.9, alpha = 0.6) +
+  ggplot2::geom_hline(yintercept = med_ref,   linetype = 2, colour = "grey45") +
+  ggplot2::geom_hline(yintercept = redox_ref, linetype = 3, colour = "#1a9850") +
+  ggplot2::geom_text(data = lab_df,
+                     ggplot2::aes(load_rank, abs_load, label = programme),
+                     inherit.aes = FALSE, size = 2.5, hjust = 0, nudge_x = 8, nudge_y = 0.012) +
+  ggplot2::scale_colour_manual(values = class_cols) +
+  ggplot2::labs(
+    title = "Mito is the strongest-loading block -- but the axis is mito-LED, not mito-SPECIFIC",
+    subtitle = sprintf(paste("All %d sets ranked by |loading| on the biological axis. Base rate %.0f%%",
+                             "mito; top-100 %.0f%% mito, BUT non-mito growth programmes reach 0.95-0.98;",
+                             "\nthe very top is construction-inflated (orange = _MITO lanes = MitoCarta",
+                             "subsets by build). Green line = redox control; dashed = median."),
+                       mito_enrichment$n_sets, 100 * mito_enrichment$base_rate_mito,
+                       100 * mito_enrichment$frac_mito_top100),
+    x = "loading rank (1 = highest |loading|)", y = "|loading| on biological axis",
+    colour = NULL) +
+  ggplot2::theme_bw(base_size = 10) + ggplot2::theme(legend.position = "bottom")
+
+dec_df <- mito_classification |>
+  dplyr::mutate(decile = dplyr::ntile(load_rank, 10)) |>
+  dplyr::count(decile, class3) |>
+  dplyr::group_by(decile) |>
+  dplyr::mutate(frac = n / sum(n)) |>
+  dplyr::ungroup()
+p_d2 <- ggplot2::ggplot(dec_df, ggplot2::aes(factor(decile), frac, fill = class3)) +
+  ggplot2::geom_col() +
+  ggplot2::scale_fill_manual(values = class_cols) +
+  ggplot2::labs(
+    title = "The top decile is ~all mito -- but mostly build-tautological _MITO lanes",
+    subtitle = paste("Composition of each loading decile with construction _MITO sets split out.",
+                     "Non-mito rises steadily down the ranking; the enrichment is a gradient, not a cliff."),
+    x = "loading decile (1 = top)", y = "fraction of sets", fill = NULL) +
+  ggplot2::theme_bw(base_size = 10) + ggplot2::theme(legend.position = "bottom")
+
+if (requireNamespace("patchwork", quietly = TRUE)) {
+  p_d <- patchwork::wrap_plots(p_d1, p_d2, ncol = 1, heights = c(2, 1))
+  ggplot2::ggsave(file.path(out_dir, "D_loading_enrichment_mito.pdf"), p_d, width = 8.5, height = 8.5)
+} else {
+  ggplot2::ggsave(file.path(out_dir, "D_loading_enrichment_mito.pdf"),      p_d1, width = 8.5, height = 5.5)
+  ggplot2::ggsave(file.path(out_dir, "D2_loading_enrichment_deciles.pdf"),  p_d2, width = 8.5, height = 3.5)
+}
+
 message("Figures written to ", out_dir)
 
 # =============================================================================
@@ -454,6 +656,12 @@ pl_out <- list(
   mito_load_wilcox_p    = mito_load_test$p.value,
   cond_loading          = cond_loading,
   loading_verdict       = loading_verdict,
+  mito_classification   = mito_classification,
+  mito_enrichment       = mito_enrichment,
+  nonmito_top_loaders   = nonmito_top_loaders,
+  construction_gap      = construction_gap,
+  substrate_stratification = substrate_stratification,
+  enrichment_verdict    = enrichment_verdict,
   ox_gate               = ox_gate,
   n_sets                = length(common_sets),
   notes = paste(
@@ -481,9 +689,10 @@ if (FALSE) {
 
   pl <- readRDS(here::here("results", "pathway_loading.rds"))
 
-  cat(strwrap(pl$dim_verdict,     92), sep = "\n")
-  cat(strwrap(pl$tech_verdict,    92), sep = "\n")
-  cat(strwrap(pl$loading_verdict, 92), sep = "\n")
+  cat(strwrap(pl$dim_verdict,        92), sep = "\n")
+  cat(strwrap(pl$tech_verdict,       92), sep = "\n")
+  cat(strwrap(pl$loading_verdict,    92), sep = "\n")
+  cat(strwrap(pl$enrichment_verdict, 92), sep = "\n")
 
   # --- PART A: dimensionality ---
   pl$dimensionality |> as.data.frame() |> print()
@@ -501,6 +710,15 @@ if (FALSE) {
   pl$axis_loadings |> as.data.frame() |> print()
   pl$loading_ranks |> as.data.frame() |> print()
   pl$cond_loading  |> as.data.frame() |> print()
+
+  # --- PART C3: mito vs non-mito loading enrichment ---
+  cat(strwrap(pl$enrichment_verdict, 92), sep = "\n")
+  pl$mito_enrichment          |> as.data.frame() |> print()
+  pl$nonmito_top_loaders      |> as.data.frame() |> print()
+  pl$construction_gap         |> as.data.frame() |> print()
+  pl$substrate_stratification |> as.data.frame() |> print()
+  # top of the full 884-set ranking (mito monopoly + the construction block)
+  pl$mito_classification |> head(20) |> as.data.frame() |> print()
 
   list.files(here::here("outputs", "pathway_loading"), pattern = "\\.pdf$")
 }
