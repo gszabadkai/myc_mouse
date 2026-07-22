@@ -1,0 +1,114 @@
+---
+title: "Mitochondria integrate oncogenic and metabolic transcriptional programs to shape breast cancer progression"
+subtitle: "MMTV-Myc mammary timecourse -- exploratory synthesis and figure narrative"
+author: "Szabadkai lab"
+date: today
+---
+
+::: {.callout-note}
+**Skeleton, not the finished document.** This is the container the reflective write-up
+will grow into as the publication panels are finalised. It mirrors the exploratory arc of
+scripts 32-39 and reuses the same `results/*.rds` objects and the `figures/` panel layer.
+Each section below is a stub: prose to be written, panels to be embedded. The organising
+principle, settled 2026-07: **genotype CONTRASTS survived; cross-sectional COUPLINGS sit
+at a correlation ceiling and mostly did not.**
+:::
+
+```{r}
+#| label: setup
+#| include: false
+library(here)
+library(ggplot2)
+
+# Pin here() to the repo root: this .qmd lives under paper/, and a knitr render
+# starts the session there, so anchor explicitly (sourced panel scripts inherit it).
+here::i_am("paper/myc_mito.qmd")
+
+# Display panels inline without re-exporting their canonical PDFs to outputs/.
+options(myc.fig.nosave = TRUE)
+
+# Read-only load of the analysis objects. The figure layer never re-runs analysis;
+# it reads what scripts 00-39 already wrote to results/.
+res <- function(x) readRDS(here::here("results", paste0(x, ".rds")))
+
+# Loaded lazily per section as the prose is written; listed here as the manifest:
+#   content   <- res("mito_content_proxies")        # script 32 -- Fig content
+#   mtaxis    <- res("mtdna_axis_and_coupling_null") # script 33 -- adjusted +21%
+#   loading   <- res("pathway_loading")              # script 37 -- global axis / dim
+#   coupling  <- res("linear_pathway_coupling")      # script 36 -- ceiling origin
+#   lesner    <- res("lesner_mechanism_test")        # script 39 -- external validation
+```
+
+# Overview {#sec-overview}
+
+*(stub)* One-paragraph orientation: bulk RNA-seq of enzymatically purified MMTV-Myc MECs,
+four groups x six replicates, `~timepoint*myc_status` interaction design. Batch = timepoint,
+so genotype/interaction contrasts are clean and the pure developmental reading is confounded.
+What this document does: walk the exploratory process and land the defensible results.
+
+# Myc raises and reprioritises the mitochondrial compartment {#sec-content}
+
+The strongest new result: constant Myc raises the **nuclear** mitochondrial arms (mass
+markers, nuclear MitoCarta, mitoribosome) while mtDNA-encoded output stays flat -- a content
+increase of ~+21% (p=0.0006) after adjusting for prep-stress and contamination, and a *lower
+bound* because Myc amplifies total RNA per cell.
+
+```{r}
+#| label: fig-content
+#| fig-cap: "Myc raises the nuclear mitochondrial arms; mtDNA-encoded output stays flat. Genotype is the clean axis; the time axis is cohort-confounded. n=6/group."
+#| fig-width: 9
+#| fig-height: 4.4
+#| echo: false
+# Reuse the panel script: it builds `p` and (as a side effect) writes the PDF to
+# outputs/figures/. Here we just display the same object inline.
+source(here::here("figures", "fig01_mito_content.R"))
+print(p)
+```
+
+*(stub: the content narrative -- mass-panel coherence, where the imbalance is NOT
+[the mtDNA machinery is not the transcriptional bottleneck], the three ceilings, and why
+mtDNA qPCR / blot is the settling experiment.)*
+
+# The global axis and the correlation ceiling {#sec-axis}
+
+*(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto
+one global per-sample axis (`pathway_loading`: PC1=76% var, eff. dim 1.7; OXPHOS r=0.968 with
+the global mean). A mito axis's median coupling to an *arbitrary* library set is ~0.80.
+"OXPHOS is central" is therefore untestable (no separable variance); mito is mito-LED, not
+mito-SPECIFIC. Panels: `pathway_loading/A_scree`, `A3_gene_axis_covariates`, `linear_pathway_coupling/A_ceiling_origin`.
+
+# The oncogenic programme attenuates across progression {#sec-attenuation}
+
+*(stub)* The 6W->12W attenuation = ~66% Myc-fade + ~34% WT-convergence (biosynthetic arm only;
+OXPHOS/MYC-core fade alone). SE-protected; the most robust mechanistic result. Panels:
+`attenuation_decomposition/A_nes_paradox_two_rulers`, `attenuation_mechanism/A1_convergence_fade_by_program`.
+
+# Death priming: what did not survive {#sec-death}
+
+*(stub)* The honesty section. The mito->death "bridge" is circular (priming built from
+MitoCarta APOPTOSIS_PRO/ANTI) and fails every null; "Myc raises priming" is the mito-content
+effect, below-average for a mito gene; attenuation is global, so priming fades because the
+Myc programme fades. Requires re-running scripts 34/35. Panels: `death_priming_reassessment/D_attenuation_excess`.
+
+# External validation: Lesner et al. {#sec-lesner}
+
+*(stub)* The MYC nuclear-OXPHOS-up / mtDNA-down discordance is independently established
+(Lesner et al., bioRxiv 2026.07.13.738248) in TCGA, mouse HCC, proteomics, mtDNA qPCR --
+killing the "our enzymatic-dissociation artifact" worry. Lesner validates the *question*; our
+mtDNA-down arm is genotype-independent (p~0.49), i.e. underpowered, not demonstrated. Their
+hypoxia->MXI1/JUN Myc-suppression route does NOT transfer to our model (script 39; liver-specific).
+Panels: `lesner/A_mechanism_genes`, `lesner/B_fgsea_contrasts`, `lesner/C_mitophagy_specificity_null`.
+
+# Leads for the bench {#sec-leads}
+
+*(stub)* Hypothesis-generating, not results (n=24): `redox -> MB2 tumorigenic fork` (the one
+robust Myc-independent coupling; test: redox/GSH assay) and `nuclear OXPHOS -> death-priming`
+in mitoPPS ratio space (test: BH3 profiling).
+
+# Provenance {#sec-provenance}
+
+```{r}
+#| label: session
+#| echo: false
+sessionInfo()
+```

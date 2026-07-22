@@ -7,6 +7,8 @@ cran_packages <- c(
   "ggplot2", "ggstatsplot", "pheatmap", "RColorBrewer",
   "grid", "gridExtra", "readr",
   "reshape2", "ggrepel",
+  "ggbeeswarm",      # quasirandom points for n=6/group panels (figures/)
+  "patchwork",       # multi-panel figure composition (figures/)
   "msigdbr",
   "readxl",          # MitoCarta3.0 .xls parsing (08_mitoPPS_analysis.R)
   "splitstackshape"  # cSplit for gene-to-pathway mapping (08_mitoPPS_analysis.R)

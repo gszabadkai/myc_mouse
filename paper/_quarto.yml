@@ -1,0 +1,19 @@
+project:
+  type: default
+  # Run every chunk from the repo root so here::here() and results/*.rds resolve
+  # regardless of this .qmd living under paper/ (Quarto's working-directory trap).
+  execute-dir: project
+
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    code-fold: true
+    embed-resources: true
+    theme: cosmo
+
+execute:
+  warning: false
+  message: false
+  freeze: auto
