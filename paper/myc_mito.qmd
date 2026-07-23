@@ -65,9 +65,36 @@ source(here::here("figures", "fig01_mito_content.R"))
 print(p)
 ```
 
+The compositional critique of the share panel -- "the fraction can rise because *other*
+genes fall" -- is answered by the same four comparisons in per-gene log2FC space
+(`figures/fig01b_mito_content_lfc.R`, from `interaction_results.rds`): the arm genes rise
+in **absolute** terms and **coordinately** (Myc@6W: 83-98% of each nuclear arm's genes up;
+mtDNA-encoded genes are *not* induced -- 0-15% up), so the share rises because the genes
+rise, not by subtraction.
+
+::: {.callout-important}
+## Two cross-panel tensions the narrative must own (both real, not artifacts)
+
+1. **6W: LFC says strong, share said marginal.** fig01b shows 369 individually significant
+   up-genes in Nuclear MitoCarta at 6W, yet fig01's *share* bracket at 6W was only p~0.09.
+   Reconciles cleanly: per-gene induction is large but the n=6 aggregate *fraction* is noisy
+   at 6W. This is the strengthening -- the genes clearly move where the share was underpowered.
+
+2. **12W: significant counts undersell the coordinate shift.** OXPHOS@12W has a clearly
+   positive box (87% of genes up) but only **1** gene clears FDR, because attenuation shrinks
+   per-gene magnitude and n=6 limits power at 12W -- exactly where fig01's share is *firmest*
+   (p 0.003). The `% up` line on fig01b (power-independent) is what keeps 12W from looking
+   artificially weak; read it alongside the significant-gene counts. This previews
+   @sec-attenuation.
+
+Integrated reading: **6W = strong per-gene induction, noisy aggregate; 12W = attenuated
+per-gene signal, consolidated compartment share.**
+:::
+
 *(stub: the content narrative -- mass-panel coherence, where the imbalance is NOT
 [the mtDNA machinery is not the transcriptional bottleneck], the three ceilings, and why
-mtDNA qPCR / blot is the settling experiment.)*
+mtDNA qPCR / blot is the settling experiment. Possible future panel: the four contrasts as
+the sides of a square [Myc@6W / Myc@12W / WT-time / Myc+-time] -- a 2x2 contrast diagram.)*
 
 # The global axis and the correlation ceiling {#sec-axis}
 
@@ -82,6 +109,10 @@ mito-SPECIFIC. Panels: `pathway_loading/A_scree`, `A3_gene_axis_covariates`, `li
 *(stub)* The 6W->12W attenuation = ~66% Myc-fade + ~34% WT-convergence (biosynthetic arm only;
 OXPHOS/MYC-core fade alone). SE-protected; the most robust mechanistic result. Panels:
 `attenuation_decomposition/A_nes_paradox_two_rulers`, `attenuation_mechanism/A1_convergence_fade_by_program`.
+
+Foreshadowed already in fig01b (@sec-content, tension 2): the per-gene induction shrinks
+6W->12W (OXPHOS still 87% up at 12W but only 1 gene clears FDR), and the Time-Myc+ contrast
+is net **down** (Nuclear MitoCarta 68 down vs 20 up) -- the fade, in the same panel.
 
 # Death priming: what did not survive {#sec-death}
 
