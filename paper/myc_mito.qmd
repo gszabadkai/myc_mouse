@@ -85,10 +85,15 @@ rises because the genes rise, not by subtraction.
 ::: {.callout-important}
 ## Two cross-panel tensions the narrative must own (both real, not artifacts)
 
-1. **6W: LFC says strong, share said marginal.** fig01b shows 369 individually significant
-   up-genes in Nuclear MitoCarta at 6W, yet fig01's *share* bracket at 6W was only p~0.09.
-   Reconciles cleanly: per-gene induction is large but the n=6 aggregate *fraction* is noisy
-   at 6W. This is the strengthening -- the genes clearly move where the share was underpowered.
+1. **6W: LFC says strong, share says marginal -- except on the biogenesis arm.** fig01b shows
+   369 individually significant up-genes in Nuclear MitoCarta at 6W, yet fig01's *share*
+   bracket at 6W is only p=0.11 there (mass markers 0.085, nuclear OXPHOS 0.12). Per-gene
+   induction is large; the n=6 aggregate *fraction* is noisy at 6W, so the genes clearly move
+   where the share is underpowered. **Mito biogenesis is the exception and the arm to lead
+   with**: p=**0.035** at 6W and p=**0.0015** at 12W -- the only arm significant at both, and
+   the same arm fig01b independently ranks most coordinate (94.7% of genes up at 6W). Share
+   space and LFC space agree once the arm is a real programme rather than a sub-arm; part of
+   the old tension was arm choice, not only sample size.
 
 2. **12W: significant counts undersell the coordinate shift.** OXPHOS@12W has a clearly
    positive box (87% of genes up) but only **1** gene clears FDR, because attenuation shrinks
@@ -101,6 +106,11 @@ rises because the genes rise, not by subtraction.
 
 Integrated reading: **6W = strong per-gene induction, noisy aggregate; 12W = attenuated
 per-gene signal, consolidated compartment share.**
+
+Not a tension but the mirror of the claim: the only significant *time* bracket in fig01 is
+mtDNA-encoded within Myc+ (p=0.0079, 6W->12W), matching fig01b's 85% up. It is on the
+batch-confounded axis (batch = timepoint) and stays a described observation, not a result --
+see @sec-lesner for why the mtDNA arm needs qPCR to settle.
 :::
 
 *(stub: the content narrative -- mass-panel coherence, where the imbalance is NOT
