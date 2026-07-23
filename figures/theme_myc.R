@@ -25,6 +25,11 @@ geno_labels <- c(neg = "WT", pos = "Myc+")
 group_labels <- c("6W_neg" = "6W WT", "6W_pos" = "6W Myc+",
                   "12W_neg" = "12W WT", "12W_pos" = "12W Myc+")
 
+# --- four-group palette: hue = genotype (blue WT / red Myc+), lightness = age
+# (6W light, 12W dark). RdBu 6-class endpoints -> CVD-safe, keeps the geno pair.
+group_cols <- c("6W_neg"  = "#92C5DE", "6W_pos"  = "#F4A582",   # 6W  light
+                "12W_neg" = "#2166AC", "12W_pos" = "#B2182B")   # 12W dark
+
 # --- Nature figure widths (mm); the real size control is physical size -------
 fig_w <- c(single = 89, onehalf = 120, double = 183)
 
