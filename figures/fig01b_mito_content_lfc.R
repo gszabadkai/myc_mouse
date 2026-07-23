@@ -23,7 +23,7 @@
 #   results/mito_content_proxies.rds      -- mass_per_gene, for the mass roster.
 #   data/genesets_from_library/mammary_mito_myc_metab_v1_mouse.gmt -- the four
 #       MitoCarta arm memberships (identical to fig01; symbol match reproduces
-#       script 32's counts: nuclear 1027, oxphos_nu 134, ribo 83, mtDNA 13).
+#       script 32's counts: nuclear 1027, oxphos_nu 134, mtDNA 13).
 #
 # Significance shown = COUNT of individually significant genes (padj<0.05), split
 # up (red) / down (blue), over the set size (n) -- concrete and direction-clear.
@@ -40,11 +40,14 @@ if (!requireNamespace("patchwork", quietly = TRUE)) {
 }
 
 # NOTE (nesting, kept as-is by author decision 2026-07-23): Nuclear MitoCarta is an
-# UMBRELLA -- it fully contains OXPHOS_NU (155/155), mitoribosome (83/83) and the mass
-# markers (12/12). So those facets overlap the Nuclear MitoCarta facet (its 369 sig-up at
-# 6W includes the 47 OXPHOS + 49 ribo + 9 mass). mtDNA-encoded is disjoint (0/13). A future
-# "Other nuclear MitoCarta" (nuclear - subsets = 877) would make the facets a clean
-# partition; deferred (would also need to change fig01 for consistency).
+# UMBRELLA -- it fully contains OXPHOS_NU (155/155), the biogenesis arm (314/314) and the
+# mass markers (12/12). So those facets overlap the Nuclear MitoCarta facet. mtDNA-encoded
+# is disjoint (0/13). A future "Other nuclear MitoCarta" partition is deferred (would also
+# need to change fig01 for consistency).
+# The two CLAIM-bearing facets are nevertheless effectively disjoint of each other:
+# BIOGENESIS_FULL n MITOCARTA_OXPHOS_NU = 7 genes (2% of 314). That is the point of the
+# arm -- OXPHOS vs GENERAL biogenesis, which the previous mitoribosome facet (a sub-arm of
+# biogenesis translation) could not deliver.
 
 out_dir <- here::here("outputs", "figures")
 
@@ -65,19 +68,22 @@ mass_nochap <- content$mass_per_gene$gene[content$mass_per_gene$arm != "chaperon
 arms <- c("MASS_MARKERS_NOCHAP",
           "MITOCARTA_NUCLEAR_ENCODED",
           "MITOCARTA_OXPHOS_NU",
-          "MITOCARTA_MITOCHONDRIAL_RIBOSOME",
+          "BIOGENESIS_FULL",
           "MITOCARTA_MTDNA_ENCODED")
-arm_name <- c(MASS_MARKERS_NOCHAP              = "Mass markers",
-              MITOCARTA_NUCLEAR_ENCODED        = "Nuclear MitoCarta",
-              MITOCARTA_OXPHOS_NU              = "Nuclear OXPHOS",
-              MITOCARTA_MITOCHONDRIAL_RIBOSOME = "Mitoribosome",
-              MITOCARTA_MTDNA_ENCODED          = "mtDNA-encoded")
+arm_name <- c(MASS_MARKERS_NOCHAP       = "Mass markers",
+              MITOCARTA_NUCLEAR_ENCODED = "Nuclear MitoCarta",
+              MITOCARTA_OXPHOS_NU       = "Nuclear OXPHOS",
+              BIOGENESIS_FULL           = "Mito biogenesis",
+              MITOCARTA_MTDNA_ENCODED   = "mtDNA-encoded")
+# BIOGENESIS_FULL is built by the SAME union expression as script 32's roster, so the
+# share panel (fig01) and this LFC panel cannot drift apart.
 arm_syms <- list(
-  MASS_MARKERS_NOCHAP              = mass_nochap,
-  MITOCARTA_NUCLEAR_ENCODED        = gmt[["MITOCARTA_NUCLEAR_ENCODED"]],
-  MITOCARTA_OXPHOS_NU              = gmt[["MITOCARTA_OXPHOS_NU"]],
-  MITOCARTA_MITOCHONDRIAL_RIBOSOME = gmt[["MITOCARTA_MITOCHONDRIAL_RIBOSOME"]],
-  MITOCARTA_MTDNA_ENCODED          = gmt[["MITOCARTA_MTDNA_ENCODED"]])
+  MASS_MARKERS_NOCHAP       = mass_nochap,
+  MITOCARTA_NUCLEAR_ENCODED = gmt[["MITOCARTA_NUCLEAR_ENCODED"]],
+  MITOCARTA_OXPHOS_NU       = gmt[["MITOCARTA_OXPHOS_NU"]],
+  BIOGENESIS_FULL           = union(gmt[["MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA"]],
+                                    gmt[["MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS"]]),
+  MITOCARTA_MTDNA_ENCODED   = gmt[["MITOCARTA_MTDNA_ENCODED"]])
 
 # symbol -> ensembl dictionary (arm sets are by symbol; DESeqResults are ensembl)
 dict    <- unique(combined[!is.na(combined$mgi_symbol), c("mgi_symbol", "gene")])
@@ -137,13 +143,19 @@ bar <- do.call(rbind, lapply(seq_len(nrow(stat)), function(i) {
 }))
 bar$direction <- factor(bar$direction, levels = c("down", "up"))   # up sits on top
 
+# Label only where it can be read INSIDE its own segment: a 0 carries no information
+# and a count printed on a sliver lands outside the fill.
+bar$lab <- ifelse(bar$nsig == 0 | bar$frac < 6, "", as.character(bar$nsig))
+
 p_bar <- ggplot2::ggplot(bar, ggplot2::aes(contrast, frac, fill = direction)) +
-  ggplot2::geom_col(width = 0.72, alpha = 0.9) +
-  ggplot2::geom_text(ggplot2::aes(label = nsig),
+  ggplot2::geom_col(width = 0.72) +
+  ggplot2::geom_text(ggplot2::aes(label = lab),
                      position = ggplot2::position_stack(vjust = 0.5),
                      colour = "white", fontface = "bold", size = 2.0) +
   ggplot2::facet_wrap(~ arm, nrow = 1) +
-  ggplot2::scale_fill_manual(values = c(up = "#D73027", down = "#2166AC"), guide = "none") +
+  # muted RdBu mid tones (not the saturated #D73027/#2166AC): softer on the page,
+  # still dark enough to carry the bold white counts.
+  ggplot2::scale_fill_manual(values = c(up = "#D6604D", down = "#4393C3"), guide = "none") +
   ggplot2::scale_y_continuous(breaks = c(0, 50, 100), expand = ggplot2::expansion(0)) +
   ggplot2::labs(x = NULL, y = "% genes\n(direction)") +
   theme_myc(base_size = 9) +

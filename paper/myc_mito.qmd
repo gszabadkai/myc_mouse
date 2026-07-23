@@ -49,9 +49,19 @@ What this document does: walk the exploratory process and land the defensible re
 # Myc raises and reprioritises the mitochondrial compartment {#sec-content}
 
 The strongest new result: constant Myc raises the **nuclear** mitochondrial arms (mass
-markers, nuclear MitoCarta, mitoribosome) while mtDNA-encoded output stays flat -- a content
-increase of ~+21% (p=0.0006) after adjusting for prep-stress and contamination, and a *lower
-bound* because Myc amplifies total RNA per cell.
+markers, nuclear MitoCarta, nuclear OXPHOS, mito biogenesis) while mtDNA-encoded output stays
+flat -- a content increase of ~+21% (p=0.0006) after adjusting for prep-stress and
+contamination, and a *lower bound* because Myc amplifies total RNA per cell.
+
+The biogenesis arm is **MitoCarta central dogma + protein import/sorting/homeostasis** (314
+genes: mtDNA replication and transcription, mtRNA metabolism, mitochondrial translation and
+ribosome, import, chaperones, proteases). It replaces the earlier mitoribosome facet for two
+reasons: only **7 of its 314 genes** are in nuclear OXPHOS, so *OXPHOS vs general biogenesis*
+is a genuinely disjoint comparison rather than a whole-vs-part one; and it is the same
+`mito_biogenesis` axis the coupling analyses use (script 28), so figure and analysis name one
+thing. Deliberately **not** the `Biogenesis_discrimination` panel (`CORE_MITO`, `MYC_MITO`,
+`DEVELOPMENTAL_MITO`): those are regulons, and `MYC_MITO` is Myc targets by construction --
+circular on a genotype axis.
 
 ```{r}
 #| label: fig-content
@@ -68,9 +78,9 @@ print(p)
 The compositional critique of the share panel -- "the fraction can rise because *other*
 genes fall" -- is answered by the same four comparisons in per-gene log2FC space
 (`figures/fig01b_mito_content_lfc.R`, from `interaction_results.rds`): the arm genes rise
-in **absolute** terms and **coordinately** (Myc@6W: 83-98% of each nuclear arm's genes up;
-mtDNA-encoded genes are *not* induced -- 0-15% up), so the share rises because the genes
-rise, not by subtraction.
+in **absolute** terms and **coordinately** (Myc@6W: 83-95% of each nuclear arm's genes up,
+biogenesis highest at 95%; mtDNA-encoded genes are *not* induced -- 0-15% up), so the share
+rises because the genes rise, not by subtraction.
 
 ::: {.callout-important}
 ## Two cross-panel tensions the narrative must own (both real, not artifacts)
@@ -84,8 +94,10 @@ rise, not by subtraction.
    positive box (87% of genes up) but only **1** gene clears FDR, because attenuation shrinks
    per-gene magnitude and n=6 limits power at 12W -- exactly where fig01's share is *firmest*
    (p 0.003). The `% up` line on fig01b (power-independent) is what keeps 12W from looking
-   artificially weak; read it alongside the significant-gene counts. This previews
-   @sec-attenuation.
+   artificially weak; read it alongside the significant-gene counts. The biogenesis arm makes
+   the point explicit: at 12W it sits at essentially the same 88% up as OXPHOS yet retains
+   **14** FDR-significant genes to OXPHOS's 1 -- the counts are tracking set size and power,
+   not a difference in biology. This previews @sec-attenuation.
 
 Integrated reading: **6W = strong per-gene induction, noisy aggregate; 12W = attenuated
 per-gene signal, consolidated compartment share.**

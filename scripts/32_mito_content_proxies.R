@@ -204,6 +204,23 @@ mass_all    <- mass_roster$gene
 mass_nochap <- mass_roster$gene[mass_roster$arm != "chaperone"]
 
 # --- 2b. The panel roster ------------------------------------------------------
+# BIOGENESIS_FULL is the general-biogenesis arm the figures read: the UNION (not an
+# intersection) of two library sets, MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA (230 =
+# mtDNA replication 14 + transcription 9 + mtRNA metabolism 76 + translation 155,
+# with the mitoribosome's 83 inside it) and MITOCARTA_PROTEIN_IMPORT_SORTING_AND_
+# HOMEOSTASIS (88 = import/sorting 49 + chaperones 17 + proteases). The two share 4
+# genes -> 314 unique. It is NOT a rebuilt gene set: both components stay in the
+# roster below so the union is never a black box.
+#
+# WHY this arm and not the mitoribosome: the claim is OXPHOS vs GENERAL biogenesis,
+# and only 7 of the 314 are in MITOCARTA_OXPHOS_NU (2%) -- so the two claim-bearing
+# facets are effectively disjoint, which a mitoribosome-vs-OXPHOS comparison never
+# was. It also reproduces the project's own mito_biogenesis axis (28:382, consumed by
+# scripts 35/36), so the figure and the coupling analyses finally name one thing.
+# NOT the Biogenesis_discrimination panel (CORE_MITO/MYC_MITO/...): those are REGULONS,
+# and MYC_MITO is Myc targets by construction -> circular on a genotype share axis.
+# CAVEAT: 5 of the 12 MASS_MARKERS_NOCHAP genes (Tomm20/22/40, Timm23/44) sit inside
+# BIOGENESIS_FULL -- the mass panel is a marker proxy, not an independent arm.
 panel_roster <- tibble::tribble(
   ~panel,                     ~source,   ~tag,
   "MITOCARTA_ALL",            "gmt",     "compartment",
@@ -214,8 +231,11 @@ panel_roster <- tibble::tribble(
   "MASS_OMM_structural",      "roster",  "mass proxy (arm)",
   "MASS_matrix_IMM",          "roster",  "mass proxy (arm)",
   "MASS_chaperone",           "roster",  "mass proxy (arm)",
-  "MITOCARTA_MITOCHONDRIAL_RIBOSOME",   "gmt", "biogenesis machinery",
-  "MITOCARTA_PROTEIN_IMPORT_AND_SORTING","gmt", "biogenesis machinery",
+  "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA", "gmt", "biogenesis machinery",
+  "MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS", "gmt", "biogenesis machinery",
+  "BIOGENESIS_FULL",          "derived", "biogenesis machinery (claim-bearing)",
+  "MITOCARTA_MITOCHONDRIAL_RIBOSOME",   "gmt", "biogenesis machinery (sub-arm)",
+  "MITOCARTA_PROTEIN_IMPORT_AND_SORTING","gmt", "biogenesis machinery (sub-arm)",
   "MITOCARTA_MTDNA_REPLICATION","gmt",   "mtDNA machinery",
   "MITOCARTA_MTDNA_NUCLEOID", "gmt",     "mtDNA machinery",
   "MITOCARTA_TRANSCRIPTION",  "gmt",     "mtDNA machinery",
@@ -229,7 +249,9 @@ stopifnot(all(gmt_panels %in% names(gmt)))
 
 panel_syms <- c(
   stats::setNames(lapply(gmt_panels, function(p) gmt[[p]]), gmt_panels),
-  list(MASS_MARKERS        = mass_all,
+  list(BIOGENESIS_FULL     = union(gmt[["MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA"]],
+                                   gmt[["MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS"]]),
+       MASS_MARKERS        = mass_all,
        MASS_MARKERS_NOCHAP = mass_nochap,
        MASS_OMM_structural = mass_roster$gene[mass_roster$arm == "OMM_structural"],
        MASS_matrix_IMM     = mass_roster$gene[mass_roster$arm == "matrix_IMM"],

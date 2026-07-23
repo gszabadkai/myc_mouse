@@ -14,8 +14,11 @@
 #       method (log2-share simple-effect lm within a subset) so they reconcile.
 #
 # Five claim-bearing arms: nuclear arms rise (mass markers, nuclear MitoCarta,
-# nuclear OXPHOS, mitoribosome) while mtDNA-encoded output stays flat -- content
-# AND where the imbalance is NOT, in one panel.
+# nuclear OXPHOS, mito biogenesis) while mtDNA-encoded output stays flat -- content
+# AND where the imbalance is NOT, in one panel. "Mito biogenesis" = BIOGENESIS_FULL
+# (script 32 roster) = MitoCarta central dogma + protein import/sorting/homeostasis,
+# 314 genes of which only 7 are in nuclear OXPHOS -- so OXPHOS vs general biogenesis
+# is a genuinely disjoint comparison (the old mitoribosome facet was a sub-arm).
 #
 # Design (skills: distribution-plots, ggplot2-fundamentals, figure-export):
 #   n=6/group -> every point (quasirandom) over a light box; never bar-of-mean.
@@ -33,13 +36,13 @@ content <- readRDS(here::here("results", "mito_content_proxies.rds"))
 arms <- c("MASS_MARKERS_NOCHAP",
           "MITOCARTA_NUCLEAR_ENCODED",
           "MITOCARTA_OXPHOS_NU",
-          "MITOCARTA_MITOCHONDRIAL_RIBOSOME",
+          "BIOGENESIS_FULL",
           "MITOCARTA_MTDNA_ENCODED")
-arm_name <- c(MASS_MARKERS_NOCHAP              = "Mass markers",
-              MITOCARTA_NUCLEAR_ENCODED        = "Nuclear MitoCarta",
-              MITOCARTA_OXPHOS_NU              = "Nuclear OXPHOS",
-              MITOCARTA_MITOCHONDRIAL_RIBOSOME = "Mitoribosome",
-              MITOCARTA_MTDNA_ENCODED          = "mtDNA-encoded")
+arm_name <- c(MASS_MARKERS_NOCHAP       = "Mass markers",
+              MITOCARTA_NUCLEAR_ENCODED = "Nuclear MitoCarta",
+              MITOCARTA_OXPHOS_NU       = "Nuclear OXPHOS",
+              BIOGENESIS_FULL           = "Mito biogenesis",
+              MITOCARTA_MTDNA_ENCODED   = "mtDNA-encoded")
 
 # --- per-sample data for the five arms (title carries the claim; strips carry
 #     only the arm name -- keep text light) -------------------------------------
@@ -153,7 +156,8 @@ p <- ggplot2::ggplot(df, ggplot2::aes(group, y_disp, colour = group, fill = grou
     title = "Myc raises the nuclear mitochondrial arms; mtDNA-encoded output stays flat",
     caption = paste(
       sprintf("Points, n=%d/group; box = median/IQR. Brackets: genotype (WT vs Myc+) and 6W-vs-12W p (log2-share simple-effect models, script 32); red = p<0.05.", n_per),
-      "One 12W WT mtDNA sample (67%) off-scale. Fraction of the nuclear transcriptome (13 mtDNA-encoded genes excluded); transcript share, not per-cell content, so a LOWER BOUND under global RNA amplification.",
+      "Mito biogenesis = MitoCarta central dogma + protein import/sorting/homeostasis (314 genes; 7 shared with nuclear OXPHOS). One 12W WT mtDNA sample (67%) off-scale.",
+      "Fraction of the nuclear transcriptome (13 mtDNA-encoded genes excluded); transcript share, not per-cell content, so a LOWER BOUND under global RNA amplification.",
       sep = "\n")) +
   theme_myc(base_size = 9) +
   ggplot2::theme(
