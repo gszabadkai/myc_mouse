@@ -35,6 +35,16 @@ source(here::here("figures", "theme_myc.R"))
 if (!requireNamespace("DESeq2", quietly = TRUE)) {
   stop("fig01b needs DESeq2 to coerce the DESeqResults in interaction_results.rds")
 }
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  stop("fig01b needs patchwork to compose the significance-bar track over the boxplots")
+}
+
+# NOTE (nesting, kept as-is by author decision 2026-07-23): Nuclear MitoCarta is an
+# UMBRELLA -- it fully contains OXPHOS_NU (155/155), mitoribosome (83/83) and the mass
+# markers (12/12). So those facets overlap the Nuclear MitoCarta facet (its 369 sig-up at
+# 6W includes the 47 OXPHOS + 49 ribo + 9 mass). mtDNA-encoded is disjoint (0/13). A future
+# "Other nuclear MitoCarta" (nuclear - subsets = 877) would make the facets a clean
+# partition; deferred (would also need to change fig01 for consistency).
 
 out_dir <- here::here("outputs", "figures")
 
@@ -115,39 +125,48 @@ stat <- long |>
     n_dn   = sum(padj < 0.05 & lfc < 0, na.rm = TRUE),
     .groups = "drop")
 
-YLIM <- c(-1.5, 3.05)                          # per-gene LFC outliers clipped
-stat$pct_lab <- sprintf("%.0f%%", stat$pct_up)
-stat$y_pct   <- YLIM[2] - 0.15                 # % up   (grey)  -- coordinate shift
-stat$y_up    <- YLIM[2] - 0.52                 # sig up (red)
-stat$y_dn    <- YLIM[2] - 0.87                 # sig dn (blue)
+# =========================== TOP TRACK: significance bars =====================
+# Per arm x contrast: a 100% stacked direction bar (up red / down blue by % of
+# set genes) with the count of individually significant genes (padj<0.05) inside.
+bar <- do.call(rbind, lapply(seq_len(nrow(stat)), function(i) {
+  r <- stat[i, ]
+  data.frame(arm = r$arm, contrast = r$contrast,
+             direction = c("up", "down"),
+             frac = c(r$pct_up, 100 - r$pct_up),
+             nsig = c(r$n_up, r$n_dn), stringsAsFactors = FALSE)
+}))
+bar$direction <- factor(bar$direction, levels = c("down", "up"))   # up sits on top
 
-p <- ggplot2::ggplot(long, ggplot2::aes(contrast, lfc)) +
+p_bar <- ggplot2::ggplot(bar, ggplot2::aes(contrast, frac, fill = direction)) +
+  ggplot2::geom_col(width = 0.72, alpha = 0.9) +
+  ggplot2::geom_text(ggplot2::aes(label = nsig),
+                     position = ggplot2::position_stack(vjust = 0.5),
+                     colour = "white", fontface = "bold", size = 2.0) +
+  ggplot2::facet_wrap(~ arm, nrow = 1) +
+  ggplot2::scale_fill_manual(values = c(up = "#D73027", down = "#2166AC"), guide = "none") +
+  ggplot2::scale_y_continuous(breaks = c(0, 50, 100), expand = ggplot2::expansion(0)) +
+  ggplot2::labs(x = NULL, y = "% genes\n(direction)") +
+  theme_myc(base_size = 9) +
+  ggplot2::theme(
+    axis.text.x  = ggplot2::element_blank(),
+    axis.ticks.x = ggplot2::element_blank(),
+    axis.line.x  = ggplot2::element_blank())
+
+# =========================== BOTTOM TRACK: LFC boxplots =======================
+p_box <- ggplot2::ggplot(long, ggplot2::aes(contrast, lfc)) +
   ggplot2::geom_hline(yintercept = 0, linetype = 2, colour = "grey55", linewidth = 0.3) +
   ggplot2::geom_boxplot(ggplot2::aes(fill = contrast), outlier.shape = NA,
                         width = 0.62, alpha = 0.6, colour = "grey30", linewidth = 0.3) +
-  # annotation stack (top -> bottom): % up (grey), sig up (red), sig down (blue)
-  ggplot2::geom_text(data = stat, ggplot2::aes(contrast, y_pct, label = pct_lab),
-                     colour = "grey25", size = 1.8, inherit.aes = FALSE) +
-  ggplot2::geom_text(data = stat, ggplot2::aes(contrast, y_up, label = n_up),
-                     colour = "#D73027", size = 1.8, inherit.aes = FALSE) +
-  ggplot2::geom_text(data = stat, ggplot2::aes(contrast, y_dn, label = n_dn),
-                     colour = "#2166AC", size = 1.8, inherit.aes = FALSE) +
   ggplot2::facet_wrap(~ arm, nrow = 1) +
-  ggplot2::coord_cartesian(ylim = YLIM) +
+  ggplot2::coord_cartesian(ylim = c(-1.4, 1.85)) +
   ggplot2::scale_fill_manual(
     values = contrast_cols, name = NULL,
     labels = c("Myc@6W" = "Myc effect at 6W", "Myc@12W" = "Myc effect at 12W",
                "Time WT" = "WT 6->12W", "Time Myc+" = "Myc+ 6->12W")) +
-  ggplot2::labs(
-    x = NULL, y = "per-gene raw log2 fold-change",
-    title = "Myc coordinately induces the nuclear arm genes; mtDNA-encoded does not",
-    subtitle = "Per contrast top-to-bottom: % genes LFC>0 (grey); padj<0.05 up (red) / down (blue); n per facet.",
-    caption = paste(
-      "Per-gene RAW (unshrunken) log2FC; box = median/IQR, dashed line = 0. Same four comparisons as fig01's brackets, in LFC space; per-contrast padj from interaction_results (raw).",
-      "The two Time contrasts preview the attenuation / mtDNA-over-time stories. Set-level competitive significance (fGSEA / NES vs a matched background) is deferred. LFC outliers beyond the axis are clipped.",
-      sep = "\n")) +
+  ggplot2::labs(x = NULL, y = "per-gene raw log2 fold-change") +
   theme_myc(base_size = 9) +
   ggplot2::theme(
+    strip.text      = ggplot2::element_blank(),   # arm labels live on the top track
     axis.text.x     = ggplot2::element_blank(),
     axis.ticks.x    = ggplot2::element_blank(),
     axis.line.x     = ggplot2::element_blank(),
@@ -156,11 +175,26 @@ p <- ggplot2::ggplot(long, ggplot2::aes(contrast, lfc)) +
     legend.key.size = ggplot2::unit(3.5, "mm")) +
   ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1, override.aes = list(alpha = 0.6)))
 
+# =========================== COMPOSE (bars atop boxes) ========================
+p <- patchwork::wrap_plots(p_bar, p_box, ncol = 1, heights = c(1, 2.9)) +
+  patchwork::plot_annotation(
+    title = "Myc coordinately induces the nuclear arm genes; mtDNA-encoded does not",
+    subtitle = "Top: direction share, up (red) / down (blue); number = genes at padj<0.05. Bottom: per-gene raw log2FC.",
+    caption = paste(
+      "Same four comparisons as fig01's brackets, in LFC space; RAW LFCs + per-contrast padj from interaction_results.",
+      "Time contrasts preview attenuation / mtDNA-over-time. Competitive set-level test (fGSEA/NES vs background) deferred; box outliers clipped.",
+      sep = "\n"),
+    theme = ggplot2::theme(
+      plot.title    = ggplot2::element_text(face = "bold", size = 11),
+      plot.subtitle = ggplot2::element_text(size = 8.2, colour = "grey20"),
+      plot.caption  = ggplot2::element_text(size = 6.3, hjust = 0, colour = "grey30",
+                                            lineheight = 1.1)))
+
 # Guard: sourced only to obtain `p` (e.g. Quarto) when myc.fig.nosave = TRUE.
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   save_panel(p, file.path(out_dir, "fig01b_mito_content_lfc.pdf"),
-             width = fig_w[["double"]], height = 92)
+             width = fig_w[["double"]], height = 118)
 }
 
 # =============================================================================
@@ -170,5 +204,7 @@ if (FALSE) {
   print(as.data.frame(stat))
   print(rbind(members = vapply(arm_syms, length, integer(1)),
               in_table = Ntot))
-  print(p)
+  print(p_bar)   # top track alone
+  print(p_box)   # bottom track alone
+  print(p)       # composite
 }
