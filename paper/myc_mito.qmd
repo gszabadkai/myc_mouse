@@ -118,6 +118,63 @@ see @sec-lesner for why the mtDNA arm needs qPCR to settle.
 mtDNA qPCR / blot is the settling experiment. Possible future panel: the four contrasts as
 the sides of a square [Myc@6W / Myc@12W / WT-time / Myc+-time] -- a 2x2 contrast diagram.)*
 
+# The mitochondrial-group survey: what rises when OXPHOS falls {#sec-mito-survey}
+
+fig01 shows OXPHOS is the mitochondrial arm that *falls* across the WT 6->12W timeline,
+yet the total nuclear MitoCarta share is flat -- so other groups must rise to hold it
+there. This supplementary survey resolves which. It takes the seven canonical MitoCarta
+MitoPathway top-level categories -- **with Metabolism split into its nine level-2 children**
+(hierarchy read from MitoCarta Sheet 4) -- and reads them the same two ways as fig01/fig01b:
+compartment share across the four groups (@fig-survey-share) and per-gene log2FC across the
+four contrasts (@fig-survey-lfc). Every set is already mt-* free, so `MITOCARTA_OXPHOS_NU`
+is the nuclear OXPHOS and `share_nomt` is the consistent scale.
+
+```{r}
+#| label: fig-survey-share
+#| fig-cap: "Compartment share of all 16 main MitoCarta groups across the four groups (% of the non-mtDNA transcriptome, free y). Genotype is the clean axis; the time axis is batch-confounded. n=6/group."
+#| fig-width: 9
+#| fig-height: 8
+#| echo: false
+source(here::here("figures", "figS1_mitocarta_survey_share.R"))
+print(p)
+```
+
+```{r}
+#| label: fig-survey-lfc
+#| fig-cap: "Per-gene raw log2FC across the four fig01 contrasts for the 16 groups. A: median LFC per group x contrast (n = genes at padj<0.05; -n = mostly down). B: the LFC distributions. Read the WT 6->12W column."
+#| fig-width: 9
+#| fig-height: 8.5
+#| echo: false
+source(here::here("figures", "figS1b_mitocarta_survey_lfc.R"))
+print(p)
+```
+
+The answer: in the WT timeline OXPHOS is the outlier -- only ~38% of its genes up (6
+individually significant *down*) -- while the biosynthetic and substrate-metabolism groups
+*rise* (sulfur 80%, carbohydrate 77%, amino-acid 76%, lipid 68% of genes up; metals &
+cofactors, detoxification, small-molecule transport and electron carriers all >55%). The flat
+total is therefore a **reallocation**, not stasis: as the developmental OXPHOS programme winds
+down over the timeline, substrate-metabolism groups take up the share.
+
+Two guards on reading this. (1) The WT-timeline columns sit on the batch-confounded axis
+(batch = timepoint), so the rise is **described, not claimed** -- the clean read is the
+genotype columns, where Myc induces essentially *every* group at 6W and that induction fades
+by 12W (attenuation, @sec-attenuation). (2) The median-LFC fills and the significant-gene
+counts track set size and power; the direction (% up) is the power-independent read.
+
+The companion table lists, per group, the genes whose LFC varies most across the four
+contrasts (`spread = max - min`) -- the context-dependent movers behind each group's summary
+(full CSV at `outputs/figures/figS1b_diverse_genes.csv`).
+
+```{r}
+#| label: tbl-diverse-genes
+#| tbl-cap: "Most divergent genes per MitoCarta group (top by LFC spread across the four contrasts)."
+#| echo: false
+knitr::kable(diverse_genes, digits = 2,
+             col.names = c("group", "gene", "Myc@6W", "Myc@12W", "WT 6->12W",
+                           "Myc+ 6->12W", "spread", "sd"))
+```
+
 # The global axis and the correlation ceiling {#sec-axis}
 
 *(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto

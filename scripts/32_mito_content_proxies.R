@@ -242,7 +242,26 @@ panel_roster <- tibble::tribble(
   "MITOCARTA_FISSION",        "gmt",     "dynamics",
   "MITOCARTA_FUSION",         "gmt",     "dynamics",
   "MITOCARTA_OXPHOS_NU",      "gmt",     "OXPHOS (reconciles script 29)",
-  "MITOCARTA_OXPHOS_MT",      "gmt",     "OXPHOS (reconciles script 29)")
+  "MITOCARTA_OXPHOS_MT",      "gmt",     "OXPHOS (reconciles script 29)",
+  # --- MitoPathways top-level survey groups (for the supplementary survey figS1) ---
+  # The 7 canonical MitoCarta MitoPathway top-level categories, with METABOLISM split
+  # into its 9 depth-2 children (hierarchy verified against Sheet 4's "MitoPathway
+  # Hierarchy" column). OXPHOS = MITOCARTA_OXPHOS_NU, central dogma and import/sorting/
+  # homeostasis are already above; these 12 add the rest. PURELY ADDITIVE -- shares are
+  # computed per panel (no loops/perms), so every pre-existing number is bit-identical.
+  # (Script 32's own PART-7 diagnostic figures will gain facets -- harmless, left as is.)
+  "MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE", "gmt", "mito group (L1)",
+  "MITOCARTA_SIGNALING",             "gmt", "mito group (L1)",
+  "MITOCARTA_SMALL_MOLECULE_TRANSPORT","gmt","mito group (L1)",
+  "MITOCARTA_AMINO_ACID_METABOLISM", "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_CARBOHYDRATE_METABOLISM","gmt", "mito group (metabolism L2)",
+  "MITOCARTA_LIPID_METABOLISM",      "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_NUCLEOTIDE_METABOLISM", "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_VITAMIN_METABOLISM",    "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_METALS_AND_COFACTORS",  "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_DETOXIFICATION",        "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_SULFUR_METABOLISM",     "gmt", "mito group (metabolism L2)",
+  "MITOCARTA_ELECTRON_CARRIERS",     "gmt", "mito group (metabolism L2)")
 
 gmt_panels <- panel_roster$panel[panel_roster$source == "gmt"]
 stopifnot(all(gmt_panels %in% names(gmt)))
