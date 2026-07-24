@@ -243,7 +243,7 @@ priority within it, coherently by pathway tier and at both ages (@fig-reallocati
 
 ```{r}
 #| label: fig-reallocation
-#| fig-cap: "MitoPathways ranked by their Myc mitoPPS effect (Myc+ - WT, 6W), demoted (left) to promoted (right); one dot per pathway coloured by tier, * = padj<0.05, and the 7 top-level categories labelled. Reprioritisation is structured by function. n=6/group."
+#| fig-cap: "MitoPathways ranked by their Myc mitoPPS effect (Myc+ - WT, 6W), promoted (left) to demoted (right); one dot per pathway coloured by tier, * = padj<0.05, the 7 top-level categories labelled, and 12W shown as a small point joined to 6W (the fade). Reprioritisation is structured by function. n=6/group."
 #| fig-width: 9
 #| fig-height: 4.7
 #| echo: false
