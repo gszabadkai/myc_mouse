@@ -316,6 +316,47 @@ source(here::here("figures", "figS5_reallocation_scatter.R"))
 print(p)
 ```
 
+## Reallocation over the timeline {#sec-reallocation-time}
+
+The reallocation above is the Myc *genotype* effect within a timepoint. A **separate**
+phenomenon plays out over the timeline: the **WT background itself reprioritises** as the tissue
+develops. Ranking the pathways by their WT 6->12W mitoPPS change (@fig-reallocation-time) shows a
+full developmental reallocation in the WT alone -- and the dropline to the Myc+ 6->12W change
+shows where Myc **bends** that trajectory. The two are largely shared (WT-time and Myc+-time
+mitoPPS correlate r=0.75, 70% same direction, @fig-reallocation-time-div): most of the temporal
+reallocation is developmental, common to both genotypes. Where Myc departs is the **fade** -- the
+biogenesis / biosynthesis and OXPHOS arms it promoted at 6W lose relative priority hardest by 12W
+in Myc+ (they sit *below* the y=x line), the mitoPPS reading of the attenuation (@sec-attenuation).
+The apoptosis / mitophagy pathways move with the developmental background rather than diverging --
+i.e. no Myc-specific temporal priming signal in this lens.
+
+::: {.callout-warning}
+The **time axis is batch-confounded** (batch = timepoint), so the individual WT-time and Myc+-time
+changes are **descriptive, not claims**. The clean quantity is their **divergence** -- the dropline
+in @fig-reallocation-time, the deviation from y=x in @fig-reallocation-time-div -- because the
+batch effect cancels in the difference. Both are exploratory (n=6/group).
+:::
+
+```{r}
+#| label: fig-reallocation-time
+#| fig-cap: "Supplementary (figS6): MitoPathways ranked by WT 6->12W mitoPPS change (filled), with a dropline to Myc+ 6->12W (open) -- the Myc-specific bend. The 7 top-level categories labelled. n=6/group."
+#| fig-width: 9
+#| fig-height: 5
+#| echo: false
+source(here::here("figures", "figS6_reallocation_temporal_ranked.R"))
+print(p)
+```
+
+```{r}
+#| label: fig-reallocation-time-div
+#| fig-cap: "Supplementary (figS7): WT 6->12W vs Myc+ 6->12W mitoPPS change per pathway. On the y=x line = shared/developmental (r=0.75); off it = where Myc bends the WT trajectory; below-diagonal = the biogenesis arms Myc fades. n=6/group."
+#| fig-width: 6.5
+#| fig-height: 6.8
+#| echo: false
+source(here::here("figures", "figS7_reallocation_temporal_divergence.R"))
+print(p)
+```
+
 # The global axis and the correlation ceiling {#sec-axis}
 
 *(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto
