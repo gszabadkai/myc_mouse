@@ -236,34 +236,46 @@ knitr::kable(diverse_genes, digits = 2,
 
 The content figures use one ruler -- absolute abundance. mitoPPS (Monzel 2025) adds the
 second: it is **content-blind**, reading *relative* resource reallocation *within* the
-mitochondrial compartment (the pairwise ratio cancels the per-sample common mode; the mitoPPS
-ambient is ~0.42 vs GSVA's ~0.80). @fig-reallocation confronts the two across **all ~148
-MitoPathways**: left = DESeq set-average log2FC (content), right = the relative mitoPPS Myc
-effect (priority), both for the two clean genotype contrasts.
+compartment (each MitoPathway is ratio-normalized to 1; the pairwise ratio cancels the
+per-sample common mode, mitoPPS ambient ~0.42 vs GSVA's ~0.80). The main point is simply that
+**reprioritisation happens** -- Myc does not merely raise the compartment, it reshuffles
+priority within it, coherently by pathway tier and at both ages (@fig-reallocation).
 
 ```{r}
 #| label: fig-reallocation
-#| fig-cap: "Content (absolute set log2FC) vs priority (relative mitoPPS) Myc effect across all ~148 MitoPathways, tier-blocked. The discordance -- red on the left, blue on the right -- is the reallocation. n=6/group."
-#| fig-width: 8.5
-#| fig-height: 13
+#| fig-cap: "Per-sample mitoPPS score (relative priority; each pathway centred at 1) for all ~144 MitoPathways, coloured by tier; bold bars = per-genotype tier means. Myc fans the tiers apart -- import/central-dogma up, dynamics/signalling/transport down -- at 6W and 12W. n=6/group."
+#| fig-width: 9
+#| fig-height: 5.2
 #| echo: false
-source(here::here("figures", "fig02_reallocation_two_rulers.R"))
+source(here::here("figures", "fig02_reallocation.R"))
 print(p)
 ```
 
-The reading is a **colour flip**: content is positive almost everywhere (Myc raises the
-compartment broadly, attenuating by 12W), yet priority is reshuffled. **OXPHOS is where they
-disagree** -- its structural *subunits* are promoted (CIII-subunits mitoPPS +0.20, CV-subunits
-+0.17) while its *assembly factors* are demoted (CII −0.26, CIII −0.14 padj 0.022, respirasome
-−0.11) and the mtDNA arm falls (−0.34), even though every one of those has *positive* content.
-That subunit-over-assembly split is the "OXPHOS exception," and it only surfaces at
-all-pathways granularity. Beyond OXPHOS, the same lens demotes the dynamics/apoptosis and
-signalling tiers in priority while promoting the import chaperones and SAM (up on *both*
-rulers).
+The tiers move in **opposite directions** with Myc: the biogenesis machinery is promoted
+(import/homeostasis tier-mean +0.10, central dogma +0.04) while dynamics & surveillance
+(−0.11), small-molecule transport (−0.12) and signalling (−0.06) are demoted; OXPHOS (+0.02)
+and metabolism (+0.01) sit ~neutral *at tier level*. The same signs recur at 12W (attenuated),
+so the reallocation is a reproducible pattern, not a one-timepoint fluke. This is the **clean
+genotype axis**, but **descriptive / exploratory** (n=6/group): the claim is the coherent
+tier-level pattern, not any single pathway.
 
-This is the **clean genotype axis** (Myc+ vs WT within a timepoint), but it is **descriptive /
-exploratory**: at n=6/group few pathways clear padj<0.05 individually, so the result is the
-*pattern* -- content broadly up, priority selectively reallocated -- not any single tile.
+The pathway-level detail behind this -- and the one place the two rulers *disagree* -- is in
+@fig-reallocation-detail: across all ~148 pathways, absolute content (DESeq set log2FC) is
+positive almost everywhere, yet within **OXPHOS** the structural *subunits* are promoted in
+priority (CIII-subunits mitoPPS +0.20, CV-subunits +0.17) while the *assembly factors* are
+demoted (CII −0.26, CIII −0.14 padj 0.022, respirasome −0.11) and the mtDNA arm falls (−0.34) --
+all on positive content. That subunit-over-assembly split is why OXPHOS reads ~neutral at tier
+level, and it only surfaces at all-pathways granularity.
+
+```{r}
+#| label: fig-reallocation-detail
+#| fig-cap: "Supplementary: content (absolute set log2FC) vs priority (relative mitoPPS) Myc effect across all ~148 MitoPathways, tier-blocked. The colour flip -- red on the left, blue on the right -- is the reallocation, sharpest within OXPHOS (subunits vs assembly). n=6/group."
+#| fig-width: 8.5
+#| fig-height: 13
+#| echo: false
+source(here::here("figures", "figS3_reallocation_two_rulers.R"))
+print(p)
+```
 
 # The global axis and the correlation ceiling {#sec-axis}
 

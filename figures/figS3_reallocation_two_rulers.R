@@ -1,5 +1,5 @@
 # =============================================================================
-# fig02_reallocation_two_rulers.R -- content vs mitoPPS across ALL MitoPathways
+# figS3_reallocation_two_rulers.R -- content vs mitoPPS across ALL MitoPathways
 # -----------------------------------------------------------------------------
 # The reallocation result. fig01/figS1/figS2 show Myc RAISES nuclear mito CONTENT
 # broadly (absolute). mitoPPS (Monzel 2025) is content-BLIND -- it reads RELATIVE
@@ -158,7 +158,7 @@ p <- patchwork::wrap_plots(p_abs, p_rel, nrow = 1, widths = c(1.55, 1)) +
 # Guard: sourced only to obtain `p` (e.g. Quarto) when myc.fig.nosave = TRUE.
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  save_panel(p, file.path(out_dir, "fig02_reallocation_two_rulers.pdf"),
+  save_panel(p, file.path(out_dir, "figS3_reallocation_two_rulers.pdf"),
              width = fig_w[["double"]], height = 285)
 }
 
