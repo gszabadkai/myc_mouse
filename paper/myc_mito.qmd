@@ -308,7 +308,7 @@ compartment mean), so a content/priority slope is partly built in. Descriptive/e
 
 ```{r}
 #| label: fig-reallocation-scatter
-#| fig-cap: "Supplementary (figS5): content (DESeq set-average log2FC) vs priority (relative mitoPPS) Myc effect per pathway at 6W, with marginal densities. Content is one-sided-positive (~94% up); priority is wide, both ways (~56% up) -- that spread is the reallocation. Ringed = padj<0.05; the content-down/priority-up quadrant is empty. n=6/group."
+#| fig-cap: "Supplementary (figS5): priority (relative mitoPPS effect, x) vs content (set-average log2FC, y) per pathway at 6W, with marginal densities; the 7 top-level categories labelled. Content is one-sided-positive (~94% up), priority wide both ways (~56% up) -- that spread is the reallocation. Ringed = padj<0.05. n=6/group."
 #| fig-width: 9
 #| fig-height: 6.6
 #| echo: false
