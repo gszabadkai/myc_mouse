@@ -1,7 +1,8 @@
 # =============================================================================
-# fig02_reallocation.R -- "Myc reprioritises the mitochondrial compartment"
+# figS4_reallocation_full.R -- "Myc reprioritises the compartment" (full, labelled)
 # -----------------------------------------------------------------------------
-# The MAIN reallocation result as an ORDERED DOT CHART: every MitoPathway ranked
+# The SUPPLEMENTARY, fully-labelled companion to the compact main panel
+# (fig02b_reallocation_ranked.R). An ORDERED DOT CHART: every MitoPathway ranked
 # by its Myc mitoPPS effect (Myc+ minus WT), most DEMOTED at the bottom -> most
 # PROMOTED at the top. mitoPPS (Monzel 2025) is content-blind (each pathway
 # ratio-normalized to 1), so the effect is a pure RELATIVE-priority shift. The
@@ -93,7 +94,7 @@ p <- ggplot2::ggplot(long, ggplot2::aes(eff, pathway)) +
 # Guard: sourced only to obtain `p` (e.g. Quarto) when myc.fig.nosave = TRUE.
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  save_panel(p, file.path(out_dir, "fig02_reallocation.pdf"),
+  save_panel(p, file.path(out_dir, "figS4_reallocation_full.pdf"),
              width = fig_w[["double"]], height = 265)
 }
 

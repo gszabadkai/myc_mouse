@@ -74,16 +74,20 @@ p <- ggplot2::ggplot(d, ggplot2::aes(rank, eff6)) +
   # top-of-hierarchy anchors: ringed 6W dot + leader label in the top/bottom strip
   ggplot2::geom_point(data = anc, ggplot2::aes(fill = tier), shape = 21, size = 2.8,
                       colour = "black", stroke = 0.5, show.legend = FALSE) +
+  # labels kept on a SINGLE y line per strip (direction = "x") so each strip reads
+  # as one horizontal row; leader lines connect down/up to the anchor dots.
   ggrepel::geom_text_repel(
     data = anc_up, ggplot2::aes(label = lab, colour = tier),
-    ylim = c(0.30, TOP + 0.04), nudge_y = TOP - anc_up$eff6, size = 2.4, fontface = "bold",
+    nudge_y = TOP - anc_up$eff6, direction = "x", size = 2.4, fontface = "bold",
     seed = 1, min.segment.length = 0, segment.size = 0.3, segment.colour = "grey60",
-    box.padding = 0.5, point.padding = 0.3, force = 6, max.overlaps = Inf, show.legend = FALSE) +
+    box.padding = 0.45, point.padding = 0.3, force = 9, force_pull = 0.15,
+    max.overlaps = Inf, show.legend = FALSE) +
   ggrepel::geom_text_repel(
     data = anc_dn, ggplot2::aes(label = lab, colour = tier),
-    ylim = c(BOT - 0.04, -0.30), nudge_y = BOT - anc_dn$eff6, size = 2.4, fontface = "bold",
+    nudge_y = BOT - anc_dn$eff6, direction = "x", size = 2.4, fontface = "bold",
     seed = 1, min.segment.length = 0, segment.size = 0.3, segment.colour = "grey60",
-    box.padding = 0.5, point.padding = 0.3, force = 6, max.overlaps = Inf, show.legend = FALSE) +
+    box.padding = 0.45, point.padding = 0.3, force = 9, force_pull = 0.15,
+    max.overlaps = Inf, show.legend = FALSE) +
   ggplot2::scale_colour_manual(values = tier_col, name = "MitoPathway tier") +
   ggplot2::scale_fill_manual(values = tier_col, guide = "none") +
   ggplot2::coord_cartesian(ylim = c(BOT - 0.04, TOP + 0.04)) +
@@ -94,7 +98,7 @@ p <- ggplot2::ggplot(d, ggplot2::aes(rank, eff6)) +
     subtitle = "Each dot = a MitoPathway (colour = tier); * = padj<0.05; 7 top-level categories labelled; small point/line = 12W (the fade).",
     caption = paste(
       "mitoPPS (Monzel 2025), content-blind (each pathway ratio-normalized to 1): a pure relative-priority shift, Myc+ vs WT.",
-      "Promoted (left) = import + biosynthesis; demoted (right) = dynamics/apoptosis/signalling; OXPHOS spans the middle (split, fig02). Exploratory (n=6).",
+      "Promoted (left) = import + biosynthesis; demoted (right) = dynamics/apoptosis/signalling; OXPHOS spans the middle (split, figS4). Exploratory (n=6).",
       sep = "\n")) +
   theme_myc(base_size = 9) +
   ggplot2::theme(

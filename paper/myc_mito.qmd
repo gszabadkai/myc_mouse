@@ -265,11 +265,11 @@ is @fig-reallocation-full.
 
 ```{r}
 #| label: fig-reallocation-full
-#| fig-cap: "Every MitoPathway (~144) ranked by Myc mitoPPS effect, labelled; filled = 6W, open = 12W, line = the 6W->12W change. The full version of @fig-reallocation. n=6/group."
+#| fig-cap: "Supplementary (figS4): every MitoPathway (~144) ranked by Myc mitoPPS effect, fully labelled; filled = 6W, open = 12W, line = the 6W->12W change. The full version of @fig-reallocation. n=6/group."
 #| fig-width: 8.5
 #| fig-height: 12
 #| echo: false
-source(here::here("figures", "fig02_reallocation.R"))
+source(here::here("figures", "figS4_reallocation_full.R"))
 print(p)
 ```
 
