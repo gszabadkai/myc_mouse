@@ -36,9 +36,15 @@ content <- readRDS(here::here("results", "mito_content_proxies.rds"))
 # genes) and MITOCARTA_OXPHOS_MT (the 13 mtDNA-encoded subunits, identical to
 # MITOCARTA_MTDNA_ENCODED). So there is no separate "mtDNA reference" facet: the
 # mtDNA-encoded compartment IS mtDNA OXPHOS.
+#
+# Order = the two blocks, 8 + 8, so each fills an ncol=4 grid with NO empty cells.
+# Electron carriers (a MitoCarta Metabolism child, but functionally cytochrome c /
+# CoQ -- the OXPHOS electron shuttle) is grouped with the respiratory chain (arms
+# 1-8), leaving the 8 substrate-metabolism children in the second block (arms 9-16).
 arms <- c(
   "MITOCARTA_OXPHOS_NU",
   "MITOCARTA_OXPHOS_MT",
+  "MITOCARTA_ELECTRON_CARRIERS",
   "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA",
   "MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS",
   "MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE",
@@ -51,8 +57,7 @@ arms <- c(
   "MITOCARTA_VITAMIN_METABOLISM",
   "MITOCARTA_METALS_AND_COFACTORS",
   "MITOCARTA_DETOXIFICATION",
-  "MITOCARTA_SULFUR_METABOLISM",
-  "MITOCARTA_ELECTRON_CARRIERS")
+  "MITOCARTA_SULFUR_METABOLISM")
 arm_name <- c(
   MITOCARTA_OXPHOS_NU                              = "Nuclear OXPHOS",
   MITOCARTA_OXPHOS_MT                              = "mtDNA OXPHOS",
@@ -140,10 +145,11 @@ build_brackets <- function(arm_ids) {
 }
 
 # --- two blocks with a divider between them (author request 2026-07-24) --------
-# ncol = 3 fills the 9-child metabolism block exactly. OXPHOS leads the top block
-# as its two halves (nuclear / mtDNA); there is no separate mtDNA reference facet.
-blk_top <- arms[1:7]    # Nuclear OXPHOS, mtDNA OXPHOS + 5 other top-level categories
-blk_met <- arms[8:16]   # 9 Metabolism level-2 children
+# 8 + 8 at ncol = 4 -> BOTH blocks fill with no empty cells. OXPHOS leads the top
+# block as its two halves (nuclear / mtDNA); electron carriers rides with the
+# respiratory chain; there is no separate mtDNA reference facet.
+blk_top <- arms[1:8]    # respiratory chain (OXPHOS nu/mt + electron carriers) + 5 top-level
+blk_met <- arms[9:16]   # 8 substrate-metabolism level-2 children
 
 make_block <- function(arm_ids, subtitle, ylab = NULL) {
   labs <- unname(arm_name[arm_ids])
@@ -181,7 +187,7 @@ make_block <- function(arm_ids, subtitle, ylab = NULL) {
     pts_layer(d) +
     brk_layers +
     ggplot2::geom_blank(data = hr, ggplot2::aes(x = group, y = y), inherit.aes = FALSE) +
-    ggplot2::facet_wrap(~ panel, ncol = 3, scales = "free_y") +
+    ggplot2::facet_wrap(~ panel, ncol = 4, scales = "free_y") +
     ggplot2::scale_colour_manual(
       values = c(group_cols, geno_sig = "#E41A1C", time_sig = "grey45"),
       breaks = names(group_cols), labels = group_labels) +
@@ -200,18 +206,18 @@ make_block <- function(arm_ids, subtitle, ylab = NULL) {
       nrow = 1, override.aes = list(size = 2.4, alpha = 1, shape = 16)))
 }
 
-p_top <- make_block(blk_top, "Top-level MitoPathway categories (OXPHOS split nuclear / mtDNA)",
+p_top <- make_block(blk_top, "Respiratory chain & other top-level MitoPathways (OXPHOS split nuclear / mtDNA)",
                     ylab = "share of the nuclear transcriptome (%)")
 p_met <- make_block(blk_met, "Metabolism (level-2 children)")
 
-p <- patchwork::wrap_plots(p_top, p_met, ncol = 1, heights = c(3, 3)) +
+p <- patchwork::wrap_plots(p_top, p_met, ncol = 1, heights = c(1, 1)) +
   patchwork::plot_layout(guides = "collect") +
   patchwork::plot_annotation(
     title = "Mitochondrial compartment shares across all main MitoCarta groups",
     caption = paste(
       sprintf("Points, n=%d/group; box = median/IQR. %% of the non-mtDNA transcriptome (raw counts); free y per group.", n_per),
-      "Brackets: genotype (WT vs Myc+, red) and 6W-vs-12W (grey) p-values, drawn ONLY where p<0.05 (log2-share simple-effect models, script 32).",
-      "Metabolism divided from the other top-level categories, split into its 9 depth-2 children. Genotype is the clean axis; the time axis is batch-confounded (batch=timepoint).",
+      "Brackets: genotype (WT vs Myc+, red) and 6W-vs-12W (grey), drawn ONLY where p<0.05 (log2-share simple-effect, script 32).",
+      "Electron carriers (cyt c / CoQ) grouped with the respiratory chain. Genotype = clean axis; time = batch-confounded (batch=timepoint).",
       sep = "\n"),
     theme = ggplot2::theme(
       plot.title   = ggplot2::element_text(face = "bold", size = 11),
