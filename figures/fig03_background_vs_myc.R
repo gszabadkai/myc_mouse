@@ -195,6 +195,7 @@ lab_of <- c(ALL = "ALL genes (global)",
 ss$lab <- unname(lab_of[ss$program])
 ss <- ss[!is.na(ss$lab), ]
 ss <- ss[order(ss$frac_toward_split), ]
+stopifnot(all(c("frac_toward_halfshared", "frac_artifact") %in% names(ss)))
 ss$lab <- factor(ss$lab, levels = ss$lab)
 ss$verdict <- ifelse(ss$frac_toward_split > 0.55, "converges",
                      ifelse(ss$frac_toward_split < 0.45, "diverges", "chance"))
@@ -204,11 +205,16 @@ pD <- ggplot2::ggplot(ss, ggplot2::aes(y = lab)) +
   ggplot2::annotate("rect", xmin = 0.45, xmax = 0.55, ymin = -Inf, ymax = Inf,
                     fill = "grey92") +
   ggplot2::geom_vline(xintercept = 0.5, colour = "grey40", linewidth = 0.35, linetype = 2) +
-  ggplot2::geom_segment(ggplot2::aes(x = frac_toward_shared, xend = frac_toward_split,
+  # the MATCHED pair: same three-mouse baseline, shared vs split. (The published
+  # six-mouse value is drawn as a tick -- it differs from the open point by the
+  # NOISE of halving the baseline, which is not the artifact being measured.)
+  ggplot2::geom_point(ggplot2::aes(x = frac_toward_published), shape = 124, size = 1.7,
+                      colour = "grey62") +
+  ggplot2::geom_segment(ggplot2::aes(x = frac_toward_halfshared, xend = frac_toward_split,
                                      yend = lab), colour = "grey55", linewidth = 0.35,
                         arrow = ggplot2::arrow(length = ggplot2::unit(1.3, "mm"),
                                                type = "closed")) +
-  ggplot2::geom_point(ggplot2::aes(x = frac_toward_shared), shape = 21, size = 1.9,
+  ggplot2::geom_point(ggplot2::aes(x = frac_toward_halfshared), shape = 21, size = 1.9,
                       fill = "white", colour = "grey40", stroke = 0.4) +
   ggplot2::geom_point(ggplot2::aes(x = frac_toward_split, colour = verdict), size = 2.2,
                       show.legend = FALSE) +
@@ -222,7 +228,7 @@ pD <- ggplot2::ggplot(ss, ggplot2::aes(y = lab)) +
   ggplot2::labs(
     x = "fraction of genes whose WT change points toward the Myc state",
     y = NULL, title = "D   WT-convergence vs its control",
-    subtitle = "open = shared 6W WT baseline (as published)\nfilled = baseline split, 20 three-vs-three partitions") +
+    subtitle = "open -> filled: the SAME 3-mouse 6W WT baseline,\nshared by both contrasts vs split (20 partitions).\nTick = the published 6-mouse value.") +
   theme_myc(base_size = 8) +
   ggplot2::theme(axis.text.y   = ggplot2::element_text(size = 6.4),
                  plot.title    = ggplot2::element_text(face = "bold", size = 8.5),

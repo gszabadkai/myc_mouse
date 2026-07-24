@@ -392,24 +392,35 @@ the 0th percentile. It is also the only batch-clean quantity in the comparison, 
 offset common to both temporal contrasts cancels in their difference.
 
 **The background is not moving toward the Myc state.** The WT 6->12W vector projects onto the
-Myc(6W) vector at just **0.064** -- against a null median of 0.24, the 9.5th percentile, i.e.
+Myc(6W) vector at just **0.064** -- against a null median of 0.24, the 9.8th percentile, i.e.
 *less* than an arbitrary matched panel. Restricted to the biogenesis and OXPHOS arms the cos
 angle is **-0.34** (content) / -0.39 (priority): the background moves *away* from where Myc
-pushes. The Myc+ trajectory, by contrast, has cos angle **-0.84** with the Myc effect (0th
-percentile) -- over the timeline the Myc+ compartment retraces the Myc programme backwards.
-@fig-background A shows the same thing per tier: a red Myc arrow that keeps its direction and
-shortens, and a grey background arrow that points somewhere else.
+pushes. That aggregate is not homogeneous, and the per-tier breakdown is informative -- protein
+import (**-0.63** content, **-0.77** priority) and OXPHOS (**-0.65**) move against Myc, while
+mitochondrial central dogma (**+0.74**) and metabolism (+0.48) move with it. The Myc+
+trajectory, by contrast, has cos angle **-0.84** with the Myc effect (0th percentile), and
+-0.80 to -0.98 in every substantial tier: over the timeline the Myc+ compartment retraces the
+Myc programme backwards. @fig-background A shows the same thing per tier -- a red Myc arrow
+that keeps its direction and shortens, and a grey background arrow that points elsewhere.
 
 **And the WT-convergence term does not survive its control.** The published decomposition
 aligns each gene to Myc's induction direction and reads the WT temporal change along it -- but
 the genotype contrast and the WT temporal contrast **share the 6W WT baseline with opposite
-signs**, so noise in that baseline manufactures apparent convergence. Splitting the six 6W_neg
-mice (three anchoring each contrast, all 20 partitions) collapses the **global** convergence
-from 0.630 to **0.478** of genes -- chance -- and its percentage from +42% to -12%
-(@fig-background D). What survives is programme-specific: the biosynthetic arms genuinely
-converge (amino acid 0.77 -> **0.65**, lipid 0.73 -> **0.63**, TCA and nucleotide ~0.63), and
-OXPHOS subunits (0.27 -> **0.38**) and the MYC-target core (0.27 -> **0.36**) genuinely
-diverge. The programme-specificity was the whole result; the global number was the artifact.
+signs**, so noise in that baseline manufactures apparent convergence. The six 6W_neg mice are
+therefore split over all 20 three-versus-three partitions -- and, because halving the baseline
+also adds noise to the alignment direction (which pulls the statistic toward chance from either
+side), each partition is run twice off the *same* half baseline, once shared between the two
+contrasts and once split. Identical direction, identical universe, identical noise; the only
+difference is the sharing.
+
+Globally, sharing the baseline adds **+0.24** (sd 0.138) of apparent convergence, in 19 of the
+20 partitions: `frac_wt_toward` falls from 0.720 to **0.478** -- chance -- and the percentage
+from +61% to -12% (@fig-background D). And the artifact is **absent exactly where the published
+analysis reported divergence**: +0.01 on the MYC-target core, -0.01 on OXPHOS subunits, so
+their divergence stands as published. What survives on the other side is programme-specific:
+the biosynthetic arms genuinely converge (amino acid 0.74 -> **0.65**, lipid 0.77 -> **0.63**,
+TCA and nucleotide ~0.63-0.64). The programme-specificity was the whole result; the global
+number was the artifact.
 
 So the picture is **additive, not causal**: a reallocation of the mitochondrial compartment
 that both genotypes undergo, plus a Myc programme that decays proportionally without changing
@@ -436,7 +447,7 @@ because the change is the difference of the two temporal contrasts. The full lis
 
 ```{r}
 #| label: fig-background
-#| fig-cap: "fig03: is Myc's mitochondrial effect shaped by a changing background? (A) Each Level-1 MitoPathway tier as four states in priority x content; red arrows = the Myc effect at 6W (solid) and 12W (dashed), grey = each genotype's temporal move. (B) The 12W Myc effect is the 6W effect x0.55 -- rescaled, not reshaped. (C) Myc+ vs WT temporal change: the shared slope is not beyond the null, the Myc-specific intercept is. (D) WT-convergence before (open) and after (filled) splitting the shared 6W WT baseline: the global term collapses to chance; the biosynthetic arms survive and OXPHOS/MYC-core divergence holds. n=6/group, exploratory."
+#| fig-cap: "fig03: is Myc's mitochondrial effect shaped by a changing background? (A) Each Level-1 MitoPathway tier as four states in priority x content; red arrows = the Myc effect at 6W (solid) and 12W (dashed), grey = each genotype's temporal move. (B) The 12W Myc effect is the 6W effect x0.55 -- rescaled, not reshaped. (C) Myc+ vs WT temporal change: the shared slope is not beyond the null, the Myc-specific intercept is. (D) WT-convergence on the matched control -- the same three-mouse 6W WT baseline shared between the two contrasts (open) vs split (filled), 20 partitions; tick = the published six-mouse value. The global term collapses to chance; the biosynthetic arms survive and OXPHOS/MYC-core divergence is untouched. n=6/group, exploratory."
 #| fig-width: 9
 #| fig-height: 8.6
 #| echo: false

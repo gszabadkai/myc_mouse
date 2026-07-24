@@ -364,14 +364,21 @@ one_run <- function(v_m6, v_tn, v_tp, tag, split_id) {
 
 shared_run <- one_run(sh_m6, sh_tn, sh_tp, "shared_baseline", 0L)
 
+# THE MATCHED CONTROL. Splitting the baseline halves it (3 mice, not 6), which adds
+# noise to d = sign(myc_6W). Sign noise pulls frac_wt_toward toward 0.5 from BOTH
+# sides, so a "shared 6 vs split 3" comparison confounds the sharing artifact with
+# plain attenuation-to-chance. Each split therefore runs TWICE off the SAME half
+# baseline A -- once with A anchoring both contrasts (shared) and once with B
+# anchoring the temporal contrast (split). Identical d, identical universe,
+# identical noise level; the ONLY difference is whether the baseline is shared.
 splits <- utils::combn(idx[["6W_neg"]], 3, simplify = FALSE)   # 20 configurations
 split_runs <- dplyr::bind_rows(lapply(seq_along(splits), function(k) {
-  a <- splits[[k]]                       # anchors the GENOTYPE contrast (defines d)
-  b <- setdiff(idx[["6W_neg"]], a)       # anchors the WT TEMPORAL contrast
-  one_run(gm_of(idx[["6W_pos"]]) - gm_of(a),      # m6 from baseline A
-          gm_of(idx[["12W_neg"]]) - gm_of(b),     # WT temporal from baseline B
-          sh_tp,                                  # Myc+ temporal is untouched
-          "split_baseline", k)
+  a  <- splits[[k]]                      # anchors the GENOTYPE contrast (defines d)
+  b  <- setdiff(idx[["6W_neg"]], a)      # anchors the WT TEMPORAL contrast (split only)
+  m6a <- gm_of(idx[["6W_pos"]]) - gm_of(a)
+  dplyr::bind_rows(
+    one_run(m6a, gm_of(idx[["12W_neg"]]) - gm_of(a), sh_tp, "half_shared", k),
+    one_run(m6a, gm_of(idx[["12W_neg"]]) - gm_of(b), sh_tp, "half_split",  k))
 }))
 
 # NOTE ON AGGREGATION. conv_pct = 100 * wt_conv / atten is a RATIO of two noisy
@@ -380,21 +387,40 @@ split_runs <- dplyr::bind_rows(lapply(seq_along(splits), function(k) {
 # OF MEANS (mean wt_conv over mean atten), never a mean of ratios, and the
 # distribution-free summary `frac_wt_toward` -- the fraction of genes whose WT
 # temporal change points toward Myc, with 0.5 = chance -- is the primary read.
-split_summary <- split_runs |>
+agg <- function(mode_tag, suffix) split_runs |>
+  dplyr::filter(mode == mode_tag) |>
   dplyr::group_by(program, arm) |>
-  dplyr::summarise(n_splits = dplyr::n(),
-                   conv_pct_split       = 100 * mean(wt_conv) / mean(atten),
-                   conv_pct_split_med   = stats::median(conv_pct),
-                   frac_toward_split    = mean(frac_wt_toward),
-                   frac_toward_split_sd = stats::sd(frac_wt_toward),
-                   frac_toward_min      = min(frac_wt_toward),
-                   frac_toward_max      = max(frac_wt_toward),
-                   wt_conv_split        = mean(wt_conv),
-                   wt_conv_split_sd     = stats::sd(wt_conv),
-                   myc_fade_split       = mean(myc_fade),
-                   atten_split          = mean(atten),
-                   atten_split_sd       = stats::sd(atten),
-                   n_genes_split        = mean(n), .groups = "drop") |>
+  dplyr::summarise(n_splits    = dplyr::n(),
+                   conv_pct    = 100 * mean(wt_conv) / mean(atten),
+                   frac_toward = mean(frac_wt_toward),
+                   frac_sd     = stats::sd(frac_wt_toward),
+                   frac_min    = min(frac_wt_toward),
+                   frac_max    = max(frac_wt_toward),
+                   wt_conv     = mean(wt_conv),
+                   wt_conv_sd  = stats::sd(wt_conv),
+                   myc_fade    = mean(myc_fade),
+                   atten       = mean(atten),
+                   n_genes     = mean(n), .groups = "drop") |>
+  dplyr::rename_with(~ paste0(.x, suffix), -c(program, arm))
+
+# THE PAIRED DIFFERENCE is the estimate of the artifact: within each split, the same
+# half baseline, shared vs split. Its sd across the 20 splits is a real uncertainty
+# on the artifact size (unlike a comparison against the 6-mouse shared run, which
+# also changes the noise level).
+paired <- split_runs |>
+  dplyr::select(program, arm, mode, split, frac_wt_toward, wt_conv) |>
+  tidyr::pivot_wider(names_from = mode, values_from = c(frac_wt_toward, wt_conv)) |>
+  dplyr::group_by(program, arm) |>
+  dplyr::summarise(
+    frac_artifact      = mean(frac_wt_toward_half_shared - frac_wt_toward_half_split),
+    frac_artifact_sd   = stats::sd(frac_wt_toward_half_shared - frac_wt_toward_half_split),
+    wt_conv_artifact   = mean(wt_conv_half_shared - wt_conv_half_split),
+    frac_artifact_frac_pos = mean(frac_wt_toward_half_shared > frac_wt_toward_half_split),
+    .groups = "drop")
+
+split_summary <- agg("half_split", "_split") |>
+  dplyr::left_join(agg("half_shared", "_halfshared"), by = c("program", "arm")) |>
+  dplyr::left_join(paired, by = c("program", "arm")) |>
   dplyr::left_join(
     shared_run |> dplyr::select(program, arm,
                                 conv_pct_shared = conv_pct,
@@ -617,8 +643,14 @@ notes <- paste(
   "  baseline with the genotype contrast, which manufactures apparent convergence.",
   "  `split_summary` recomputes it over all 20 three-versus-three splits of the",
   "  6W_neg mice. `conv_pct_shared` is the same-quantifier control (log-mean, no",
-  "  split) and tracks `conv_pct_published` (script 31, effect universe), so the",
-  "  split is the only thing that changes. PRIMARY READ = `frac_wt_toward`, the",
+  "  split) and tracks `conv_pct_published` (script 31, effect universe). But a",
+  "  6-mouse shared baseline vs a 3-mouse split one ALSO changes the noise in",
+  "  d = sign(myc_6W), and sign noise pulls frac_wt_toward toward 0.5 from BOTH",
+  "  sides -- so the artifact is estimated from the MATCHED PAIR instead: the same",
+  "  half baseline A, once shared between both contrasts (`_halfshared`) and once",
+  "  split (`_split`). `frac_artifact` = the paired difference, with its across-split",
+  "  sd and the fraction of splits in which it has the expected sign.",
+  "  PRIMARY READ = `frac_wt_toward`, the",
   "  fraction of genes whose WT temporal change points toward Myc (0.5 = chance);",
   "  conv_pct is a ratio of noisy quantities and is reported as a ratio of means,",
   "  never a mean of ratios. No p is offered against 0.5 -- genes within an arm are",
@@ -680,12 +712,13 @@ if (FALSE) {
   ##    noisy quantities; conv_pct_split is a ratio of means, read as secondary.
   bm40$split_summary |>
     dplyr::select(program, arm, frac_toward_published, frac_toward_shared,
-                  frac_toward_split, frac_toward_min, frac_toward_max,
-                  frac_toward_bias) |>
+                  frac_toward_halfshared, frac_toward_split,
+                  frac_artifact, frac_artifact_sd, frac_artifact_frac_pos) |>
     dplyr::arrange(frac_toward_split) |> print(n = 20)
   bm40$split_summary |>
-    dplyr::select(program, arm, conv_pct_published, conv_pct_shared, conv_pct_split,
-                  wt_conv_shared, wt_conv_split, wt_conv_split_sd, conv_pct_bias) |>
+    dplyr::select(program, arm, conv_pct_published, conv_pct_shared,
+                  conv_pct_halfshared, conv_pct_split,
+                  wt_conv_halfshared, wt_conv_split, wt_conv_artifact) |>
     print(n = 20)
 
   ## 4. geometry: is the background moving toward the Myc state?

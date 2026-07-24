@@ -58,10 +58,27 @@ This is the powered, pathway-level form of Issue #4 ("magnitude not rank shrinks
 ### 2.3 The background is NOT moving toward the Myc state
 
 Projection of the WT 6->12 vector onto the Myc(6W) vector = **+0.064** (1.0 would mean the
-12W WT has arrived where 6W Myc+ was), against a null median of **0.24** — the **9.5th
-percentile**. cos angle +0.21 overall (36th percentile, i.e. chance), but **-0.34 (content)
+12W WT has arrived where 6W Myc+ was), against a null median of **0.24** — the **9.8th
+percentile**. cos angle +0.21 overall (41st percentile, i.e. chance), but **-0.34 (content)
 and -0.39 (priority) restricted to the biogenesis + OXPHOS arms**: in exactly the arms that
 carry the claim, the WT background moves *away*.
+
+Per tier (`geometry`), the "biogenesis+OXPHOS" aggregate is **not homogeneous** — it is two
+arms moving away and one moving with:
+
+| tier | cos(WT-time, Myc@6W) content | priority | cos(Myc+time, Myc@6W) content |
+|---|---|---|---|
+| Protein import / homeostasis | **-0.63** | **-0.77** | -0.98 |
+| OXPHOS | **-0.65** | -0.41 | -0.95 |
+| Mitochondrial central dogma | **+0.74** | +0.30 | -0.96 |
+| Metabolism | +0.48 | +0.07 | -0.80 |
+| Dynamics & surveillance | +0.24 | -0.37 | -0.91 |
+| Signaling (n=7) | +0.40 | +0.74 | -0.33 |
+| Small molecule transport (n=5) | +0.86 | +0.36 | +0.02 |
+
+So the background moves *against* Myc in **import and OXPHOS**, and *with* it in central
+dogma and metabolism. The last column is the striking one: the Myc+ temporal trajectory is a
+near-exact reversal of the Myc effect in every substantial tier (-0.80 to -0.98).
 
 By contrast `cos(Myc+ temporal, Myc@6W) = -0.84` (0th percentile of the null): the Myc+
 trajectory over the timeline is close to an exact reversal of the Myc effect itself. The
@@ -76,30 +93,42 @@ manufactures apparent convergence. Script 40 PART C splits the six 6W_neg mice �
 the genotype contrast (and define `d`), three anchor the WT temporal contrast — over all 20
 three-versus-three partitions.
 
+**The comparison must be matched.** Splitting halves the baseline (3 mice, not 6), which adds
+noise to `d`; sign noise pulls `frac_wt_toward` toward 0.5 *from both sides*, so comparing the
+published 6-mouse value against a 3-mouse split confounds the artifact with plain
+attenuation-to-chance. Each partition is therefore run **twice off the same half baseline A** —
+once with A anchoring both contrasts, once with B anchoring the temporal one. Identical `d`,
+identical universe, identical noise; the only difference is the sharing.
+
 `frac_wt_toward` = fraction of genes whose WT temporal change points toward Myc (0.5 = chance):
 
-| arm | published | shared baseline (same quantifier) | **split baseline** | verdict |
-|---|---|---|---|---|
-| ALL genes (global) | 0.630 | 0.630 | **0.478** | collapses to chance |
-| Mammary luminal (pooled) | 0.606 | 0.610 | **0.466** | collapses to chance |
-| Amino acid metabolism | 0.769 | 0.718 | **0.653** | converges (survives) |
-| Lipid metabolism | 0.727 | 0.738 | **0.625** | converges (survives) |
-| TCA cycle | 0.615 | 0.583 | **0.638** | converges (survives) |
-| Nucleotide metabolism | 0.722 | 0.647 | **0.630** | converges (survives) |
-| Mitoribosome | 0.509 | 0.545 | **0.516** | chance, as published |
-| OXPHOS | 0.397 | 0.478 | **0.451** | diverges |
-| OXPHOS subunits | 0.269 | 0.400 | **0.382** | diverges (survives) |
-| MYC targets (Hallmark) | 0.273 | 0.265 | **0.360** | diverges (survives) |
-| MYC signature (Felsher) | 0.286 | 0.283 | **0.359** | diverges (survives) |
-| Proliferation (pooled) | 0.411 | 0.366 | **0.391** | diverges |
+| arm | published (6 mice) | half-shared | **half-split** | paired artifact (± sd) | expected sign, /20 |
+|---|---|---|---|---|---|
+| ALL genes (global) | 0.630 | 0.720 | **0.478** | **+0.242 ± 0.138** | 19 |
+| Mammary luminal (pooled) | 0.606 | 0.700 | **0.466** | +0.234 ± 0.168 | 18 |
+| Amino acid metabolism | 0.769 | 0.742 | **0.653** | +0.089 ± 0.180 | 13 |
+| Lipid metabolism | 0.727 | 0.767 | **0.625** | +0.142 ± 0.202 | 13 |
+| TCA cycle | 0.615 | 0.724 | **0.638** | +0.087 ± 0.547 | 11 |
+| Nucleotide metabolism | 0.722 | 0.666 | **0.630** | +0.036 ± 0.385 | 10 |
+| Mitoribosome | 0.509 | 0.568 | **0.516** | +0.052 | 10 |
+| OXPHOS | 0.397 | 0.509 | **0.451** | +0.058 | 11 |
+| OXPHOS subunits | 0.269 | 0.372 | **0.382** | **-0.010** | 10 |
+| MYC targets (Hallmark) | 0.273 | 0.371 | **0.360** | **+0.011** | 11 |
+| MYC signature (Felsher) | 0.286 | 0.377 | **0.359** | **+0.017** | 10 |
+| Proliferation (pooled) | 0.411 | 0.528 | **0.391** | +0.137 | 13 |
 
-Same picture as percentages (ratio of means, never a mean of ratios — `conv_pct` is a ratio
-of two noisy quantities and explodes on individual splits): global **+42% -> -12%**; amino
-acid 39 -> **31**; lipid 38 -> **22**; TCA 32 -> **22**; nucleotide 26 -> **15**; OXPHOS
-subunits -25 -> **-36**; MYC core -50 -> **-57**.
+**The artifact is large exactly where convergence was claimed and absent where divergence
+was.** Globally, holding noise constant, sharing the baseline adds **+0.24** of apparent
+convergence, in 19 of 20 partitions. On the MYC-target core and OXPHOS subunits the artifact
+is **~0** — so their published divergence (0.27) is not affected by the sharing at all; the
+0.27 -> 0.37 shift between the published and half-shared columns is the *noise* of halving
+the baseline, not a correction.
 
-`conv_pct_shared` reproduces `conv_pct_published` (42.2 vs 42.8 globally), so the split is
-the only thing that changes.
+Same picture as percentages (ratio of means, never a mean of ratios — `conv_pct` is a ratio of
+two noisy quantities and explodes on individual splits): global **+61% -> -12%**; amino acid
+45 -> **31**; lipid 47 -> **22**; TCA 37 -> **22**; nucleotide 31 -> **15**; OXPHOS subunits
+-20 -> **-36**; MYC core -39 -> **-57**. `conv_pct_shared` (6-mouse, same quantifier)
+reproduces `conv_pct_published` (42.2 vs 42.8 globally), so the pipeline is not the difference.
 
 > **The headline "~34% of the attenuation is WT convergence" does not survive.** Globally the
 > background does not move toward Myc at all. Convergence is real but **restricted to the
@@ -107,9 +136,11 @@ the only thing that changes.
 > MYC-target core genuinely **diverge**. Issue #6's programme-specificity was the whole
 > result; its global number was the artifact.
 
-Ranges across the 20 splits are wide for small arms (TCA n~15 spans 0.06-1.00). No p-value is
-offered against 0.5: genes within an arm are strongly correlated, so a binomial SE would be
-anti-conservative, and the split-to-split SD measures split variability, not sampling error.
+Ranges across the 20 partitions are wide for small arms (TCA n~15 spans 0.06-1.00), and the
+paired artifact is only well resolved for the large sets (global sd 0.138 on +0.242; TCA sd
+0.547 on +0.087). No p-value is offered against 0.5: genes within an arm are strongly
+correlated, so a binomial SE would be anti-conservative, and the split-to-split SD measures
+split variability, not sampling error.
 
 ---
 
