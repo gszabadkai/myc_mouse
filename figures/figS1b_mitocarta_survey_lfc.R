@@ -53,8 +53,10 @@ gmt <- read_gmt(here::here("data", "genesets_from_library",
 
 # --- the 16 survey groups: 6 top-level (non-metabolism) + 9 metabolism L2 + ref -
 arms <- c(
-  # top-level MitoPathways (OXPHOS shown as its nuclear set; all sets are mt-free)
+  # top-level MitoPathways -- OXPHOS split into its nuclear (155) and mtDNA (13,
+  # = MITOCARTA_MTDNA_ENCODED) halves; all other sets are already mt-free.
   "MITOCARTA_OXPHOS_NU",
+  "MITOCARTA_OXPHOS_MT",
   "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA",
   "MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS",
   "MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE",
@@ -69,11 +71,10 @@ arms <- c(
   "MITOCARTA_METALS_AND_COFACTORS",
   "MITOCARTA_DETOXIFICATION",
   "MITOCARTA_SULFUR_METABOLISM",
-  "MITOCARTA_ELECTRON_CARRIERS",
-  # flat reference (fig01 anchor)
-  "MITOCARTA_MTDNA_ENCODED")
+  "MITOCARTA_ELECTRON_CARRIERS")
 arm_name <- c(
-  MITOCARTA_OXPHOS_NU                              = "OXPHOS",
+  MITOCARTA_OXPHOS_NU                              = "Nuclear OXPHOS",
+  MITOCARTA_OXPHOS_MT                              = "mtDNA OXPHOS",
   MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA            = "Central dogma",
   MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS = "Import / homeostasis",
   MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE= "Dynamics & surveillance",
@@ -87,8 +88,7 @@ arm_name <- c(
   MITOCARTA_METALS_AND_COFACTORS                   = "Metals & cofactors",
   MITOCARTA_DETOXIFICATION                         = "Detoxification",
   MITOCARTA_SULFUR_METABOLISM                      = "Sulfur metab.",
-  MITOCARTA_ELECTRON_CARRIERS                      = "Electron carriers",
-  MITOCARTA_MTDNA_ENCODED                          = "mtDNA-encoded")
+  MITOCARTA_ELECTRON_CARRIERS                      = "Electron carriers")
 stopifnot(all(arms %in% names(gmt)))
 arm_syms <- stats::setNames(lapply(arms, function(a) gmt[[a]]), arms)
 

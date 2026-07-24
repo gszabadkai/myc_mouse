@@ -126,8 +126,11 @@ there. This supplementary survey resolves which. It takes the seven canonical Mi
 MitoPathway top-level categories -- **with Metabolism split into its nine level-2 children**
 (hierarchy read from MitoCarta Sheet 4) -- and reads them the same two ways as fig01/fig01b:
 compartment share across the four groups (@fig-survey-share) and per-gene log2FC across the
-four contrasts (@fig-survey-lfc). Every set is already mt-* free, so `MITOCARTA_OXPHOS_NU`
-is the nuclear OXPHOS and `share_nomt` is the consistent scale.
+four contrasts (@fig-survey-lfc). **OXPHOS is shown as its two halves** -- nuclear OXPHOS
+(`MITOCARTA_OXPHOS_NU`, 155 genes, no mt-* genes) and mtDNA OXPHOS (the 13 mtDNA-encoded
+subunits, which *are* `MITOCARTA_MTDNA_ENCODED`) -- so the nuclear category carries no mtDNA
+bias and there is no redundant "mtDNA reference" facet. `share_nomt` (denominator drops only
+the 13 mt-* genes) is the consistent scale.
 
 ```{r}
 #| label: fig-survey-share
@@ -149,12 +152,15 @@ source(here::here("figures", "figS1b_mitocarta_survey_lfc.R"))
 print(p)
 ```
 
-The answer: in the WT timeline OXPHOS is the outlier -- only ~38% of its genes up (6
-individually significant *down*) -- while the biosynthetic and substrate-metabolism groups
+The answer: in the WT timeline **nuclear OXPHOS is the outlier** -- only ~38% of its genes up
+(6 individually significant *down*) -- while the biosynthetic and substrate-metabolism groups
 *rise* (sulfur 80%, carbohydrate 77%, amino-acid 76%, lipid 68% of genes up; metals &
 cofactors, detoxification, small-molecule transport and electron carriers all >55%). The flat
-total is therefore a **reallocation**, not stasis: as the developmental OXPHOS programme winds
-down over the timeline, substrate-metabolism groups take up the share.
+total is therefore a **reallocation**, not stasis: as the developmental nuclear-OXPHOS
+programme winds down over the timeline, substrate-metabolism groups take up the share. Note
+that **mtDNA OXPHOS moves opposite to nuclear OXPHOS** -- it rises over the timeline (@fig-survey-lfc
+panel A) -- the same nuclear-down / mtDNA-up mitonuclear discordance discussed in @sec-lesner,
+though here on the batch-confounded time axis and so described, not claimed.
 
 Two guards on reading this. (1) The WT-timeline columns sit on the batch-confounded axis
 (batch = timepoint), so the rise is **described, not claimed** -- the clean read is the

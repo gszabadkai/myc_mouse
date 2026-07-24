@@ -32,8 +32,13 @@ out_dir <- here::here("outputs", "figures")
 content <- readRDS(here::here("results", "mito_content_proxies.rds"))
 
 # --- the 16 survey groups (same identities + labels as figS1b) ----------------
+# OXPHOS is shown as its two halves -- MITOCARTA_OXPHOS_NU (nuclear, 155, no mt-*
+# genes) and MITOCARTA_OXPHOS_MT (the 13 mtDNA-encoded subunits, identical to
+# MITOCARTA_MTDNA_ENCODED). So there is no separate "mtDNA reference" facet: the
+# mtDNA-encoded compartment IS mtDNA OXPHOS.
 arms <- c(
   "MITOCARTA_OXPHOS_NU",
+  "MITOCARTA_OXPHOS_MT",
   "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA",
   "MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS",
   "MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE",
@@ -47,10 +52,10 @@ arms <- c(
   "MITOCARTA_METALS_AND_COFACTORS",
   "MITOCARTA_DETOXIFICATION",
   "MITOCARTA_SULFUR_METABOLISM",
-  "MITOCARTA_ELECTRON_CARRIERS",
-  "MITOCARTA_MTDNA_ENCODED")
+  "MITOCARTA_ELECTRON_CARRIERS")
 arm_name <- c(
-  MITOCARTA_OXPHOS_NU                              = "OXPHOS",
+  MITOCARTA_OXPHOS_NU                              = "Nuclear OXPHOS",
+  MITOCARTA_OXPHOS_MT                              = "mtDNA OXPHOS",
   MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA            = "Central dogma",
   MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS = "Import / homeostasis",
   MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE= "Dynamics & surveillance",
@@ -64,8 +69,7 @@ arm_name <- c(
   MITOCARTA_METALS_AND_COFACTORS                   = "Metals & cofactors",
   MITOCARTA_DETOXIFICATION                         = "Detoxification",
   MITOCARTA_SULFUR_METABOLISM                      = "Sulfur metab.",
-  MITOCARTA_ELECTRON_CARRIERS                      = "Electron carriers",
-  MITOCARTA_MTDNA_ENCODED                          = "mtDNA-encoded")
+  MITOCARTA_ELECTRON_CARRIERS                      = "Electron carriers")
 
 missing <- setdiff(arms, unique(content$shares$panel))
 if (length(missing) > 0) {
@@ -90,24 +94,97 @@ pts_layer <- function(dat) {
   }
 }
 
-# --- three blocks with a divider between them (author request 2026-07-24) ------
-# The 6 top-level categories and the 9 metabolism children do not fall on row
-# boundaries in a single facet_wrap, so a clean divider means stacking the blocks.
-# ncol = 3 fills 6 and 9 exactly (no blank cells); heights track the row counts.
-blk_top <- unname(arm_name[arms[1:6]])    # 6 top-level MitoPathway categories
-blk_met <- unname(arm_name[arms[7:15]])   # 9 Metabolism level-2 children
-blk_ref <- unname(arm_name[arms[16]])     # mtDNA-encoded reference
+# --- p-value brackets, SIGNIFICANT ONLY (author request) ----------------------
+# Same four comparisons and the SAME log2-share simple-effect method as fig01
+# (script 32's own approach, so the numbers reconcile). Only brackets with
+# p<0.05 are drawn -- genotype (clean) in red, 6W-vs-12W time (batch-confounded)
+# in grey. Non-significant comparisons are simply omitted to keep 16 facets legible.
+comp <- data.frame(
+  x1    = c(1, 1, 3, 2),
+  x2    = c(2, 3, 4, 4),
+  kind  = c("geno", "time", "geno", "time"),
+  key   = c("6W", "neg", "12W", "pos"),   # geno -> timepoint subset; time -> myc subset
+  clean = c(TRUE, FALSE, TRUE, FALSE),     # x: 6W_neg=1, 6W_pos=2, 12W_neg=3, 12W_pos=4
+  stringsAsFactors = FALSE)
 
-make_block <- function(labs, subtitle, ylab = NULL) {
+pval_for <- function(d, kind, key) {
+  d$yv <- log2(d$share_nomt)
+  m <- if (kind == "geno") {
+    stats::lm(yv ~ myc_status, data = d[d$timepoint == key, ])
+  } else {
+    stats::lm(yv ~ timepoint, data = d[d$myc_status == key, ])
+  }
+  summary(m)$coefficients[2, "Pr(>|t|)"]
+}
+fmt_p <- function(p) if (p < 0.001) "<0.001" else formatC(p, format = "g", digits = 2)
+
+build_brackets <- function(arm_ids) {
+  do.call(rbind, lapply(arm_ids, function(a) {
+    d <- content$shares[content$shares$panel == a, ]
+    b <- comp
+    b$p <- vapply(seq_len(nrow(b)), function(i) pval_for(d, b$kind[i], b$key[i]),
+                  numeric(1))
+    b <- b[b$p < 0.05, , drop = FALSE]              # SIGNIFICANT ONLY
+    if (nrow(b) == 0) return(NULL)
+    b <- b[order(!b$clean, b$x1), ]                 # genotype first, then by width
+    facmax <- max(d$share_nomt)
+    data.frame(
+      panel = unname(arm_name[[a]]),
+      x1 = b$x1, x2 = b$x2, xmid = (b$x1 + b$x2) / 2,
+      y  = facmax * (1 + 0.11 * seq_len(nrow(b))),
+      tick = facmax * 0.02,
+      lab = vapply(b$p, fmt_p, character(1)),
+      col = ifelse(b$kind == "geno", "geno_sig", "time_sig"),
+      stringsAsFactors = FALSE)
+  }))
+}
+
+# --- two blocks with a divider between them (author request 2026-07-24) --------
+# ncol = 3 fills the 9-child metabolism block exactly. OXPHOS leads the top block
+# as its two halves (nuclear / mtDNA); there is no separate mtDNA reference facet.
+blk_top <- arms[1:7]    # Nuclear OXPHOS, mtDNA OXPHOS + 5 other top-level categories
+blk_met <- arms[8:16]   # 9 Metabolism level-2 children
+
+make_block <- function(arm_ids, subtitle, ylab = NULL) {
+  labs <- unname(arm_name[arm_ids])
   d <- df[df$panel %in% labs, ]
   d$panel <- factor(as.character(d$panel), levels = labs)
+  brk <- build_brackets(arm_ids)
+  # per-facet headroom so the top bracket + label fit (or a touch above the data)
+  hr <- do.call(rbind, lapply(arm_ids, function(a) {
+    lab   <- unname(arm_name[[a]])
+    dmax  <- max(content$shares$share_nomt[content$shares$panel == a])
+    ytop  <- if (!is.null(brk) && any(brk$panel == lab)) {
+      max(brk$y[brk$panel == lab]) * 1.07
+    } else dmax * 1.03
+    data.frame(panel = lab, group = names(group_labels)[1], y = ytop,
+               stringsAsFactors = FALSE)
+  }))
+  hr$panel  <- factor(hr$panel, levels = labs)
+  hr$group  <- factor(hr$group, levels = names(group_labels))
+  brk_layers <- NULL
+  if (!is.null(brk)) {
+    brk$panel <- factor(brk$panel, levels = labs)
+    brk_layers <- list(
+      ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+        ggplot2::aes(x = x1, xend = x2, y = y, yend = y, colour = col), linewidth = 0.25),
+      ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+        ggplot2::aes(x = x1, xend = x1, y = y, yend = y - tick, colour = col), linewidth = 0.25),
+      ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+        ggplot2::aes(x = x2, xend = x2, y = y, yend = y - tick, colour = col), linewidth = 0.25),
+      ggplot2::geom_text(data = brk, inherit.aes = FALSE,
+        ggplot2::aes(x = xmid, y = y, label = lab, colour = col), vjust = -0.2, size = 1.8))
+  }
   ggplot2::ggplot(d, ggplot2::aes(group, share_nomt, colour = group, fill = group)) +
     ggplot2::geom_boxplot(outlier.shape = NA, width = 0.6, alpha = 0.28,
                           colour = "grey35", linewidth = 0.3) +
     pts_layer(d) +
+    brk_layers +
+    ggplot2::geom_blank(data = hr, ggplot2::aes(x = group, y = y), inherit.aes = FALSE) +
     ggplot2::facet_wrap(~ panel, ncol = 3, scales = "free_y") +
-    ggplot2::scale_colour_manual(values = group_cols,
-                                 breaks = names(group_cols), labels = group_labels) +
+    ggplot2::scale_colour_manual(
+      values = c(group_cols, geno_sig = "#E41A1C", time_sig = "grey45"),
+      breaks = names(group_cols), labels = group_labels) +
     ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
     ggplot2::labs(x = NULL, y = ylab, colour = NULL, subtitle = subtitle) +
     theme_myc(base_size = 8) +
@@ -123,19 +200,18 @@ make_block <- function(labs, subtitle, ylab = NULL) {
       nrow = 1, override.aes = list(size = 2.4, alpha = 1, shape = 16)))
 }
 
-p_top <- make_block(blk_top, "Top-level MitoPathway categories")
-p_met <- make_block(blk_met, "Metabolism (level-2 children)",
+p_top <- make_block(blk_top, "Top-level MitoPathway categories (OXPHOS split nuclear / mtDNA)",
                     ylab = "share of the nuclear transcriptome (%)")
-p_ref <- make_block(blk_ref, "Reference: mtDNA-encoded")
+p_met <- make_block(blk_met, "Metabolism (level-2 children)")
 
-p <- patchwork::wrap_plots(p_top, p_met, p_ref, ncol = 1, heights = c(2, 3, 1)) +
+p <- patchwork::wrap_plots(p_top, p_met, ncol = 1, heights = c(3, 3)) +
   patchwork::plot_layout(guides = "collect") +
   patchwork::plot_annotation(
     title = "Mitochondrial compartment shares across all main MitoCarta groups",
     caption = paste(
       sprintf("Points, n=%d/group; box = median/IQR. %% of the non-mtDNA transcriptome (raw counts); free y per group.", n_per),
-      "16 MitoCarta MitoPathway groups; Metabolism divided from the other top-level categories, split into its 9 depth-2 children.",
-      "Genotype (Myc+ vs WT within a timepoint) is the clean axis; the 6W-vs-12W time axis is cohort/batch-confounded (batch=timepoint).",
+      "Brackets: genotype (WT vs Myc+, red) and 6W-vs-12W (grey) p-values, drawn ONLY where p<0.05 (log2-share simple-effect models, script 32).",
+      "Metabolism divided from the other top-level categories, split into its 9 depth-2 children. Genotype is the clean axis; the time axis is batch-confounded (batch=timepoint).",
       sep = "\n"),
     theme = ggplot2::theme(
       plot.title   = ggplot2::element_text(face = "bold", size = 11),
@@ -147,7 +223,7 @@ p <- patchwork::wrap_plots(p_top, p_met, p_ref, ncol = 1, heights = c(2, 3, 1)) 
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   save_panel(p, file.path(out_dir, "figS1_mitocarta_survey_share.pdf"),
-             width = fig_w[["double"]], height = 165)
+             width = fig_w[["double"]], height = 170)
 }
 
 # =============================================================================
