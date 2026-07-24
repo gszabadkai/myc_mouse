@@ -83,15 +83,19 @@ comp <- data.frame(
   key  = c("6W", "12W", "neg", "pos"),
   level = c(1, 1, 2, 3), stringsAsFactors = FALSE)
 
+# `hr` = the headroom the facet must reserve. A geom_text label has no data extent,
+# so free_y scales to the top BRACKET and the top LABEL is then clipped by the strip;
+# a geom_blank at `hr` reserves the space explicitly (the fig01 idiom).
 brackets_for <- function(y, facet_val, facet_name) {
   b <- comp
   b$p    <- vapply(seq_len(nrow(b)), function(i) pval_for(y, b$kind[i], b$key[i]), numeric(1))
   b$lab  <- vapply(b$p, fmt_p, character(1))
   top    <- max(y); rng <- diff(range(y))
-  b$y    <- top + rng * 0.10 * b$level
+  b$y    <- top + rng * 0.11 * b$level
   b$tick <- rng * 0.02
   b$xmid <- (b$x1 + b$x2) / 2
   b$col  <- ifelse(b$p < 0.05, "sig", "ns")
+  b$hr   <- max(b$y) + rng * 0.14          # bracket line + room for its label above it
   b[[facet_name]] <- facet_val
   b
 }
@@ -117,7 +121,10 @@ group_panel <- function(df, ylab, ttl, sub = NULL, facet = NULL, ncol = 5,
                             linewidth = 0.25) +
       ggplot2::geom_text(data = brk, inherit.aes = FALSE,
                          ggplot2::aes(x = xmid, y = y, label = lab, colour = col),
-                         vjust = -0.25, size = 1.8)
+                         vjust = -0.3, size = 1.8) +
+      ggplot2::geom_blank(data = unique(brk[, c(setdiff(names(brk), names(comp)), "hr")]),
+                          inherit.aes = FALSE,
+                          ggplot2::aes(x = 1, y = hr))
   }
   if (!is.null(facet)) p <- p + ggplot2::facet_wrap(stats::as.formula(paste("~", facet)),
                                                     ncol = ncol, scales = "free_y")
