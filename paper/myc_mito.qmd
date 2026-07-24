@@ -243,21 +243,22 @@ priority within it, coherently by pathway tier and at both ages (@fig-reallocati
 
 ```{r}
 #| label: fig-reallocation
-#| fig-cap: "Per-sample mitoPPS score (relative priority; each pathway centred at 1) for all ~144 MitoPathways, coloured by tier; bold bars = per-genotype tier means. Myc fans the tiers apart -- import/central-dogma up, dynamics/signalling/transport down -- at 6W and 12W. n=6/group."
-#| fig-width: 9
-#| fig-height: 5.2
+#| fig-cap: "Every MitoPathway (~144) ranked by its Myc mitoPPS effect (Myc+ - WT relative priority), most demoted at the bottom, most promoted at the top; one dot per pathway coloured by tier, filled = 6W / open = 12W (line = the 6W->12W change). Reprioritisation is structured by function. n=6/group."
+#| fig-width: 8.5
+#| fig-height: 12
 #| echo: false
 source(here::here("figures", "fig02_reallocation.R"))
 print(p)
 ```
 
-The tiers move in **opposite directions** with Myc: the biogenesis machinery is promoted
-(import/homeostasis tier-mean +0.10, central dogma +0.04) while dynamics & surveillance
-(−0.11), small-molecule transport (−0.12) and signalling (−0.06) are demoted; OXPHOS (+0.02)
-and metabolism (+0.01) sit ~neutral *at tier level*. The same signs recur at 12W (attenuated),
-so the reallocation is a reproducible pattern, not a one-timepoint fluke. This is the **clean
-genotype axis**, but **descriptive / exploratory** (n=6/group): the claim is the coherent
-tier-level pattern, not any single pathway.
+The ranking is **structured by pathway function**, not random: the **demoted** end is dominated
+by dynamics & surveillance, apoptosis and signalling (and the mtDNA-encoded OXPHOS arm at the
+very bottom), while the **promoted** end gathers biosynthetic metabolism and the import
+machinery (SAM, chaperones). **OXPHOS is visibly *split*** -- its structural subunits sit high
+(promoted) and its assembly factors low (demoted) -- which is why OXPHOS is ~neutral as a whole
+tier. The 6W and 12W dots track together (the pattern reproduces across ages, attenuating). This
+is the **clean genotype axis**, but **descriptive / exploratory** (n=6/group): the claim is the
+ordered, tier-coherent pattern, not any single pathway.
 
 The pathway-level detail behind this -- and the one place the two rulers *disagree* -- is in
 @fig-reallocation-detail: across all ~148 pathways, absolute content (DESeq set log2FC) is
