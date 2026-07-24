@@ -21,7 +21,9 @@ bioc_packages <- c(
   "PoiClaClu", "limma", "edgeR", "variancePartition",
   "fgsea", "gprofiler2",
   "GSVA",            # per-sample gene-set scoring (15_gsva_scoring.R)
-  "singscore"        # rank-based cohort-independent set scoring (36_linear_pathway_coupling.R)
+  "singscore",       # rank-based cohort-independent set scoring (36_linear_pathway_coupling.R)
+  "org.Mm.eg.db",    # gene-symbol alias reconciliation (functions/reconcile_gene_symbols.R)
+  "AnnotationDbi"    # mapIds() for the alias lookup (functions/reconcile_gene_symbols.R)
 )
 
 # Load or install CRAN packages
