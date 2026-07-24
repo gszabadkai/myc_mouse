@@ -23,6 +23,9 @@
 # =============================================================================
 
 source(here::here("figures", "theme_myc.R"))
+if (!requireNamespace("patchwork", quietly = TRUE)) {
+  stop("figS1 needs patchwork to divide the top-level and metabolism blocks")
+}
 
 out_dir <- here::here("outputs", "figures")
 
@@ -87,38 +90,64 @@ pts_layer <- function(dat) {
   }
 }
 
-p <- ggplot2::ggplot(df, ggplot2::aes(group, share_nomt, colour = group, fill = group)) +
-  ggplot2::geom_boxplot(outlier.shape = NA, width = 0.6, alpha = 0.28,
-                        colour = "grey35", linewidth = 0.3) +
-  pts_layer(df) +
-  ggplot2::facet_wrap(~ panel, ncol = 4, scales = "free_y") +
-  ggplot2::scale_colour_manual(values = group_cols,
-                               breaks = names(group_cols), labels = group_labels) +
-  ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
-  ggplot2::labs(
-    x = NULL, y = "share of the nuclear transcriptome (%)", colour = NULL,
+# --- three blocks with a divider between them (author request 2026-07-24) ------
+# The 6 top-level categories and the 9 metabolism children do not fall on row
+# boundaries in a single facet_wrap, so a clean divider means stacking the blocks.
+# ncol = 3 fills 6 and 9 exactly (no blank cells); heights track the row counts.
+blk_top <- unname(arm_name[arms[1:6]])    # 6 top-level MitoPathway categories
+blk_met <- unname(arm_name[arms[7:15]])   # 9 Metabolism level-2 children
+blk_ref <- unname(arm_name[arms[16]])     # mtDNA-encoded reference
+
+make_block <- function(labs, subtitle, ylab = NULL) {
+  d <- df[df$panel %in% labs, ]
+  d$panel <- factor(as.character(d$panel), levels = labs)
+  ggplot2::ggplot(d, ggplot2::aes(group, share_nomt, colour = group, fill = group)) +
+    ggplot2::geom_boxplot(outlier.shape = NA, width = 0.6, alpha = 0.28,
+                          colour = "grey35", linewidth = 0.3) +
+    pts_layer(d) +
+    ggplot2::facet_wrap(~ panel, ncol = 3, scales = "free_y") +
+    ggplot2::scale_colour_manual(values = group_cols,
+                                 breaks = names(group_cols), labels = group_labels) +
+    ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
+    ggplot2::labs(x = NULL, y = ylab, colour = NULL, subtitle = subtitle) +
+    theme_myc(base_size = 8) +
+    ggplot2::theme(
+      axis.text.x     = ggplot2::element_blank(),
+      axis.ticks.x    = ggplot2::element_blank(),
+      axis.line.x     = ggplot2::element_blank(),
+      strip.text      = ggplot2::element_text(size = 6.8),
+      plot.subtitle   = ggplot2::element_text(face = "bold", size = 8.5, colour = "grey20"),
+      legend.position = "bottom",
+      legend.key.size = ggplot2::unit(3.5, "mm")) +
+    ggplot2::guides(colour = ggplot2::guide_legend(
+      nrow = 1, override.aes = list(size = 2.4, alpha = 1, shape = 16)))
+}
+
+p_top <- make_block(blk_top, "Top-level MitoPathway categories")
+p_met <- make_block(blk_met, "Metabolism (level-2 children)",
+                    ylab = "share of the nuclear transcriptome (%)")
+p_ref <- make_block(blk_ref, "Reference: mtDNA-encoded")
+
+p <- patchwork::wrap_plots(p_top, p_met, p_ref, ncol = 1, heights = c(2, 3, 1)) +
+  patchwork::plot_layout(guides = "collect") +
+  patchwork::plot_annotation(
     title = "Mitochondrial compartment shares across all main MitoCarta groups",
     caption = paste(
       sprintf("Points, n=%d/group; box = median/IQR. %% of the non-mtDNA transcriptome (raw counts); free y per group.", n_per),
-      "16 MitoCarta MitoPathway groups (Metabolism split into its 9 depth-2 children); mtDNA-encoded = flat reference.",
+      "16 MitoCarta MitoPathway groups; Metabolism divided from the other top-level categories, split into its 9 depth-2 children.",
       "Genotype (Myc+ vs WT within a timepoint) is the clean axis; the 6W-vs-12W time axis is cohort/batch-confounded (batch=timepoint).",
-      sep = "\n")) +
-  theme_myc(base_size = 8) +
-  ggplot2::theme(
-    axis.text.x     = ggplot2::element_blank(),
-    axis.ticks.x    = ggplot2::element_blank(),
-    axis.line.x     = ggplot2::element_blank(),
-    strip.text      = ggplot2::element_text(size = 6.8),
-    legend.position = "bottom",
-    legend.key.size = ggplot2::unit(3.5, "mm")) +
-  ggplot2::guides(colour = ggplot2::guide_legend(
-    nrow = 1, override.aes = list(size = 2.4, alpha = 1, shape = 16)))
+      sep = "\n"),
+    theme = ggplot2::theme(
+      plot.title   = ggplot2::element_text(face = "bold", size = 11),
+      plot.caption = ggplot2::element_text(size = 6.3, hjust = 0, colour = "grey30",
+                                           lineheight = 1.1))) &
+  ggplot2::theme(legend.position = "bottom")
 
 # Guard: sourced only to obtain `p` (e.g. Quarto) when myc.fig.nosave = TRUE.
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   save_panel(p, file.path(out_dir, "figS1_mitocarta_survey_share.pdf"),
-             width = fig_w[["double"]], height = 150)
+             width = fig_w[["double"]], height = 165)
 }
 
 # =============================================================================
