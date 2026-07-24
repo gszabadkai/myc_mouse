@@ -95,14 +95,15 @@ brackets_for <- function(y, facet_val, facet_name) {
   b$tick <- rng * 0.02
   b$xmid <- (b$x1 + b$x2) / 2
   b$col  <- ifelse(b$p < 0.05, "sig", "ns")
-  b$hr   <- max(b$y) + rng * 0.14          # bracket line + room for its label above it
+  b$hr       <- max(b$y) + rng * 0.14      # bracket line + room for its label above it
+  b$hr_nolab <- max(b$y) + rng * 0.04      # brackets only: red/grey carries the verdict
   b[[facet_name]] <- facet_val
   b
 }
 
 # --- the shared panel builder ----------------------------------------------------
 group_panel <- function(df, ylab, ttl, sub = NULL, facet = NULL, ncol = 5,
-                        brk = NULL, base = 8) {
+                        brk = NULL, base = 8, show_p = TRUE) {
   p <- ggplot2::ggplot(df, ggplot2::aes(group, y, colour = group, fill = group)) +
     ggplot2::geom_boxplot(outlier.shape = NA, width = 0.62, alpha = 0.28,
                           colour = "grey35", linewidth = 0.3) +
@@ -119,12 +120,16 @@ group_panel <- function(df, ylab, ttl, sub = NULL, facet = NULL, ncol = 5,
       ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
                             ggplot2::aes(x = x2, xend = x2, y = y, yend = y - tick, colour = col),
                             linewidth = 0.25) +
-      ggplot2::geom_text(data = brk, inherit.aes = FALSE,
-                         ggplot2::aes(x = xmid, y = y, label = lab, colour = col),
-                         vjust = -0.3, size = 1.8) +
-      ggplot2::geom_blank(data = unique(brk[, c(setdiff(names(brk), names(comp)), "hr")]),
-                          inherit.aes = FALSE,
-                          ggplot2::aes(x = 1, y = hr))
+      ggplot2::geom_blank(
+        data = unique(brk[, c(setdiff(names(brk), names(comp)),
+                              if (show_p) "hr" else "hr_nolab")]),
+        inherit.aes = FALSE,
+        ggplot2::aes(x = 1, y = .data[[if (show_p) "hr" else "hr_nolab"]]))
+    if (show_p) {
+      p <- p + ggplot2::geom_text(data = brk, inherit.aes = FALSE,
+                                  ggplot2::aes(x = xmid, y = y, label = lab, colour = col),
+                                  vjust = -0.3, size = 1.8)
+    }
   }
   if (!is.null(facet)) p <- p + ggplot2::facet_wrap(stats::as.formula(paste("~", facet)),
                                                     ncol = ncol, scales = "free_y")
@@ -171,8 +176,8 @@ bB$gene <- factor(bB$gene, levels = net$gene)
 
 pB <- group_panel(
   dB, "normalised counts", "B   The proximal MYC/MAX/MXD network",
-  "MAX (partner) | MXD1/3/4, MXI1 (=MXD2), MNT, MGA (competing repressors) | MLX, MLXIP, MLXIPL",
-  facet = "gene", ncol = 5, brk = bB, base = 8)
+  "MAX (partner) | MXD1/3/4, MXI1 (=MXD2), MNT, MGA (competing repressors) | MLX, MLXIP, MLXIPL.\nBrackets as in A, unlabelled: red = p<0.05. Exact p-values in the script sandbox.",
+  facet = "gene", ncol = 5, brk = bB, base = 8, show_p = FALSE)
 
 # =============================================================================
 # PANEL C -- driver vs output: does anything that would register a falling dose fall?
@@ -250,7 +255,8 @@ p <- patchwork::wrap_plots(top, pB, ncol = 1, heights = c(1, 1.25)) +
   patchwork::plot_annotation(
     caption = paste(
       "DESeq2 median-of-ratios normalised counts, n=6/group; points = mice, box = median/IQR. Brackets: genotype (WT vs Myc+) within a timepoint and 6W-vs-12W within a genotype,",
-      "simple-effect lm on log2 expression; red = p<0.05. Reads map to the mouse Myc locus: total Myc message in Myc+ is transgene + endogenous and the two are not separable here.",
+      "simple-effect lm on log2 expression; red = p<0.05 (panel B brackets are unlabelled to keep the facets readable -- the sandbox prints every p).",
+      "Reads map to the mouse Myc locus: total Myc message in Myc+ is transgene + endogenous and the two are not separable here.",
       "The 6W-vs-12W axis is batch-confounded (batch = timepoint), so a time bracket is described, not claimed -- but the claim being tested is the ABSENCE of a temporal decline.",
       "p-values are UNADJUSTED across 11 genes x 4 comparisons; nothing in panel B clears BH<0.05 over that family, and the genome-wide DESeq2 interaction padj is >0.05 for every network gene.",
       sep = "\n"),
@@ -275,8 +281,12 @@ if (FALSE) {
   ## the driver-vs-output table (panel C)
   print(wideC, digits = 3)
 
-  ## every simple-effect p for Myc
+  ## every simple-effect p: Myc (panel A) and the whole network (panel B, unlabelled)
   print(bA[, c("kind", "key", "p", "lab")], digits = 3)
+  bB |>
+    dplyr::transmute(gene, comparison = paste(kind, key), p = round(p, 4),
+                     sig = p < 0.05) |>
+    dplyr::arrange(p) |> print(n = 44)
 
   print(pA); print(pB); print(pC); print(p)
 }
