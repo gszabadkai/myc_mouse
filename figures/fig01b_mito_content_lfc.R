@@ -85,9 +85,12 @@ arm_syms <- list(
                                     gmt[["MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS"]]),
   MITOCARTA_MTDNA_ENCODED   = gmt[["MITOCARTA_MTDNA_ENCODED"]])
 
-# symbol -> ensembl dictionary (arm sets are by symbol; DESeqResults are ensembl)
-dict    <- unique(combined[!is.na(combined$mgi_symbol), c("mgi_symbol", "gene")])
-arm_ens <- lapply(arm_syms, function(s) unique(dict$gene[dict$mgi_symbol %in% s]))
+# arm sets are by symbol (any vintage); DESeqResults are Ensembl. Reconcile via the
+# shared helper so renamed genes are not silently dropped -- a plain symbol match
+# loses 17 of Complex V's 24 ATP-synthase genes and ~12% of nuclear OXPHOS.
+source(here::here("functions", "reconcile_gene_symbols.R"))
+de_univ <- rownames(as.data.frame(ir[["myc_6W_raw"]]))
+arm_ens <- lapply(arm_syms, function(s) recon_to_ensembl(s, de_univ))
 
 # --- the four contrasts (raw), tidied to gene x {lfc, padj} -------------------
 contr <- c(myc_6W_raw        = "Myc@6W",

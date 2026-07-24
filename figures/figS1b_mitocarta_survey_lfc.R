@@ -93,9 +93,13 @@ arm_name <- c(
 stopifnot(all(arms %in% names(gmt)))
 arm_syms <- stats::setNames(lapply(arms, function(a) gmt[[a]]), arms)
 
-# symbol -> ensembl dictionary (group sets are by symbol; DESeqResults are ensembl)
+# group sets are by symbol (any vintage); DESeqResults are ensembl. Reconcile via the
+# shared helper so renamed genes (esp. ATP synthase) are not dropped. dict is kept
+# only to LABEL genes (ensembl -> current symbol) in the divergence table.
+source(here::here("functions", "reconcile_gene_symbols.R"))
 dict    <- unique(combined[!is.na(combined$mgi_symbol), c("mgi_symbol", "gene")])
-arm_ens <- lapply(arm_syms, function(s) unique(dict$gene[dict$mgi_symbol %in% s]))
+de_univ <- rownames(as.data.frame(ir[["myc_6W_raw"]]))
+arm_ens <- lapply(arm_syms, function(s) recon_to_ensembl(s, de_univ))
 
 # --- the four contrasts (raw), tidied to gene x {lfc, padj} -------------------
 contr <- c(myc_6W_raw        = "Myc@6W",

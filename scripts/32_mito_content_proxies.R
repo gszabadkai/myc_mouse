@@ -123,6 +123,11 @@
 # =============================================================================
 
 source(here::here("scripts", "00_setup_packages.R"))
+# Gene-symbol vintage reconciliation: the library GMTs carry OLD MitoCarta symbols
+# (e.g. ATP-synthase Atp5a1/b/c1/...), the count matrix uses CURRENT ones (Atp5f1a..).
+# A plain symbol match drops the renamed genes (~12% of nuclear OXPHOS, 17/24 of
+# Complex V). ens_of() below routes through this helper so they are recovered.
+source(here::here("functions", "reconcile_gene_symbols.R"))
 
 out_dir <- here::here("outputs", "mito_content_proxies")
 if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
@@ -149,10 +154,10 @@ stopifnot(identical(colnames(cts), samples))
 cdf     <- readRDS(here::here("results", "combined_df_annotated.rds"))
 sym2ens <- cdf[!is.na(cdf$mgi_symbol) & !duplicated(cdf$mgi_symbol),
                c("mgi_symbol", "gene")]
-ens_of  <- function(syms, universe = rownames(cts)) {
-  e <- sym2ens$gene[match(intersect(syms, sym2ens$mgi_symbol), sym2ens$mgi_symbol)]
-  intersect(e, universe)
-}
+# Vintage-aware symbol -> Ensembl (recovers renamed genes, e.g. ATP synthase). The
+# old current-symbol match is retained above as `sym2ens` only for the ensembl ->
+# symbol LABELLING in PART 3b; membership resolution goes through the reconciler.
+ens_of  <- function(syms, universe = rownames(cts)) recon_to_ensembl(syms, universe)
 
 gmt <- fgsea::gmtPathways(
   here::here("data", "genesets_from_library", "mammary_mito_myc_metab_v1_mouse.gmt"))

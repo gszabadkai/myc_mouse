@@ -29,9 +29,7 @@ if (!requireNamespace("DESeq2", quietly = TRUE)) {
 if (!requireNamespace("patchwork", quietly = TRUE)) {
   stop("figS2b needs patchwork to compose the heatmap over the boxplots")
 }
-if (!requireNamespace("readxl", quietly = TRUE)) {
-  stop("figS2b needs readxl to map MitoCarta symbols to Ensembl (see mapping note)")
-}
+source(here::here("functions", "reconcile_gene_symbols.R"))
 
 out_dir   <- here::here("outputs", "figures")
 N_DIVERSE <- 12   # genes per complex in the divergence table (small sets cap below this)
@@ -57,24 +55,15 @@ arm_name <- c(MITOCARTA_COMPLEX_I   = "Complex I",
 stopifnot(all(arms %in% names(gmt)))
 arm_syms <- stats::setNames(lapply(arms, function(a) gmt[[a]]), arms)
 
-# --- MAPPING NOTE: MitoCarta symbol -> Ensembl (NOT current-symbol match) ------
-# MitoCarta's complex sets carry the OLD ATP-synthase names (Atp5a1/b/c1/d/e/g1-3/
-# h/j/k/l/o, Atpif1); the DESeq table uses the CURRENT names (Atp5f1a..e, Atp5mc*,
-# Atp5pd/pf/po, Atp5if1). A current-symbol match silently drops 17 of Complex V's
-# 24 genes. So membership is resolved by MitoCarta's OWN Ensembl IDs (Sheet 2,
-# EnsemblGeneID) intersected with the DE table -- recovering CV 24/24. dict below
-# is used ONLY to LABEL genes (ensembl -> current symbol) in the divergence table.
-dict   <- unique(combined[!is.na(combined$mgi_symbol), c("mgi_symbol", "gene")])
-de_ens <- rownames(as.data.frame(ir[["myc_6W_raw"]]))
-mc <- as.data.frame(readxl::read_excel(
-  here::here("data", "Mouse.MitoCarta3.0.xls"), sheet = 2))
-mc <- mc[!is.na(mc$Symbol) & !is.na(mc$EnsemblGeneID) & mc$EnsemblGeneID != "", ]
-mc_map <- do.call(rbind, lapply(seq_len(nrow(mc)), function(i)
-  data.frame(sym = mc$Symbol[i],
-             ens = trimws(strsplit(mc$EnsemblGeneID[i], "[|]")[[1]]),
-             stringsAsFactors = FALSE)))
-arm_ens <- lapply(arm_syms, function(s)
-  intersect(unique(mc_map$ens[mc_map$sym %in% s]), de_ens))
+# --- MAPPING: reconcile complex-set symbols to Ensembl (recover renamed genes) --
+# MitoCarta's complex sets carry the OLD ATP-synthase names (Atp5a1/b/c1/...); the
+# DESeq table uses the CURRENT ones (Atp5f1a.., Atp5mc*, Atp5pd/pf/po, Atp5if1). A
+# current-symbol match silently drops 17 of Complex V's 24 genes, so membership goes
+# through the shared reconciler (recovers CV 24/24). dict LABELS genes (ensembl ->
+# current symbol) in the divergence table.
+dict    <- unique(combined[!is.na(combined$mgi_symbol), c("mgi_symbol", "gene")])
+de_ens  <- rownames(as.data.frame(ir[["myc_6W_raw"]]))
+arm_ens <- lapply(arm_syms, function(s) recon_to_ensembl(s, de_ens))
 
 # --- the four contrasts (raw), tidied to gene x {lfc, padj} -------------------
 contr <- c(myc_6W_raw        = "Myc@6W",

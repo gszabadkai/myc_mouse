@@ -66,15 +66,11 @@ meta$group     <- factor(meta$group, levels = names(group_labels))
 meta$timepoint <- factor(meta$timepoint)
 meta$myc_status<- factor(meta$myc_status)
 
-# --- MitoCarta symbol -> Ensembl map (Sheet 2), then complexes + the 13 mt genes
-mc <- as.data.frame(readxl::read_excel(
-  here::here("data", "Mouse.MitoCarta3.0.xls"), sheet = 2))
-mc <- mc[!is.na(mc$Symbol) & !is.na(mc$EnsemblGeneID) & mc$EnsemblGeneID != "", ]
-mc_map <- do.call(rbind, lapply(seq_len(nrow(mc)), function(i)
-  data.frame(sym = mc$Symbol[i],
-             ens = trimws(strsplit(mc$EnsemblGeneID[i], "[|]")[[1]]),
-             stringsAsFactors = FALSE)))
-ens_of <- function(syms) intersect(unique(mc_map$ens[mc_map$sym %in% syms]), rownames(cts))
+# --- reconcile complex-set symbols to Ensembl (recovers renamed genes) ---------
+# Complexes + the 13 mt genes via the shared vintage-aware reconciler (see mapping
+# note in the header): a plain symbol match drops 17 of Complex V's 24 genes.
+source(here::here("functions", "reconcile_gene_symbols.R"))
+ens_of  <- function(syms) recon_to_ensembl(syms, rownames(cts))
 
 mt_ens  <- ens_of(gmt[["MITOCARTA_OXPHOS_MT"]])           # the 13 mtDNA subunits
 stopifnot(length(mt_ens) >= 10)
