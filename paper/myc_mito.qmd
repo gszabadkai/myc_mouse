@@ -181,6 +181,57 @@ knitr::kable(diverse_genes, digits = 2,
                            "Myc+ 6->12W", "spread", "sd"))
 ```
 
+# OXPHOS, complex by complex {#sec-oxphos-complexes}
+
+The survey isolates **nuclear OXPHOS** as the arm that rises with Myc and falls across the
+WT timeline. Does one respiratory complex carry that, or all five together? This drills into
+the five nuclear-encoded complexes (Complex I-V; the 13 mtDNA subunits are the separate mtDNA
+OXPHOS facet) the same two ways -- share (@fig-cplx-share) and per-gene LFC (@fig-cplx-lfc).
+
+```{r}
+#| label: fig-cplx-share
+#| fig-cap: "Transcriptome share of each respiratory complex across the four groups (% of the non-mtDNA transcriptome, free y). Brackets = genotype/ time p<0.05 only. n=6/group."
+#| fig-width: 9
+#| fig-height: 4.2
+#| echo: false
+source(here::here("figures", "figS2_oxphos_complex_share.R"))
+print(p)
+```
+
+```{r}
+#| label: fig-cplx-lfc
+#| fig-cap: "Per-gene raw log2FC of the five complexes across the four contrasts. A: median LFC per complex x contrast (n = genes at padj<0.05). B: LFC distributions."
+#| fig-width: 9
+#| fig-height: 5.8
+#| echo: false
+source(here::here("figures", "figS2b_oxphos_complex_lfc.R"))
+print(p)
+```
+
+The reading is **uniformity, not selectivity**: Myc raises all five complexes coordinately at
+6W (the share is genotype-significant for CI, CIII, CIV and CV; CII -- 8 nuclear genes, the one
+complex with no mtDNA subunit -- is the underpowered exception), and every complex attenuates in
+step by 12W. No complex is singled out; the oncogene drives the respiratory chain as one block,
+consistent with the coordinate biogenesis reading of @sec-content.
+
+::: {.callout-note}
+## Mapping note (why Complex V needed care)
+MitoCarta's complex sets carry the **old ATP-synthase gene names** (`Atp5a1/b/c1/...`), while
+the count matrix uses the **current** ones (`Atp5f1a..`, `Atp5mc*`, `Atp5pd/pf/po`). A
+current-symbol match silently drops 17 of Complex V's 24 genes. These figures therefore resolve
+membership through MitoCarta's **own Ensembl IDs** (Sheet 2) rather than by symbol, recovering
+CV 24/24. They are computed self-contained (not via script 32), so fig01/figS1 are untouched.
+:::
+
+```{r}
+#| label: tbl-cplx-diverse
+#| tbl-cap: "Most divergent genes per complex (top by LFC spread across the four contrasts)."
+#| echo: false
+knitr::kable(diverse_genes, digits = 2,
+             col.names = c("complex", "gene", "Myc@6W", "Myc@12W", "WT 6->12W",
+                           "Myc+ 6->12W", "spread", "sd"))
+```
+
 # The global axis and the correlation ceiling {#sec-axis}
 
 *(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto
