@@ -1,5 +1,5 @@
 # =============================================================================
-# fig02b_reallocation_ranked.R -- compact horizontal ranked dot chart
+# fig02_reallocation_ranked.R -- compact horizontal ranked dot chart
 # -----------------------------------------------------------------------------
 # The compact alternative to fig02_reallocation.R (which labels all ~144 pathways,
 # tall). Same data, stripped for a MAIN panel: horizontal, NO per-pathway labels,
@@ -20,7 +20,7 @@
 
 source(here::here("figures", "theme_myc.R"))
 if (!requireNamespace("ggrepel", quietly = TRUE)) {
-  stop("fig02b needs ggrepel for the top-hierarchy leader labels")
+  stop("fig02 needs ggrepel for the top-hierarchy leader labels")
 }
 
 out_dir <- here::here("outputs", "figures")
@@ -112,7 +112,7 @@ p <- ggplot2::ggplot(d, ggplot2::aes(rank, eff6)) +
 # Guard: sourced only to obtain `p` (e.g. Quarto) when myc.fig.nosave = TRUE.
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  save_panel(p, file.path(out_dir, "fig02b_reallocation_ranked.pdf"),
+  save_panel(p, file.path(out_dir, "fig02_reallocation_ranked.pdf"),
              width = fig_w[["double"]], height = 100)
 }
 

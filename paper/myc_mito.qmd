@@ -247,7 +247,7 @@ priority within it, coherently by pathway tier and at both ages (@fig-reallocati
 #| fig-width: 9
 #| fig-height: 4.7
 #| echo: false
-source(here::here("figures", "fig02b_reallocation_ranked.R"))
+source(here::here("figures", "fig02_reallocation_ranked.R"))
 print(p)
 ```
 

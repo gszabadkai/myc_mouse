@@ -2,7 +2,7 @@
 # figS4_reallocation_full.R -- "Myc reprioritises the compartment" (full, labelled)
 # -----------------------------------------------------------------------------
 # The SUPPLEMENTARY, fully-labelled companion to the compact main panel
-# (fig02b_reallocation_ranked.R). An ORDERED DOT CHART: every MitoPathway ranked
+# (fig02_reallocation_ranked.R). An ORDERED DOT CHART: every MitoPathway ranked
 # by its Myc mitoPPS effect (Myc+ minus WT), most DEMOTED at the bottom -> most
 # PROMOTED at the top. mitoPPS (Monzel 2025) is content-blind (each pathway
 # ratio-normalized to 1), so the effect is a pure RELATIVE-priority shift. The
