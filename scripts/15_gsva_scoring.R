@@ -114,6 +114,16 @@ stopifnot(!any(duplicated(names(all_pathways))))
 gsva_tags   <- provenance$set_name[provenance$method %in% c("gsva", "both")]
 pathways    <- all_pathways[names(all_pathways) %in% gsva_tags]
 
+# Reconcile set gene symbols (old MitoCarta names, e.g. ATP synthase) to the CURRENT
+# symbols used for expr_mat rownames (external_gene_name), so renamed genes are not
+# dropped from GSVA sets. One batch translation over all set genes; idempotent on
+# already-current names, so non-MitoCarta sets are unchanged.
+source(here::here("functions", "reconcile_gene_symbols.R"))
+.sync    <- recon_current_map(unique(unlist(pathways, use.names = FALSE)))
+pathways <- lapply(pathways, function(genes) {
+  m <- .sync[genes]; unique(ifelse(is.na(m), genes, unname(m)))
+})
+
 message(sprintf("Pathways: %d total in GMTs, %d GSVA-tagged (method gsva/both)",
                 length(all_pathways), length(pathways)))
 stopifnot(length(pathways) > 0)

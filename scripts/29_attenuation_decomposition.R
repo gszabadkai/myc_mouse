@@ -84,13 +84,13 @@ scores   <- gsva_out$scores[, samples, drop = FALSE]             # align to mast
 set_meta <- gsva_out$set_meta
 cdf      <- readRDS(here::here("results", "combined_df_annotated.rds"))
 
-# ENSMUSG <-> mgi_symbol (drop NA / non-unique symbols; dds/contrasts are Ensembl)
+# ENSMUSG <-> mgi_symbol (sym2ens retained for ensembl -> symbol LABELLING only).
 sym2ens <- cdf[!is.na(cdf$mgi_symbol) & !duplicated(cdf$mgi_symbol),
                c("mgi_symbol", "gene")]
-ens_of  <- function(syms, universe = rownames(dds)) {
-  e <- sym2ens$gene[match(intersect(syms, sym2ens$mgi_symbol), sym2ens$mgi_symbol)]
-  intersect(e, universe)
-}
+# Vintage-aware symbol -> Ensembl for gene-set membership: a plain current-symbol
+# match drops renamed genes (ATP synthase / ~12% of nuclear OXPHOS). See the helper.
+source(here::here("functions", "reconcile_gene_symbols.R"))
+ens_of  <- function(syms, universe = rownames(dds)) recon_to_ensembl(syms, universe)
 
 gmt <- fgsea::gmtPathways(
   here::here("data", "genesets_from_library", "mammary_mito_myc_metab_v1_mouse.gmt"))

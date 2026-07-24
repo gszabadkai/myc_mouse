@@ -87,6 +87,16 @@ cat_pathways <- lapply(gmt_files, function(f) {
 })
 names(cat_pathways) <- sub("_mouse\\.gmt$", "", basename(gmt_files))
 
+# Reconcile library-set gene symbols (old MitoCarta names, e.g. ATP synthase) to the
+# CURRENT symbols used by the external_gene_name-keyed ranks, so renamed genes are
+# not dropped from set membership. One batch translation; idempotent on current names
+# (Hallmark, added below from msigdbr, is already current and needs no translation).
+source(here::here("functions", "reconcile_gene_symbols.R"))
+.sync <- recon_current_map(unique(unlist(cat_pathways, use.names = FALSE)))
+cat_pathways <- lapply(cat_pathways, function(cat) lapply(cat, function(genes) {
+  m <- .sync[genes]; unique(ifelse(is.na(m), genes, unname(m)))
+}))
+
 # Fresh MSigDB Hallmark (mouse) -- robust to the msigdbr category/collection rename
 hh <- tryCatch(msigdbr::msigdbr(species = "Mus musculus", category = "H"),
                error = function(e) msigdbr::msigdbr(species = "Mus musculus",

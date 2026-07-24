@@ -48,7 +48,24 @@
     data.frame(sym = s2$Symbol[i],
                ens = trimws(strsplit(s2$EnsemblGeneID[i], "[|]")[[1]]),
                stringsAsFactors = FALSE)))
+  .recon_env$alias_keys <- AnnotationDbi::keys(org.Mm.eg.db::org.Mm.eg.db, "ALIAS")
   invisible()
+}
+
+# Safe org.Mm.eg.db ALIAS lookup: restrict to keys that are valid ALIAS entries
+# (mapIds errors if NONE are valid, e.g. mt-* or novel-gene names) and return a
+# named vector over the requested keys (NA where unmapped).
+.alias_ids <- function(keys, column) {
+  keys <- unique(keys)
+  ok   <- intersect(keys, .recon_env$alias_keys)
+  out  <- stats::setNames(rep(NA_character_, length(keys)), keys)
+  if (length(ok)) {
+    m <- suppressMessages(AnnotationDbi::mapIds(
+      org.Mm.eg.db::org.Mm.eg.db, keys = ok, column = column,
+      keytype = "ALIAS", multiVals = "first"))
+    out[names(m)] <- unname(m)
+  }
+  out
 }
 
 recon_to_ensembl <- function(symbols, universe_ensembl) {
@@ -68,9 +85,7 @@ recon_to_ensembl <- function(symbols, universe_ensembl) {
   }
   # Route 3 -- still unresolved via org.Mm.eg.db aliases (general renames).
   if (length(todo)) {
-    al  <- suppressMessages(AnnotationDbi::mapIds(
-      org.Mm.eg.db::org.Mm.eg.db, keys = todo, column = "ENSEMBL",
-      keytype = "ALIAS", multiVals = "first"))
+    al  <- .alias_ids(todo, "ENSEMBL")
     out <- c(out, unname(al[!is.na(al)]))
   }
   intersect(unique(out), universe_ensembl)
@@ -81,4 +96,36 @@ recon_to_current <- function(symbols, universe_symbols) {
   ens <- recon_to_ensembl(symbols, names(.recon_env$ens2cur))
   cur <- unique(c(intersect(symbols, universe_symbols), unname(.recon_env$ens2cur[ens])))
   intersect(cur[!is.na(cur)], universe_symbols)
+}
+
+# recon_current_map(symbols): a NAMED vector input-symbol -> CURRENT symbol (1:1,
+# NA if unresolvable), for TRANSLATING a gene set in place (e.g. a MitoCarta
+# gene->pathway table, or a GMT set) so it matches current-symbol-keyed expression.
+# Same priority fallback as recon_to_ensembl; idempotent on already-current names.
+recon_current_map <- function(symbols) {
+  .recon_build()
+  symbols <- unique(symbols[!is.na(symbols)])
+  out <- stats::setNames(rep(NA_character_, length(symbols)), symbols)
+  cur_syms <- unique(unname(.recon_env$ens2cur))
+  # route 1 -- already a current symbol
+  is_cur <- symbols %in% cur_syms
+  out[is_cur] <- symbols[is_cur]
+  todo <- symbols[is.na(out)]
+  # route 2 -- MitoCarta old symbol -> Ensembl -> current symbol
+  if (length(todo)) {
+    m <- .recon_env$mc[.recon_env$mc$sym %in% todo, ]
+    if (nrow(m)) {
+      m$cur <- unname(.recon_env$ens2cur[m$ens])
+      m <- m[!is.na(m$cur), ]
+      m <- m[!duplicated(m$sym), ]
+      out[m$sym] <- m$cur
+    }
+    todo <- symbols[is.na(out)]
+  }
+  # route 3 -- org.Mm.eg.db alias -> current symbol
+  if (length(todo)) {
+    al <- .alias_ids(todo, "SYMBOL")
+    out[names(al)] <- unname(al)
+  }
+  out
 }

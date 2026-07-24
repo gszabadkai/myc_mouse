@@ -343,6 +343,17 @@ mean_expr <- rowMeans(expr_symbols)
 expr_symbols <- expr_symbols[order(-mean_expr), ]
 expr_symbols <- expr_symbols[!duplicated(rownames(expr_symbols)), ]
 
+# Reconcile MitoCarta's original gene symbols to the CURRENT symbols used by
+# expr_symbols (via external_gene_name). MitoCarta carries OLD names -- e.g. the
+# ATP-synthase Atp5a1/b/c1/... -- so a plain match drops 17 of Complex V's 24
+# genes and ~12% of nuclear OXPHOS. Translate in place; mt-* names are current and
+# pass through unchanged (the mtDNA split above already used them), and any
+# unresolved name is left as-is (it simply will not match, as before).
+source(here::here("functions", "reconcile_gene_symbols.R"))
+.mc_sync <- recon_current_map(unique(gene_to_pathway$Gene))
+.mc_new  <- .mc_sync[gene_to_pathway$Gene]
+gene_to_pathway$Gene <- ifelse(is.na(.mc_new), gene_to_pathway$Gene, .mc_new)
+
 # Check overlap with MitoCarta
 mc_symbols <- unique(gene_to_pathway$Gene)
 overlap <- intersect(rownames(expr_symbols), mc_symbols)

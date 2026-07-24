@@ -68,10 +68,10 @@ defs <- ad$defs
 
 sym2ens <- cdf[!is.na(cdf$mgi_symbol) & !duplicated(cdf$mgi_symbol), c("mgi_symbol", "gene")]
 universe_all <- rownames(ir$myc_6W_raw)
-ens_of <- function(syms) {
-  e <- sym2ens$gene[match(intersect(syms, sym2ens$mgi_symbol), sym2ens$mgi_symbol)]
-  intersect(e, universe_all)
-}
+# Vintage-aware symbol -> Ensembl for gene-set membership (recovers renamed genes
+# such as ATP synthase; a plain current-symbol match drops ~12% of nuclear OXPHOS).
+source(here::here("functions", "reconcile_gene_symbols.R"))
+ens_of <- function(syms) recon_to_ensembl(syms, universe_all)
 pool_ens <- function(paths) ens_of(unique(unlist(gmt[intersect(paths, names(gmt))])))
 
 # raw (unshrunken) LFC vectors indexed by Ensembl (the interaction identity uses raw LFCs)
