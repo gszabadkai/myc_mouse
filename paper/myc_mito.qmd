@@ -291,6 +291,31 @@ source(here::here("figures", "figS3_reallocation_two_rulers.R"))
 print(p)
 ```
 
+Collapsing the two rulers into a single scatter (@fig-reallocation-scatter) sharpens the
+logic. Content and priority **correlate** (r=0.76) and the cloud sits almost entirely in the
+content-up half: Myc raises nearly the whole compartment, and relative priority largely tracks
+that -- so reprioritisation is a **second-order skew on a first-order rise**, the spread about
+the trend rather than the main axis. Two features stand out. (1) The reallocation is
+**directional**: the content-down / priority-up quadrant is **empty** -- nothing that falls in
+content gains priority, so the demoted pathways are not switched off, they simply rise *slower
+than the biogenesis machinery* and lose relative share. (2) The residuals off the trend name
+candidates: **above** it (extra priority for their content) sit the import chaperones, immune
+response and anaplerotic metabolism (creatine, pyruvate, serine); **below** it (raised yet
+demoted) sit the OXPHOS assembly factors, cAMP-PKA signalling and the dynamics/apoptosis
+pathways. Caveat: mitoPPS is a ratio (~content relative to the compartment mean), so part of the
+correlation is built in -- the signal is the **residual**, not the trend; descriptive/exploratory
+(n=6/group).
+
+```{r}
+#| label: fig-reallocation-scatter
+#| fig-cap: "Supplementary (figS5): content (DESeq set-average log2FC) vs priority (relative mitoPPS) Myc effect per pathway at 6W; dashed = linear trend (r=0.76), ringed = padj<0.05, residual outliers labelled. The content-down/priority-up quadrant is empty. n=6/group."
+#| fig-width: 9
+#| fig-height: 6.4
+#| echo: false
+source(here::here("figures", "figS5_reallocation_scatter.R"))
+print(p)
+```
+
 # The global axis and the correlation ceiling {#sec-axis}
 
 *(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto
