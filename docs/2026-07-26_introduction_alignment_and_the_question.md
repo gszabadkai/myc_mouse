@@ -14,9 +14,10 @@ growth, metastasis — the metastasis arm has data not represented in this repo)
 **closing claim**; this note supplies an evaluation plus a complete drafted Introduction, not an
 abstract.
 
-**Numbers flagged `[43]` are provisional** — they come from a read-only reconciliation on
-2026-07-26 and from a scratchpad dry run of `scripts/43_substrate_specificity_and_tradeoff.R` at
-reduced draw counts. They become citable when the author runs 43 at its committed settings.
+**Reconciled against the canonical run of `scripts/43_substrate_specificity_and_tradeoff.R`**
+(author-run 2026-07-26, `results/substrate_specificity_tradeoff.rds`). Numbers previously flagged
+provisional are now citable; the marker `[43]` is retained only to say where they come from. The
+script's built-in positive control passed exactly (`-0.2548228` against Issue #4's `-0.2548`).
 
 ---
 
@@ -105,12 +106,56 @@ the model needs.**
 - Cross-sectionally the coupling is **not testable**, and script 36 says why: in GSVA space OXPHOS
   *is* the global axis (r=0.968 with the global mean), so there is no separable variance to test.
   This is an honest negative, not a weak positive — do not quote a coupling here.
-- `[43]` In mitoPPS ratio space, where the ambient is ~0.4 rather than ~0.8, the asymmetry appears
-  on a single axis with a working control: `myc x OXPHOS-priority` is **+6.09 (p 0.005)** on the
-  PUMA priming ratio with the `redox` control null (+2.16, p 0.72, 50th permutation percentile),
-  and **negative** on both proliferation composites (−3.68, p 0.11; −3.23, p 0.17). A **sign**
-  asymmetry is stronger than a magnitude one: high respiratory priority makes MYC better at raising
-  the death trigger and no better at raising proliferation.
+- `[43]` In mitoPPS ratio space the asymmetry appears, but **only one outcome has a working
+  control**, and the claim has to be scoped to it. Full table in section 0.5a below.
+
+### 0.5a The trade-off asymmetry, read against its control
+
+`[43]` `lm(standardised outcome ~ myc * axis + epithelial + immune)`, with a within-timepoint
+permutation null (5000 shuffles) and `redox` priority as the negative-control axis. Outcomes are
+standardised so the `myc x axis` terms are comparable across rows; they are therefore **not**
+numerically comparable with script 42 PART H's +2.79, which was fitted on the raw ratio.
+
+| outcome | `myc x OXPHOS-priority` | p | perm pct | **`redox` control, perm pct** | readable? |
+|---|---|---|---|---|---|
+| **PUMA priming ratio** (`Bbc3:Bcl2l1`) | **+6.09** | **0.005** | **91.7** | **51.2** (dead centre) | **yes** |
+| `Bax:Bcl2l1` | +2.43 | 0.069 | 67.7 | **65.4** | no — control tracks it |
+| proliferation (markers) | **-3.68** | 0.107 | 6.3 | 30.2 | partly |
+| proliferation (E2F hallmark) | **-3.23** | 0.171 | 9.2 | 27.7 | partly |
+| mitoPPS priming composite (PRO-ANTI) | -5.71 | 0.060 | 9.3 | **11.5** | no — control tracks it |
+
+Read it strictly:
+
+- **Only the gene-level PUMA ratio has a control that behaves.** `redox` sits at the 51st
+  permutation percentile there — dead centre — while `OXPHOS-priority` sits at the 92nd. This
+  reproduces script 42 PART H (92nd percentile, p_emp 0.081) on a different scaling, which is the
+  reassurance it should be.
+- **Two outcomes are not readable at all.** On `Bax:Bcl2l1` the control sits at 65.4 against the
+  axis's 67.7, and on the mitoPPS priming composite at 11.5 against 9.3. In both the control does
+  what the axis does, so neither can be attributed to respiratory priority. (The composite failing
+  is consistent with everything else: `Apoptosis-PRO`/`-ANTI` move together, which is why the death
+  finding had to be gene-level in the first place.)
+- **The proliferation terms are negative, and their controls are shifted the same way but less
+  far** (30th and 28th against 6th and 9th). So the negative sign is a **ranking observation**, not
+  a clean result.
+- **One pattern is worth distrusting rather than quoting.** Adding `tp*myc` makes the proliferation
+  and composite-priming terms *stronger* (p 0.107 -> 0.031; 0.060 -> 0.011) while it makes the PUMA
+  term *weaker* (0.005 -> 0.088). Coefficients that grow when a collinear term is added are the
+  signature of collinearity, not of a robust effect; only the PUMA row moves in the honest
+  direction. Do not cite the `with_tp` column as support.
+
+**So the defensible statement is a sign contrast, not a magnitude one:** on the one outcome where
+the control works, high respiratory priority makes MYC better at raising the death trigger — and on
+no outcome does it make MYC better at raising proliferation. That is the asymmetry the trade-off
+needs, at exactly the weight the design can carry.
+
+**A correction to what this note said before the run.** I used ~0.42 as the mitoPPS ambient. That
+is script 38's *global median across pathways*; `[43]` the ambient **for this axis specifically** is
+**0.493** (90th percentile 0.838), against `redox`'s 0.260. mitoPPS space is much more readable than
+GSVA space (~0.80) but not as clean for OXPHOS as the global figure implied — and this is precisely
+the error CLAUDE.md already warns against: **never borrow one axis's ambient for another.** It
+changes no conclusion here, because the permutation null is axis-specific by construction, but the
+number should be quoted correctly.
 
 **And the in-vivo negative on proliferation is what the trade-off predicts.** The asset limb is
 only visible when death is blocked. In a gland where death is *not* blocked, the cells with the
@@ -168,32 +213,36 @@ Wild-type 6->12W, set-mean raw log2 fold change, same code path as script 40 `[4
 
 | arm, wild-type 6->12W | WT | Myc+ | WT as % of Myc+ | vs matched random sets |
 |---|---|---|---|---|
-| **OXPHOS subunits** | **-0.255** | -0.405 | 63% | **0th percentile** |
-| TEB vs ductal (HS) | -0.422 | -0.220 | 191% | 0th percentile |
-| OXPHOS (all) | -0.145 | -0.306 | 47% | 0.5th percentile |
-| **PROLIF_\* pooled (731 genes)** | **-0.047** | -0.149 | 32% | 1st percentile |
-| mitoribosome | -0.024 | -0.252 | 10% | 29th (n.s.) |
-| nucleotide metabolism | +0.0002 | -0.183 | 0% | 45th (n.s.) |
-| **OXPHOS assembly factors** | **+0.001** | -0.175 | 0% | 49th (n.s.) |
+| TEB vs ductal (HS) | -0.422 | -0.220 | 191% | **0th pct** (p 0.0000) |
+| **OXPHOS subunits** | **-0.255** | -0.405 | 63% | **0th pct** (p 0.0000) |
+| OXPHOS (all) | -0.145 | -0.306 | 47% | 0.05th pct (p 0.0005) |
+| **PROLIF_\* pooled (731 genes)** | **-0.047** | -0.149 | 32% | 1.3rd pct (p 0.013) |
+| mitoribosome | -0.024 | -0.252 | 10% | 26th (n.s.) |
+| nucleotide metabolism | +0.0002 | -0.183 | 0% | 48th (n.s.) |
+| **OXPHOS assembly factors** | **+0.001** | -0.175 | 0% | 50th (n.s.) |
+| TCA cycle | +0.041 | -0.240 | — | 73rd (n.s.) |
+| lipid metabolism | +0.122 | -0.028 | — | 99.9th |
 | amino-acid metabolism | +0.184 | -0.057 | — | 100th |
-| lipid metabolism | +0.122 | -0.028 | — | 100th |
 
 Four things to read from it.
 
 1. **The gland de-respires without de-proliferating.** The respiratory withdrawal is **5.4x** the
    proliferative one. The proliferative programme does fall (1st percentile against matched genes —
    it is not literally flat) but by a fifth as much.
-2. **The two mitochondrial arms most tied to growth do not move at all** — nucleotide metabolism
-   (+0.0002) and the mitoribosome (-0.024), both non-significant against matched random sets. If
-   this were growth withdrawal, those are the arms that should have led it.
-3. **The internal control is inside the same complex.** OXPHOS *assembly factors* do not move
-   (+0.001, 49th percentile) while OXPHOS *subunits* fall hardest. So it is not "mitochondria"
-   generically, and not a mass effect — it is the structural respiratory chain specifically, which
-   is the PGC1a/NRF1/ERRalpha output.
+2. **The mitochondrial arms most tied to growth do not move at all** — nucleotide metabolism
+   (+0.0002, 48th percentile), the mitoribosome (-0.024, 26th) and the TCA cycle (+0.041, 73rd),
+   none significant against matched random sets. If this were growth withdrawal, those are the arms
+   that should have led it. Two arms move *up* in the wild-type gland (lipid +0.122, amino-acid
+   +0.184, both at the 100th percentile), so this is not a general mitochondrial contraction either.
+3. **The internal control is inside the same complexes.** OXPHOS *assembly factors* do not move
+   (+0.001, 50th percentile — indistinguishable from random) while OXPHOS *subunits* fall hardest.
+   So it is not "mitochondria" generically, and not a mass effect — it is the structural respiratory
+   chain specifically, which is the PGC1a/NRF1/ERRalpha output.
 4. **The comparison beats its own null.** `[43]` The paired null — both sets redrawn together, so
-   the null is on the *difference*, which is what the claim actually is — puts OXPHOS-minus-
-   proliferation at the **0th percentile** (p_emp 0.000), OXPHOS-minus-nucleotide at the 1st, and
-   OXPHOS-minus-mitoribosome at the 0th. The dissociation is not an eyeballed contrast.
+   the null is on the *difference*, which is what the claim actually is — puts
+   OXPHOS-minus-proliferation at the **0th percentile** (p_emp 0.0000), OXPHOS-minus-mitoribosome at
+   the **0.05th** (p 0.0005), and OXPHOS-minus-nucleotide at the **0.85th** (p 0.0085). The
+   dissociation is not an eyeballed contrast.
 
 Individual markers agree: Mki67 -0.04, Ccnb1 +0.15, Plk1 +0.11, Aurka +0.31 in the wild-type
 gland; only Top2a (-0.41) and E2f1 (-0.35) fall. `[43]` Within the twelve wild-type mice the
@@ -587,12 +636,14 @@ coupling is `docs/2026-07-18_narrative_synthesis_five_questions.md` (scripts 35/
 
 **Everything marked `[43]`** — the wild-type comparator table and its matched and paired nulls, the
 within-wild-type fit, the buffer padj values, the mitoPPS ambient and the trade-off asymmetry — is
-**provisional**. It comes from a read-only reconciliation and from a scratchpad dry run of
-`scripts/43_substrate_specificity_and_tradeoff.R` executed at reduced draw counts (200 set draws,
-300 permutations against the committed 2000 and 5000), with output redirected away from `results/`.
-The committed script writes `results/substrate_specificity_tradeoff.rds`; when the author runs it,
-every `[43]` number must be reconciled against that object and the flags removed. Percentiles and
-empirical p-values in particular will shift with the larger draw counts.
+`results/substrate_specificity_tradeoff.rds`
+(`scripts/43_substrate_specificity_and_tradeoff.R`, author-run 2026-07-26 at 2000 set draws and
+5000 permutations). Reconciled line by line against that run on the same day; the script's built-in
+positive control returned `-0.2548228` against Issue #4's `-0.2548`. Two things changed from the
+pre-run draft and are corrected in place: the axis-specific mitoPPS ambient is **0.493**, not the
+global 0.42 (section 0.5a), and **only the gene-level PUMA outcome has a control that behaves** —
+`Bax:Bcl2l1` and the mitoPPS priming composite are not readable, which the pre-run draft did not
+say.
 
 Blot and cell-culture values — MYC -50%, the mitochondrial and pro-apoptotic panels, the iMMEC and
 MYAZ experiments including the PGC1a / Bcl-xL implant arms — are the author's, reported as given.
