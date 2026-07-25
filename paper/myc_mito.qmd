@@ -48,7 +48,7 @@ What this document does: walk the exploratory process and land the defensible re
 
 # Myc raises and reprioritises the mitochondrial compartment {#sec-content}
 
-The strongest new result: constant Myc raises the **nuclear** mitochondrial arms (mass
+The strongest new result: constant Myc (@fig-myc-dose) raises the **nuclear** mitochondrial arms (mass
 markers, nuclear MitoCarta, nuclear OXPHOS, mito biogenesis) while mtDNA-encoded output stays
 flat -- a content increase of ~+21% (p=0.0006) after adjusting for prep-stress and
 contamination, and a *lower bound* because Myc amplifies total RNA per cell.
@@ -375,6 +375,42 @@ the oncogene acts on has moved, or because the **programme itself** decays? @fig
 answers it in four panels, all built on one exact identity -- the change in the genotype gap
 equals (Myc+ temporal change) - (WT temporal change), which holds to machine precision on
 both the content and the priority ruler.
+
+**First, the trivial explanation: the driver does not fade** (@fig-myc-dose). Myc's own
+genotype gap *widens* over the window, **+1.64 log2 at 6W (p=2.5e-4) to +1.80 at 12W
+(p=9.6e-6)**, and no within-genotype decline could carry the fade (Myc+ 8142 -> 7578
+normalised counts, p=0.65). The WT baseline itself drifts down borderline (2543 -> 2143,
+p=0.052), but that sits on the batch-confounded axis -- which is precisely why the gap, the
+batch-clean quantity, is the one read. The proximal MYC/MAX/MXD network is flat: across MAX,
+the MXD1/3/4-MXI1-MNT-MGA repressors and the MLX arm, 40 simple-effect tests give 5 at nominal
+p<0.05 and **none survive BH** (min 0.052), with no genome-wide interaction padj<0.05 for any
+of them -- no repressor rises to titrate MAX away.
+
+The contrast that settles it is driver against output. **Every** measure that would register a
+falling dose widens over the window -- Myc **+0.17**, Myc:MAX **+0.32** (+1.42 -> +1.74),
+Myc:repressor-sum **+0.25** (+1.65 -> +1.90) -- while Myc's *output*, the genotype gap in
+Hallmark MYC targets V2, **narrows by -0.36** (+1.32 -> +0.95). Driver up, output down: the
+attenuation is **downstream of dose**, and the rest of this section is the decomposition of
+that downstream part. Two bounds on the claim. Reads map to the mouse *Myc* locus, so total
+message in Myc+ is transgene plus endogenous and the two are not separable here (script 27
+decomposes them at programme level) -- "constant dose" is a statement about total message,
+which is what the substrate sees. And transcript is not protein: the 31-gene post-translational
+stability panel (`outputs/myc_stability_panel/`, script 41) finds nothing Myc-specific (every
+interaction padj>0.05), no excess movement over an expression-matched background, and
+directions that predict a *more* stable MYC (Fbxw7 -0.35 and Huwe1 -0.24, the two established
+degradative E3 ligases, both down) -- but that is absence of transcriptional evidence, not evidence of
+absence. The settling experiments are protein-level: a MYC blot at 6W vs 12W, phospho-T58/S62,
+and a cycloheximide chase.
+
+```{r}
+#| label: fig-myc-dose
+#| fig-cap: "figS8: is the Myc dose constant? (A) Myc normalised counts across the four groups. (B) The proximal MYC/MAX/MXD network -- MAX, the MXD/MNT/MGA repressors and the MLX arm; brackets unlabelled, red = p<0.05. (C) Everything that would register a falling dose (Myc, Myc:MAX, Myc:repressor sum) against Myc's output (Hallmark MYC targets V2), as the genotype gap at each age; open = 6W, arrow to 12W. The driver gap widens while the output gap narrows -- the attenuation is downstream of dose. n=6/group."
+#| fig-width: 9
+#| fig-height: 7.4
+#| echo: false
+source(here::here("figures", "figS8_myc_network_levels.R"))
+print(p)
+```
 
 **Myc's effect is rescaled, not reshaped.** Regressing the 12W Myc effect on the 6W effect
 across the 144 MitoPathways gives **slope 0.55** (bootstrap 0.51-0.60), R2 0.80, rho 0.84 on
