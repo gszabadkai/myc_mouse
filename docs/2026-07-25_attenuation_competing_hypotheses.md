@@ -1,5 +1,15 @@
 # Why does the Myc effect attenuate? Four competing hypotheses
 
+> **RESOLVED, same day.** The MYC blot came back: **protein falls ~50% at constant transcript.**
+> **H3 wins outright for the transcriptome** — a ~50% fall in effective MYC and the x0.55
+> rescaling are the same number, and output per unit MYC is unchanged. H1 is not needed, and H2's
+> negatives in §4 are explained rather than merely observed: there was no repressor to find.
+> H2 and H4 survive only as answers to a *different* question — not "why does the programme
+> shrink" (dose) but "why does the same MYC kill less" (competence), which the MYC-ER experiment
+> forces. **Read `docs/2026-07-25_death_narrative_dose_vs_competence.md` for the resolution and
+> the narrative.** This note is kept unrevised as the record of how the question was bounded
+> before the blot, and §4's scans remain the authority for what was tested and found negative.
+
 **Status:** hypothesis note. **Nothing is built** — no script 42, no change to
 `paper/myc_mito.qmd`. The question is blocked on the pending **MYC Western blot**, whose result
 re-ranks the field (see §6). This note complements, and does not supersede,
