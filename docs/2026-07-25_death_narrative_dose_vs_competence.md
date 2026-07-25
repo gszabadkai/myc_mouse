@@ -233,8 +233,8 @@ Three routes, in decreasing order of what our data can support.
 **4.1 The PUMA promoter is reachable in the TEB context and, in this resource, nowhere else.**
 *(Corrected after the run — the pre-run draft over-read this as TF specificity.)* The Gray/ChEA
 shortlist (`data/genesets_from_library/gray_chea_mito_tf_shortlist.csv`) puts `Bbc3` in the target
-set of **72 transcription factors — and every one of them is `AP_TEB`.** It appears in no other
-context. Seventy-two TFs including TP53, ESR1, JUN, FOS, SOX2 and POU5F1 is not TF specificity;
+set of **71 transcription factors — and every one of them is `AP_TEB`.** It appears in no other
+context. Seventy-one TFs including TP53, ESR1, JUN, FOS, SOX2 and POU5F1 is not TF specificity;
 it is what a **broadly bound, accessible promoter in one cell context** looks like. That is still
 the claim the model needs — a context in which PUMA is reachable at all — but it is a statement
 about chromatin, not about any TF's target list.
