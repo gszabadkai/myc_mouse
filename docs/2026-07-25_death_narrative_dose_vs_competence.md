@@ -190,6 +190,23 @@ tabulated. And within OXPHOS it is the **structural subunits** that carry it (pr
 -0.029). The subunits are the PGC1a / NRF1 / ERRalpha output. So what loses priority is precisely
 the arm PGC1a builds.
 
+**The simplest form of this, added 2026-07-26.** On the temporal fGSEA NES for
+`MITOCARTA_OXPHOS_SUBUNITS` (`results/attenuation_decomposition.rds$decomp`, script 29): **WT
+-2.670 versus Myc+ -2.715.** The normal gland withdraws from the respiratory subunits essentially
+as strongly as the Myc+ gland does, and **no other arm in that table behaves this way** (MYC-target
+core WT -1.40, mitoribosome -0.61, nucleotide -0.66, TCA **+0.58**, lipid **+1.49**, amino-acid
+**+1.83**). Use this pair, not the tier medians, when the point is that the *substrate* falls.
+
+**And read it in the right frame.** Issue #6 (`31_attenuation_mechanism.R$decomp_conv`) reports
+OXPHOS as the arm where the wild-type background does **not converge** toward Myc (conv -44%, fade
+144%), and that is correct — but it is a statement about the **genotype gap**. Myc+ sits *above* WT
+on OXPHOS, so a wild-type gland that falls is moving *further below* it: anti-convergence and a
+large wild-type decline are the same fact seen from two sides. The **gap frame** is right for
+Issue #6's question (why the Myc effect halves); the **substrate frame** is the one this section
+needs, because MYC-ER holds MYC fixed and samples the gland's own state, not the gap. The gloss
+"WT OXPHOS barely declines" was a frame error and does not survive — see
+`docs/2026-07-26_introduction_alignment_and_the_question.md` section 1.1.
+
 **Why this strand carries weight the content ruler cannot.** mitoPPS is a *pairwise ratio* within
 the mitochondrial compartment, so a uniform x0.55 scaling of the whole programme **cancels** in it.
 The content ruler is dose-dominated — that is section 1's whole point. The priority ruler is not,
