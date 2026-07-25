@@ -57,6 +57,7 @@ source(here::here("functions", "reconcile_gene_symbols.R"))
 set.seed(1)
 NPAIR       <- 4000L    # random pro:anti pairs for the matched-pair null
 NAMB        <- 3000L    # arbitrary genes for the ambient-coupling null
+NPERM       <- 5000L    # within-timepoint shuffles for PART H's axis null
 GLOBAL_RATE <- 0.55     # script 40's rescaling slope; PART B reproduces it independently
 
 # =============================================================================
@@ -428,6 +429,174 @@ exclusions <- lapply(exclusions, function(x)
                                       round(lfc_myc_12W / lfc_myc_6W, 2), NA_real_)))
 
 # =============================================================================
+# PART G: THE TWO-RULER OXPHOS DECLINE -- evidence strand 1
+# -----------------------------------------------------------------------------
+# figS6's reading, tabulated. On the PRIORITY ruler (mitoPPS) OXPHOS is the most
+# de-prioritised Level-1 tier on BOTH temporal axes, and within it the STRUCTURAL
+# SUBUNITS carry it while the assembly factors do not move. The subunits are the
+# PGC1a / NRF1 / ERRalpha output, so what loses priority is exactly the arm PGC1a
+# builds.
+#
+# WHY THIS STRAND IS WORTH HAVING, structurally: mitoPPS is a PAIRWISE RATIO within
+# the mitochondrial compartment, so a uniform x0.55 scaling of the whole programme
+# CANCELS in it. The content ruler is dose-dominated; the priority ruler is not. An
+# OXPHOS decline that survives on the priority ruler is therefore NOT the dose effect.
+#
+# The apoptosis pathways are put on the same table deliberately: their composite
+# balance is FLAT over the timeline (PRO and ANTI move together), which is why
+# script 34's composite analysis found nothing and why the PUMA result had to be
+# gene-level. That is also what the cell work predicts -- PGC1a induces PUMA "but not
+# other BH3-only proteins", so a 25-gene PRO composite is the wrong instrument.
+# =============================================================================
+bvm_path  <- here::here("results", "background_vs_myc.rds")
+two_ruler_tier <- NULL; two_ruler_pathway <- NULL
+if (file.exists(bvm_path)) {
+  ruler <- tibble::as_tibble(readRDS(bvm_path)$ruler)
+  two_ruler_tier <- ruler |>
+    dplyr::filter(!is_mtdna) |>
+    dplyr::group_by(tier) |>
+    dplyr::summarise(
+      n_pathways      = dplyr::n(),
+      content_myc_6W  = stats::median(c_m6),  content_wt_time  = stats::median(c_tn),
+      content_myc_time= stats::median(c_tp),
+      prio_myc_6W     = stats::median(p_m6),  prio_wt_time     = stats::median(p_tn),
+      prio_myc_time   = stats::median(p_tp),  .groups = "drop") |>
+    dplyr::arrange(prio_myc_time)
+  focus <- c("OXPHOS", "OXPHOS subunits", "OXPHOS assembly factors",
+             "mtDNA-encoded OXPHOS subunits", "Apoptosis", "Apoptosis-PRO",
+             "Apoptosis-ANTI")
+  two_ruler_pathway <- ruler |>
+    dplyr::filter(pathway %in% focus) |>
+    dplyr::select(pathway, tier, n_genes,
+                  c_m6, c_m12, c_tn, c_tp, p_m6, p_m12, p_tn, p_tp)
+} else {
+  message("42 PART G: results/background_vs_myc.rds absent -- run script 40 first")
+}
+
+# =============================================================================
+# PART H: THE COINCIDENCE MODEL, IN THE SPACE WHERE IT IS READABLE
+# -----------------------------------------------------------------------------
+# The model (the author's, 2026-07-25): MYC-driven death needs TWO inputs -- MYC, and
+# a competent mitochondrial substrate. The substrate input falls developmentally, so
+# the SAME MYC no longer clears the threshold. This is not a dose model: the MYC-ER
+# experiment holds MYC fixed and varies the substrate, so it TESTS this model rather
+# than excluding it.
+#
+# It also earns its place on three counts. It explains the death >> proliferation
+# asymmetry with no extra assumption (proliferation needs one input, death needs two,
+# so death falls superlinearly); a THRESHOLD on the product explains why PUMA priming
+# collapses THROUGH ZERO rather than merely attenuating; and it is a literal statement
+# of the manuscript's title thesis -- mitochondria INTEGRATING an oncogenic and a
+# metabolic input.
+#
+# Four candidate second inputs, plus a control:
+#   oxphos_ppd  mitoPPS OXPHOS-subunit ratio  -- content-blind and dose-cancelling
+#   oxphos_lvl  log-expression OXPHOS composite -- the LEVEL, not the priority
+#   teb         MG_TEB_VS_DUCTAL_HS_GRAY_UP    -- the compositional/context reading
+#   redox_ppd   mitoPPS ROS-and-glutathione    -- NEGATIVE CONTROL (fails in script 38)
+#
+# WHAT THIS CANNOT DO, stated before the results: it tests the biogenesis LEVEL and
+# PRIORITY, not PGC1a ACTIVITY. Ppargc1a is baseMean ~30 here and unreadable, and a
+# coactivator's activity is post-translational. A null here bounds the level version
+# and leaves the activity version untouched -- for which the cell perturbations are
+# the evidence, and they are perturbations, which outrank any correlation below.
+# EVERYTHING IN THIS PART IS HYPOTHESIS-GENERATING.
+# =============================================================================
+mp_path <- here::here("results", "mitopps_scores.rds")
+axes <- list(oxphos_lvl = ox_comp, teb = set_score("MG_TEB_VS_DUCTAL_HS_GRAY_UP"))
+if (file.exists(mp_path)) {
+  mp  <- readRDS(mp_path)
+  mps <- mp$mitopps_scores
+  mps <- mps[match(colnames(L), mps$sample), , drop = FALSE]
+  stopifnot(identical(as.character(mps$sample), colnames(L)))
+  # exact column names (script 08 PART 2c); never grep -- "OXPHOS" also prefixes others
+  need <- c("OXPHOS subunits", "ROS and glutathione metabolism",
+            "Apoptosis-PRO", "Apoptosis-ANTI")
+  missing_mps <- setdiff(need, names(mps))
+  if (length(missing_mps)) {
+    message("42 PART H: mitoPPS columns absent -> ", paste(missing_mps, collapse = ", "))
+  } else {
+    axes$oxphos_ppd <- as.numeric(mps[["OXPHOS subunits"]])
+    axes$redox_ppd  <- as.numeric(mps[["ROS and glutathione metabolism"]])
+    # the mitoPPS-space priming ratio, for continuity with script 38 PART B
+    axes_priming_ppd <- as.numeric(mps[["Apoptosis-PRO"]]) - as.numeric(mps[["Apoptosis-ANTI"]])
+  }
+} else {
+  message("42 PART H: results/mitopps_scores.rds absent -- run script 08 first")
+}
+axes <- axes[!vapply(axes, is.null, logical(1))]
+
+ratios <- list(`Bbc3:Bcl2l1` = ratio_of("Bbc3", "Bcl2l1"),
+               `Bax:Bcl2l1`  = ratio_of("Bax",  "Bcl2l1"))
+
+# H1 -- absorption, in script 30's idiom (30_attenuation_moderation.R:174 absorb_one).
+# CAVEAT CARRIED FROM SCRIPT 30 VERBATIM: the mediator here is ENDOGENOUS and itself
+# Myc-driven, so this is biased. Absorption BOUNDS a claim; it does not prove mediation.
+base_int <- function(r) {
+  d <- data.frame(r = r, tp = sm$tp, myc = sm$myc, epi = epi_comp, imm = imm_comp)
+  summary(stats::lm(r ~ tp * myc + epi + imm, d))$coefficients["tp12W:mycpos", c(1, 4)]
+}
+coincidence_absorption <- dplyr::bind_rows(lapply(names(ratios), function(rn) {
+  r <- ratios[[rn]]; b <- base_int(r)
+  dplyr::bind_rows(lapply(names(axes), function(an) {
+    d <- data.frame(r = r, tp = sm$tp, myc = sm$myc, epi = epi_comp, imm = imm_comp,
+                    a = axes[[an]])
+    m <- summary(stats::lm(r ~ tp * myc + epi + imm + a + tp:a, d))$coefficients
+    tibble::tibble(ratio = rn, axis = an,
+                   int_base = b[[1]], p_base = b[[2]],
+                   int_adj = m["tp12W:mycpos", 1], p_adj = m["tp12W:mycpos", 4],
+                   absorbed_frac = 1 - m["tp12W:mycpos", 1] / b[[1]])
+  }))
+}))
+
+# H2 -- the coincidence test proper: does Myc raise priming ONLY where the substrate
+# is competent? H3 -- and does that survive the timepoint it is confounded with?
+coincidence_fit <- dplyr::bind_rows(lapply(names(ratios), function(rn) {
+  r <- ratios[[rn]]
+  dplyr::bind_rows(lapply(names(axes), function(an) {
+    d  <- data.frame(r = r, tp = sm$tp, myc = sm$myc, epi = epi_comp, imm = imm_comp,
+                     a = axes[[an]])
+    m1 <- summary(stats::lm(r ~ myc * a + epi + imm, d))$coefficients
+    m2 <- summary(stats::lm(r ~ tp * myc + myc:a + a + epi + imm, d))$coefficients
+    tibble::tibble(ratio = rn, axis = an,
+                   myc_x_axis = m1["mycpos:a", 1], p = m1["mycpos:a", 4],
+                   myc_x_axis_with_tp = m2["mycpos:a", 1], p_with_tp = m2["mycpos:a", 4],
+                   myc_x_tp_with_axis = m2["tp12W:mycpos", 1])
+  }))
+}))
+
+# H3b -- within-timepoint permutation of the axis score. Shuffling INSIDE each
+# timepoint preserves the timepoint structure and breaks only the mouse-to-mouse link,
+# which is the thing being claimed.
+perm_axis <- dplyr::bind_rows(lapply(names(ratios), function(rn) {
+  r <- ratios[[rn]]
+  dplyr::bind_rows(lapply(names(axes), function(an) {
+    d   <- data.frame(r = r, myc = sm$myc, epi = epi_comp, imm = imm_comp, a = axes[[an]])
+    obs <- summary(stats::lm(r ~ myc * a + epi + imm, d))$coefficients["mycpos:a", 1]
+    nul <- vapply(seq_len(NPERM), function(i) {
+      dd <- d
+      for (tv in levels(sm$tp)) { k <- which(sm$tp == tv); dd$a[k] <- sample(dd$a[k]) }
+      summary(stats::lm(r ~ myc * a + epi + imm, dd))$coefficients["mycpos:a", 1]
+    }, numeric(1))
+    tibble::tibble(ratio = rn, axis = an, observed = obs,
+                   null_median = stats::median(nul),
+                   percentile = 100 * mean(nul < obs), p_emp = mean(nul >= obs))
+  }))
+}))
+
+# H4 -- substrate magnitude. Is the developmental fall big enough to matter next to
+# the Myc effect? On RNA it is not obviously so; this table is where that shows.
+substrate_magnitude <- dplyr::bind_rows(lapply(names(axes), function(an) {
+  v <- axes[[an]]; g <- function(k) mean(v[sm$group == k])
+  tibble::tibble(axis = an,
+                 m_6W_neg = g("6W_neg"), m_6W_pos = g("6W_pos"),
+                 m_12W_neg = g("12W_neg"), m_12W_pos = g("12W_pos"),
+                 wt_developmental_fall = g("12W_neg") - g("6W_neg"),
+                 myc_effect_6W = g("6W_pos") - g("6W_neg"),
+                 fall_vs_myc = (g("12W_neg") - g("6W_neg")) / (g("6W_pos") - g("6W_neg")))
+}))
+
+# =============================================================================
 # ASSERTS
 # =============================================================================
 stopifnot(
@@ -442,6 +611,15 @@ stopifnot(
 if (any(is.na(pair_null$null_retention_median)))
   message("42 PART B: no conditional null (6W effect too extreme) for -> ",
           paste(pair_null$pair[is.na(pair_null$null_retention_median)], collapse = ", "))
+stopifnot(
+  nrow(coincidence_fit) == length(ratios) * length(axes),
+  all(is.finite(perm_axis$p_emp)))
+# the control axis must be present, or PART H has no negative control and its
+# positives cannot be read
+if (!"redox_ppd" %in% names(axes))
+  warning("42 PART H: redox_ppd control axis missing -- read the myc:axis terms with care")
+if (is.null(two_ruler_tier))
+  warning("42 PART G: no two-ruler table (script 40 output absent)")
 # the built-in positive control: random matched pairs must reproduce script 40's rate
 if (!is.finite(ctrl_median) || abs(ctrl_median - GLOBAL_RATE) > 0.20)
   warning(sprintf(paste("42 PART B: matched-pair null median retention %.2f is far from the",
@@ -487,7 +665,38 @@ notes <- c(
   "",
   "PART E bounds the whole enterprise: there is no efferocytosis signature at 6W, so bulk",
   "RNA cannot see the death. It also UNDER-reports the 6W pro-apoptotic induction, because",
-  "the cells that died are not in the library -- making the PUMA collapse a lower bound.")
+  "the cells that died are not in the library -- making the PUMA collapse a lower bound.",
+  "",
+  "THE EPISTEMIC CONTRACT for PARTS G and H. The in-vivo transcriptome GENERATES the",
+  "hypothesis; the cell perturbations (PGC1a gain sensitises; SS and passaged cells lose",
+  "biogenesis and resist) PROVE it. No correlation here is asked to carry a causal claim.",
+  "",
+  "PART G -- why the priority ruler earns its place. mitoPPS is a PAIRWISE RATIO within the",
+  "mitochondrial compartment, so a uniform x0.55 dose scaling CANCELS in it. The content",
+  "ruler is dose-dominated; the priority ruler is not. OXPHOS is nevertheless the most",
+  "de-prioritised Level-1 tier on BOTH temporal axes, carried by the structural SUBUNITS",
+  "while the assembly factors do not move -- and the subunits are the PGC1a/NRF1/ERRalpha",
+  "output. So the arm PGC1a builds loses priority, and that is NOT the dose effect.",
+  "Note in the same table that the apoptosis COMPOSITE balance is flat over the timeline",
+  "(PRO and ANTI move together): the death finding is gene-specific to PUMA, which is why",
+  "script 34's composite analysis found nothing and is exactly what the cell work predicts",
+  "(PGC1a induces PUMA 'but not other BH3-only proteins').",
+  "",
+  "PART H -- the coincidence model. Death needs MYC AND a competent substrate; the substrate",
+  "input falls developmentally. This is NOT a dose model, and MYC-ER (fixed MYC, varied",
+  "substrate) TESTS it rather than excluding it. Three things it buys: the death >>",
+  "proliferation asymmetry follows with no extra assumption (one input vs two); a THRESHOLD",
+  "on the product explains why PUMA priming collapses THROUGH ZERO rather than attenuating;",
+  "and it is the manuscript's title thesis stated literally.",
+  "WHAT PART H CANNOT DO: it tests the biogenesis LEVEL and PRIORITY, never PGC1a ACTIVITY.",
+  "Ppargc1a is baseMean ~30 here; a coactivator's activity is post-translational. A null",
+  "bounds the level version and leaves the activity version untouched.",
+  "Two findings to carry forward with their weight attached: (a) the biogenesis LEVEL does",
+  "NOT mediate the PUMA collapse, and adjusting for it can make the interaction stronger --",
+  "whereas Bax priming IS largely absorbed by it, so in vivo BAX tracks mitochondrial mass",
+  "and PUMA does not, which is the opposite of the cell result and must be said; (b) nothing",
+  "in PART H separates from timepoint at n=24 -- the axis x Myc terms shrink once tp*myc is",
+  "in the model. Read PART H as RANKING candidate second inputs, nothing more.")
 
 out <- list(
   machinery         = machinery,
@@ -503,10 +712,20 @@ out <- list(
   puma_in_teb       = puma_in_teb,
   substrate_markers = substrate_markers,
   exclusions        = exclusions,
+  two_ruler_tier    = two_ruler_tier,
+  two_ruler_pathway = two_ruler_pathway,
+  coincidence_absorption = coincidence_absorption,
+  coincidence_fit   = coincidence_fit,
+  perm_axis         = perm_axis,
+  substrate_magnitude = substrate_magnitude,
+  axis_scores       = tibble::as_tibble(c(list(sample = colnames(L),
+                                               group = as.character(sm$group)), axes)),
   purity            = tibble::tibble(sample = colnames(L), group = sm$group,
                                      epithelial = epi_comp, immune = imm_comp),
-  params            = list(NPAIR = NPAIR, NAMB = NAMB, GLOBAL_RATE = GLOBAL_RATE,
+  params            = list(NPAIR = NPAIR, NAMB = NAMB, NPERM = NPERM,
+                           GLOBAL_RATE = GLOBAL_RATE,
                            null_control_median = ctrl_median,
+                           axes_used = names(axes),
                            unresolved = unresolved_roster),
   analysis_date     = Sys.Date(),
   notes             = notes)
@@ -554,6 +773,18 @@ if (FALSE) {
   lapply(exclusions, function(x)
     dplyr::select(x, gene, lfc_myc_6W, padj_myc_6W, lfc_myc_12W, retention,
                   lfc_wt_time, padj_wt_time))
+
+  ## PART G -- the two-ruler decline. Read prio_wt_time / prio_myc_time: OXPHOS should
+  ## be the most negative tier on both, and a ratio ruler cannot show the dose effect.
+  two_ruler_tier |> print(n = 10)
+  two_ruler_pathway |> print(n = 10)   # subunits move, assembly does not; PRO ~ ANTI
+
+  ## PART H -- the coincidence model. Read the redox_ppd rows as the control: if they
+  ## behave like the OXPHOS rows, the OXPHOS rows say nothing.
+  coincidence_absorption |> print(n = 20)
+  coincidence_fit        |> print(n = 20)
+  perm_axis              |> print(n = 20)
+  substrate_magnitude    |> print(n = 10)
 
   cat(notes, sep = "\n")
 }

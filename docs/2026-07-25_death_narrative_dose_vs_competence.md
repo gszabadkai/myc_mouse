@@ -9,6 +9,26 @@ has been run and this document reconciled against it.
 
 ---
 
+## 0. The epistemic contract
+
+Everything below is written to one rule, and the manuscript should be too:
+
+> **The in-vivo transcriptome generates the hypothesis. The cell perturbations prove it.**
+
+No correlation in these 24 mice is asked to carry a causal claim. That is not a concession — it
+is the correct division of labour, and it is what makes the section defensible. The mouse data has
+n=6 per group, a batch-confounded time axis, and a correlation ceiling that has defeated every
+cross-sectional coupling this project has attempted. The cell data has both directions of a
+perturbation (PGC1a gain sensitises; selected and passaged cells lose biogenesis and resist) in
+three systems. Causality belongs to the second, convergent observation to the first.
+
+Read this way, the in-vivo material has a real and defensible job: it shows that **the two things
+the cell work links causally — the OXPHOS/PGC1a arm and the PUMA trigger — both go down in the
+gland over the window in which death is lost**, and it shows that on more than one ruler. That is
+an indication sufficient to motivate the experiment, which is exactly what it is used for.
+
+---
+
 ## 1. The two experiments answer two different questions
 
 The confusion dissolves once the designs are put side by side.
@@ -46,17 +66,29 @@ substrate.
 
 ---
 
-## 2. This adjudicates the three sub-hypotheses
+## 2. The coincidence model, and how the sub-hypotheses stand
+
+The right frame is a **two-input (coincidence) model**: MYC-driven death requires **MYC *and* a
+competent mitochondrial substrate**, and the substrate input declines developmentally, so the
+same MYC no longer clears the threshold.
 
 | hypothesis | verdict |
 |---|---|
-| (i) MYC engages PGC1a more at 6W than 12W | a **dose** mechanism — cannot explain MYC-ER, where dose is equal or higher |
-| (ii) PGC1a is always there; MYC pushes it over a threshold at 6W, and less MYC at 12W falls under it | a **dose** mechanism — **excluded for MYC-ER by construction** |
-| (iii) developmental / compositional | **the only one that survives the MYC-ER design** |
+| (i) MYC engages PGC1a more at 6W than 12W | genuinely **dose**-flavoured — cannot by itself explain MYC-ER, where dose is equal or higher |
+| (ii) the PGC1a/biogenesis input is lower at 12W, so the same MYC does not clear the threshold | **the coincidence model. MYC-ER is its test, not its refutation** — it holds MYC fixed and varies exactly the input this hypothesis names |
+| (iii) developmental / compositional | **compatible and parallel** — a second candidate for the same second input, non-exclusive with (ii) |
 
-(i) and (ii) may still be true *in MMTV-Myc* — indeed (ii) is close to a restatement of what the
-dose result says. They simply cannot be the explanation for the MYC-ER phenotype, and it is the
-MYC-ER phenotype that forces a substrate story into the paper.
+The coincidence frame is better than "the programme decays" or "the background opposes" on three
+counts, and all three are worth keeping in the paper:
+
+- **It explains the asymmetry with no extra assumption.** Proliferation needs one input; death
+  needs two. A fall in either input therefore costs death superlinearly and proliferation
+  linearly — which is what MYC-ER measures (80% versus 30%).
+- **A threshold explains the *shape* of the PUMA result.** PUMA priming does not merely attenuate,
+  it collapses *through zero* (retention -0.09) while everything else retains ~0.55. A product of
+  two declining inputs crossing a threshold gives that; a uniform dose reduction does not.
+- **It is the manuscript's title thesis stated literally** — mitochondria *integrating* an
+  oncogenic and a metabolic input.
 
 One correction to the framing of (iii): the direction in our data is **not** "an increase in
 luminals". It is loss of the pubertal/TEB and luminal-progenitor compartment and maturation of the
@@ -120,6 +152,65 @@ block is at execution, not at transcription. PGC1a supplies PUMA, and they die.
 
 ---
 
+## 3.5 The three convergent strands — what generates the hypothesis
+
+Section 3 gives one of them. Here they are together, because it is their convergence, not any one
+of them, that motivates the cell experiments.
+
+### Strand 1 — OXPHOS goes down on *both* rulers, and the priority ruler cannot be dose
+
+Per Level-1 tier, medians:
+
+| tier | content Myc@6W | content WT 6-12W | **priority WT 6-12W** | **priority Myc+ 6-12W** |
+|---|---|---|---|---|
+| **OXPHOS** | +0.43 | -0.14 | **-0.069** | **-0.134** |
+| Protein import | +0.52 | -0.06 | -0.055 | -0.085 |
+| Central dogma | +0.47 | +0.05 | -0.011 | -0.050 |
+| Metabolism | +0.40 | +0.08 | +0.036 | +0.012 |
+| Dynamics | +0.24 | +0.03 | +0.003 | +0.021 |
+
+**OXPHOS is the most de-prioritised Level-1 tier on both temporal axes** — figS6's reading,
+tabulated. And within OXPHOS it is the **structural subunits** that carry it (priority -0.109 WT /
+-0.153 Myc+; content -0.255 / -0.405) while the **assembly factors do not move** (-0.002 /
+-0.029). The subunits are the PGC1a / NRF1 / ERRalpha output. So what loses priority is precisely
+the arm PGC1a builds.
+
+**Why this strand carries weight the content ruler cannot.** mitoPPS is a *pairwise ratio* within
+the mitochondrial compartment, so a uniform x0.55 scaling of the whole programme **cancels** in it.
+The content ruler is dose-dominated — that is section 1's whole point. The priority ruler is not,
+and OXPHOS still falls on it. **The de-prioritisation is not the dose effect.**
+
+### Strand 2 — the trigger goes down
+
+Section 3's table: PUMA:Bcl-xL priming retains **-0.09** against a global rate of 0.55 (92nd
+percentile of expression-matched pairs; interaction p 0.006 purity-adjusted), while Bax:Bcl-xL
+retains exactly 0.55.
+
+### Strand 3 — the two are coupled, in the one space where a coupling is readable
+
+Script 38 PART B, already run and on disk: **OXPHOS-ratio couples to priming-ratio (PRO-ANTI) at
+design-adjusted Spearman +0.70 against a design-adjusted null of 0.48** (raw +0.45 against a raw
+null of 0.42), beating its null on both. `redox` is the control axis and **fails** (+0.12, does
+not beat its null). Crucially this coupling is **neither circular nor ceiling-bound** — a ratio
+cancels the shared mito-content mode, which is exactly what made the GSVA-space version
+(script 34's negative control) uninterpretable.
+
+### The bounds on all three
+
+- **The apoptosis *composites* show nothing temporally.** Apoptosis-PRO priority +0.054, ANTI
+  +0.046 — they move together, so the balance is flat. The death finding is **gene-specific to
+  PUMA**. That is why script 34's composite analysis found nothing, and it is what the cell work
+  predicts: PGC1a induces PUMA "but not other BH3-only proteins", so a 25-gene PRO composite is
+  the wrong instrument.
+- Strand 3's coupling is **mid-pack** — 52nd percentile of OXPHOS's couplings to all 141 mito
+  pathways — and its genotype delta is p 0.080. A ranking lead.
+- Strand 1's temporal axes are **batch-confounded**. Their mitigation is that the protein blots
+  move the same way, off the RNA batch entirely.
+
+**Together:** the two things the cell work links causally both go down, on rulers that fail in
+different ways, and they co-vary where co-variation is measurable. That is an indication. It is
+not proof, and section 0 says what proves it.
+
 ## 4. Why PUMA, and why developmentally
 
 Three routes, in decreasing order of what our data can support.
@@ -178,6 +269,25 @@ overclaim.
 3. **The compartment shift is marker-level, not compartment-level.** The MEC consensus composites
    (LASP, LHS, BMYO, LP) all move in the expected directions but none is significant. Only single
    markers clear FDR. So: maturation is documented; a wholesale change in cell proportions is not.
+4. **The biogenesis *level* does not mediate the PUMA collapse.** Script-30-style absorption is
+   **6%** for the central-dogma composite, and adjusting for the OXPHOS level makes the
+   interaction *stronger* (-0.66 -> -0.84), not weaker. So the mediating variable, if there is
+   one, is not the mitochondrial output level. **But note what this does and does not test:** it
+   tests the biogenesis **level and priority**, never PGC1a **activity** — `Ppargc1a` is baseMean
+   ~30 here and unreadable, and a coactivator's activity is post-translational. The null bounds
+   the level version and leaves the activity version untouched, which is where the cell
+   perturbations live.
+5. **In vivo, BAX tracks mitochondrial mass and PUMA does not** — the inverse of the cell result.
+   Bax:Bcl-xL priming is **63% absorbed** by the biogenesis level while PUMA:Bcl-xL is 6%; and
+   per-mouse, the OXPHOS composite correlates with BAX (+0.66 / +0.45) and not with PUMA (+0.00 /
+   -0.40). The cell experiments say PGC1a induces PUMA specifically. This tension is real and the
+   paper should state it rather than let a reader find it — the most likely reconciliation is that
+   mitochondrial *mass* and PGC1a *activity* are not the same variable, which is the same
+   distinction as negative 4.
+6. **Nothing separates from timepoint at n=24.** The `myc x TEB` interaction on PUMA priming is
+   +1.22 (p 0.010) on its own, +0.59 (p 0.22) once `tp*myc` is in the model, with a
+   within-timepoint permutation p_emp of 0.082. The candidate second inputs can be **ranked**
+   (TEB context > OXPHOS level) and not established.
 
 And the standing bound on all of section 4: **batch = timepoint.** Every WT temporal statement is
 described, not claimed. Its one mitigation is real, though: the mitochondrial and PUMA protein
@@ -222,7 +332,18 @@ analogue of why Bcl-xL was needed in vitro to reveal the full BIM/BAX induction 
 experiment removes the same bias experimentally. It probably also explains an awkward earlier
 result (script 34: APOPTOSIS_PRO rising *less* than an average mitochondrial gene, z = -2.42).
 
-**7.4 The death is invisible to bulk RNA, and that must be said.** There is no efferocytosis or
+**7.4 The experiment that would settle the coincidence model, and it is cheap.** The model makes
+one prediction that no amount of further analysis can substitute for: **co-induce PGC1a (or
+otherwise raise mitochondrial biogenesis) in MYC-ER at 12W, and death should be restored.** That
+is the in-vivo form of the iMMEC PGC1a+MYC experiment, it uses a system already in hand, and it
+converts the whole section from inference to test. The converse is equally available — knock the
+biogenesis arm down at 6W and death should fall at constant MYC. Alongside it, **BH3 profiling at
+both ages** is the phenotypic readout of the priming claim, since priming is what we measure and
+death is what we infer. Note also that script 38 PART D concluded this question "needs an
+ESRRA/PGC1a perturbation vs the Myc substrate, not n=24 bulk" — **that perturbation now exists in
+the cell arm**, and the in-vivo version is the natural completion.
+
+**7.5 The death is invisible to bulk RNA, and that must be said.** There is no efferocytosis or
 phagocyte-clearance signature at 6W — Gas6 is actually *down* (-0.80, padj 0.0086). The death
 phenotype comes from IHC and from the MYC-ER counts, and the transcriptome speaks only to the
 molecular substrate for it. Priming is not death.
@@ -252,33 +373,49 @@ in the WT background (+0.47, padj 0.0078) and PUMA does not follow.
 ## 9. Proposed narrative order
 
 A reordering of what exists, not new work. The current write-up is organised by *analysis*; the
-paper should be organised by *argument*.
+paper should be organised by *argument* — and, following section 0, the order should be
+**observation -> hypothesis -> causal test -> consequence**, so that the in-vivo correlation is
+never standing where a causal claim belongs.
 
 1. **MYC drives mitochondrial biogenesis in mammary epithelium** — content +21-27%, all five
-   complexes, import and central dogma, at both ages.
-2. **Mitochondrial biogenesis sets apoptotic priming** — established by **perturbation, in cells**:
-   PGC1a raises OXPHOS and PUMA and does not kill; PGC1a plus MYC kills more than MYC alone; the
-   same in MYAZ. And the converse: long-term MYC selects SS cells that lose OXPHOS and resist, and
-   passaged PGC1a cells lose the biogenesis and with it the sensitivity. Bcl-xL rescue localises
-   the step — the mitochondrion is the execution node, not the transcriptional one.
-3. **In vivo, MYC builds the same death-ready mitochondrion** — HTRA2, BAX up, BCL-xL down,
-   biogenesis up — at both ages.
-4. **What is lost by 12W is the trigger** — PUMA priming collapses while BAX priming fades only at
-   the global rate.
-5. **Why the programme fades at all: dose** — MYC protein -50% at constant transcript, uniform
-   x0.55 rescaling (scripts 40, 41, figS8).
-6. **Dose is not the whole story** — MYC-ER: same dose, 80% less death, 30% less proliferation,
-   and no prior MYC exposure, so the change is developmental.
-7. **The developmental substrate** — TEB regression, and the TEB is the apoptosis-loaded
-   compartment.
-8. **The window** — two hits on the death arm (less MYC, and no trigger even at full MYC), one
+   complexes, import and central dogma, at both ages. And it builds a *death-ready* organelle:
+   HTRA2, BAX up, BCL-xL down.
+2. **OBSERVATION.** Across the window in which MYC stops killing, two things fall together in the
+   gland: **the OXPHOS/PGC1a arm** — on the content ruler, and on the content-blind priority ruler
+   where a dose effect cancels, where OXPHOS is the most de-prioritised tier and the structural
+   subunits carry it — and **the PUMA trigger**, whose priming collapses while BAX priming fades
+   only at the global rate. Where a coupling between the two is measurable at all (mitoPPS ratio
+   space, neither circular nor ceiling-bound), they co-vary above their null.
+3. **HYPOTHESIS.** The mitochondrial OXPHOS/PGC1a state is the **second input** to MYC-driven
+   death: MYC supplies the oncogenic signal, biogenesis supplies the apoptotic competence, and
+   death requires both. State plainly that this is generated by the in-vivo data, not proven by it.
+4. **CAUSAL TEST, in cells, both directions.** PGC1a raises OXPHOS and PUMA and does not kill on
+   its own; PGC1a plus MYC kills more than MYC alone; the same in MYAZ. Conversely, long-term MYC
+   selects SS cells that lose OXPHOS and resist, and passaged PGC1a cells lose the biogenesis and
+   with it the sensitivity — with PGC1a still overexpressed, so it is the *output*, not the
+   coactivator, that was selected against. Bcl-xL rescue localises the step: the programme is
+   still induced and the cells still do not die, so the mitochondrion is the execution node.
+5. **BACK TO THE MOUSE, arm one — the substrate.** MYC-ER: same or higher MYC, 80% less death,
+   only 30% less proliferation, in animals that had never seen MYC. The substrate changed, and
+   the asymmetry is what a two-input requirement predicts.
+6. **BACK TO THE MOUSE, arm two — the dose.** MYC protein -50% at constant transcript gives a
+   uniform x0.55 rescaling of the whole programme (scripts 40, 41, figS8). Both inputs fall in
+   MMTV-Myc; only the substrate falls in MYC-ER.
+7. **What changed in the substrate** — TEB regression, and the TEB is the apoptosis-loaded
+   compartment; PUMA sits in the TEB-context regulon of MYC and of NRF1. Offered as the
+   mechanism candidate, with the compositional reading explicitly parallel to the PGC1a one.
+8. **THE WINDOW.** Two hits on the death arm (less MYC, and no trigger even at full MYC), one
    partial hit on proliferation. Expansion outruns death and tumourigenesis takes off.
    **What the cells achieve by selection, the gland achieves by development.**
 
 Point 8 is the sentence the paper is for, and it is also where the in-vitro selection experiments
-(SS cells, passaged PGC1a cells) find their place: they are the *tumour-progression* model, not
-the 6W-to-12W substrate model. Conflating the two would be the easiest mistake to make here,
-because MYC-ER rules selection out for the developmental window.
+find their place: SS cells and passaged PGC1a cells are the *tumour-progression* model, not the
+6W-to-12W substrate model. Conflating the two would be the easiest mistake to make here, because
+MYC-ER rules selection out for the developmental window — the gland gets there without it.
+
+The alternative order — leading with the death phenotype and then showing it correlates with
+OXPHOS de-prioritisation — says the same thing, but it puts the correlation before the
+perturbation and invites the reader to weigh it as evidence. The order above does not.
 
 ---
 
@@ -291,6 +428,10 @@ Sources: `results/interaction_results.rds` (raw/unshrunken LFC, genome-wide BH p
 `data/genesets_from_library/mammary_mito_myc_metab_v1_mouse.gmt`,
 `docs/library_reference/gray_chea_mito_tf_shortlist.csv`. Blot values (MYC -50%; BAX/BIM/PUMA and
 the mitochondrial panel) are the author's, reported here as given.
+
+Strand 1's tier tables come from `results/background_vs_myc.rds$ruler` (script 40) and strand 3
+from `results/mitopps_priming_pgc1a.rds$priming_couplings` (script 38 PART B, run 2026-07-19) —
+both already on disk; script 42 PARTS G and H re-tabulate them alongside the new tests.
 
 Related: `docs/2026-07-24_background_vs_myc_interpretation.md` (script 40, the x0.55),
 `docs/2026-07-25_attenuation_competing_hypotheses.md` (how the question was bounded before the
