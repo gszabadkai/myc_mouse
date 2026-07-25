@@ -310,19 +310,29 @@ single_gene_null <- dplyr::bind_rows(lapply(c("Bbc3", "Bax", "Bcl2l1", "Htra2"),
 # Ppargc1a itself has baseMean ~30 in this tissue and is NOT readable; ESRRA/NRF1
 # lanes are the activity proxy (as in script 38 PART C).
 # =============================================================================
-shortlist_path <- here::here("docs", "library_reference", "gray_chea_mito_tf_shortlist.csv")
+# the library snapshot is the canonical copy (CLAUDE.md); the docs/library_reference
+# copy is byte-identical but untracked, so read the tracked one
+shortlist_path <- here::here("data", "genesets_from_library", "gray_chea_mito_tf_shortlist.csv")
 tf_puma <- NULL; tf_biogenesis <- NULL
 if (file.exists(shortlist_path)) {
   sl <- utils::read.csv(shortlist_path, stringsAsFactors = FALSE)
   tf_puma <- sl[grepl("Bbc3", sl$apoptosis_pro_genes, fixed = TRUE),
                 c("TF", "context", "n_mito_total", "n_oxphos", "n_apoptosis_pro",
                   "apoptosis_pro_genes", "bh_fdr")]
+  # READ THIS AS A CONTEXT STATEMENT, NOT A TF STATEMENT. Bbc3 turns up in ~72 TF
+  # regulons and every one of them is AP_TEB -- it appears in NO other context. That
+  # is what a broadly-bound promoter in one cell context looks like, not evidence that
+  # any particular TF targets PUMA. The specific claim that does survive is in
+  # tf_biogenesis: MYC/E2F1 reach Bbc3 ONLY in AP_TEB, and reach Bid/Bok/Bak1/Pmaip1
+  # in every other context -- so which BH3-only MYC can touch is context-dependent.
+  tf_puma_contexts <- sort(unique(tf_puma$context))
   tf_biogenesis <- sl[sl$TF %in% c("ESRRA", "ESRRB", "ESRRG", "NRF1", "GABPA", "MYC", "E2F1") &
                       sl$n_apoptosis_pro > 0,
                       c("TF", "context", "n_mito_total", "n_oxphos", "n_apoptosis_pro",
                         "apoptosis_pro_genes", "bh_fdr")]
 } else {
-  message("42 PART C: shortlist CSV not on disk -- C1 skipped (it is untracked in git)")
+  tf_puma_contexts <- character(0)
+  message("42 PART C: shortlist CSV not found in data/genesets_from_library -- C1 skipped")
 }
 
 myc_effect_by_age <- function(s) {          # genotype effect within each timepoint
@@ -696,7 +706,32 @@ notes <- c(
   "whereas Bax priming IS largely absorbed by it, so in vivo BAX tracks mitochondrial mass",
   "and PUMA does not, which is the opposite of the cell result and must be said; (b) nothing",
   "in PART H separates from timepoint at n=24 -- the axis x Myc terms shrink once tp*myc is",
-  "in the model. Read PART H as RANKING candidate second inputs, nothing more.")
+  "in the model. Read PART H as RANKING candidate second inputs, nothing more.",
+  "",
+  "HOW THE FIRST RUN (2026-07-25) READ, so the object is not over-interpreted later:",
+  " - PART B control passed: matched pairs retain 0.55, script 40's global rate exactly.",
+  " - PART B specificity is GRADED, not binary. Bmf and Bcl2l11 have MORE extreme",
+  "   retentions than PUMA but NON-SIGNIFICANT 6W effects (p6 0.41 and 0.46), and a",
+  "   retention is a ratio of two noisy quantities -- you cannot lose an effect you never",
+  "   had. Among the pairs with a real 6W effect (Bax, Bbc3, Bak1, Bid, Bax:Mcl1), PUMA is",
+  "   the ONLY one that reverses sign, and the only conditional p_emp below 0.1.",
+  " - PART C1 is a CONTEXT statement: Bbc3 sits in ~72 AP_TEB regulons and in NO other",
+  "   context. That is promoter accessibility in one cell context, not TF specificity.",
+  " - PART H ABSORPTION IS UNINFORMATIVE -- THE CONTROL FAILED. redox_ppd 'absorbs' 41% of",
+  "   the PUMA interaction, more than any real axis. Adding any axis with the right noise",
+  "   structure moves the interaction, so absorption here measures nothing. Do not cite it.",
+  " - PART H COINCIDENCE IS THE POSITIVE, and its control WORKED: myc x oxphos_ppd on PUMA",
+  "   priming is +2.79 (p 0.005), the largest of any axis; it partially survives tp*myc",
+  "   (+2.06, p 0.088) where the TEB axis does not (1.15 -> 0.53); the within-timepoint",
+  "   permutation puts it at the 92nd percentile (p_emp 0.081); and redox_ppd is null",
+  "   throughout (p 0.72, permutation 51st percentile). The mitoPPS OXPHOS-priority axis is",
+  "   the best-supported candidate second input.",
+  " - PART H4 answers the size objection: on the LEVEL ruler the WT developmental fall is",
+  "   26% of the Myc effect, but on the PRIORITY ruler it is 97% of it. In the space where",
+  "   dose cancels, the developmental decline is as large as the oncogene's own effect.",
+  " - Htra2 is a useful internal control in single_gene_null: the strongest Myc-induced",
+  "   apoptotic gene attenuates LESS than matched genes (37th pct), so the PUMA result is",
+  "   not a property of Myc-induced apoptotic genes in general.")
 
 out <- list(
   machinery         = machinery,
@@ -704,6 +739,7 @@ out <- list(
   pair_null         = pair_null,
   single_gene_null  = single_gene_null,
   tf_puma           = tf_puma,
+  tf_puma_contexts  = tf_puma_contexts,
   tf_biogenesis     = tf_biogenesis,
   tf_lane_effects   = tf_lane_effects,
   coupling_null     = coupling_null,

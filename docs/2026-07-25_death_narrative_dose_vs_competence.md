@@ -2,10 +2,13 @@
 
 **Status:** synthesis note, written 2026-07-25 after the MYC and apoptotic-protein blots.
 Supersedes the framing (not the content) of `docs/2026-07-25_attenuation_competing_hypotheses.md`,
-which was written before the blots. All transcriptome numbers below are **provisional**: they come
-from read-only exploration and are re-derived by `scripts/42_priming_arm_and_teb_substrate.R`
-(author-run, writes `results/priming_arm_teb.rds`). Nothing here may be cited until that script
-has been run and this document reconciled against it.
+which was written before the blots. **Reconciled against `results/priming_arm_teb.rds`
+(`scripts/42_priming_arm_and_teb_substrate.R`, author-run 2026-07-25)** — every transcriptome
+number below is that script's output. Four claims in the pre-run draft did not survive
+reconciliation and are corrected in place: the purity-adjusted interaction p is **0.017**, not
+0.006; the BAX absorption figure was computed on a different axis and is restated; the
+AP_TEB regulon finding is a **context** statement, not a TF-specificity one; and the absorption
+test is dropped because its control failed. All four are flagged where they occur.
 
 ---
 
@@ -116,28 +119,40 @@ strongly than anything else in the apoptotic machinery here.
 At 12W MYC still does all of it, at ~0.55-0.8 of the amplitude — the dose effect. **Except the
 trigger.**
 
-| priming ratio (per mouse, log2) | Myc effect 6W | Myc effect 12W | retention | vs expression-matched pairs |
+| priming ratio (per mouse, log2) | Myc effect 6W | Myc effect 12W | retention | conditional matched-pair null |
 |---|---|---|---|---|
-| Bax : Bcl-xL | +0.90 (p 1.2e-4) | +0.50 (p 0.034) | **0.55** | 46th pct — *exactly* the global rate |
-| **PUMA : Bcl-xL** | +0.67 (p 0.0089) | **-0.06 (p 0.77)** | **-0.09** | **92.4th pct**, interaction p 0.037 |
-| PUMA : Bcl-xL, purity-adjusted | +0.73 (p 0.0007) | | | **interaction p 0.0059** |
+| Bax : Bcl-xL | +0.90 (p 1.2e-4) | +0.50 | **0.550** | 50th pct (p_emp 0.50) — *exactly* the global rate |
+| Bid : Bcl-xL | +0.95 (p 0.0036) | +0.40 | 0.419 | 70th pct (p_emp 0.30) |
+| Bak1 : Bcl-xL | +0.69 (p 0.0052) | +0.18 | 0.268 | 82nd pct (p_emp 0.18) |
+| **PUMA : Bcl-xL** | +0.67 (p 0.0089) | **-0.06** | **-0.090** | **92nd pct (p_emp 0.082)**, interaction p 0.037 |
+| PUMA : Bcl-xL, purity-adjusted | +0.61 (p 0.0018) | | | **interaction p 0.017** |
 
-Three features make this more than a lone p-value.
+Four features make this more than a lone p-value.
 
 1. **It contains its own control.** The panel shares a denominator. BAX priming fades at the
    global rate; PUMA priming collapses. "Isn't this just the x0.55 attenuation?" is answered from
    inside the panel, not by appeal to an external null.
-2. **The null reproduces the global rate independently.** Random expression-matched gene pairs
-   retain a median of **0.53** — script 40's x0.55, rebuilt from arbitrary genes. The instrument
-   is calibrated.
+2. **The null reproduces the global rate exactly.** Random expression-matched gene pairs retain a
+   median of **0.55** — script 40's rescaling slope, rebuilt from arbitrary genes. The instrument
+   is calibrated, and this was the script's built-in positive control.
 3. **Adjusting for composition strengthens it.** Epithelial and immune covariates move the
-   interaction from p 0.037 to **p 0.006-0.017**, while BAX stays non-significant (0.146 ->
-   0.185). So it is not contamination — and PUMA's raw correlation with the immune composite
-   (+0.34) was the obvious worry.
+   interaction from p 0.037 to **p 0.017**, while BAX stays non-significant (0.146 -> 0.185). So
+   it is not contamination — and PUMA's raw correlation with the immune composite (+0.34) was the
+   obvious worry.
+4. **A second, ratio-free framing agrees.** `Bbc3`'s own aligned attenuation (script 34's
+   `sign(lfc6)*(lfc6-lfc12)`) sits at the **94.6th percentile** of genes matched on both baseMean
+   and |lfc6| (p_emp 0.054), while `Bax` sits at the 51st — and `Htra2`, the most strongly
+   Myc-induced apoptotic gene here, at the **37th**, i.e. attenuating *less* than matched genes.
+   So this is not a property of Myc-induced apoptotic genes in general.
 
-Supporting: `Bbc3`'s own aligned attenuation (script 34's `sign(lfc6)*(lfc6-lfc12)`) sits at the
-**94.6th percentile** of genes matched on both baseMean and |lfc6| (p_emp 0.054) — a second,
-ratio-free framing landing in the same place.
+**The specificity is graded, not binary, and the paper should say so.** Two other ratios have more
+extreme retentions than PUMA — `Bmf:Bcl-xL` (-0.83) and `Bcl2l11:Bcl-xL` (-0.45) — but both have
+**non-significant 6W effects** (p 0.41 and 0.46), and a retention is a ratio of two noisy
+quantities: you cannot lose an effect you never had. Restricted to the pairs with a real 6W effect
+— Bax, Bid, Bak1, PUMA, Bax:Mcl1 — the retentions form a gradient (0.55, 0.42, 0.27, **-0.09**,
+0.84) and **PUMA is the only one that reverses sign** and the only one whose conditional p_emp
+falls below 0.1. The honest claim is that the BH3-only arms lose priming to differing degrees and
+PUMA loses it completely, not that PUMA is uniquely affected.
 
 **And PUMA was pre-specified.** The PGC1a experiments induce OXPHOS and PUMA "but not other
 BH3-only proteins". The one BH3-only the cell work singles out is the one whose in-vivo priming
@@ -163,11 +178,11 @@ Per Level-1 tier, medians:
 
 | tier | content Myc@6W | content WT 6-12W | **priority WT 6-12W** | **priority Myc+ 6-12W** |
 |---|---|---|---|---|
-| **OXPHOS** | +0.43 | -0.14 | **-0.069** | **-0.134** |
-| Protein import | +0.52 | -0.06 | -0.055 | -0.085 |
-| Central dogma | +0.47 | +0.05 | -0.011 | -0.050 |
-| Metabolism | +0.40 | +0.08 | +0.036 | +0.012 |
-| Dynamics | +0.24 | +0.03 | +0.003 | +0.021 |
+| **OXPHOS** | +0.456 | -0.142 | **-0.069** | **-0.134** |
+| Protein import | +0.518 | -0.056 | -0.055 | -0.085 |
+| Central dogma | +0.469 | +0.051 | -0.011 | -0.050 |
+| Metabolism | +0.397 | +0.084 | +0.037 | +0.012 |
+| Dynamics | +0.236 | +0.030 | +0.003 | +0.022 |
 
 **OXPHOS is the most de-prioritised Level-1 tier on both temporal axes** — figS6's reading,
 tabulated. And within OXPHOS it is the **structural subunits** that carry it (priority -0.109 WT /
@@ -183,7 +198,7 @@ and OXPHOS still falls on it. **The de-prioritisation is not the dose effect.**
 ### Strand 2 — the trigger goes down
 
 Section 3's table: PUMA:Bcl-xL priming retains **-0.09** against a global rate of 0.55 (92nd
-percentile of expression-matched pairs; interaction p 0.006 purity-adjusted), while Bax:Bcl-xL
+percentile of expression-matched pairs; interaction p 0.017 purity-adjusted), while Bax:Bcl-xL
 retains exactly 0.55.
 
 ### Strand 3 — the two are coupled, in the one space where a coupling is readable
@@ -215,9 +230,20 @@ not proof, and section 0 says what proves it.
 
 Three routes, in decreasing order of what our data can support.
 
-**4.1 PUMA sits in the TEB-context regulon of MYC and of the biogenesis TFs.** The Gray/ChEA
-shortlist (`docs/library_reference/gray_chea_mito_tf_shortlist.csv`) lists `Bbc3` as a target of
-**MYC, MYCN, E2F1, KDM5B and MITF — and only in the `AP_TEB` context.** And
+**4.1 The PUMA promoter is reachable in the TEB context and, in this resource, nowhere else.**
+*(Corrected after the run — the pre-run draft over-read this as TF specificity.)* The Gray/ChEA
+shortlist (`data/genesets_from_library/gray_chea_mito_tf_shortlist.csv`) puts `Bbc3` in the target
+set of **72 transcription factors — and every one of them is `AP_TEB`.** It appears in no other
+context. Seventy-two TFs including TP53, ESR1, JUN, FOS, SOX2 and POU5F1 is not TF specificity;
+it is what a **broadly bound, accessible promoter in one cell context** looks like. That is still
+the claim the model needs — a context in which PUMA is reachable at all — but it is a statement
+about chromatin, not about any TF's target list.
+
+The specific claim that does survive is sharper and is in the biogenesis-TF table: **MYC and E2F1
+reach `Bbc3` only in `AP_TEB`. In every other context they reach `Bid`, `Bok`, `Bak1` or `Pmaip1`
+instead** (MYC BA_LE -> Bid, AP_LE -> Bok, HS_LE -> Bok, HS_TEB -> Pmaip1; E2F1 BA_LE ->
+Bak1/Bid, AP_LE -> Bak1, HS_TEB -> Pmaip1). So **which BH3-only MYC can touch is
+context-dependent**, and PUMA is the one it can touch in the terminal end bud. And
 `docs/library_reference/Gray_et_al_developmental_TFS_selection.md` already records, months ago and
 for an unrelated purpose:
 
@@ -234,10 +260,11 @@ That is the PGC1a-to-PUMA hypothesis, in an independent resource, written before
 asked. NRF1 is a core PGC1a-axis biogenesis TF and PUMA is among its targets.
 
 **4.2 The TEB compartment demonstrably regresses in our own WT data.**
-`MG_TEB_VS_DUCTAL_HS_GRAY_UP` falls **-0.45 (p 0.0028)** purity-adjusted between 6W and 12W; the
-BA lane -0.36 (p 0.053); multiple HS_TEB TF lanes decline coherently (ARNTL2 -0.39 p 0.0054,
-GRHL3 -0.32 p 0.0038, HMGA2 -0.34 p 0.022). The markers agree (section 2). The HS_TEB lane — the
-one the library flags as apoptosis-loaded — is the one that falls hardest.
+`MG_TEB_VS_DUCTAL_HS_GRAY_UP` falls **-0.42 (p 0.0053)** purity-adjusted between 6W and 12W, and
+every TEB set that moves is an **HS_TEB** one: ARNTL2 -0.36 (0.0090), HMGA2 -0.34 (0.023), GRHL3
+-0.28 (0.011), MYC_HS_TEB -0.21 (0.020), ELK3 -0.28 (0.073), E2F7 -0.27 (0.074), E2F1_HS_TEB
+-0.19 (0.070). The markers agree (section 2). The HS_TEB context — the one the library flags as
+apoptosis-loaded — is the only one that declines, which is the coherence the claim needs.
 
 So the proposal is: **the promoter context in which MYC and the biogenesis TFs reach PUMA is a
 property of the pubertal gland, and it goes away with the terminal end buds.** At 12W the same
@@ -269,25 +296,23 @@ overclaim.
 3. **The compartment shift is marker-level, not compartment-level.** The MEC consensus composites
    (LASP, LHS, BMYO, LP) all move in the expected directions but none is significant. Only single
    markers clear FDR. So: maturation is documented; a wholesale change in cell proportions is not.
-4. **The biogenesis *level* does not mediate the PUMA collapse.** Script-30-style absorption is
-   **6%** for the central-dogma composite, and adjusting for the OXPHOS level makes the
-   interaction *stronger* (-0.66 -> -0.84), not weaker. So the mediating variable, if there is
-   one, is not the mitochondrial output level. **But note what this does and does not test:** it
-   tests the biogenesis **level and priority**, never PGC1a **activity** — `Ppargc1a` is baseMean
-   ~30 here and unreadable, and a coactivator's activity is post-translational. The null bounds
-   the level version and leaves the activity version untouched, which is where the cell
-   perturbations live.
+4. **The mediation test failed its own control and is not usable.** *(Corrected after the run.)*
+   Script-30-style absorption of the PUMA interaction by each candidate axis gives -27%
+   (OXPHOS level), -25% (OXPHOS priority), +13% (TEB) — and **+41% for `redox`, the negative
+   control axis**, which "absorbs" more than any real one. Adding any axis with the right noise
+   structure moves the interaction, so absorption is measuring nothing here. **Do not cite it in
+   either direction** — including not as evidence against the biogenesis route.
 5. **In vivo, BAX tracks mitochondrial mass and PUMA does not** — the inverse of the cell result.
-   Bax:Bcl-xL priming is **63% absorbed** by the biogenesis level while PUMA:Bcl-xL is 6%; and
-   per-mouse, the OXPHOS composite correlates with BAX (+0.66 / +0.45) and not with PUMA (+0.00 /
-   -0.40). The cell experiments say PGC1a induces PUMA specifically. This tension is real and the
-   paper should state it rather than let a reader find it — the most likely reconciliation is that
-   mitochondrial *mass* and PGC1a *activity* are not the same variable, which is the same
-   distinction as negative 4.
-6. **Nothing separates from timepoint at n=24.** The `myc x TEB` interaction on PUMA priming is
-   +1.22 (p 0.010) on its own, +0.59 (p 0.22) once `tp*myc` is in the model, with a
-   within-timepoint permutation p_emp of 0.082. The candidate second inputs can be **ranked**
-   (TEB context > OXPHOS level) and not established.
+   Per-mouse, the OXPHOS composite correlates with BAX (+0.66 at 6W, +0.46 at 12W, ~75-80th
+   percentile of ambient) and not with PUMA (+0.00, -0.40, at or below ambient). The cell
+   experiments say PGC1a induces PUMA specifically. State this tension rather than let a reader
+   find it; the most likely reconciliation is that mitochondrial **mass** and PGC1a **activity**
+   are not the same variable — and note that `Ppargc1a` itself is baseMean ~30 here and
+   unreadable, so nothing in these data tests the activity version at all. That is where the cell
+   perturbations live, and they are perturbations.
+6. **Nothing fully separates from timepoint at n=24.** The best coincidence term (§6.5) drops from
+   p 0.005 to p 0.088 once `tp*myc` is in the model; the TEB axis drops from p 0.018 to p 0.27.
+   The candidate second inputs can be **ranked** and not established.
 
 And the standing bound on all of section 4: **batch = timepoint.** Every WT temporal statement is
 described, not claimed. Its one mitigation is real, though: the mitochondrial and PUMA protein
@@ -309,6 +334,41 @@ These exclusions are worth as much as the positive: the mechanism is narrowed to
 inducibility of the pro-apoptotic arm**, not the buffer, not p53, not a repressor.
 
 ---
+
+## 6.5 The coincidence model, tested — and its control works
+
+This is the one place the in-vivo data speaks directly to the two-input model rather than around
+it, and it is the strongest thing in the analysis. The test is `lm(priming ratio ~ Myc x axis +
+epithelial + immune)`: does MYC raise priming **only** where the substrate is competent?
+
+| axis for PUMA:Bcl-xL | Myc x axis | p | with `tp*myc` in the model | permutation p_emp |
+|---|---|---|---|---|
+| **OXPHOS priority (mitoPPS ratio)** | **+2.79** | **0.005** | **+2.06 (p 0.088)** | **0.081 (92nd pct)** |
+| TEB context | +1.15 | 0.018 | +0.53 (p 0.27) | 0.092 (91st pct) |
+| OXPHOS level (log-expression) | +0.36 | 0.14 | +0.18 (p 0.44) | 0.153 |
+| `redox` priority — **negative control** | +0.99 | **0.72** | +0.95 (p 0.66) | **0.491 (51st pct)** |
+
+Four things to read from it. The **mitoPPS OXPHOS-priority axis is the strongest** — three times
+the TEB term and eight times the level term. It is the **only one that partially survives the
+timepoint it is confounded with**, where the TEB axis collapses. The **within-timepoint
+permutation** (shuffling the axis inside each timepoint, so only the mouse-to-mouse link breaks)
+puts it at the 92nd percentile. And the **control behaves**: `redox` is null on every reading and
+sits at the 51st percentile of its own permutation — which is what makes the positives readable at
+all. On BAX the same axis gives +1.21 (p 0.069), weaker and not surviving `tp*myc`.
+
+**And the size objection is answered in the space where it should be asked.** The obvious challenge
+to the model is that the developmental decline looks too small to matter: on the log-expression
+level ruler, the WT 6->12W fall in OXPHOS is **-0.25** against a Myc effect of **+0.96** — 26%. But
+on the mitoPPS priority ruler, where the dose effect cancels, the WT fall is **-0.109** against a
+Myc effect of **+0.112** — **97%**. In the space where the second input should be measured, **the
+developmental decline is as large as the entire effect of the oncogene.** The `redox` control axis
+gives 70% by the same calculation, so this is a ranking statement rather than a clean one — but it
+removes the objection that the substrate change is too small to be the second input.
+
+The verdict: **the mitoPPS OXPHOS-priority axis is the best-supported candidate second input**,
+marginal on every individual test (p 0.005 -> 0.088 with timepoint, permutation 0.081), with a
+control that works. A ranking lead, in a project where every cross-sectional coupling has landed
+in the same place — and, per section 0, exactly the weight the in-vivo data should carry.
 
 ## 7. Alternatives the paper must address
 
@@ -421,13 +481,14 @@ perturbation and invites the reader to weigh it as evidence. The order above doe
 
 ## 10. Provenance
 
-Transcriptome numbers are **provisional** until `scripts/42_priming_arm_and_teb_substrate.R` is
-run; they come from read-only exploration on 2026-07-25 and are re-derived there with their nulls.
-Sources: `results/interaction_results.rds` (raw/unshrunken LFC, genome-wide BH padj),
+Transcriptome numbers are from `results/priming_arm_teb.rds`
+(`scripts/42_priming_arm_and_teb_substrate.R`, author-run 2026-07-25). Underlying sources:
+`results/interaction_results.rds` (raw/unshrunken LFC, genome-wide BH padj),
 `results/dds_int_run.rds` (median-of-ratios normalised counts),
-`data/genesets_from_library/mammary_mito_myc_metab_v1_mouse.gmt`,
-`docs/library_reference/gray_chea_mito_tf_shortlist.csv`. Blot values (MYC -50%; BAX/BIM/PUMA and
-the mitochondrial panel) are the author's, reported here as given.
+`results/mitopps_scores.rds` (per-sample pairwise-ratio scores),
+`data/genesets_from_library/mammary_mito_myc_metab_v1_mouse.gmt` and
+`data/genesets_from_library/gray_chea_mito_tf_shortlist.csv`. Blot values (MYC -50%; BAX/BIM/PUMA
+and the mitochondrial panel) are the author's, reported here as given.
 
 Strand 1's tier tables come from `results/background_vs_myc.rds$ruler` (script 40) and strand 3
 from `results/mitopps_priming_pgc1a.rds$priming_couplings` (script 38 PART B, run 2026-07-19) —
