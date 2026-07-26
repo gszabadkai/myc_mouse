@@ -495,12 +495,37 @@ Full numbers, nulls and the artifact ledger: `docs/2026-07-24_background_vs_myc_
 (script 40). The earlier per-gene decomposition (script 31) is unchanged on disk; script 40
 tests it and reports the correction.
 
-# Death priming: what did not survive {#sec-death}
+# The trade-off: what Myc's mitochondria cost the cell {#sec-death}
 
-*(stub)* The honesty section. The mito->death "bridge" is circular (priming built from
-MitoCarta APOPTOSIS_PRO/ANTI) and fails every null; "Myc raises priming" is the mito-content
-effect, below-average for a mito gene; attenuation is global, so priming fades because the
-Myc programme fades. Requires re-running scripts 34/35. Panels: `death_priming_reassessment/D_attenuation_excess`.
+*(stub -- DO NOT write this section from the text below. It is a scope note, and the
+argument order is still under discussion.)*
+
+**The framing here changed completely on 2026-07-25/26 and this heading is the only part of
+the old stub that was worth keeping in place.** This was "Death priming: what did not
+survive", a negative-results section. It is now the positive spine of the paper. Write it
+from, in this order:
+
+- `docs/2026-07-25_death_narrative_dose_vs_competence.md` -- section 0 (the epistemic
+  contract: the in-vivo transcriptome GENERATES, the cell perturbations PROVE), section 3
+  (Myc builds a death-ready mitochondrion and loses the trigger: Bax:Bcl-xL retains 0.550,
+  the global rate, while PUMA:Bcl-xL retains -0.090), section 5 (the six negatives),
+  section 6.5 (the coincidence test), section 9 (argument order).
+- `docs/2026-07-26_introduction_alignment_and_the_question.md` -- section 0 (the trade-off
+  and the three solutions), 0.5a (the asymmetry, scoped to the ONE outcome with a working
+  control), 0.7 (the gland de-respires without de-proliferating).
+
+**What survives from the old stub, and must appear here as the bounds** -- these are not
+optional, they are the reason the section is defensible: the GSVA-space mito->death bridge is
+**circular** (priming built from `MITOCARTA_APOPTOSIS_PRO`/`_ANTI`, so it correlated mito
+genes with mito genes) and fails every null; "Myc raises priming" as a **composite** is the
+mito-content effect, below average for a mitochondrial gene; and the attenuation is
+**global**, so a composite priming signal fades because the Myc programme fades. The finding
+is gene-level, not composite-level -- which is why the composite analyses found nothing and
+is exactly what the cell work predicts.
+
+Sources on disk: `results/priming_arm_teb.rds` (42), `results/substrate_specificity_tradeoff.rds`
+(43), `results/death_priming_reassessment.rds` (34, for the bounds above).
+Panels: unbuilt on purpose -- fig04 follows the agreed argument order.
 
 # External validation: Lesner et al. {#sec-lesner}
 
