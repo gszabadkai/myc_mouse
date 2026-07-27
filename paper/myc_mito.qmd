@@ -61,10 +61,58 @@ numbers are what the commits, the dated docs and `outputs/figures/` cite.
 
 # Overview {#sec-overview}
 
-*(stub)* One-paragraph orientation: bulk RNA-seq of enzymatically purified MMTV-Myc MECs,
-four groups x six replicates, `~timepoint*myc_status` interaction design. Batch = timepoint,
-so genotype/interaction contrasts are clean and the pure developmental reading is confounded.
-What this document does: walk the exploratory process and land the defensible results.
+**What was measured.** Bulk RNA-seq of **purified mammary epithelial cells** from MMTV-Myc
+transgenic mice and their wild-type littermates at **6 and 12 weeks** -- four groups
+(`6W_neg`, `6W_pos`, `12W_neg`, `12W_pos`), **six replicates each, n=24**, analysed with DESeq2
+on a `~ timepoint * myc_status` interaction design. Purification is by **enzymatic dissociation
+only, with no sorting step**, and that single fact sets two standing rules. Any stromal,
+endothelial or immune signal is **contamination rather than tissue composition** (3-12%
+residual, which is what no sort predicts), so it is modelled as a nuisance and never read as
+biology. And the warm digest is itself a stressor: the immediate-early signature it induces
+(van den Brink 2017) is a genuine axis in these samples, which is why prep-stress appears as a
+covariate wherever a per-sample quantity is interpreted.
+
+::: {.callout-important}
+**Batch = timepoint, and it governs every reading below.** The 6W and 12W cohorts were
+extracted as two separate batches, so batch is perfectly confounded with age. Genotype is
+**balanced within each batch**, so the interaction design absorbs the batch effect into the
+timepoint main effect. **Every genotype gap and every interaction is therefore clean** -- and
+so is any *difference between two temporal contrasts*, because the shared offset cancels in a
+difference. What is not clean is the pure between-timepoint comparison, which is exactly the
+developmental reading; with no dissociation-batch, viability or RIN metadata on disk it cannot
+be separated post hoc. Developmental statements here are consequently **described and bounded,
+never claimed on their own**, and where one carries weight (@sec-window) it is carried by a
+comparison made *within* the timecourse against expression-matched nulls, not by the
+timecourse itself.
+:::
+
+**Three rulers, which answer different questions and should not be mixed.** **Absolute
+content** -- a gene set's share of the library in raw counts -- answers *how much of this
+compartment is there*, and is the ruler of @sec-content. **mitoPPS** (Monzel 2025) is
+deliberately **content-blind**: a within-compartment pairwise ratio answering *what is
+prioritised inside the mitochondrion*, and because it is a ratio it cancels the per-sample
+common mode (@sec-reallocation). **fGSEA on the Wald statistic** reads absolute
+transcriptional enrichment for a given contrast. A fourth quantity, the **per-sample composite
+score**, runs through the exploratory layer and is the one to distrust on sight: those scores
+are nearly one-dimensional and correlate with one another at ~0.8 by default, for reasons
+@sec-axis sets out in full.
+
+Hence the rule this document holds to throughout: **contrasts are claims, couplings are
+rankings.** At six replicates per group nothing in the coupling layer clears multiple testing,
+and it is presented as what it is -- an ordered list of propositions for the bench
+(@sec-leads), not as evidence. The contrast layer is where the results are.
+
+**How to read what follows.** The document walks the exploratory process and then lands the
+defensible part, in the order of the Results paragraph. @sec-content is what MYC builds
+(Figure 1); @sec-window is what development takes away and what that hands to the cell
+experiments (Figure 2); the two supplementary figures are the controls each of those rests on,
+embedded at @sec-mito-survey and @sec-attenuation. Everything between is the exploratory
+layer -- the compartment survey, OXPHOS complex by complex, the reallocation ranking, the
+global axis and correlation ceiling, and the external comparison with Lesner et al.
+(@sec-lesner). Results reported as the author's own bench data -- the MYC and BAX/BIM/PUMA
+blots, the MYC-ER, MYAZ and Bcl-xL experiments -- are marked as such where they appear and are
+taken as given, not reanalysed here. The analytical companion to this work is Menegollo,
+Bentham et al., *Cancer Res* 2024.
 
 # MYC builds a death-competent mitochondrion {#sec-content}
 
