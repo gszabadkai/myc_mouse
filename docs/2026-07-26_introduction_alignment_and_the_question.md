@@ -276,7 +276,7 @@ normal tissue uses only the first.
 
 ### 0.7a What carries the respiratory arm — the lineage-suppressed (LE) state
 
-*(Added 2026-07-27, the author's hypothesis. `[44]` PART B2, provisional until the script is run.)*
+*(Added 2026-07-27, the author's hypothesis. `[44]` PART B2, author-run and reconciled.)*
 
 **First, a library metadata error that has to be recorded, because it nearly sent this section the
 wrong way.** Gray 2023 p.7 defines `LE` as **"low-expressing"** — a state in which *lineage programs
@@ -331,8 +331,10 @@ same way, off the RNA batch entirely.
 ## 0.8 Can we define an OXPHOS/apoptosis module? — and what the collapse scan is for
 
 *(Added 2026-07-27, from the author's question: can the title name "a PGC-1a/Nrf1 regulated common
-OXPHOS/apoptosis module"? Numbers are `[44]` = `results/collapse_module_ownership.rds`, provisional
-until the author sources `scripts/44_collapse_module_and_ownership.R`.)*
+OXPHOS/apoptosis module"? Numbers are `[44]` = `results/collapse_module_ownership.rds`,
+**author-run 2026-07-27 and reconciled** — the built-in positive control returned -0.2548228 against
+Issue #4's -0.2548, the interaction-sign assertion 1.000, and the two collapse statistics agree at
+Spearman 0.961.)*
 
 Short answer: **not as a co-regulated module, and not one owned by the PGC-1a axis.** Four
 independent checks, three of which are in our own data.
@@ -395,23 +397,71 @@ standardised — because under a global x0.55 rescaling *every* Myc-induced gene
 interaction and "has a negative interaction" is not a finding. Then it asks what sits in the tail
 with PUMA.
 
-**The first indication, and it is a real one.** `Bbc3` lands at the **0.51st percentile of 8774
-Myc-responsive genes** (retention −1.10, a full sign reversal) — pre-specified from the westerns, not
-a scan hit, and reproducing script 42's PUMA:Bcl-xL result with a completely different statistic that
-never touches the Bcl-xL denominator. **`Bcl2l11` (BIM) lands at the 91.6th percentile** — the
-opposite end. So **the western's PUMA+BIM pair does not transfer as a pair**; the in-vivo collapse is
-PUMA-specific. Half the pre-specification failing is what makes the other half worth quoting.
+**The pre-specified genes.** `Bbc3` lands at the **0.51st percentile of 8774 Myc-responsive genes**
+(retention −1.10, a full sign reversal) — pre-specified from the westerns, not a scan hit, and
+reproducing script 42's PUMA:Bcl-xL result with a completely different statistic that never touches
+the Bcl-xL denominator. **`Bcl2l11` (BIM) lands at the 91.6th percentile** — the opposite end. So
+**the western's PUMA+BIM pair does not transfer as a pair**; the in-vivo collapse is PUMA-specific.
+Half the pre-specification failing is what makes the other half worth quoting.
 
-### Title candidates, decision deferred until PART C reports
+### The answer: PUMA is a solo, and what collapses instead is lineage identity
 
-| candidate | commits us to | status |
+**No pre-registered question returns a module.** Reported pass or fail, as fixed in advance:
+
+| question | result | verdict |
 |---|---|---|
-| "PGC-1a/Nrf1 regulated common OXPHOS/apoptosis module **determines**..." | a co-regulated module owned by the PGC-1a axis | **not supported** — checks 1-4 above |
-| "Mitochondria integrate oncogenic and developmental signals to **time**..." | two separately regulated inputs, one organelle; the window | supported today |
-| "Myc installs the effectors, development withdraws the platform" | the division of labour in check 1 | supported as set membership; needs expression |
-| a collapse-module title | whatever PART C's fgsea returns | **pending** |
+| (a) OXPHOS / MitoCarta | subunits **+1.55** (padj 0.063), OXPHOS all +1.01, assembly +0.50 | **no** — trending *retained*, if anything |
+| (b) apoptosis, any lens | CDC_PRODEATH −1.20 (padj 0.27), TANG −0.95 (0.69) | **no** |
+| (c) `AP_TEB` accessible | 13 sets, nothing survives BH (best `TFT_ESR1_GRAY_AP_TEB` −1.54, padj 0.051) | **no** |
+| (d) ISR / ATF4 | ad-hoc target set and Hallmark UPR both null (padj 0.22) | **no** |
+| (e) TEB vs ductal | HS_DN **−1.84 (0.006)**, HS_UP −1.65 (0.026), AP_DN −1.63 (0.034); BA_UP **+1.95 (0.004)** | **yes, and it collapses** |
+| (f) NRF1 / PGC-1a axis | `TFT_GABPA_GRAY_AP_LE` **+2.08 (padj 7.3e-06)**, `TFT_ESRRA_GRAY_AP_LE` **+1.77 (0.008)** | **yes — but *retained*, not collapsed** |
 
-Only a real collapse module would license a mechanism-naming title. Nothing else in the corpus would.
+So **there is no collapse module around PUMA.** The genome-wide picture is the opposite of a
+death/OXPHOS module and is interpretable in one sentence: **what loses its Myc-inducibility is
+luminal/hormone-sensing lineage identity** (`MG_HS_GRAY` NES −2.79, padj 1.7e-17; `MG_LHOR_SAEKI`
+−2.72; `MG_LHS_CONSENSUS` −2.69, and the HS/AP TEB signatures with them), **and what keeps it is the
+MYC programme itself** (`HALLMARK_MYC_TARGETS_V1/V2`, `MYC_MUHAR`, `MYC_felsher`, `TFT_MYC_CHIPATLAS`,
+all NES > +2.5) — independently reproducing Issue #6's "MYC-core protected". 56 sets collapse and 161
+retain at BH<0.05.
+
+**And note (f) carefully, because it cuts against the tidy version of the carrier story.** The
+PGC-1a-axis `AP_LE` regulons are among the *best-retained* sets in the genome. Whatever the LE state
+is doing developmentally (§0.7a), Myc's grip on the ESRRA/GABPA programme does **not** weaken across
+the window. The respiratory withdrawal is the gland's, not a failure of Myc to drive it.
+
+**An unplanned internal control, and it validates the premise.** `Myc` itself sits at the **100th
+percentile, retention 1.09** (+1.679 at 6W → +1.822 at 12W). **The transgene message does not
+attenuate at all** — so the ×0.55 fade of everything downstream cannot be a transcript-level dose
+effect, which is exactly what the blot says (protein −50% at constant transcript) and exactly what
+`dose-vs-competence` requires.
+
+**One lead survives, and one dies.**
+
+- **`Foxo3` — a lead, flagged as such.** It is the most collapsed gene in the mechanism panel (0.87th
+  percentile of its matched stratum) and its profile is near-identical to PUMA's: baseMean 3265,
+  **+0.243 at 6W (p 0.057) → −0.242 at 12W, interaction p 0.0074**, against `Bbc3`'s +0.258 (p 0.064)
+  → −0.283, interaction p 0.0081. Both reverse sign, at the same magnitude, with the same marginal
+  significance. **FOXO3 is PUMA's canonical p53-independent transcriptional activator**, and the
+  PGC-1a–FOXO3a–PUMA axis is already written up in `docs/library_reference/PUMA-and-its-relationships.md`
+  §4. **The caveats are severe and must travel with it:** both 6W effects are non-significant
+  (padj 0.21 and 0.22), both interactions are genome-wide null (padj 1.00 and 0.84), it is two genes
+  and two genes are not a module, and `Foxo3` *rises* in the wild-type gland (+0.473), so this is not
+  a substrate-loss story for FOXO3 itself. It is worth a western, not a sentence in the Results.
+- **The ISR route dies.** `Chac1` looked like the second-most-collapsed gene, but its 6W effect is
+  −0.300 at **p 0.47** — no effect to lose. Script 42's null on the ISR stands after all; §0.9's
+  retrograde/ISR route should be marked as tested and negative rather than untested.
+
+### Title — decided
+
+| candidate | status |
+|---|---|
+| "PGC-1a/Nrf1 regulated common OXPHOS/apoptosis module **determines**..." | **rejected** — checks 1-4, and PART C returns no module |
+| "Myc installs the effectors, development withdraws the platform" | rejected as a title — true as set membership, not demonstrated as expression |
+| **"Mitochondria integrate oncogenic and developmental signals to *time* Myc-driven mammary tumourigenesis"** | **take this one** |
+
+A mechanism-naming title needed a collapse module and there is not one. The two-input title is
+supported by everything in this document, and the dependence reframe belongs in the Discussion.
 
 ---
 
@@ -448,16 +498,22 @@ gene lists point at them:
   for TET/JmjC. This is the route that connects to what we already have: `Bbc3` is reachable in
   `AP_TEB` and in no other context (a chromatin statement, §4.1 of the death narrative). Respiratory
   state and promoter accessibility would be co-determined.
-- **Retrograde / ISR** — MYC over-driving a high-capacity mitochondrion → OMA1–DELE1–HRI → ATF4/CHOP
-  → PUMA. Script 42's scan of `Atf4, Ddit3, Trib3, Chac1, Sesn2, Eif2ak3...` does **not** exclude
-  this: it asked whether those transcripts *track* PUMA per sample, not whether they *collapse* like
-  it, and ATF4 is translationally regulated so its mRNA is a poor readout either way. Script 44
-  PART D asks the collapse version.
+- **Retrograde / ISR — TESTED AND NEGATIVE (2026-07-27).** MYC over-driving a high-capacity
+  mitochondrion → OMA1–DELE1–HRI → ATF4/CHOP → PUMA. Script 42's scan asked whether those transcripts
+  *track* PUMA per sample; script 44 PART D asked the different and fairer question — whether they
+  *collapse* like it — and the answer is no. The ad-hoc ATF4 target set and Hallmark UPR are both
+  null in the collapse ranking (padj 0.22), and the one member that looked collapsed, `Chac1`, has
+  **no 6W effect to lose** (−0.300, p 0.47). Mark this route tested, not untested.
+- **FOXO3 → PUMA — the one route with a live lead.** `Foxo3` is the most collapsed gene in the
+  mechanism panel and its profile matches PUMA's almost exactly (§0.8). This is the *transcriptional*
+  route, and it is the axis §4 of `PUMA-and-its-relationships.md` already describes — though note
+  that document has PGC-1a **sequestering** FOXO3a, so the canonical direction is opposite to ours.
+  Two genes, both 6W effects non-significant: a western, not a claim.
 
-**Testable here:** the ISR collapse, the cardiolipin/cristae/payload collapse (44 PART D — all
-returned mid-pack in the dry run, so this is a negative to report, not a lead). **Needs new data:**
-cardiolipin by lipidomics, cristae by EM, and priming itself by **BH3 profiling** — which is the
-measurement none of the transcriptomics substitutes for.
+**Tested here and negative:** the ISR collapse; the cardiolipin, cristae and IMS-payload collapses
+(44 PART D, all mid-pack at the 49th–61st percentile of expression-matched genes). **Needs new
+data:** cardiolipin by lipidomics, cristae by EM, and priming itself by **BH3 profiling** — which is
+the measurement none of the transcriptomics substitutes for.
 
 **Two conflicts the paper must confront, both from `docs/library_reference/PUMA-and-its-relationships.md`.**
 Its §4 has the canonical axis running the *other* way — PGC-1a is **protective**, sequestering FOXO3a,
@@ -807,10 +863,17 @@ reference callouts preserved where the sentence survives. Square brackets mark o
    whether the payload/trigger division survives in a system where PGC-1a is actually manipulated,
    and give the PUMA/BIM pair (§0.8, which splits in vivo) a clean read. Recorded in
    `paper/myc_mito.qmd` as a planned integration.
-1e. **After script 44 runs:** decide the title from §0.8's table. If PART C's fgsea returns a
-   coherent collapse module, a mechanism-naming title is licensed; if it returns lineage-identity
-   sets and MYC-target retention (which is what the dry run suggested), take the two-input title and
-   put the dependence reframe in the Discussion.
+1e. **Resolved 2026-07-27.** Script 44 is run. PART C returns **no collapse module** — lineage-identity
+   sets collapse, the MYC programme is retained, PUMA is a solo. **Title decided: "Mitochondria
+   integrate oncogenic and developmental signals to time Myc-driven mammary tumourigenesis"**, with
+   the dependence reframe in the Discussion (§0.8).
+1f. **New, and it is a bench question not a repo one — `Foxo3`.** It collapses like PUMA (§0.8), it
+   is PUMA's canonical p53-independent activator, and the PGC-1a–FOXO3a–PUMA axis is already in
+   `PUMA-and-its-relationships.md` — but our version runs *opposite* to the canonical one there
+   (which has PGC-1a sequestering FOXO3a and its loss *activating* PUMA). Two genes, both 6W effects
+   non-significant, both interactions genome-wide null. **A FOXO3 western across the two ages, and
+   FOXO3 in the PGC-1a-overexpression arm, would settle whether this is the transcriptional route
+   or a coincidence.** Do not put it in the Results on the RNA alone.
 3. **Propagation.** Section 3.5 (strand 1) of `2026-07-25_death_narrative_dose_vs_competence.md`
    currently makes the developmental case on the tier-median LFCs. The NES pair for
    `MITOCARTA_OXPHOS_SUBUNITS` — **WT -2.670 versus Myc+ -2.715** — is a stronger and simpler
@@ -859,11 +922,11 @@ The prior clause table this note supersedes is
 
 **Everything marked `[44]`** — sections 0.7a and 0.8: the ownership hypergeometrics and gene lists,
 the shortlist base rate, the wild-type expression test on both rulers, the `CORE_MITO` decomposition,
-the HE/LE lineage table with its mito-removed columns, and the collapse-scan positions of `Bbc3` and
-`Bcl2l11` — is `results/collapse_module_ownership.rds`
-(`scripts/44_collapse_module_and_ownership.R`). **PROVISIONAL: read-only reconciliation of
-2026-07-27, verified only by a scratchpad-redirected dry run. Reconcile against the author's own run
-and drop these flags, exactly as was done for `[43]`.** The script's built-in positive control
-reproduced Issue #4's OXPHOS-subunit wild-type value to four decimals (-0.2548228 against -0.2548),
-its interaction-sign assertion returned 1.000, and its two collapse statistics agreed at Spearman
-0.961.
+the HE/LE lineage table with its mito-removed columns, the collapse-scan positions of `Bbc3` and
+`Bcl2l11`, the pre-registered fgsea questions and the `Foxo3` lead — is
+`results/collapse_module_ownership.rds` (`scripts/44_collapse_module_and_ownership.R`,
+**author-run 2026-07-27**). Its built-in positive control reproduced Issue #4's OXPHOS-subunit
+wild-type value to four decimals (-0.2548228 against -0.2548), its interaction-sign assertion
+returned 1.000, and its two collapse statistics agreed at Spearman 0.961. The per-gene 6W/12W/
+interaction statistics quoted for `Foxo3`, `Chac1`, `Bbc3` and `Myc` are read directly from
+`results/interaction_results.rds` (raw, unshrunken).

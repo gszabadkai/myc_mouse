@@ -525,12 +525,22 @@ is exactly what the cell work predicts.
 
 **Added 2026-07-27, and the argument order is now decided: SUBSTRATE FIRST.** Write from the
 nine-step order in section 9 of the death narrative (rewritten) -- what the gland does to
-itself, then what Myc does on top of it. Two things from script 44 belong in this section:
-`Bbc3` sits at the **0.51st percentile of 8774 Myc-responsive genes** on a genome-wide
-collapse statistic that never touches the Bcl-xL denominator, pre-specified from the PGC1a
-westerns rather than found by scanning -- an independent reproduction of the priming result;
-and **`Bcl2l11` (BIM) sits at the 91.6th percentile**, so the westerns' PUMA+BIM pair does
-**not** transfer as a pair and the in-vivo collapse is PUMA-specific. Report both.
+itself, then what Myc does on top of it. Four things from script 44 (author-run) belong here:
+
+- `Bbc3` sits at the **0.51st percentile of 8774 Myc-responsive genes** on a genome-wide
+  collapse statistic that never touches the Bcl-xL denominator, pre-specified from the PGC1a
+  westerns rather than found by scanning -- an independent reproduction of the priming result.
+- **`Bcl2l11` (BIM) sits at the 91.6th percentile**, so the westerns' PUMA+BIM pair does
+  **not** transfer as a pair; the in-vivo collapse is PUMA-specific. Report both.
+- **PUMA is a solo.** No pre-registered question returns a module -- not OXPHOS, not
+  apoptosis on any lens, not AP_TEB, not ISR. What loses Myc-inducibility genome-wide is
+  **luminal/hormone-sensing lineage identity** (`MG_HS_GRAY` NES -2.79, padj 1.7e-17) and
+  what keeps it is **the MYC programme itself** (all MYC signatures NES > +2.5), which
+  independently reproduces Issue #6's "MYC-core protected".
+- **An unplanned internal control worth one sentence:** `Myc` itself is at the 100th
+  percentile, retention 1.09 (+1.679 -> +1.822). The transgene message does not attenuate,
+  so the x0.55 fade downstream cannot be transcript-level dose -- the blot's premise
+  confirmed from inside the RNA.
 
 Sources on disk: `results/priming_arm_teb.rds` (42), `results/substrate_specificity_tradeoff.rds`
 (43), `results/death_priming_reassessment.rds` (34, for the bounds above),
@@ -566,6 +576,20 @@ Panels: `lesner/A_mechanism_genes`, `lesner/B_fgsea_contrasts`, `lesner/C_mitoph
 robust Myc-independent coupling; test: redox/GSH assay) and `nuclear OXPHOS -> death-priming`
 (test: **BH3 profiling** -- priming is an occupancy state at the outer membrane, and no
 amount of transcriptomics substitutes for measuring it).
+
+**`Foxo3`, new 2026-07-27 and the one live mechanistic lead** -- it collapses like PUMA
+(0.87th percentile of its matched stratum; +0.243 at 6W -> -0.242 at 12W, interaction
+p 0.0074, against `Bbc3`'s +0.258 -> -0.283, p 0.0081) and it is PUMA's canonical
+p53-independent activator. Test: **FOXO3 western across the two ages, and in the PGC1a
+arm.** Caveats that must travel with it: both 6W effects are non-significant, both
+interactions are genome-wide null, two genes are not a module, and `Foxo3` *rises* in the
+wild-type gland. Note also that our direction is **opposite** to the canonical
+PGC-1a-sequesters-FOXO3a axis in `docs/library_reference/PUMA-and-its-relationships.md`. Not
+for the Results on the RNA alone.
+
+**Closed, do not propose it again:** the retrograde/ISR route to PUMA is tested and negative
+(script 44 PART D -- the ATF4 target set and Hallmark UPR are null in the collapse ranking,
+and `Chac1`, which looked collapsed, has no 6W effect to lose at p 0.47).
 
 The OXPHOS->priming lead is **gene-level, not composite-level** (corrected 2026-07-27, it was
 described here in its pre-script-43 composite form). The composite version is dead twice
