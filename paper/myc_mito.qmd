@@ -439,15 +439,25 @@ is read against a global x0.55 rescaling, so before that reading is allowed: the
 **not** a falling dose (every measure that would register one *widens* while MYC's output
 narrows); it **is** real and uniform (the 12W profile is the 6W profile at 55% amplitude, its
 coherence at the 100th percentile of matched shuffles); what MYC adds over the window is a
-**uniform offset**, not a different set of pathways, and that offset is the batch-clean
-quantity; and PUMA's collapse **survives removal of the BCL-xL denominator** on a genome-wide
-statistic.
+**downward shift that is near-constant across pathways** and is the batch-clean quantity; and
+PUMA's collapse **survives removal of the BCL-xL denominator** on a genome-wide statistic.
+
+That third control is the one worth stating in plain terms, because it is easy to overstate
+in either direction. Across the window the wild-type gland drifts *up* (median +0.04; 103 of
+143 pathways rise) while the Myc gland drifts *down* (median -0.13; 22 of 143 rise). Per
+pathway, **Myc+ minus wild-type is negative in 133 of 143 cases, median -0.18** -- and that
+difference *is* the Myc-specific temporal change, batch-clean because the shared offset
+cancels in a difference. Decomposed as a regression (the panel's inset), the **shared** slope
+of 0.75 is **not** distinguishable from its null (82nd percentile), while the MYC-specific
+intercept of -0.17 lies beyond all 500 shuffles. So a large part of the Myc gland's movement
+*is* shared with the wild-type's -- that part is simply unremarkable -- and what the wild-type
+change cannot account for is the extra downward component.
 
 ```{r}
 #| label: fig-controls
-#| fig-cap: "SUPPLEMENTARY FIGURE 2 (figureS2). The controls behind Figure 2. (A) Driver against output: everything registering a falling MYC dose widens over the window while the genotype gap in Hallmark MYC targets V2 narrows, so the attenuation is downstream of dose. (B) The 12W MYC effect is the 6W effect at ~55% amplitude. (C) Myc+ against wild-type temporal change: the shared slope is not beyond its null, the MYC-specific intercept is at the 0th percentile. (D) The collapse statistic over 8,774 MYC-responsive genes, marking the two pre-specified genes and Myc itself."
+#| fig-cap: "SUPPLEMENTARY FIGURE 2 (figureS2). The controls behind Figure 2. (A) Driver against output: everything registering a falling MYC dose widens over the window while the genotype gap in Hallmark MYC targets V2 narrows, so the attenuation is downstream of dose. (B) The 12W MYC effect is the 6W effect at ~55% amplitude. (C) Myc+ minus wild-type per pathway, ranked: 133 of 143 move further down with MYC, median -0.18, and the flat band is the near-uniformity shown rather than inferred; the inset decomposes the same thing into a shared slope (not beyond its null) and a MYC-specific intercept (beyond all 500 shuffles). (D) The collapse statistic over 8,774 MYC-responsive genes, marking the two pre-specified genes and Myc itself. The nulls test against the data's own structure, not against sampling new animals."
 #| fig-width: 9
-#| fig-height: 7.7
+#| fig-height: 8.1
 #| echo: false
 source(here::here("figures", "figureS2_controls.R"))
 print(p)
@@ -506,12 +516,20 @@ gene-label shuffles matched on set size, expression and pathway overlap. The 12W
 the 6W profile at 55% of the amplitude: the same pathways, in the same order, less of it.
 This is the pathway-level form of the Issue #4 result that magnitude, not rank, shrinks.
 
-**What Myc adds over the timeline is a uniform offset, not a different set of pathways.**
-Regressing the Myc+ 6->12W change on the WT 6->12W change (@fig-background C) gives slope
-0.75 and intercept -0.17. The **slope** -- the part both genotypes share -- is not
-distinguishable from the null (null median 0.63, 82nd percentile). The **intercept** is, at
-the 0th percentile. It is also the only batch-clean quantity in the comparison, since an
-offset common to both temporal contrasts cancels in their difference.
+**What Myc adds over the timeline is a downward shift, near-constant across pathways, rather
+than a different set of pathways moving.** Regressing the Myc+ 6->12W change on the WT 6->12W
+change (@fig-background C) gives slope 0.75 and intercept -0.17. The **slope** -- the part
+both genotypes share -- is not distinguishable from the null (null median 0.63, 82nd
+percentile). The **intercept** is, beyond all 500 shuffles. It is also the only batch-clean
+quantity in the comparison, since an offset common to both temporal contrasts cancels in
+their difference.
+
+Two phrasings to avoid here, both tempting and both wrong. **"A uniform offset"** would be
+exact only at slope 1; at 0.75 there is also a component scaling with how far the wild-type
+moved, so the defensible claim is that the *intercept* is the extreme, batch-clean term, not
+that the offset is literally constant. And **"the Myc change is not due to the WT change"** is
+too strong the other way: slope 0.75 says much of the movement *is* shared, and the point is
+that the shared part is unremarkable while an additional component is not.
 
 **The background is not moving toward the Myc state.** The WT 6->12W vector projects onto the
 Myc(6W) vector at just **0.064** -- against a null median of 0.24, the 9.8th percentile, i.e.

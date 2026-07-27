@@ -17,13 +17,27 @@
 #      coherence sits at the 100th percentile of gene-label shuffles matched on
 #      set size, expression and pathway overlap. That is what makes "the rest of
 #      the programme is merely scaled down" a measurement rather than a metaphor.
-#   C  DOES MYC ADD A DIFFERENT SET OF PATHWAYS OVER TIME, OR THE SAME ONES LESS?
-#      Regressing the Myc+ temporal change on the wild-type one: the SHARED slope
-#      is not distinguishable from the null, and the MYC-SPECIFIC intercept is at
-#      the 0th percentile. What MYC contributes over the window is a uniform
-#      offset, not a redirection -- and the intercept is the batch-clean quantity,
-#      because an offset common to both temporal contrasts cancels in their
-#      difference.
+#   C  WHAT DOES MYC ADD OVER THE WINDOW, ON TOP OF WHAT DEVELOPMENT DOES?
+#      The wild-type gland drifts UP across the window (median +0.04; 103 of 143
+#      pathways rise) while the Myc gland drifts DOWN (median -0.13; 22 of 143
+#      rise). Per pathway, Myc+ minus wild-type is NEGATIVE in 133 of 143 cases,
+#      median -0.18 -- and that difference IS the Myc-specific temporal change, by
+#      script 40's exact identity. It is BATCH-CLEAN: both temporal contrasts carry
+#      the same batch offset and it cancels in their difference. Ranked, a flat band
+#      shows the near-uniformity directly.
+#        The inset decomposes the same thing as a regression. TWO PHRASINGS TO
+#      AVOID. (i) "A UNIFORM OFFSET" is exact only at slope 1; at 0.75 there is also
+#      a component scaling with how far the wild-type moved, so the defensible claim
+#      is that the INTERCEPT is the extreme, batch-clean term -- not that the offset
+#      is literally constant. (ii) "The Myc change is NOT DUE TO the wild-type
+#      change" is too strong the other way: slope 0.75 says much of the movement IS
+#      shared. The panel's point is that the shared part is UNREMARKABLE (82nd pct)
+#      while an ADDITIONAL downward component is not.
+#        WHAT THE NULL IS A NULL OF: a gene-label shuffle preserving set size,
+#      expression and pathway overlap -- a test against the data's own internal
+#      structure, NOT against sampling new animals. 500 draws, so the intercept's
+#      "0th percentile" means p < 1/500 = 0.002 and no smaller. The bootstrap CI on
+#      the slope (0.57-0.94) resamples PATHWAYS, not mice.
 #   D  DOES PUMA'S COLLAPSE SURVIVE WITHOUT THE BCL-xL DENOMINATOR? Yes. Ranking
 #      all Myc-responsive genes by their residual from the global rate -- a
 #      statistic that never touches Bcl2l1 -- puts Bbc3 at the 0.5th percentile.
@@ -207,17 +221,107 @@ pB <- scatter_base(
           100 * gv("^rescale", "slope")),
   gv("^rescale", "slope"), gv("^rescale", "intercept"))
 
-pC <- scatter_base(
-  d, "c_tn", "c_tp",
-  "wild-type 6->12W  (set log2FC)", "Myc+ 6->12W  (set log2FC)",
-  "C   A uniform offset, not a redirection",
-  "dashed = the two genotypes move identically",
-  sprintf("slope %.2f = the SHARED move\n  null %.2f, %.0fth pct (not beyond it)\nintercept %.2f = MYC-SPECIFIC\n  null %.2f, %.0fth pct\n\nthe intercept is the\nbatch-clean quantity",
-          gv("^shared", "slope"), nv("shared_slope", "null_median"),
-          nv("shared_slope", "percentile"),
-          gv("^shared", "intercept"), nv("shared_int", "null_median"),
-          nv("shared_int", "percentile")),
-  gv("^shared", "slope"), gv("^shared", "intercept"))
+# --- PANEL C, main: the Myc-specific temporal change, one number per pathway ---
+# `c_tp - c_tn` IS the Myc-specific part of the temporal move, by script 40's exact
+# identity (change in the genotype gap = Myc+ temporal - WT temporal). It is the
+# BATCH-CLEAN quantity for the same reason the regression intercept is: both
+# temporal contrasts carry the same batch offset, so it cancels in their difference.
+#
+# ARTIFACT LEDGER (script 40 PART G) -- DO NOT plot or correlate this difference
+# AGAINST either temporal contrast. It IS their difference, so that relationship is
+# algebraically forced and carries no information whatsoever.
+#
+# Ranking it also answers "is the offset uniform?" BY EYE, which the intercept can
+# only answer indirectly: a flat band across the ranking is the uniformity claim.
+Cd <- d[is.finite(d$c_tn) & is.finite(d$c_tp), ]
+Cd$delta <- Cd$c_tp - Cd$c_tn
+Cd <- Cd[order(Cd$delta), ]
+Cd$rank <- seq_len(nrow(Cd))
+ancC    <- Cd[Cd$pathway %in% tier_lv, ]
+n_down  <- sum(Cd$delta < 0)
+med_d   <- stats::median(Cd$delta)
+
+# The direction is the message, so assert it rather than trusting the caption.
+if (!(n_down > 0.8 * nrow(Cd) && med_d < 0))
+  warning("figureS2 C: the Myc-specific temporal shift is no longer predominantly ",
+          "downward -- re-read the panel text before using it")
+
+pC_main <- ggplot2::ggplot(Cd, ggplot2::aes(rank, delta)) +
+  ggplot2::geom_hline(yintercept = 0, colour = "grey55", linewidth = 0.35) +
+  ggplot2::geom_hline(yintercept = med_d, colour = "#B2182B", linewidth = 0.4,
+                      linetype = 2) +
+  ggplot2::geom_point(ggplot2::aes(colour = Tier), size = 1.1, alpha = 0.85) +
+  ggplot2::geom_point(data = ancC, ggplot2::aes(fill = Tier), shape = 21, size = 2.1,
+                      colour = "black", stroke = 0.4, show.legend = FALSE) +
+  ggplot2::annotate("text", x = nrow(Cd) * 0.99, y = med_d, hjust = 1, vjust = 1.6,
+                    size = 1.95, colour = "#B2182B",
+                    label = sprintf("median %+.2f", med_d)) +
+  ggplot2::geom_label(
+    data = data.frame(rank = nrow(Cd) * 0.02, delta = max(Cd$delta),
+                      lab = sprintf("%d of %d pathways move\nFURTHER DOWN with MYC",
+                                    n_down, nrow(Cd))),
+    ggplot2::aes(label = lab), inherit.aes = TRUE, hjust = 0, vjust = 1, size = 2.1,
+    colour = "grey20", lineheight = 1.2, fill = "white", linewidth = 0,
+    label.padding = ggplot2::unit(0.6, "mm")) +
+  ggplot2::scale_colour_manual(values = tier_col, guide = "none", drop = FALSE) +
+  ggplot2::scale_fill_manual(values = tier_col, guide = "none") +
+  ggplot2::labs(
+    x = sprintf("%d MitoPathways, ranked", nrow(Cd)),
+    y = "Myc+ minus wild-type  (set log2FC)",
+    title = "C   What MYC adds over the window",
+    subtitle = "The wild-type gland drifts UP over the window and the MYC gland drifts DOWN.\nThe shared batch offset cancels in a difference, which is what makes this clean.") +
+  theme_myc(base_size = 8) +
+  ggplot2::theme(plot.title    = ggplot2::element_text(face = "bold", size = 8.5),
+                 plot.subtitle = ggplot2::element_text(size = 6.2, colour = "grey25",
+                                                       lineheight = 1.15))
+
+# --- PANEL C, inset: the same thing as a regression ---------------------------
+# Kept because it decomposes the difference into a SHARED slope and a MYC-SPECIFIC
+# intercept, which the one-dimensional view cannot. Orientation is deliberate and
+# must not be flipped: regression is NOT symmetric (c_tp ~ c_tn gives 0.749/-0.172,
+# c_tn ~ c_tp gives 0.559/+0.118, and the geometric mirror would be 1.335), and the
+# wild-type gland is the substrate, hence the predictor.
+rngC <- range(c(Cd$c_tn, Cd$c_tp), na.rm = TRUE)
+pC_inset <- ggplot2::ggplot(Cd, ggplot2::aes(c_tn, c_tp)) +
+  ggplot2::geom_abline(slope = 1, intercept = 0, colour = "grey65", linetype = 2,
+                       linewidth = 0.3) +
+  ggplot2::geom_point(colour = "grey45", size = 0.45, alpha = 0.7) +
+  ggplot2::geom_abline(slope = gv("^shared", "slope"),
+                       intercept = gv("^shared", "intercept"),
+                       colour = "black", linewidth = 0.45) +
+  ggplot2::coord_cartesian(xlim = rngC, ylim = rngC) +
+  ggplot2::labs(x = "WT", y = "Myc+") +
+  theme_myc(base_size = 6) +
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 5.2),
+    axis.text  = ggplot2::element_text(size = 4.2),
+    axis.ticks = ggplot2::element_line(linewidth = 0.2),
+    axis.line  = ggplot2::element_line(linewidth = 0.2),
+    plot.background  = ggplot2::element_rect(fill = "white", colour = "grey75",
+                                             linewidth = 0.25),
+    plot.margin = ggplot2::margin(1, 2, 1, 1))
+
+# The inset sits BOTTOM-RIGHT. Ranked ascending, the most negative values are at
+# LOW rank, so the high-rank / low-value corner is the empty one -- top-left is NOT
+# empty, because the flat band sits high in the y range.
+# annotation_custom rather than patchwork::inset_element: this figure nests
+# wrap_plots, and inset_element interacts with nesting in ways annotation_custom
+# does not.
+inset_note <- sprintf(
+  "the same, decomposed:\nslope %.2f = the SHARED move\n  null %.2f, %.0fth pct -> NOT beyond it\nintercept %.2f = MYC-SPECIFIC\n  beyond all %d shuffles, p<%.3f",
+  gv("^shared", "slope"), nv("shared_slope", "null_median"),
+  nv("shared_slope", "percentile"), gv("^shared", "intercept"),
+  bg$defs$n_perm, 1 / bg$defs$n_perm)
+
+yr <- range(Cd$delta)
+pC <- pC_main +
+  ggplot2::annotation_custom(
+    ggplot2::ggplotGrob(pC_inset),
+    xmin = nrow(Cd) * 0.66, xmax = nrow(Cd) * 1.00,
+    ymin = yr[1] - diff(yr) * 0.02, ymax = yr[1] + diff(yr) * 0.43) +
+  ggplot2::annotate("text", x = nrow(Cd) * 0.63, y = yr[1] + diff(yr) * 0.21,
+                    hjust = 1, vjust = 0.5, size = 1.8, colour = "grey25",
+                    lineheight = 1.3, label = inset_note)
 
 # =============================================================================
 # PANEL D -- the collapse, without the Bcl-xL denominator
@@ -267,10 +371,15 @@ p <- patchwork::wrap_plots(pA, pB, pC, pD, nrow = 2, byrow = TRUE,
               gv("^rescale", "slope")),
       "B/C: one point per MitoPathway on the content ruler (set-average RAW log2FC), coloured by MitoPathway tier as in Figure 1B; ringed points are the seven top-level arms. The synthetic",
       "   mtDNA-encoded pathway is excluded as a 4-6.5 SD outlier on every temporal contrast.",
-      "   Nulls are within-decile gene-label shuffles preserving set size, expression AND pathway overlap -- MitoPathways nest, so overlap alone would manufacture cross-pathway correlation.",
+      "   Nulls are gene-label shuffles preserving set size, expression AND pathway overlap -- MitoPathways nest, so overlap alone would manufacture cross-pathway correlation. They test against the",
+      sprintf("   data's own structure, NOT against sampling new animals; %d draws, so a value beyond all of them means p < %.3f and no smaller. The bootstrap CI resamples PATHWAYS, not mice.",
+              bg$defs$n_perm, 1 / bg$defs$n_perm),
+      "C: Myc+ minus wild-type per pathway IS the Myc-specific temporal change (script 40's identity), and it is batch-clean because the shared offset cancels in a difference. It must never be plotted",
+      "   AGAINST either temporal contrast -- it is their difference, so that relationship is algebraically forced (script 40's artifact ledger). Inset: the same decomposed; orientation is deliberate,",
+      "   since regression is not symmetric (0.75/-0.17 one way, 0.56/+0.12 the other) and the wild-type gland is the predictor.",
       sprintf("D: rank on sign(LFC_6W) x (LFC_12W - rate x LFC_6W), standardised by the two contrasts' independent SEs; fitted rate %.2f, axis clipped at %.0f (%d gene beyond).",
               cmo$defs$global_rate_fitted, zr[2], n_off),
-      "BATCH = TIMEPOINT: it cancels in panel C's intercept, which is why that is the quantity read there, but not in the temporal contrasts themselves.",
+      "BATCH = TIMEPOINT: it cancels in panel C's difference (and in the inset's intercept), which is why those are the quantities read, but not in the temporal contrasts themselves.",
       sep = "\n"),
     theme = ggplot2::theme(
       plot.caption = ggplot2::element_text(size = 5.6, hjust = 0, colour = "grey30",
@@ -279,7 +388,7 @@ p <- patchwork::wrap_plots(pA, pB, pC, pD, nrow = 2, byrow = TRUE,
 if (!isTRUE(getOption("myc.fig.nosave"))) {
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   save_panel(p, file.path(out_dir, "figureS2_controls.pdf"),
-             width = fig_w[["double"]], height = 155)
+             width = fig_w[["double"]], height = 162)
 }
 
 # =============================================================================

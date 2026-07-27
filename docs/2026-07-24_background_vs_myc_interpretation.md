@@ -52,8 +52,42 @@ This is the powered, pathway-level form of Issue #4 ("magnitude not rank shrinks
   temporal contrasts cancels in the difference.
 
 > Both genotypes' mitochondrial compartments move over the timeline in a pattern that is
-> not specific to either. What Myc adds is a uniform downward offset, not a different set
-> of pathways moving.
+> not specific to either. What Myc adds is a downward shift, near-constant across pathways,
+> rather than a different set of pathways moving.
+
+**FOUR PRECISION POINTS, added 2026-07-27 when the author asked for this panel to be explained
+to a non-expert. None changes a number; each stops a reading the numbers do not support.**
+
+1. **"A UNIFORM offset" is an approximation, not an identity.** It would be exact only at slope
+   1. At 0.75 the Myc-specific change also carries a component proportional to how far the
+   wild-type moved: `c_tp - c_tn = (slope - 1) * c_tn + intercept`. The defensible claim is
+   that **the intercept is the extreme, batch-clean term**, not that the offset is literally
+   constant. (Ranked, the per-pathway difference *is* a visibly flat band, so "near-constant"
+   is fair; "uniform" is not.)
+2. **The mirror error is worse: "the Myc change is NOT DUE TO the WT change" is too strong.**
+   Slope 0.75 says much of the Myc gland's movement **is** shared with the wild-type's. The
+   result is that the shared part is *unremarkable* (82nd percentile) while an **additional**
+   downward component is not.
+3. **WHAT THE NULL IS A NULL OF.** A gene-label shuffle preserving set size, expression and
+   pathway overlap — a test against **the data's own internal structure**, not against sampling
+   new animals. That is exactly why the slope's 82nd percentile is reported as a negative and
+   the intercept's as a result. **500 draws**, so "0th percentile" means **p < 1/500 = 0.002
+   and no smaller** — it is not p = 0. The bootstrap CI on the slope (0.57–0.94) resamples
+   **pathways, not mice**; at n=6/group the animal-level question is separate and weaker.
+4. **DO NOT FLIP THE AXES.** Regression is not symmetric: `c_tp ~ c_tn` gives **0.749 /
+   -0.172**, `c_tn ~ c_tp` gives **0.559 / +0.118** (the geometric mirror would be 1.335, so
+   the two are unrelated). Flipping also destroys the quantity of interest — the intercept
+   would become "where the wild-type sits when the Myc gland does not move". The orientation is
+   forced by the question: the wild-type gland is the substrate, hence the predictor.
+
+**Direction, since it is the message and "bigger" gets it wrong.** Across the window the
+wild-type gland drifts **UP** (median +0.041; 103 of 143 pathways rise) while the Myc gland
+drifts **DOWN** (median -0.135; 22 of 143 rise). Per pathway `c_tp - c_tn` is negative in
+**133 of 143** cases, median **-0.18**. Only 96 of 143 have a larger move in absolute size, so
+"further down" is robust and "bigger" is not. That downward drift **is** the attenuation, not
+Myc doing something extra. `figures/figureS2_controls.R` panel C plots this difference directly
+(ranked) with the regression as an inset — and the difference must **never** be plotted against
+either temporal contrast, per the artifact ledger in section 6.
 
 ### 2.3 The background is NOT moving toward the Myc state
 
