@@ -50,8 +50,8 @@ then what development takes away and what that hands to the cell experiments.
 |--------------|--------|--------|-----------------|---------|
 | **Figure 1** | `figure1_myc_mitochondrion.R` | A-D | 32, 08, 42 | @sec-content |
 | **Figure 2** | `figure2_developmental_window.R` | A-F | 43, 44, 42 | @sec-window |
-| Supp 1 | `figureS1_compartment_detail.R` *(to build)* | survey, complexes, full ranking | 32, 08 | @sec-mito-survey |
-| Supp 2 | `figureS2_controls.R` *(to build)* | dose, x0.55 + nulls, genome-wide collapse | 40, 41, 44 | @sec-attenuation |
+| Supp 1 | `figureS1_compartment_detail.R` | A-C | 32, 08 | @sec-mito-survey |
+| Supp 2 | `figureS2_controls.R` | A-D | 40, 41, 44 | @sec-attenuation |
 
 Everything else under `figures/` -- `fig01`-`fig05`, `figS1`-`figS8` -- stays as the
 **exploratory layer** this document walks through. Those scripts are not renamed: their
@@ -167,6 +167,25 @@ mtDNA qPCR / blot is the settling experiment. Possible future panel: the four co
 the sides of a square [Myc@6W / Myc@12W / WT-time / Myc+-time] -- a 2x2 contrast diagram.)*
 
 # The mitochondrial-group survey: what rises when OXPHOS falls {#sec-mito-survey}
+
+**SUPPLEMENTARY FIGURE 1** is the three controls behind @sec-content, in the order the
+claims are made: the compartment share rises because the *genes* rise and not by subtraction
+(the compositional objection to a fraction); something has to rise while OXPHOS falls, and
+the sixteen-group survey names it as the substrate-metabolism arms, so a flat compartment
+total is reallocation rather than stasis; and the respiratory chain moves as one block, so
+"MYC raises OXPHOS" is the right sentence rather than a claim about one complex.
+
+```{r}
+#| label: fig-compartment-detail
+#| fig-cap: "SUPPLEMENTARY FIGURE 1 (figureS1). The compartment in detail. (A) Per-gene direction across the four contrasts for the Figure 1 arms; numbers inside the bars are FDR-significant genes, which track set size and power, while the % up line does not. (B) Median log2FC across the 16 MitoCarta groups; read the WT column. (C) The five respiratory complexes. Set membership resolved with the vintage reconciler, which recovers 17 of Complex V's 24 subunits that a plain symbol match drops. Genotype columns are the batch-clean axis; the temporal columns are confounded and described, not claimed."
+#| fig-width: 9
+#| fig-height: 8.2
+#| echo: false
+source(here::here("figures", "figureS1_compartment_detail.R"))
+print(p)
+```
+
+The rest of this section is the exploratory version of panels B and C.
 
 fig01 shows OXPHOS is the mitochondrial arm that *falls* across the WT 6->12W timeline,
 yet the total nuclear MitoCarta share is flat -- so other groups must rise to hold it
@@ -414,6 +433,25 @@ the global mean). A mito axis's median coupling to an *arbitrary* library set is
 mito-SPECIFIC. Panels: `pathway_loading/A_scree`, `A3_gene_axis_covariates`, `linear_pathway_coupling/A_ceiling_origin`.
 
 # The oncogenic programme attenuates across progression {#sec-attenuation}
+
+**SUPPLEMENTARY FIGURE 2** carries the four controls @sec-window depends on. PUMA's collapse
+is read against a global x0.55 rescaling, so before that reading is allowed: the x0.55 is
+**not** a falling dose (every measure that would register one *widens* while MYC's output
+narrows); it **is** real and uniform (the 12W profile is the 6W profile at 55% amplitude, its
+coherence at the 100th percentile of matched shuffles); what MYC adds over the window is a
+**uniform offset**, not a different set of pathways, and that offset is the batch-clean
+quantity; and PUMA's collapse **survives removal of the BCL-xL denominator** on a genome-wide
+statistic.
+
+```{r}
+#| label: fig-controls
+#| fig-cap: "SUPPLEMENTARY FIGURE 2 (figureS2). The controls behind Figure 2. (A) Driver against output: everything registering a falling MYC dose widens over the window while the genotype gap in Hallmark MYC targets V2 narrows, so the attenuation is downstream of dose. (B) The 12W MYC effect is the 6W effect at ~55% amplitude. (C) Myc+ against wild-type temporal change: the shared slope is not beyond its null, the MYC-specific intercept is at the 0th percentile. (D) The collapse statistic over 8,774 MYC-responsive genes, marking the two pre-specified genes and Myc itself."
+#| fig-width: 9
+#| fig-height: 7.7
+#| echo: false
+source(here::here("figures", "figureS2_controls.R"))
+print(p)
+```
 
 Foreshadowed already in fig01b (@sec-content, tension 2): the per-gene induction shrinks
 6W->12W (OXPHOS still 87% up at 12W but only 1 gene clears FDR), and the Time-Myc+ contrast
