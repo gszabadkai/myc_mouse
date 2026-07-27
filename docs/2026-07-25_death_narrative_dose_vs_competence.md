@@ -524,10 +524,32 @@ step 3, and the dose material (fig03/figS8) to step 5.
 written with — that number is what the commits, these dated docs and `outputs/figures/` all cite, and
 renaming fourteen files to encode an argument order would break every one of those references for no
 analytical gain. The **manuscript** figure order lives in a manifest table at the head of
-`paper/myc_mito.qmd` and in the section order itself. So: **`fig04_substrate_specificity.R` = Figure
-1** (steps 1–2, script 43 PART A + script 44's wild-type apoptosis table), fig01/fig01b = Figure 2,
-fig02 = Figure 3, fig03/figS8 = Figure 4, and **`fig05_death_arm.R` = Figure 5** (steps 3–4, scripts
-42 + 44). Both new panels were written 2026-07-27 and are the author's to run.
+`paper/myc_mito.qmd` and in the section order itself.
+
+**SUPERSEDED LATER THE SAME DAY — read this before using the figure order above.** The author ran
+fig04 and fig05, accepted that they carry the conclusions, and then rejected them for the paper:
+*"the argumentation became too complex … the story has to be more simple and use less jargon."* The
+bioinformatics was re-scoped to **two main figures of up to six panels plus two supplementary**, and
+their order now follows **¶4 of the drafted Introduction**, which is **MYC-first**: *"MYC raises
+mitochondrial content and builds an organelle that is not only bioenergetically competent but
+death-competent … **Against this**, the respiratory arm is the one mitochondrial programme from which
+the maturing gland itself withdraws."*
+
+The nine steps above remain the **argument**. The **figures** are now partitioned by actor rather
+than by step order:
+
+- **Figure 1** (`figures/figure1_myc_mitochondrion.R`) — step 3 plus the reprioritisation: content
+  rises, the compartment is reprioritised rather than simply enlarged, demoted arms are not switched
+  off, and the organelle MYC builds can execute its own death.
+- **Figure 2** (`figures/figure2_developmental_window.R`) — steps 1, 2 and 4, then the hand-off: the
+  gland withdraws respiration and only respiration, tested as a comparison and on both rulers; it
+  leaves the death machinery intact; MYC's programme halves while PUMA:BCL-xL reverses; and **panel
+  F, the three propositions** the mouse hands to the cell experiments (section 0.10 of the alignment
+  doc).
+
+`fig04` and `fig05` are **not** the paper figures. They remain the exploratory layer, and fig05's
+panel D (the genome-wide collapse) is destined for Supplementary Figure 2. The two supplementary
+composites are unbuilt and gated on the author's reaction to Figures 1 and 2.
 
 **Why not the other two orders.** *Myc-first* (the previous version of this section, which opened on
 "MYC drives mitochondrial biogenesis") makes the substrate arrive as a late qualifier, and the reader

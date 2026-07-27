@@ -523,6 +523,69 @@ apoptosis under Wnt control — which fits the TEB story better than FOXO3 does.
 
 ---
 
+## 0.10 The three propositions — what the mouse hands to the cell experiments
+
+**This section exists because of one question from the author (2026-07-27): *"Why is it important
+that the gland withdraws the respiratory arm — does it contribute to the lost sensitivity to
+apoptosis? Can it be shown after?"*** The answer reorganised the figures, so it is recorded here
+rather than left in the conversation. **Figure 2F renders this table.**
+
+### Why the withdrawal is load-bearing at all
+
+Without it the mouse is a **dose** story and nothing more: MYC protein falls ~50% and the whole
+programme rescales by x0.55, which is self-explanatory and predicts nothing. What it cannot explain
+is **MYC-ER** — undiminished MYC, in animals never previously exposed, and still ~80% less death
+against ~30% less proliferation. That asymmetry requires an input from the **tissue**. The
+respiratory withdrawal is the only candidate visible in the transcriptome that is (i) **specific** —
+it is the one mitochondrial arm that moves, while the assembly factors of the same complexes, the
+mitoribosome and nucleotide metabolism do not; (ii) **the same arm the cell perturbations show to be
+death-sensitising**; (iii) **coincident** with the window in which MYC loses PUMA; and (iv) able to
+predict the death-over-proliferation asymmetry with no extra assumption — death needs two inputs and
+proliferation one, so death falls superlinearly.
+
+### The three propositions, each with its control and its adjudicating experiment
+
+| | proposition | evidence | control | the experiment that settles it |
+|---|---|---|---|---|
+| **H1** | respiratory state gates PUMA priming | `MYC x OXPHOS-priority -> PUMA:BCL-xL` at the **91.9th percentile** of a within-timepoint permutation null (p 0.081); on the level rather than the priority axis, 84.7th | `redox` — a matched mitoPPS axis MYC does **not** drive (d=0.08) — sits at the **50.9th, dead centre**. Not shared with `BAX:BCL-xL` in any readable way: 67.2nd against its own control at 63.3rd | raise **PGC-1a** in MYC-driven cells and ask whether OXPHOS, PUMA and death all rise — **DONE** |
+| **H2** | the TEB->ductal transition moves respiration and PUMA priming down together | TEB is the steepest faller in the whole comparator (**-0.422**, 0th percentile) and moderates the same ratio at the **90.8th percentile**; PUMA-specific over BAX (79.4th) | none available — TEB is not separable from H1 at n=24, and it is the honest rival | single-cell or deconvolution to separate a shift in cell-state **abundance** from **regulation**; or TEB- versus ductal-derived MECs — **OPEN** |
+| **H3** | respiration costs proliferation — **unless death is blocked** | same axis, same animals, opposite direction: `-> proliferation markers` **6.3rd percentile**, `-> E2F hallmark` **9.2nd** | `redox` controls at the 30.2nd/27.7th — shifted the same way but less far, so H3 is a **ranking observation**, weaker as a test than H1 | **PGC-1a in MYAZ, with and without Bcl-xL** — **DONE, and the sign INVERTS**: PGC-1a alone kills, PGC-1a + Bcl-xL grows better than Bcl-xL alone |
+
+**H3 is the one that had been mis-filed as a control.** The mouse supplies the *negative* limb — in an
+animal, death is intact, so respiration expresses its liability and costs growth. The cells supply the
+*positive* limb once execution is blocked. **The same intervention, opposite sign, and the switch is
+whether the cell can die.** That pairing is the hand-off from the bioinformatics to the in vitro
+section, and it is why the proliferation result belongs in the figure rather than in a footnote.
+
+### The limits, which are severe and travel with every row
+
+1. **Nothing is significant.** The best permutation p is 0.081.
+2. **The axis is collinear with what it would explain.** Respiratory priority falls across the window,
+   so "high-priority animal" is close to "6-week animal" is close to "animal where MYC still kills".
+   Adding `tp*myc` takes the H1 term from **p 0.005 to p 0.088**. This is the structure of a
+   two-timepoint cross-sectional design and no amount of statistics repairs it.
+3. **H1 and H2 are not separable.** The TEB both respires hardest and clears its lumen by apoptosis.
+4. **Mediation does not help.** Adding OXPHOS makes the interaction *stronger*, not weaker
+   (`absorbed_frac` -0.27). With an endogenous, MYC-driven mediator that is uninformative rather than
+   refuting — script 42 PART H carries the caveat verbatim from script 30. Do not cite it either way.
+5. **One column is untrustworthy.** Adding timepoint makes the *proliferation* and composite terms
+   stronger (p 0.107->0.031, 0.060->0.011) while PUMA weakens. Terms that grow on adding a collinear
+   variable are collinearity artefacts; only PUMA moves in the honest direction.
+6. **These are transcript ratios.** Apoptotic competence is an occupancy state at the outer membrane.
+
+### One reassurance, and one thing that would settle it in the tissue
+
+The H1 test is implemented **twice, independently** — script 42 PART H and script 43 PART B — and
+lands at the **91.94th** and **91.72nd** percentile. Figure 2F asserts that agreement before drawing.
+
+What would close the loop *in the gland*, neither of which is transcriptomics: **BH3 profiling of
+wild-type gland at 6W versus 12W**, the direct measurement of the state being inferred; and the
+gain-of-function — **restore respiration or PGC-1a in the 12-week gland, or in MYC-ER at 12 weeks, and
+ask whether killing returns.** Only the second converts the window from a coincidence into a
+mechanism.
+
+---
+
 ## 1. What changed since 2026-07-13 — and one correction that matters more than the rest
 
 ### 1.1 The correction is a frame error, not an arithmetic one — and OXPHOS is the arm the normal gland withdraws from
@@ -679,8 +742,20 @@ sentence only said the models had adapted; it did not say what that cost the fie
 
 ## 4. Drafted Introduction
 
-Axis-level naming throughout, per the author's decision — no PGC1a, no PUMA, no gene names. Existing
-reference callouts preserved where the sentence survives. Square brackets mark optional clauses.
+**NAMING DECISION REVERSED, 2026-07-27.** ¶1–¶3 keep axis-level naming. **¶4 and ¶5 now name
+molecules** — the author's call, after reading the axis-level version and finding it *"too nebulous;
+readers of a leading journal need more clear cut explanations"*. `PUMA`, `BAX`, `HTRA2`, `BCL-xL` and
+`PGC-1a` appear where they carry a clause that was otherwise an abstraction.
+
+**One constraint is enforced and must stay enforced: `PGC-1a` appears only where the CELL experiments
+are described, never as a finding of the mouse RNA-seq.** In this dataset the PGC-1a axis is not
+separable from MYC (raw r 0.93, script 38 PART C), `Ppargc1a` sits at baseMean 30 and is unreadable,
+and `CORE_MITO` — the closest DNA-level proxy for the axis — is flat overall while only its
+OXPHOS-subunit component falls (section 0.8). PGC-1a is an *intervention we performed*, not a
+transcript we measured.
+
+Existing reference callouts preserved where the sentence survives. Square brackets mark optional
+clauses.
 
 > Breast cancer remains the primary cause of cancer-related mortality in women, with metastasis
 > associated with the worst prognosis.^1-3^ It is now established that bioenergetic and metabolic
@@ -737,35 +812,44 @@ reference callouts preserved where the sentence survives. Square brackets mark o
 > without paying the liability — and whether the solution is one the cell finds, or one the tissue
 > hands it.
 >
-> Although MYC is reported to stimulate overall mitochondrial biogenesis, we find that its effect on
-> the mitochondrial transcriptome is not uniform, and that the resulting reprioritisation is what
-> decides whether transformation proceeds. Superimposed on the transcriptional trajectory of normal
-> mammary development, MYC raises mitochondrial content and builds an organelle that is not only
-> bioenergetically competent but death-competent, loading the pro-apoptotic machinery while
-> releasing the mitochondrial brake. Against this, the respiratory arm is the one mitochondrial
-> programme from which the maturing gland itself withdraws — and it does so as terminal end bud
-> morphogenesis ends, not as part of a proliferative exit: the structural respiratory subunits fall
-> in the normal gland several-fold more steeply than the proliferative programme does, while the
-> assembly factors of the same complexes, the mitochondrial ribosome and nucleotide metabolism do
-> not move at all. The withdrawal persists on a ratio-based measure in which a change in oncogene
-> dose cancels. Apoptotic competence is lost over the same window while the remainder of the MYC
-> programme is merely scaled down. In mammary epithelial cells the trade-off is then demonstrated
-> directly, and it reverses sign: raising the mitochondrial biogenic programme kills MYC-driven
+> Although MYC is reported to stimulate mitochondrial biogenesis, we find that its effect on the
+> mitochondrial transcriptome is not uniform — some arms of the compartment are promoted and others
+> demoted — and that it is this reprioritisation, and specifically what happens to the respiratory
+> arm, rather than the overall increase, that decides whether transformation proceeds. On top of
+> what normal mammary development is already doing, MYC raises mitochondrial content and builds an
+> organelle that is not only bioenergetically competent but death-competent: it raises BAX and the
+> intermembrane-space protease HTRA2 while lowering the mitochondrial brake BCL-xL. Against that,
+> the respiratory arm is the one mitochondrial programme the maturing gland itself withdraws from,
+> and it does so as terminal end bud morphogenesis ends rather than as part of a proliferative exit
+> — the structural subunits of the respiratory complexes fall in the normal gland several-fold more
+> steeply than the proliferative programme does, while the assembly factors of those same complexes,
+> the mitochondrial ribosome and nucleotide metabolism do not move at all. The withdrawal is not a
+> by-product of the change in mitochondrial content: it persists on a within-compartment ratio
+> measure that is blind to how many mitochondria a cell has. What the gland does *not* do is
+> dismantle the death machinery — every pro- and anti-apoptotic transcript sits where it was, and no
+> anti-apoptotic brake is raised — so the window opens because development removes the *input*, not
+> the *machine*. Over that same window MYC's induction of PUMA relative to BCL-xL collapses and
+> reverses, while the remainder of the MYC programme is simply scaled down by about half.
+>
+> In mammary epithelial cells the trade-off is then demonstrated directly, and it reverses sign:
+> raising PGC-1a, the coactivator that drives the mitochondrial biogenic programme, kills MYC-driven
 > cells, whereas raising it in cells whose mitochondrial death execution is blocked accelerates
 > their growth — the same intervention is lethal or advantageous according only to whether the cell
-> can die. [This assigns the mitochondrial biogenic programme a sensitising rather than the
-> cytoprotective role usually ascribed to it.] Conversely, prolonged MYC expression selects cells
-> that have shed the respiratory programme and with it the sensitivity. In vivo, acute activation of
-> MYC in the adult gland at undiminished dose fails to kill, in animals never previously exposed to
-> it, so the change is a property of the tissue and not an adaptation of the transformed cell:
-> **what tumour cells achieve by selection, the normal gland achieves by development.** Together
-> these define a permissive window for tumourigenesis at the adult developmental stage. The
-> requirement then inverts with progression, whereas higher OXPHOS activity is subsequently required
-> to support metastasis — and on this account it is not the mitochondrial requirement that changes
-> across progression but the capacity to afford it, respiration being re-engaged once the death it
-> primes can no longer be executed. Our in vitro and in vivo findings therefore define the
-> mitochondrial transcriptome as an active and stage-dependent axis of MYC-driven breast cancer,
-> reprioritised to permit transformation early and re-engaged to enable progression.
+> can die. What respiratory capacity sets is therefore apoptotic *competence* rather than apoptotic
+> signalling: it determines whether the death programme MYC induces can be executed. [This assigns
+> the mitochondrial biogenic programme a sensitising rather than the cytoprotective role usually
+> ascribed to it.] Conversely, prolonged MYC expression selects cells that have shed the respiratory
+> programme and with it the sensitivity. In vivo, acute activation of MYC in the adult gland at
+> undiminished dose fails to kill, in animals never previously exposed to it, so the change is a
+> property of the tissue and not an adaptation of the transformed cell: **what tumour cells achieve
+> by selection, the normal gland achieves by development.** Together these define a permissive
+> window for tumourigenesis at the adult developmental stage. The requirement then inverts with
+> progression: higher OXPHOS activity is subsequently required to support metastasis, so what
+> changes across progression is not the mitochondrial requirement but the capacity to afford it —
+> respiration is re-engaged once the death it primes can no longer be executed. Our in vitro and in
+> vivo findings therefore define the mitochondrial transcriptome as an active and stage-dependent
+> axis of MYC-driven breast cancer, reprioritised to permit transformation early and re-engaged to
+> enable progression.
 
 **Per-change rationale, against the section 2 table.**
 
@@ -799,8 +883,40 @@ reference callouts preserved where the sentence survives. Square brackets mark o
   they are a *level* measurement and cannot corroborate a *ratio-based* de-prioritisation, and the
   wild-type limb of the claim needs blots from the wild-type gland specifically. It belongs in the
   Results, stated for the genotypes actually blotted.
-- The bracketed clause discharges the canonical-cytoprotection inversion early, at axis level,
-  without naming the coactivator. If it is cut, see section 5.
+- The bracketed clause discharges the canonical-cytoprotection inversion early. If it is cut, see
+  section 5.
+
+**¶4 REWRITTEN 2026-07-27, and split into ¶4 (the mouse) + ¶5 (the cells and the synthesis).** The
+author's verdict on the axis-level version: *"too nebulous"*, and two specific gaps — *"it is still
+not clear what is the role of OXPHOS in regulating apoptosis, and how the actual window opens."* Six
+changes, each answering one of those:
+
+1. **Molecules where the abstraction was doing the work.** "Loading the pro-apoptotic machinery while
+   releasing the mitochondrial brake" -> **BAX and HTRA2 up, BCL-xL down**. "Apoptotic competence is
+   lost" -> **MYC's induction of PUMA relative to BCL-xL collapses and reverses**. "Raising the
+   mitochondrial biogenic programme" -> **raising PGC-1a** — in the *cell* sentence only.
+2. **THE WINDOW, said in one clause.** *"What the gland does not do is dismantle the death machinery
+   ... so the window opens because development removes the INPUT, not the MACHINE."* This is the
+   sentence the paragraph was missing. It is also exactly what Figure 2D shows: 1 of 37 apoptotic and
+   brake transcripts moves across the window, and it moves up.
+3. **WHAT OXPHOS DOES TO APOPTOSIS, honestly scoped.** *"What respiratory capacity sets is apoptotic
+   competence rather than apoptotic signalling: it determines whether the death programme MYC induces
+   can be executed."* Competence, not signalling, is precisely what the Bcl-xL rescue localises — the
+   programme is still induced and the cells still do not die. **No molecular mechanism is claimed**;
+   the candidate routes (cristae and the releasable cytochrome-c pool, cardiolipin, membrane potential
+   and HTRA2 import) are section 0.9 and belong in the Discussion.
+4. **An imprecise clause fixed.** "A ratio-based measure in which a change in oncogene dose cancels"
+   was wrong-footed: the wild-type arm has no oncogene, so there is no dose to cancel. What mitoPPS
+   actually cancels is *any uniform scaling of the compartment* — which is what rules out the rise in
+   mitochondrial content as the explanation. Rewritten to say that.
+5. **The dangling `whereas`** in the metastasis sentence is repaired.
+6. **The opening claim is narrowed to the arm that carries it** ("this reprioritisation, and
+   specifically what happens to the respiratory arm"). "Decides" is kept — it is the author's word and
+   the PGC-1a perturbations, not the mouse correlation, are what license it.
+
+**What was NOT changed:** the beat order, which the author confirmed is right; the closing
+affordability claim; and the epistemic contract — every causal verb still sits in the cell sentences,
+every mouse sentence stays descriptive.
 
 ---
 

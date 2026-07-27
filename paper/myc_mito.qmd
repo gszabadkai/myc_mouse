@@ -42,19 +42,20 @@ res <- function(x) readRDS(here::here("results", paste0(x, ".rds")))
 ::: {.callout-tip collapse="true"}
 ## Figure manifest -- build number vs manuscript figure
 
-Panel scripts under `figures/` keep the number they were **built** with, because that
-number is what the commits, the dated docs and `outputs/figures/` all cite. The
-**manuscript** order is the argument order (substrate first, decided 2026-07-27) and is
-assigned here, not in the filenames.
+**The bioinformatics is TWO main figures of up to six panels plus two supplementary**
+(author, 2026-07-27), and they follow the order of the Results paragraph: what MYC builds,
+then what development takes away and what that hands to the cell experiments.
 
-| build | manuscript | script | source analysis | section |
-|-------|-----------|--------|-----------------|---------|
-| `fig04` | **Figure 1** | `fig04_substrate_specificity.R` | 43 PART A, 44 PART B | @sec-substrate |
-| `fig01` / `fig01b` | **Figure 2** | `fig01_mito_content.R`, `fig01b_mito_content_lfc.R` | 32 | @sec-content |
-| `fig02` | **Figure 3** | `fig02_reallocation_ranked.R` | 08, 40 | @sec-reallocation |
-| `fig03` / `figS8` | **Figure 4** | `fig03_background_vs_myc.R`, `figS8_myc_network_levels.R` | 40, 41 | @sec-attenuation |
-| `fig05` | **Figure 5** | `fig05_death_arm.R` | 42, 44 | @sec-death |
-| `figS1`-`figS7` | Supplementary | as named | 32, 08, 40 | throughout |
+| paper figure | script | panels | source analysis | section |
+|--------------|--------|--------|-----------------|---------|
+| **Figure 1** | `figure1_myc_mitochondrion.R` | A-D | 32, 08, 42 | @sec-content |
+| **Figure 2** | `figure2_developmental_window.R` | A-F | 43, 44, 42 | @sec-window |
+| Supp 1 | `figureS1_compartment_detail.R` *(to build)* | survey, complexes, full ranking | 32, 08 | @sec-mito-survey |
+| Supp 2 | `figureS2_controls.R` *(to build)* | dose, x0.55 + nulls, genome-wide collapse | 40, 41, 44 | @sec-attenuation |
+
+Everything else under `figures/` -- `fig01`-`fig05`, `figS1`-`figS8` -- stays as the
+**exploratory layer** this document walks through. Those scripts are not renamed: their
+numbers are what the commits, the dated docs and `outputs/figures/` cite.
 
 :::
 
@@ -65,105 +66,40 @@ four groups x six replicates, `~timepoint*myc_status` interaction design. Batch 
 so genotype/interaction contrasts are clean and the pure developmental reading is confounded.
 What this document does: walk the exploratory process and land the defensible results.
 
-# What the normal gland does to itself {#sec-substrate}
+# MYC builds a death-competent mitochondrion {#sec-content}
 
-Before anything about the oncogene: between 6 and 12 weeks the wild-type mammary
-epithelium **withdraws from respiration, and from nothing else that would explain it.**
-OXPHOS subunits fall **-0.255** in set-average log2FC, at the **0th percentile** of 2000
-expression-matched random sets, while the proliferative programme barely moves
-(`PROLIF_*` pooled **-0.047**) and the **assembly factors of the very same complexes**
-sit at **+0.001, the 50th percentile** (@fig-substrate A). Nucleotide metabolism and the
-mitoribosome -- the two mitochondrial arms most tightly coupled to growth, chosen in
-advance as the alternative hypothesis's best representatives -- do not move either
-(48th and 26th percentiles). The two biosynthetic arms move the other way: amino-acid
-metabolism **+0.184** and lipid **+0.122**, at the 100th and 99.9th percentiles.
+**MANUSCRIPT FIGURE 1.** At constant dose (@fig-myc-dose), MYC raises the **nuclear**
+mitochondrial arms -- mass markers, nuclear MitoCarta and nuclear OXPHOS -- while the 13
+mtDNA-encoded transcripts, the reference arm, stay flat: a content increase of ~**+21%**
+(p=0.0006) after adjusting for prep-stress and contamination, and a *lower bound*, because MYC
+amplifies total RNA per cell (@fig-myc-mito A). The biogenesis arm behaves the same way and is
+the exploratory detail below.
 
-The comparison is the claim, so it is tested as one. `PROLIF_*` pooled is itself beyond
-its own matched null (1.3rd percentile) -- it is *small*, not immobile -- and a one-set
-null therefore cannot carry the sentence. Redrawing **both** sets of a contrast together
-puts OXPHOS-minus-proliferation at **-0.208, the 0th percentile** (p < 0.0005), and the
-same against nucleotide metabolism (-0.255, 0.85th) and the mitoribosome (-0.230, 0.05th)
-(@fig-substrate B). Both rulers agree: on mitoPPS, which is content-blind by
-construction, OXPHOS subunits fall **-0.109** while nucleotide metabolism rises
-(@fig-substrate C). **The gland de-respires without de-proliferating.**
+**But the compartment is reprioritised, not simply enlarged.** Ranking every MitoPathway by
+MYC's effect on mitoPPS -- a within-compartment ratio, blind to how many mitochondria a cell
+has -- separates promoted from demoted arms in an order structured by function
+(@fig-myc-mito B). Plotting the two rulers against each other shows what that means: the
+content-down / priority-up quadrant is **empty** (@fig-myc-mito C). Demoted arms are not
+switched off; they rise more slowly than the rest and lose share. Reprioritisation here is a
+skew on a broad rise, not a redistribution of a fixed budget.
 
-The physiological reading is morphogenetic rather than metabolic. The steepest fall in
-the whole comparator is the **TEB-versus-ductal signature, -0.422** -- the terminal end
-bud regresses -- and the TEB is the apoptosis-loaded compartment, because duct cavitation
-is achieved by apoptosis.
-
-**And the gland does not dismantle the death machinery.** Of the 25 pro- and 7
-anti-apoptotic MitoCarta transcripts, exactly **one** moves at padj<0.05 across the
-window, and it moves *up* (`Bnip3` +0.63). Nor does the gland buffer: `Bcl2` padj 0.45,
-`Bcl2l1` 0.79, `Mcl1` 0.44, `Xiap` 0.79, `Birc2/3/5` all non-significant
-(@fig-substrate D). **What is withdrawn is the state the death machinery depends on, not
-the machinery** -- which is what makes everything downstream a *competence* argument
-rather than an abundance one.
+**And the organelle MYC builds can execute its own death.** The same genotype contrast raises
+`Htra2` (**+1.49**, padj 2.6e-08) and `Bax` (**+0.48**, padj 1.4e-04) alongside the import,
+cristae and OXPHOS arms, while lowering `Bcl2l1`/BCL-xL (**-0.42**, padj 0.040)
+(@fig-myc-mito D). Asset and liability, built in one move -- the trade-off written as
+molecules rather than as a model.
 
 ```{r}
-#| label: fig-substrate
-#| fig-cap: "MANUSCRIPT FIGURE 1 (fig04). What the wild-type gland does to itself, 6->12W. (A) Comparator arms ranked by set-average raw log2FC on `timepoint_neg`, with the percentile against 2000 expression-matched random sets; OXPHOS assembly factors -- the same complexes as the subunits -- are the internal control. (B) The paired null on the difference, which is the form the comparative claim takes. (C) Content against priority (mitoPPS). (D) The 25 pro- and 7 anti-apoptotic MitoCarta transcripts plus five non-MitoCarta brakes; one transcript moves, and it rises. Wild-type only, n=6/timepoint; batch = timepoint, so these are described, not claimed."
+#| label: fig-myc-mito
+#| fig-cap: "MANUSCRIPT FIGURE 1 (figure1). MYC builds a death-competent mitochondrion. (A) Compartment share across the four groups for three nuclear arms, with the 13 mtDNA-encoded transcripts as the reference arm that does not move; brackets are the genotype comparison at each age, which is the batch-clean axis. (B) All MitoPathways ranked by MYC's effect on mitoPPS. (C) Content against priority, one point per pathway; the content-down / priority-up quadrant is empty. (D) The curated death-and-mitochondrion roster on the same genotype contrast. Genotype contrast throughout, n=6/group, raw log2FC."
 #| fig-width: 9
-#| fig-height: 7.4
+#| fig-height: 7.7
 #| echo: false
-source(here::here("figures", "fig04_substrate_specificity.R"))
+source(here::here("figures", "figure1_myc_mitochondrion.R"))
 print(p)
 ```
 
-::: {.callout-warning}
-**Batch = timepoint, and it bounds this whole section.** The 6W and 12W cohorts were
-extracted as two batches, so a wild-type temporal contrast is confounded with batch and
-no QC metadata exists to separate them. Everything above is **described**, not claimed.
-Three things keep it usable rather than uninterpretable: the comparison is *internal* to
-one contrast (a batch offset shared by all gene sets cannot make OXPHOS subunits fall and
-assembly factors of the same complexes not fall); the effect reproduces on two
-independent rulers with different denominators; and the protein blots move the same way
-off the RNA batch entirely. Panel D's flatness reads as **"no detectable movement at
-n=6"**, not "no movement".
-
-One caveat that is *not* in any panel and must travel with the section: within the 12
-wild-type mice the OXPHOS score and the proliferation score are correlated at **0.82**.
-The timepoint term survives adjustment for proliferation (-0.499 -> -0.420, p 0.002) but
-at that collinearity a per-sample model cannot arbitrate, and it is offered as
-description only. The set-level dissociation in panels A-B, which is a contrast between
-gene sets rather than between samples, is the load-bearing version.
-:::
-
-**A hypothesis about the carrier, entered as a hypothesis.** Gray et al. (2023) describe a
-**"low-expressing" (LE)** state within each mammary lineage -- a systematic suppression of
-the lineage programme, *not* an oestrogen axis, and our own library metadata glosses it
-wrongly as "high- versus low-estrogen" (recorded here so the error does not propagate).
-LE states are pubertally enriched, and the ESRRA and GABPA mitochondrial regulons are
-detected in the **AP (alveolar progenitor / LASP) LE** context. If the maturing gland
-loses LE abundance, LE-marker sets should fall and HE-marker sets should not. In AP they
-do: LE markers **-0.294** (0th percentile) against HE markers -0.049 (23rd); in BA the
-same (-0.134 vs +0.058). **In HS the prediction fails** -- both arms fall -- so this is
-an AP/BA statement, not a global one. Within the 12 wild-type mice, adjusting the OXPHOS
-temporal slope for the **mitochondria-removed** AP-LE score takes it from **-0.459 to
--0.151**.
-
-Two reasons this stays a hypothesis. **25 of the 87 OXPHOS subunits are themselves AP
-LE-marker genes**, so any lineage claim built on the raw sets is the OXPHOS claim
-restated -- every number above is from the mitochondria-removed version, and the raw
-self-adjusted figure (-0.044) must never be quoted. And even mitochondria-removed, the
-two scores correlate at 0.93 across 12 samples, which is collinearity, not a
-decomposition. Separating a shift in state *abundance* from developmental *regulation*
-needs deconvolution or single cells, not n=24 bulk
-(`docs/deconvolution_subproject_plan.md`).
-
-Finally, the withdrawal is **not** a whole-regulon event. `CORE_MITO` -- the
-ESRRA/NRF1/GABPA targets that intersect MitoCarta, the closest DNA-level proxy for the
-PGC-1a axis -- is flat overall (**+0.013**, 75th percentile), while its 59
-OXPHOS-subunit members fall **-0.216** (0.05th) and the other 241 rise **+0.069**
-(99.6th). Selective, not global. `Ppargc1a` itself is at baseMean 30 in this tissue and
-is not readable; a transcript is a poor proxy for a coactivator in any case.
-
-# Myc raises and reprioritises the mitochondrial compartment {#sec-content}
-
-**On that substrate**, the strongest new result: constant Myc (@fig-myc-dose) raises the **nuclear** mitochondrial arms (mass
-markers, nuclear MitoCarta, nuclear OXPHOS, mito biogenesis) while mtDNA-encoded output stays
-flat -- a content increase of ~+21% (p=0.0006) after adjusting for prep-stress and
-contamination, and a *lower bound* because Myc amplifies total RNA per cell.
+The rest of this section is the exploratory detail behind panel A.
 
 The biogenesis arm is **MitoCarta central dogma + protein import/sorting/homeostasis** (314
 genes: mtDNA replication and transcription, mtRNA metabolism, mitochondrial translation and
@@ -607,146 +543,169 @@ Full numbers, nulls and the artifact ledger: `docs/2026-07-24_background_vs_myc_
 (script 40). The earlier per-gene decomposition (script 31) is unchanged on disk; script 40
 tests it and reports the correction.
 
-# The trade-off: what Myc's mitochondria cost the cell {#sec-death}
+# Development opens the window {#sec-window}
 
-Mitochondrial respiratory capacity is both an **asset** and a **liability** to a
-MYC-driven cell: it supports growth, and it primes death. The question this section is
-built around is when, and how, an incipient tumour captures the asset without paying the
-liability.
+**MANUSCRIPT FIGURE 2.** MYC builds that organelle on a substrate that is itself moving, and
+what the substrate does over the same window is the other half of the story.
 
-**Myc builds the organelle and the means of its own execution in one move.** On the
-substrate of @sec-substrate, Myc raises mitochondrial content by 21-27% (@sec-content),
-across all five complexes, import and central dogma -- and at the same time raises
-`Htra2` (**+1.49, padj 2.6e-08**, the largest genotype effect in the death roster) and
-`Bax` (**+0.48, padj 1.4e-04**) while lowering `Bcl2l1`/BCL-xL (**-0.42, padj 0.040**)
-(@fig-death A). Asset and liability, constructed together. That is the trade-off written
-as molecules rather than as a model.
+## The gland withdraws respiration, and only respiration
 
-**What Myc loses by 12 weeks is the trigger, not the machinery.** Against the uniform
-x0.55 rescaling that the whole programme undergoes (@sec-attenuation), almost every gene
-in the roster sits on the line (@fig-death B). The `Bax:Bcl-xL` ratio retains **0.55** --
-exactly the global rate, and at the **50th percentile** of matched gene pairs conditioned
-on the same starting effect, i.e. entirely unremarkable. The `PUMA:Bcl-xL` ratio retains
-**-0.09**: it does not fade, it *reverses*, from **+0.674 at 6W (p 0.009) to -0.060 at
-12W**, at the **92nd percentile** of that conditional null (interaction p 0.037, and
-p 0.017 once epithelial and immune composition are in the model) (@fig-death C).
+Between 6 and 12 weeks the wild-type gland withdraws from respiration **and from nothing else
+that would explain it**. OXPHOS subunits fall **-0.255** in set-average log2FC, at the **0th
+percentile** of 2000 expression-matched random sets, while the proliferative programme barely
+moves (`PROLIF_*` pooled **-0.047**) and the **assembly factors of the very same complexes**
+sit at **+0.001, the 50th percentile** (@fig-window A). Nucleotide metabolism and the
+mitoribosome -- the two mitochondrial arms most tightly coupled to growth, chosen in advance
+as the alternative hypothesis's best representatives -- do not move either. The steepest fall
+in the whole comparator is the **TEB-versus-ductal signature, -0.422**: the terminal end bud
+regresses, and the TEB is the apoptosis-loaded compartment, because duct cavitation is
+achieved by apoptosis.
 
-The same result appears again on a statistic that never touches the `Bcl2l1` denominator.
-Ranking all 8,774 Myc-responsive genes by their residual from the global rate --
-`sign(LFC_6W) x (LFC_12W - rate x LFC_6W)`, standardised, because under a global
-attenuation every Myc-induced gene has a negative raw interaction -- puts `Bbc3` at the
-**0.51st percentile** (retention **-1.10**) (@fig-death D). `Bbc3` was **pre-specified**
-from the PGC1a westerns, not found by scanning: the cell perturbations are independent of
-this RNA-seq, so naming the gene in advance is pre-registration rather than circularity,
-and at n=24 it is the strongest position available.
+The claim is comparative, so it is tested as a comparison. `PROLIF_*` pooled is itself beyond
+its own null (1.3rd percentile) -- it is *small*, not immobile -- so a one-set null cannot
+carry the sentence. Redrawing **both** sets of a contrast together puts
+OXPHOS-minus-proliferation at **-0.208, the 0th percentile** (@fig-window B). Nor is it an
+artefact of the content rise: the withdrawal persists on mitoPPS, a within-compartment ratio
+that is blind to how many mitochondria a cell has (@fig-window C). **The gland de-respires
+without de-proliferating.**
 
-**Both halves of the prediction are reported, and they split.** The same westerns raise
-PUMA *and* BIM. In vivo `Bcl2l11` sits at the **91.6th percentile** -- if anything better
-retained than average. The in-vivo collapse is PUMA-specific, and why the pair separates
-between cells and gland is an open question the planned perturbation experiment would
-answer directly.
+## And it leaves the death machinery intact
 
-**Read what this collapse is, and is not.** It has **no wild-type definition**: the
-wild-type `Bbc3:Bcl2l1` ratio drifts *up* over the same window (+0.168, on the
-batch-confounded axis and therefore descriptive), and the entire collapse sits in the
-**genotype gap**, which is the batch-clean quantity. It is a loss of **inducibility**, not of level --
-developmental in cause, Myc-dependent in measurement -- so it cannot be written as "the
-gland turns PUMA priming down". And **PUMA is a solo**: none of the six pre-registered
-questions returns a module. OXPHOS is if anything *retained* in the collapse ranking
-(NES +1.55, padj 0.063); apoptosis is null on every lens; the AP_TEB accessible sets and
-the ISR/ATF4 targets are null. What loses Myc-inducibility genome-wide is
-**luminal/hormone-sensing lineage identity** (`MG_HS_GRAY` NES **-2.79**, padj 1.7e-17,
-with the LHOR/LHS/GarciaSola luminal sets behind it), and what keeps it is **the MYC
-programme itself** (every MYC signature NES > +2.5) -- 56 sets collapse and 161 retain at
-BH<0.05. That independently reproduces Issue #6's "MYC-core protected" from a completely
-different direction.
+Of the 25 pro- and 7 anti-apoptotic MitoCarta transcripts plus five non-MitoCarta brakes,
+exactly **one** moves across the window at padj<0.05 -- and it moves *up* (`Bnip3` +0.63). No
+brake is raised either: `Bcl2` padj 0.45, `Bcl2l1` 0.79, `Mcl1` 0.44, `Xiap` 0.79,
+`Birc2/3/5` all non-significant (@fig-window D). **Development removes the input, not the
+machine.** That is why what follows is a *competence* argument rather than an abundance one.
 
-**One unplanned control, and it confirms the premise the whole section rests on.** `Myc`
-itself sits at the top of that distribution, retention **1.09** (+1.68 -> +1.82). The
-transgene message does not attenuate. So the x0.55 fade downstream cannot be
-transcript-level dose -- which is exactly what the MYC blot says, recovered from inside
-the RNA.
+## What MYC therefore loses
+
+Every arm of the MYC programme is rescaled by about **x0.55** across the window
+(@sec-attenuation). Read against that rate, the `Bax:Bcl-xL` ratio retains **0.55** exactly --
+the **50th percentile** of matched gene pairs conditioned on the same starting effect, i.e.
+entirely unremarkable. The `PUMA:Bcl-xL` ratio does not fade: it **reverses**, from +0.674 at
+6W (p 0.009) to -0.060 at 12W, a retention of **-0.09** at the **92nd percentile** of that
+conditional null (interaction p 0.037; p 0.017 with epithelial and immune composition in the
+model) (@fig-window E).
+
+That result reproduces on a statistic that never touches the `Bcl2l1` denominator. Ranking all
+8,774 MYC-responsive genes by their residual from the global rate puts `Bbc3` at the **0.51st
+percentile** -- and `Bbc3` was **pre-specified** from the PGC-1a westerns, not found by
+scanning (script 44; drawn in `figures/fig05_death_arm.R` panel D, which becomes Supplementary
+Figure 2). Both halves of that prediction are reported and they split: `Bcl2l11`/BIM sits at
+the **91.6th percentile**, so the in-vivo collapse is PUMA-specific. `Myc`'s own transcript
+sits at the top of the same distribution (retention 1.09): the transgene message does not
+attenuate, so the downstream fade is not transcript-level dose.
+
+Two things this collapse is *not*. It has **no wild-type definition** -- the wild-type
+`Bbc3:Bcl2l1` ratio drifts *up* (+0.168) and the whole effect sits in the genotype gap, the
+batch-clean quantity. It is a loss of **inducibility**, not of level. And **PUMA is a solo**:
+none of six pre-registered questions returns a module. What loses MYC-inducibility genome-wide
+is luminal lineage identity (`MG_HS_GRAY` NES **-2.79**, padj 1.7e-17); what keeps it is the
+MYC programme itself.
 
 ```{r}
-#| label: fig-death
-#| fig-cap: "MANUSCRIPT FIGURE 5 (fig05). Myc builds a death-ready mitochondrion and loses the trigger. (A) Genotype effect at 6W across the curated roster; filled = padj<0.05. (B) Retention (12W effect / 6W effect) against the x0.55 global rate; open = the 6W effect is not significant, so its retention is a ratio of noise. (C) The pro:anti priming ratios against a matched-pair null conditioned on the same 6W effect -- the null's own median reconstructs x0.55 from random pairs; filled = the pair has a 6W effect. (D) The collapse statistic over 8,774 Myc-responsive genes, with the two pre-specified genes and Myc itself marked. n=6/group; ranking plus pre-specification, not a confirmatory test."
+#| label: fig-window
+#| fig-cap: "MANUSCRIPT FIGURE 2 (figure2). Development opens the window. (A) Comparator arms on the wild-type window, each against its own expression-matched null; the assembly factors of the same complexes are the internal control. (B) The paired null on the difference, which is the form the comparative claim takes. (C) Content against priority: the withdrawal survives a content-blind ruler. (D) The apoptotic and brake transcripts across the same window: one moves, and it rises. (E) Retention against the x0.55 global rate, with the conditional matched-pair null. (F) The three propositions the mouse hands to the cell experiments, each with its control and its adjudicating experiment. Wild-type only in A-D, n=6/timepoint; F is a ranking, not a test."
 #| fig-width: 9
-#| fig-height: 7.7
+#| fig-height: 10.7
 #| echo: false
-source(here::here("figures", "fig05_death_arm.R"))
+source(here::here("figures", "figure2_developmental_window.R"))
 print(p)
 ```
 
-**Dose versus competence, and why both mouse experiments are needed.** MMTV-Myc 6->12W is
-a **dose** experiment: MYC protein falls ~50% at constant transcript, and the whole
-programme rescales by x0.55 (@sec-attenuation), which retrospectively explains almost
-every negative in this corpus. MYC-ER is a **competence** experiment: at equal or higher
-MYC, in animals that had never seen the oncogene before, there is **~80% less death
-against only ~30% less proliferation**. Both inputs fall in MMTV-Myc; only the substrate
-falls in MYC-ER. That asymmetry is what a two-input requirement predicts and a one-input
-model cannot produce -- and because the MYC-ER animals have no prior MYC exposure, the
-change cannot be selection. It is developmental.
+## The three propositions the mouse hands to the cell experiments
 
-**The hypothesis, stated as generated rather than proven.** The mitochondrial OXPHOS/PGC-1a
-state is the **second input**: MYC supplies the oncogenic signal, the respiratory substrate
-supplies apoptotic competence, and death requires both.
+These numbers rank hypotheses; they do not test them. Read that way the same data licenses
+three propositions, two of which the cell experiments already answer (@fig-window F).
 
-**The causal test is in cells, and it runs in both directions.** PGC1a raises OXPHOS and
-PUMA and does not kill on its own; PGC1a plus MYC kills more than MYC alone; in MYAZ,
-PGC1a alone kills while **PGC1a + Bcl-xL grows better than Bcl-xL alone** -- a sign
-reversal of one intervention's effect on fitness, conditional on apoptotic competence.
-Conversely, long-term MYC selects SS cells that lose OXPHOS and resist, and passaged
-PGC1a cells lose the biogenesis and the sensitivity with it while PGC1a is still
-overexpressed -- so it is the *output*, not the coactivator, that selection acts on. The
-Bcl-xL rescue localises the step to **execution**: the programme is still induced and the
-cells still do not die.
+**H1 -- respiratory state gates PUMA priming.** Whether MYC raises the PUMA:BCL-xL ratio
+depends on where an animal sits on the respiratory-priority axis: the interaction lands at the
+**91.9th percentile** of a within-timepoint permutation null, while the same test on `redox` --
+a matched mitochondrial axis MYC does *not* drive -- sits at the **50.9th, dead centre**. It is
+not shared with `BAX:BCL-xL` in any readable way (67.2nd against its own control at 63.3rd).
+*Adjudicated by: raising PGC-1a in MYC-driven cells.*
 
-**The window.** Two hits land on the death arm -- less MYC, and no trigger even at full
-MYC -- against one partial hit on proliferation. Expansion outruns death and
-tumourigenesis takes off. **What the cells achieve by selection, the gland achieves by
-development**: a transient, mutation-free phenocopy of the second hit that every other
-MYC model has to supply as a lesion (Emu-Myc with p53/ARF loss or BCL-2; beta-cell MycER
-with Bcl-xL). It is a *window* and not a switch, and it predicts non-stochastic timing.
+**H2 -- the TEB-to-ductal transition moves both together.** TEB is the steepest faller of any
+arm and moderates the same ratio at the **90.8th percentile**, again PUMA-specific over BAX.
+The terminal end bud both respires hardest and clears its lumen by apoptosis, so this is the
+honest rival to H1 and it is **not separable from it at n=24**. *Adjudicated by: single-cell or
+deconvolution, or TEB- versus ductal-derived cells -- open.*
 
-**What changes across progression is not what the tumour needs from its mitochondria, but
-what it can afford.**
+**H3 -- respiration costs proliferation, unless death is blocked.** On the same axis, in the
+same animals, MYC is *worse* at proliferating where respiratory priority is high (**6.3rd
+percentile**; E2F **9.2nd**). In an animal death is intact, so the liability limb is the one
+expressed. *Adjudicated by: PGC-1a in MYAZ with and without Bcl-xL -- and the sign inverts.*
+**The mouse supplies the negative limb, the cells the positive one, and the switch is whether
+the cell can die.**
 
-::: {.callout-important}
-## The bounds, and they are the reason this section is defensible
+::: {.callout-important collapse="true"}
+## The bounds -- and they are severe
 
-**The finding is gene-level, not composite-level -- and every composite version of it is
-dead.** (i) The GSVA-space "mitochondrial state couples to death priming" bridge is
-**circular**: the priming composite is built from `MITOCARTA_APOPTOSIS_PRO`/`_ANTI`, so it
-correlated mitochondrial genes with mitochondrial genes, and it fails every null (script
-34). (ii) "Myc raises apoptotic priming" as a composite **is the mitochondrial content
-effect** -- against an expression-matched *MitoCarta* background the pro-apoptotic set
-rises +0.196 where the background rises +0.364 (z -2.42), i.e. below average for a
-mitochondrial gene; on the 404 non-mitochondrial pro-death genes it does not reproduce at
-all. (iii) The attenuation is **global**: nothing, not death, not OXPHOS, not the MYC
-core, attenuates more than expression-matched genes, so a composite priming signal fades
-because the Myc programme fades. That composite analyses found nothing and the gene-level
-analysis found something is exactly what the cell work predicts, but it has to be said in
-that order.
+**Nothing in panel F is significant.** The best permutation p is 0.081. Three specific limits:
+the respiratory axis is **collinear with the timepoint it would explain** (the term goes
+p 0.005 -> 0.088 once `tp*myc` is in the model), which is the structure of a two-timepoint
+cross-sectional design and is not repairable by statistics; H1 and H2 are not separable; and a
+mediation test is uninformative here rather than supportive (adding OXPHOS makes the
+interaction *stronger*, and the mediator is itself MYC-driven). One column of the source table
+must be distrusted outright: adding timepoint makes the *proliferation* and composite terms
+stronger while PUMA weakens, and terms that grow on adding a collinear variable are
+collinearity artefacts.
 
-**And nothing here is significant after multiplicity.** No pair survives BH across the
-priming panel (minimum adjusted interaction p 0.33); `Bbc3`'s own doubly-matched
-single-gene null gives p 0.054; the conditional pair null gives p 0.082. The honest
-reading is **ranking plus pre-specification**, with the perturbations carrying the causal
-weight. One specific trap the panel makes visible: `Bmf:Bcl-xL` sits *further* out on the
-conditional null than `Bbc3:Bcl-xL` (97.5th percentile, p 0.025) but has **no 6W effect
-to lose** (d6 0.24, p 0.40) -- it fails the precondition the entire statistic rests on,
-which is why panel C encodes that precondition rather than captioning it.
+**The composite version of the death result is dead three times over**, which is why the
+finding is gene-level. (i) The GSVA-space mitochondria-to-death bridge is **circular** -- the
+priming composite is built from `MITOCARTA_APOPTOSIS_PRO`/`_ANTI`, so it correlated
+mitochondrial genes with mitochondrial genes. (ii) "MYC raises apoptotic priming" as a
+composite **is the content effect**: against an expression-matched *MitoCarta* background the
+pro-apoptotic set rises +0.196 where the background rises +0.364 (z -2.42), i.e. below average
+for a mitochondrial gene, and on the 404 non-mitochondrial pro-death genes it does not
+reproduce. (iii) The attenuation is **global**, so a composite priming signal fades because
+the MYC programme fades. Nor does the gene-level result survive multiplicity: no pair beats BH
+across the priming panel (minimum adjusted interaction p 0.33).
+
+**One trap the panel encodes rather than captions:** `Bmf:Bcl-xL` sits *further* out on the
+conditional null than `Bbc3:Bcl-xL` (97.5th percentile, p 0.025) but has **no 6W effect to
+lose** (d6 0.24, p 0.40). It fails the precondition the whole statistic rests on.
+
+**Batch = timepoint** bounds every wild-type temporal sentence above. Three things keep them
+usable rather than uninterpretable: the comparison in panels A-B is *internal to one contrast*
+(a batch offset shared by all gene sets cannot make OXPHOS subunits fall while the assembly
+factors of the same complexes do not); it reproduces on two rulers with different
+denominators; and the protein blots move the same way off the RNA batch entirely. Panel D's
+flatness reads as "no detectable movement at n=6", not "no movement".
+
+One caveat that is in no panel: within the 12 wild-type animals the OXPHOS and proliferation
+scores correlate at **0.82**. The timepoint term survives adjustment for proliferation
+(-0.499 -> -0.420, p 0.002) but at that collinearity a per-sample model cannot arbitrate. The
+set-level dissociation in A-B, a contrast between gene sets rather than between samples, is
+the load-bearing version.
 :::
 
-Sources on disk: `results/priming_arm_teb.rds` (script 42),
-`results/substrate_specificity_tradeoff.rds` (43),
-`results/collapse_module_ownership.rds` (44), and
-`results/death_priming_reassessment.rds` (34, for the three composite negatives above).
-The narrative and its nine-step order:
-`docs/2026-07-25_death_narrative_dose_vs_competence.md`; the trade-off frame and the
-module verdict: `docs/2026-07-26_introduction_alignment_and_the_question.md` sections
-0, 0.5a, 0.8, 0.9. Blot values (MYC -50%; BAX/BIM/PUMA) and the MYC-ER, MYAZ and Bcl-xL
-rescue results are the author's, reported here as given.
+::: {.callout-note collapse="true"}
+## A hypothesis about what carries the respiratory arm
+
+Gray et al. (2023) describe a **"low-expressing" (LE)** state within each mammary lineage -- a
+systematic suppression of the lineage programme, *not* an oestrogen axis; our library metadata
+glosses it wrongly as "high- versus low-estrogen", recorded here so the error does not
+propagate. LE states are pubertally enriched, and the ESRRA and GABPA mitochondrial regulons
+are detected in the **AP (alveolar progenitor / LASP) LE** context. If the maturing gland loses
+LE abundance, LE-marker sets should fall and HE-marker sets should not. In AP they do: LE
+markers **-0.294** (0th percentile) against HE markers -0.049 (23rd); in BA the same. **In HS
+the prediction fails** -- both arms fall -- so this is an AP/BA statement, not a global one.
+
+Two reasons it stays a hypothesis. **25 of the 87 OXPHOS subunits are themselves AP LE-marker
+genes**, so any lineage claim built on the raw sets is the OXPHOS claim restated; every number
+here is from the mitochondria-removed version, and the raw self-adjusted figure (-0.044) must
+never be quoted. And even mitochondria-removed, the two scores correlate at 0.93 across 12
+samples. Separating a shift in state *abundance* from developmental *regulation* needs
+deconvolution or single cells.
+
+Relatedly, the withdrawal is **not** a whole-regulon event. `CORE_MITO` -- the ESRRA/NRF1/GABPA
+targets intersecting MitoCarta, the closest DNA-level proxy for the PGC-1a axis -- is flat
+overall (**+0.013**, 75th percentile) while its 59 OXPHOS-subunit members fall **-0.216**
+(0.05th) and the other 241 rise **+0.069** (99.6th). `Ppargc1a` itself sits at baseMean 30 and
+is not readable, which is why **PGC-1a is named in this paper only where the cell experiments
+are described**.
+:::
 
 ::: {.callout-note title="Planned experiment: MYAZ + PGC1a RNA-seq"}
 Not yet done; the author intends to do it. It is **the only design that can define the
@@ -760,6 +719,14 @@ per-sample couplings sit at the ambient. See section 0.8 of
 settle: whether the payload/trigger division of labour holds under direct PGC1a manipulation,
 and why PUMA and BIM behave as a pair in cells but split in vivo.
 :::
+
+Sources on disk: `results/priming_arm_teb.rds` (script 42),
+`results/substrate_specificity_tradeoff.rds` (43),
+`results/collapse_module_ownership.rds` (44), and
+`results/death_priming_reassessment.rds` (34, for the three composite negatives above). The
+narrative and the propositions: `docs/2026-07-26_introduction_alignment_and_the_question.md`
+sections 0, 0.5a, 0.7a, 0.8, 0.9, **0.10**. Blot values (MYC -50%; BAX/BIM/PUMA) and the
+MYC-ER, MYAZ and Bcl-xL rescue results are the author's, reported here as given.
 
 # External validation: Lesner et al. {#sec-lesner}
 
