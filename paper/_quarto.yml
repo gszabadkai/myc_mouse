@@ -4,6 +4,16 @@ project:
   # regardless of this .qmd living under paper/ (Quarto's working-directory trap).
   execute-dir: project
 
+  # This repo sits on a Google Drive mount, which stamps a zero-byte "Icon\r" into
+  # every folder it syncs -- including myc_mito_files/, which Quarto creates
+  # mid-render and then walks with readdir. The stub has a resource fork, readdir
+  # fails on it, and the render dies after every chunk has already run. Drive gets
+  # there within seconds of the directory appearing, i.e. inside the render window,
+  # so cleaning at the two ends is not enough: `watch` leaves a sweeper running for
+  # the duration and `stop` retires it. Full reasoning in the script header.
+  pre-render: ./clean_icon_files.sh watch
+  post-render: ./clean_icon_files.sh stop
+
 format:
   html:
     toc: true
