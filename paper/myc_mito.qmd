@@ -426,11 +426,129 @@ print(p)
 
 # The global axis and the correlation ceiling {#sec-axis}
 
-*(stub)* Why cross-sectional couplings are unreliable: the 884 pathway scores collapse onto
-one global per-sample axis (`pathway_loading`: PC1=76% var, eff. dim 1.7; OXPHOS r=0.968 with
-the global mean). A mito axis's median coupling to an *arbitrary* library set is ~0.80.
-"OXPHOS is central" is therefore untestable (no separable variance); mito is mito-LED, not
-mito-SPECIFIC. Panels: `pathway_loading/A_scree`, `A3_gene_axis_covariates`, `linear_pathway_coupling/A_ceiling_origin`.
+Every claim this document defends is a **contrast** -- a genotype gap, an interaction, a
+difference of differences. Not one is a per-sample correlation between two pathway scores.
+This section is the reason, and it belongs before the reader meets a coupling anywhere in the
+exploratory layer: in this dataset a correlation of 0.8 between two composites is the
+*default*, not a finding.
+
+**Score the whole library and it is almost one-dimensional.** Across the 885 sets scored per
+sample, PC1 takes **77%** of the variance (PC2 8%, PC3 4%), effective dimensionality is
+**1.7** of a possible 23 at n=24, and **79% of set loadings share one sign** -- a common mode,
+not a contrast. PC1 is essentially the per-sample mean of all 885 scores (r=0.98), and nuclear
+OXPHOS tracks that mean at **r=0.972**. The library is not resolving 885 programmes. It is
+resolving roughly one, plus departures from it.
+
+**What that does to a coupling.** Arbitrary set-to-set pairs already sit at median |rho|
+**0.55**, and the ambient coupling of `mito_oxphos` to an arbitrary library set is **0.80**.
+Three explanations one would reach for first all fail. It is **not low n**: permuting the
+axis's own sample labels puts the chance floor at **0.12**. It is **not curation**: arbitrary
+pairs are at 0.55 before any curation is involved. It is **not the genotype contrast**: within
+`6W_pos` alone -- one genotype, one age, the contrast gone -- the ambient is still **0.83**.
+And it is **removable**: regress the per-sample global mean out of every score and the ambient
+falls to **0.13**, which is chance.
+
+**The axis is not an artifact to delete; it is a phenotype.** The raw PC1 correlates with the
+four-group label at r=0.47, so a large part of the raw ceiling *is* the design (much of that
+MYC). Remove the design and a within-group axis of the same kind remains -- residual PC1
+**71%** of variance -- and its strongest correlates are epithelial marker share **+0.79**,
+contamination **-0.70** and proliferation **+0.65**. Biological state and prep tells load
+together, so the axis is neither cleanly biological nor cleanly technical; with no
+dissociation-batch, viability or RIN metadata on disk, the two are not adjudicable. Report it
+as a phenotype, and remove it before asking a specific question.
+
+**Where it comes from at gene level -- and the flip that matters.** The largest gene-level
+axis (top-500 VST PC1, 44% of gene variance) is **genotype-independent** (rho +0.02): it is
+the epithelial-purity versus immune-infiltration composition axis (epithelial +0.84, immune
+-0.90), i.e. residual dissociation contamination. Its metabolic pole is cell **identity** --
+epithelial MECs are mitochondria-dense, immune infiltrate is not -- and not MYC dose, which is
+why the design correctly drops it. Gene-PC2 (13%) is the MYC/E2F/proliferation programme
+(proliferation +0.76, MYC +0.49, genotype +0.26) with OXPHOS and mitochondrial translation
+baked in. The pathway axis tracks **PC2 more than PC1** (+0.60 against +0.44) and *sharpens*
+the genotype signal from +0.26 to **+0.63**. So compositing foregrounds the Myc-mito programme
+and demotes the nuisance: **mitochondria ride inside the MYC programme rather than beside
+it**, which is this document's entry point, not a caveat to it. The gene-level root of the
+ceiling sits in the same sentence -- OXPHOS enriches at *both* poles.
+
+::: {.callout-important}
+**The interpretability trap -- check this before reading any global-adjusted coupling.** The
+mitochondrial axes **are** the global factor. `mito_oxphos` carries r2 = **0.94** with the
+per-sample global mean, so after design -> PC1 -> residual only ~4% of its variance remains,
+and that remainder is noise. Its global-adjusted "coupling" to proliferation prints **-0.65**
+and is sign-consistent across all three quantifiers -- and it is **not antagonism**, it is
+noise on noise at n=24. A global-adjusted coupling is readable only where the axis retains
+roughly **10% or more** residual variance. Three of the mitochondrial pairs fail that outright
+(`mito_oxphos` to proliferation, to TEB-dedifferentiation, to priming: residual fraction
+0.038-0.039) and two more are borderline.
+:::
+
+**What survives is not "OXPHOS is central".** That proposition fails in the strongest available
+form: not merely unsupported but **untestable**, because OXPHOS has essentially no variance
+independent of the broad state, so no specific coupling exists to test in either direction.
+The positive reframe is the robust half. As a composite, OXPHOS **is** the dominant axis
+(design-residual loading **0.969**) -- but it is indistinguishable from a tightly co-loading
+cluster: TCA 0.968, nucleotide 0.946, MYC signatures 0.934, biogenesis 0.911, proliferation
+0.863. All of them essentially *are* the axis, which is exactly why nothing in the cluster is
+separable from the rest. The dominant programme is that whole anabolic-proliferative-
+mitochondrial core, not OXPHOS alone. Read as a **level** this is near-tautological and
+therefore safe -- it is a description of the axis: OXPHOS member sets sit at the **78th
+percentile** of all 885 absolute loadings, MitoCarta as a whole loads above the rest (Wilcoxon
+p=0.015), and the **redox** control -- the one axis MYC does not drive -- sits at the 43rd
+(loading 0.26).
+
+The framework's one non-tautological move is the loading **change** by genotype
+(`S ~ G*genotype*timepoint`), a contrast the axis itself cannot touch. Within groups MYC hints
+at *tightening* the metabolic core's alignment (OXPHOS +58%, p=4.3e-05; TCA +42%, p=0.008)
+while *loosening* proliferation's (-56%, p=0.012). That is a lead and not a result: the slopes
+are near-collinear at n=6/group and `mito_biogenesis` shows no change at all (p=0.22).
+
+**Mito-led, not mito-specific** -- and specifically not an argument for mitochondria-*primary*
+regulation. Mito-defined sets are 44% of the library but **100% of the top 100 loaders**. The
+enrichment is real and it is also inflated by construction: the top 100 splits MitoCarta-proper
+**6** / build-tautological `_MITO` lanes **94** / non-mito **0**, and `TFT_MYC_GRAY_BA_LE_MITO`
+loads 0.993 (rank 6) while the *same* transcription factor's non-mito lane
+`TFT_MYC_GRAY_AP_HE` loads 0.014 (rank 883). Loading therefore tracks mitochondrial gene
+**content**, not the regulator. Non-mitochondrial growth programmes load nearly as high
+(METABRIC MB2 bicluster and mammary-development lanes at 0.97-0.98) against the redox control
+at 0.26. Loading is covariation; primacy needs perturbation.
+
+**The one lead that survives the correction is not a mitochondrial one.** `redox -> MB2
+tumorigenic fork`: global-adjusted **-0.63**, same sign and -0.62 to -0.73 across all three
+quantifiers, on an axis that barely loads on the global factor (r2 = 0.03, so ~92% of its
+variance survives the correction) and that MYC does not drive. `cholesterol/mevalonate -> fork`
+is **demoted** to +0.14 (range +0.14 to +0.27), "separable but weak" -- its earlier
+96th-percentile headline was a raw-ambient artifact. And the negative control behaves as a
+negative control should: `mito OXPHOS -> death priming` is untestable, its sign flipping
+between -0.33 and +0.33 across methods. @sec-leads carries the bench versions.
+
+::: {.callout-note}
+**Method of record, and scope.** The primary quantifier is the **linear mean gene-wise
+z-score** -- its correlation *is* average cross-gene covariance -- with singscore for
+cohort-independent robustness and GSVA for continuity with the earlier analyses. The
+correction is **design -> PC1 -> residual with the factor estimated after the design**, plus
+leave-pair-out; it is **not** mean-subtraction, which produces an equal-loading, sum-to-zero
+artifact. Gene-level and score-level design adjustment agree to ~0.02. A second, technical
+lens (contamination and IEG anchors removed) correlates r=0.57 with the primary design-only
+axis, so treating those as technical does not overturn the biological reading -- but the
+anchors are RNA-derived and absorb r2=0.67 of design-residual *proliferation* variance, so
+that lens removes biology along with prep noise and the design-only lens stays primary.
+**Scope:** this section re-ranks the **exploratory couplings only**. The content result (raw
+count shares, @sec-content) and the attenuation (DESeq2 log-fold-changes, @sec-attenuation)
+never pass through GSVA or any of these couplings and are untouched by everything here.
+Nothing in this section beats BH < 0.05 at n=24; it is a ranking.
+:::
+
+Sources on disk: `results/pathway_loading.rds` (script 37), `results/linear_pathway_coupling.rds`
+(36) and `results/ambient_corrected_couplings.rds` (35), with panels in
+`outputs/pathway_loading/` (`A_scree_dimensionality`, `A2_sample_pca_gene_vs_pathway`,
+`A3_gene_axis_covariates`, `B_axis_loadings`, `D_loading_enrichment_mito`) and
+`outputs/linear_pathway_coupling/` (`A_ceiling_origin`, `B_global_factor_phenotype`,
+`C_coupling_hierarchy`). Those panels are the analysis layer's own, not promoted to the
+paper figure set. The method notes this section implements are
+`docs/GSVA_global_background_and_pathway_coupling.md`,
+`docs/Gene_set_quantification_for_pathway_correlation.md` and
+`docs/Low_dimensional_pathway_structure_and_global_axis_analysis.md`; the five-question
+synthesis is `docs/2026-07-18_narrative_synthesis_five_questions.md` (sections 0.5, 0.6).
 
 # The oncogenic programme attenuates across progression {#sec-attenuation}
 
@@ -786,12 +904,78 @@ MYC-ER, MYAZ and Bcl-xL rescue results are the author's, reported here as given.
 
 # External validation: Lesner et al. {#sec-lesner}
 
-*(stub)* The MYC nuclear-OXPHOS-up / mtDNA-down discordance is independently established
-(Lesner et al., bioRxiv 2026.07.13.738248) in TCGA, mouse HCC, proteomics, mtDNA qPCR --
-killing the "our enzymatic-dissociation artifact" worry. Lesner validates the *question*; our
-mtDNA-down arm is genotype-independent (p~0.49), i.e. underpowered, not demonstrated. Their
-hypoxia->MXI1/JUN Myc-suppression route does NOT transfer to our model (script 39; liver-specific).
-Panels: `lesner/A_mechanism_genes`, `lesner/B_fgsea_contrasts`, `lesner/C_mitophagy_specificity_null`.
+The discordance @sec-content is built on -- MYC raises the **nuclear** mitochondrial arms
+while the 13 mtDNA-encoded transcripts stay flat -- has an obvious alternative explanation in
+our hands. We purify MECs by warm enzymatic dissociation, and mitochondrial transcript
+fraction is exactly the sort of quantity a stressful prep perturbs. Lesner et al. (bioRxiv
+2026.07.13.738248) report the same discordance independently, in flash-frozen human tumours
+(TCGA), a mouse HCC model, proteomics and mtDNA qPCR. That disposes of the artifact worry:
+whatever our dissociation does, it cannot have produced a pattern visible in material that was
+never dissociated. **They validate the question.** They do not validate our contrast -- our own
+mtDNA arm sits on an axis that is genotype-independent (p ~ 0.49) and time-associated
+(p = 0.0003), so it is underpowered and batch-exposed, not demonstrated.
+
+What script 39 adds is a test of their **mechanisms** in our contrasts. The instrument is
+deliberately DESeq2 contrasts -- clean genotype gaps and the Myc-specific interaction -- and
+not per-sample couplings, for the reason @sec-axis gives.
+
+**Their hypoxia -> MXI1 -> MYC-off route does not transfer.** Hypoxia is *lower* in Myc+
+(6W NES **-1.34**, padj 0.010) and does not rise over the window in Myc+ (Myc+ timecourse
+-1.14, padj 0.26). The positive interaction (+1.49, padj 0.003) is a **sign trap**: hypoxia
+falls *less* in Myc+ than in wild-type (WT timecourse -1.58, padj 0.0018), which is not the
+same as rising. At gene level `Hif1a` is low in Myc+ (-0.34), `Mxi1` is up at 6W (+0.33) but
+flat over time (+0.06), and `Tfam` is flat (+0.18). One thread survives -- `Epas1`/HIF-2 rises
+over time in Myc+ (interaction +0.45) -- and its predicted downstream fails: `Jun` *rises*
+(+0.39) instead of being suppressed, and JUN targets are not suppressed either (interaction
+NES +1.52). The HIF/MXI1/JUN axis is liver-specific.
+
+**The OXPHOS decline does transfer, but in a different frame.** Hallmark OXPHOS is strongly
+MYC-raised at both ages (+2.99 at 6W, +3.40 at 12W) and then declines over the window
+Myc-specifically: Myc+ timecourse **-2.07** (padj 6.7e-09) against a non-significant wild-type
+timecourse (-1.04, padj 0.33), interaction **-2.21** (padj 7.4e-11). But it falls in lockstep
+with MYC targets (interaction -1.80) while hypoxia does not rise, so this is the general
+programme fade of @sec-attenuation and not a hypoxia switch. One nuance has to be kept
+straight, because it is where this section meets @sec-window: on the OXPHOS **subunit** set the
+wild-type declines too (WT timecourse **-2.07**, padj 2.1e-05) -- the convergence component,
+and the reason respiration is the one mitochondrial arm the normal gland withdraws from. The
+Hallmark set gives the cleaner Myc-specific signal; the subunit set gives the developmental
+one. Quoting either alone misreports the other.
+
+**Their downstream observation transfers without the specificity read into it.** MYC raises
+the mitochondrial turnover machinery at the genotype level -- DYNAMICS **+2.23** (padj
+1.2e-08), FUSION +1.85, AUTOPHAGY +1.62, MITOPHAGY +1.56, FISSION +1.55 -- and it attenuates
+like everything else (DYNAMICS interaction -1.81). Two things stop this being a mitophagy
+programme. At gene level the specific effectors are weak (`Dnm1l`/DRP1 +0.22, `Fundc1` +0.14),
+while the large movers -- `Bnip3`, `Bnip3l`, `Prkn` -- rise **equally in wild-type**, i.e. with
+the batch-confounded timecourse rather than with MYC. And against an expression-matched
+**MitoCarta** background the genotype rise is *below* average for a mitochondrial gene:
+MITOPHAGY +0.24 against a matched +0.39 (z = -1.37), DYNAMICS +0.27 against +0.39 (z = -2.69),
+AUTOPHAGY z = -2.06. So MYC raises mito-turnover transcripts largely **because it raises
+mitochondrial content ~20% wholesale** (@sec-content), not because it runs a mitophagy
+programme. The direction of the bias is what makes this safe to state: the matched null is
+anti-conservative, so a *non*-specific verdict from it is conservative.
+
+**Where that leaves the death arm.** Lesner read their discordance as protective **mitophagy**
+(MYC -> NRF1 -> DRP1/FUNDC1) rather than as priming. Our data neither support that route
+specifically nor exclude it: the machinery rises, but no more than mitochondrial content does,
+and the transcript layer cannot distinguish a mitophagy flux from a larger compartment in any
+case. It is better treated as a second thing worth measuring than as a rival to the substrate
+reading of @sec-window. What we take from them is the endorsement of the same three
+experiments: **mtDNA qPCR** for copy number, **BH3 profiling** for the priming state, and
+NRF1/DRP1/FUNDC1 at protein level.
+
+::: {.callout-warning}
+Batch = timepoint, so the Myc+ and wild-type timecourses quoted above are batch-confounded and
+descriptive; the **interaction** is the clean quantity, and it is the one every claim in this
+section rests on. Set-level fGSEA and the expression-matched null are the claims; single-gene
+log-fold-changes are illustration. The comparison is to Lesner et al.'s **reported** results in
+a preprint, not a reanalysis of their data.
+:::
+
+Sources on disk: `results/lesner_mechanism_test.rds` (script 39), with panels
+`outputs/lesner/A_mechanism_genes.pdf`, `B_fgsea_contrasts.pdf` and
+`C_mitophagy_specificity_null.pdf` -- the analysis layer's own, not promoted to the paper
+figure set.
 
 # Leads for the bench {#sec-leads}
 
