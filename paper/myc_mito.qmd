@@ -979,7 +979,7 @@ figure set.
 
 # Leads for the bench {#sec-leads}
 
-*(stub)* Hypothesis-generating, not results (n=24): `redox -> MB2 tumorigenic fork` (the one
+Hypothesis-generating, not results (n=24): `redox -> MB2 tumorigenic fork` (the one
 robust Myc-independent coupling; test: redox/GSH assay) and `nuclear OXPHOS -> death-priming`
 (test: **BH3 profiling** -- priming is an occupancy state at the outer membrane, and no
 amount of transcriptomics substitutes for measuring it).
