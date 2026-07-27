@@ -520,6 +520,15 @@ de-respires-without-de-proliferating comparator with its matched and paired null
 argument rather than arriving late in support of it. The mito-content panels (fig01/fig01b) move to
 step 3, and the dose material (fig03/figS8) to step 5.
 
+**Numbering, decided 2026-07-27 with the author.** Panel scripts keep the **build** number they were
+written with — that number is what the commits, these dated docs and `outputs/figures/` all cite, and
+renaming fourteen files to encode an argument order would break every one of those references for no
+analytical gain. The **manuscript** figure order lives in a manifest table at the head of
+`paper/myc_mito.qmd` and in the section order itself. So: **`fig04_substrate_specificity.R` = Figure
+1** (steps 1–2, script 43 PART A + script 44's wild-type apoptosis table), fig01/fig01b = Figure 2,
+fig02 = Figure 3, fig03/figS8 = Figure 4, and **`fig05_death_arm.R` = Figure 5** (steps 3–4, scripts
+42 + 44). Both new panels were written 2026-07-27 and are the author's to run.
+
 **Why not the other two orders.** *Myc-first* (the previous version of this section, which opened on
 "MYC drives mitochondrial biogenesis") makes the substrate arrive as a late qualifier, and the reader
 has already formed the impression that the paper is about what Myc does. *Death-phenotype-first* —
