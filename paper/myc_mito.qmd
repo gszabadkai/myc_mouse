@@ -523,9 +523,33 @@ mito-content effect, below average for a mitochondrial gene; and the attenuation
 is gene-level, not composite-level -- which is why the composite analyses found nothing and
 is exactly what the cell work predicts.
 
+**Added 2026-07-27, and the argument order is now decided: SUBSTRATE FIRST.** Write from the
+nine-step order in section 9 of the death narrative (rewritten) -- what the gland does to
+itself, then what Myc does on top of it. Two things from script 44 belong in this section:
+`Bbc3` sits at the **0.51st percentile of 8774 Myc-responsive genes** on a genome-wide
+collapse statistic that never touches the Bcl-xL denominator, pre-specified from the PGC1a
+westerns rather than found by scanning -- an independent reproduction of the priming result;
+and **`Bcl2l11` (BIM) sits at the 91.6th percentile**, so the westerns' PUMA+BIM pair does
+**not** transfer as a pair and the in-vivo collapse is PUMA-specific. Report both.
+
 Sources on disk: `results/priming_arm_teb.rds` (42), `results/substrate_specificity_tradeoff.rds`
-(43), `results/death_priming_reassessment.rds` (34, for the bounds above).
-Panels: unbuilt on purpose -- fig04 follows the agreed argument order.
+(43), `results/death_priming_reassessment.rds` (34, for the bounds above),
+`results/collapse_module_ownership.rds` (44).
+Panels: unbuilt on purpose -- fig04 follows the agreed argument order. Substrate-first
+promotes **script 43 PART A to an early main figure**.
+
+::: {.callout-note title="Planned experiment: MYAZ + PGC1a RNA-seq"}
+Not yet done; the author intends to do it. It is **the only design that can define the
+OXPHOS/apoptosis module by perturbation** rather than by correlation -- whatever PGC1a
+co-induces that is both mitochondrial and apoptotic *is* the module, with no null to fight
+and no correlation ceiling. In this dataset the module cannot be defined by co-expression:
+the wild-type gland does not move its apoptotic transcripts at all, the PGC1a-axis regulon is
+*depleted* of pro-apoptotic genes (fold 0.76) while MYC's is enriched (2.68x), and the
+per-sample couplings sit at the ambient. See section 0.8 of
+`docs/2026-07-26_introduction_alignment_and_the_question.md`. When the data exists it should
+settle: whether the payload/trigger division of labour holds under direct PGC1a manipulation,
+and why PUMA and BIM behave as a pair in cells but split in vivo.
+:::
 
 # External validation: Lesner et al. {#sec-lesner}
 
@@ -540,7 +564,17 @@ Panels: `lesner/A_mechanism_genes`, `lesner/B_fgsea_contrasts`, `lesner/C_mitoph
 
 *(stub)* Hypothesis-generating, not results (n=24): `redox -> MB2 tumorigenic fork` (the one
 robust Myc-independent coupling; test: redox/GSH assay) and `nuclear OXPHOS -> death-priming`
-in mitoPPS ratio space (test: BH3 profiling).
+(test: **BH3 profiling** -- priming is an occupancy state at the outer membrane, and no
+amount of transcriptomics substitutes for measuring it).
+
+The OXPHOS->priming lead is **gene-level, not composite-level** (corrected 2026-07-27, it was
+described here in its pre-script-43 composite form). The composite version is dead twice
+over: script 34 showed it is circular, and script 43 PART B showed that of five outcomes only
+the **gene-level `Bbc3:Bcl2l1` ratio** has a `redox` control that behaves (`myc x OXPHOS-priority`
++6.09, p 0.005, 91.7th percentile against a control at the 51.2nd). The claim is a **sign
+contrast on one outcome**, not a magnitude comparison across five. Two further tests the
+mechanism menu (section 0.9 of the alignment doc) names, neither answerable from RNA:
+cardiolipin by lipidomics and cristae architecture by EM.
 
 # Provenance {#sec-provenance}
 

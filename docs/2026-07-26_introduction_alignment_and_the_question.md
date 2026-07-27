@@ -80,14 +80,19 @@ asks the question. ¶4 answers it in the order of section 9, closing on affordab
 *(Answers the author's first question: is it only priming that travels with the respiratory arm?)*
 
 **Why coupled at all.** Two routes are available and **the paper does not have to choose between
-them.** The *trigger-supply* route is transcriptional: the biogenesis transcription factors that
-build mitochondrial mass also reach pro-apoptotic effectors — the library's own developmental-TF
-note records `NRF1 -> Bbc3` among them, in a resource built for an unrelated purpose. The
-*execution-threshold* route is structural: more respiratory apparatus is more of the machinery that
-performs MOMP, so the same trigger clears a lower bar. The Bcl-xL rescue localises the block to
-**execution** — the programme is still induced and the cells still do not die — while the
-transcript work supplies the trigger, and both observations are consistent with either route
-operating. Say so, rather than over-committing.
+them.** The *trigger-supply* route is transcriptional: **NRF1 reaches `Bbc3`, and PGC-1a induction
+raises PUMA and BIM at protein level** — the author's own perturbation experiments, which are
+independent of this RNA-seq and are what the route should be cited to. *(Corrected 2026-07-27: an
+earlier draft cited the library's developmental-TF note instead. That row cannot carry the claim —
+`NRF1 -> Bbc3` has BH FDR 0.99998 and fails the resource's own promotion gate, and across 741 TFs
+pro-apoptotic capture is at the catalog base rate. See §0.8 check 2. The **axis stands; the citation
+was wrong.**)* The *execution-threshold* route is structural: more respiratory apparatus is more of
+the machinery that performs MOMP, so the same trigger clears a lower bar — and §0.8's gene lists now
+put a name on the division, since the PGC-1a axis owns the releasable payload (`Cycs, Aifm1, Aifm2,
+Endog`) and no BH3-only gene at all. The Bcl-xL rescue localises the block to **execution** — the
+programme is still induced and the cells still do not die — while the perturbation work supplies the
+trigger, and both observations are consistent with either route operating. Say so, rather than
+over-committing. §0.9 sets out the full mechanism menu.
 
 **What else respiration buys: growth.** This is the limb the earlier framing missed, and the MYAZ
 implants demonstrate it directly, with both comparator arms present. On a death-competent
@@ -269,9 +274,196 @@ the wild-type timeline: Bcl2 (padj 0.45), Bcl2l1 (0.79), Mcl1 (0.44), Bcl2l2 (0.
 Birc2/3/5 all non-significant. The gland de-prioritises; tumours buffer. Three solutions, and the
 normal tissue uses only the first.
 
+### 0.7a What carries the respiratory arm — the lineage-suppressed (LE) state
+
+*(Added 2026-07-27, the author's hypothesis. `[44]` PART B2, provisional until the script is run.)*
+
+**First, a library metadata error that has to be recorded, because it nearly sent this section the
+wrong way.** Gray 2023 p.7 defines `LE` as **"low-expressing"** — a state in which *lineage programs
+are suppressed*, which is the paper's entire subject ("systematic suppression of lineage programs …
+as a common feature of mammary epithelial expansion"). Our `provenance_table.csv` glosses
+`MG_HEVSLE_*` as "HE vs LE (AP) | adult" and `mammary_dev_sets_catalog.md:108-110` expands that to
+**"High- vs low-estrogen"**. That is wrong. `HE`/`LE` are not oestrogen; `AP` = alveolar progenitor =
+**LASP** in the consensus nomenclature. The library reference is read-only, so the correction lives
+here and in script 44.
+
+**Why it matters.** ESRRA's and GABPA's mitochondrial programmes are detected specifically in
+`AP_LE` — the lineage-suppressed progenitor state that the pubescent gland is rich in. So the live
+alternative to "PGC-1a activity declines" is **"the cell state that carries the PGC-1a-driven OXPHOS
+programme becomes less abundant"**, which also explains §0.8 check 4 (the regulon flat, its
+respiratory arm falling).
+
+**The test, with its circularity guard.** 25 of the 87 OXPHOS subunits *are* AP LE-marker genes, so
+the raw comparison is partly the OXPHOS result restated; every number below is the **mito-removed**
+version.
+
+| lineage | HE-marker (`_UP`) | LE-marker (`_DN`) | verdict |
+|---|---|---|---|
+| **AP** *(the prediction)* | −0.049 (21st pct) | **−0.238 (0th pct)** | **holds** |
+| BA *(control)* | +0.056 (99.7th) | −0.105 (1.4th) | holds |
+| HS *(control)* | −0.275 (0th) | −0.141 (0.15th) | **fails** — HE falls *more* |
+
+So the LE-specific decline is real in **AP and BA**, and **absent in HS**, where the whole lineage
+falls (`MG_HS_GRAY` −0.142, 0th pct; TEB-vs-ductal −0.435). The honest statement is *loss of the
+lineage-suppressed state in the alveolar-progenitor and basal compartments*, not an AP-exclusive
+carrier — and in HS a different thing is happening, which is the TEB regression already in §0.7.
+
+**Two bounds.** Gray's own nuance: `AP4/HS4/BA2` are "broadly distributed among samples of all ages",
+so what this shows is a shift in LE **abundance**, not a state appearing or vanishing; the
+pubertally restricted LE clusters are `AP5` and `HS5`. And the within-wild-type version
+(`ox_beta_time` −0.459 → −0.151 adjusting for a *disjoint* AP-LE score) is **descriptive only** —
+n=12, `batch = timepoint`, and it cannot separate a lineage shift from developmental regulation.
+Deconvolution or single-cell is the design that could (`docs/deconvolution_subproject_plan.md`).
+
+**One convergence worth citing.** Gray argues LE is **not** a proliferation readout — "the majority
+of IdU+ cells were in fact HE cells, thus arguing against the LE phenotype's being a simple readout
+of proliferation". That lands on the same dissociation as §0.7's own result, from a different assay.
+And the human end: MYC is elevated mostly in **ER-negative** tumours, which arise from the **LASP/AP**
+lineage — so the state carrying the PGC-1a/OXPHOS programme is the lineage of origin for the MYC-high
+human tumours. That is the link from here to ¶2 and the METABRIC arm.
+
 **The standing bound.** Every wild-type temporal statement above is exposed to `batch = timepoint`
 and is described, not claimed. Its one mitigation is that the mitochondrial protein blots move the
 same way, off the RNA batch entirely.
+
+---
+
+## 0.8 Can we define an OXPHOS/apoptosis module? — and what the collapse scan is for
+
+*(Added 2026-07-27, from the author's question: can the title name "a PGC-1a/Nrf1 regulated common
+OXPHOS/apoptosis module"? Numbers are `[44]` = `results/collapse_module_ownership.rds`, provisional
+until the author sources `scripts/44_collapse_module_and_ownership.R`.)*
+
+Short answer: **not as a co-regulated module, and not one owned by the PGC-1a axis.** Four
+independent checks, three of which are in our own data.
+
+**1. The PGC-1a axis is depleted of pro-apoptotic genes; MYC's regulon is enriched for them.**
+`CORE_MITO` (ESRRA/NRF1/GABPA targets ∩ MitoCarta, n=300 — and it contains 66% of the OXPHOS
+subunits, so it is a fair test) overlaps the 25 pro-apoptotic MitoCarta genes in **5 against 6.6
+expected (fold 0.76, p 0.83)**. Those five — **Aifm1, Aifm2, Cycs, Endog, Ifi27** — are the
+releasable intermembrane-space payload, not the trigger. `MYC_MITO` (n=119) overlaps in **7 against
+2.6 expected (fold 2.68, p 0.011)**: Aifm3, Bax, Casp8, Casp9, Diablo, Pmaip1, Sphk2. Neither
+contains `Bbc3`.
+
+So if the paper wants a division of labour, the data supports the opposite of the proposed title:
+**the PGC-1a axis supplies the platform; MYC installs the effectors.** That is set membership in a
+curated resource — it constrains what a *title* may claim, it does not establish regulation in these
+mice.
+
+**2. The Gray/ChEA shortlist cannot be cited for the NRF1→BBC3 axis** — but the axis itself stands.
+Across 2168 TF x context rows / 741 TFs, pro-apoptotic capture is **0.0284 per mito gene against a
+catalog expectation of 0.0219**, and `cor(regulon size, n_pro) = 0.43`. Any regulon picks up one or
+two of 25 genes by arithmetic. The `NRF1 -> Bbc3` row specifically has **BH FDR 0.99998** and 5 mito
+genes — it fails the resource's own promotion gate (BH<0.01, ≥15 genes). **This retracts a citation,
+not a claim.** The author has experimental evidence for NRF1–BBC3, and the PGC1a perturbation induces
+PUMA *and* BIM at protein level; §0.5's trigger-supply route should rest on those blots, which are
+independent of this dataset, and not on a table row that cannot carry it.
+
+**3. In the wild-type gland the apoptotic transcriptome does not move at all.** On the content ruler
+OXPHOS subunits fall **−0.255 (0th percentile** vs expression-matched random sets) while
+Apoptosis-PRO is **+0.025 (63rd)** and ANTI **+0.045 (65th)**. On the mitoPPS priority ruler they move
+in **opposite directions**: OXPHOS **−0.109**, Apoptosis-PRO **+0.054**. Gene by gene, of 25 PRO + 7
+ANTI exactly one is significant on `timepoint_neg` — **`Bnip3` +0.635 (padj 0.021), and it rises.**
+Apoptosis *is* de-prioritised, but on the **Myc** axis at 6W (−0.210, padj 0.022), not the
+developmental one.
+
+**4. The PGC-1a regulon does not withdraw as a unit.** `CORE_MITO` overall is **+0.013 (75th
+percentile)** across 6→12W; decomposed, its 59 OXPHOS-subunit members fall **−0.216 (0.05th)** while
+the remaining 241 genes **rise, +0.069 at the 99.6th percentile**. If PGC-1a-axis coactivation were
+being withdrawn, the whole regulon would go. It does not — only the respiratory arm does. That is
+compatible with a *selective* PGC-1a change and excludes the global one. (`Ppargc1a` baseMean 29.9,
+wild-type +0.397 n.s.; `Nrf1` −0.249 n.s.; only `Esrra` moves, and on the genotype axis: +0.684,
+padj 1.8e-06. A transcript is a poor proxy for a post-translationally controlled coactivator, so
+these bound the claim rather than settle it.)
+
+### The reframe, which is the stronger claim anyway
+
+> **The maturing gland does not dismantle its death machinery.** Every pro- and anti-apoptotic
+> transcript sits where it was at 6W. What it withdraws is the **respiratory state that machinery
+> depends on** — and with it, Myc's ability to convert his signal into PUMA priming.
+
+A module says "these genes move together". This says something less expected and harder to explain
+away: **they do not move together, and they do not need to.** What is shared is not transcription but
+**dependence**. That is exactly what the Bcl-xL rescue localises (execution, not induction), and it
+turns PGC-1a co-induction in MYC-ER from a hopeful experiment into a prediction.
+
+### The one route that can still yield a module — define it from the collapse
+
+Since co-expression cannot define it, define it from the phenomenon. Script 44 PART C ranks the
+genome on the **residual from the global attenuation rate** — `sign(LFC6) x (LFC12 − rate x LFC6)`,
+standardised — because under a global x0.55 rescaling *every* Myc-induced gene has a negative
+interaction and "has a negative interaction" is not a finding. Then it asks what sits in the tail
+with PUMA.
+
+**The first indication, and it is a real one.** `Bbc3` lands at the **0.51st percentile of 8774
+Myc-responsive genes** (retention −1.10, a full sign reversal) — pre-specified from the westerns, not
+a scan hit, and reproducing script 42's PUMA:Bcl-xL result with a completely different statistic that
+never touches the Bcl-xL denominator. **`Bcl2l11` (BIM) lands at the 91.6th percentile** — the
+opposite end. So **the western's PUMA+BIM pair does not transfer as a pair**; the in-vivo collapse is
+PUMA-specific. Half the pre-specification failing is what makes the other half worth quoting.
+
+### Title candidates, decision deferred until PART C reports
+
+| candidate | commits us to | status |
+|---|---|---|
+| "PGC-1a/Nrf1 regulated common OXPHOS/apoptosis module **determines**..." | a co-regulated module owned by the PGC-1a axis | **not supported** — checks 1-4 above |
+| "Mitochondria integrate oncogenic and developmental signals to **time**..." | two separately regulated inputs, one organelle; the window | supported today |
+| "Myc installs the effectors, development withdraws the platform" | the division of labour in check 1 | supported as set membership; needs expression |
+| a collapse-module title | whatever PART C's fgsea returns | **pending** |
+
+Only a real collapse module would license a mechanism-naming title. Nothing else in the corpus would.
+
+---
+
+## 0.9 How PUMA priming could depend on the respiratory state — the mechanism menu
+
+*(Added 2026-07-27. Hypotheses, ordered by what this dataset can and cannot say. None is claimed.)*
+
+The question blurs two things, and separating them is most of the answer: **priming is not a
+transcript, it is an occupancy state at the outer mitochondrial membrane.** So there are two
+questions, and our data speaks only to the second.
+
+**(a) Why priming depends on respiratory state even at equal PUMA.** The strong routes, and §0.8's
+gene lists point at them:
+
+- **Payload vs trigger.** The PGC-1a axis owns `Cycs, Aifm1, Aifm2, Endog` — the proteins *released*
+  at MOMP — and no BH3-only gene. MYC's regulon owns `Bax, Casp9, Diablo, Pmaip1`. **PGC-1a loads the
+  gun; MYC pulls it.** Development unloads it without touching the trigger, which is precisely why
+  the apoptotic transcripts are flat while OXPHOS falls.
+- **Cristae and the releasable pool.** ~85% of cyt c sits behind OPA1-dependent cristae junctions;
+  MOMP alone does not release it, cristae remodelling does. Fewer, looser cristae means the same BAX
+  event yields less apoptosome.
+- **Cardiolipin.** Required for tBID recruitment and BAX insertion/oligomerisation, and it anchors
+  the membrane-bound cyt c pool. Made and remodelled in respiring mitochondria (`Crls1, Taz,
+  Ptpmt1`).
+- **Membrane potential and HTRA2 import.** Myc's strongest apoptotic gene here is `Htra2` (+1.49,
+  padj 2.6e-08); its import and maturation into the IMS are ΔΨm-dependent, so a low-potential
+  mitochondrion carries less mature HTRA2 to release.
+- **ROS.** Cardiolipin peroxidation is a required step for cyt c mobilisation, and low flux makes
+  less of it.
+
+**(b) Why MYC's PUMA *transcription* depends on it.**
+
+- **Metabolite-gated chromatin** — OXPHOS regenerates NAD+ and supports citrate→acetyl-CoA and α-KG
+  for TET/JmjC. This is the route that connects to what we already have: `Bbc3` is reachable in
+  `AP_TEB` and in no other context (a chromatin statement, §4.1 of the death narrative). Respiratory
+  state and promoter accessibility would be co-determined.
+- **Retrograde / ISR** — MYC over-driving a high-capacity mitochondrion → OMA1–DELE1–HRI → ATF4/CHOP
+  → PUMA. Script 42's scan of `Atf4, Ddit3, Trib3, Chac1, Sesn2, Eif2ak3...` does **not** exclude
+  this: it asked whether those transcripts *track* PUMA per sample, not whether they *collapse* like
+  it, and ATF4 is translationally regulated so its mRNA is a poor readout either way. Script 44
+  PART D asks the collapse version.
+
+**Testable here:** the ISR collapse, the cardiolipin/cristae/payload collapse (44 PART D — all
+returned mid-pack in the dry run, so this is a negative to report, not a lead). **Needs new data:**
+cardiolipin by lipidomics, cristae by EM, and priming itself by **BH3 profiling** — which is the
+measurement none of the transcriptomics substitutes for.
+
+**Two conflicts the paper must confront, both from `docs/library_reference/PUMA-and-its-relationships.md`.**
+Its §4 has the canonical axis running the *other* way — PGC-1a is **protective**, sequestering FOXO3a,
+and losing it frees FOXO3a onto the PUMA promoter. This paper inverts that and should say so rather
+than let a reviewer find it. And its §5 says **FOXO1, not FOXO3**, drives TEB lumen-clearance
+apoptosis under Wnt control — which fits the TEB story better than FOXO3 does.
 
 ---
 
@@ -608,6 +800,17 @@ reference callouts preserved where the sentence survives. Square brackets mark o
    two decompositions were never in conflict — Issue #6 measured convergence of the genotype gap,
    Issue #4 and script 40 measure the wild-type gland's own decline — and the Introduction needs the
    second. No re-run is required; both objects are current.
+1d. **The MYAZ + PGC-1a RNA-seq, deferred but wanted.** The author does not have it now and intends
+   to do it. It is **the only design that can define the module by perturbation** rather than by
+   correlation: whatever PGC-1a co-induces that is both mitochondrial and apoptotic *is* the module,
+   with no null needed and no correlation ceiling to fight. It would settle §0.8 outright, test
+   whether the payload/trigger division survives in a system where PGC-1a is actually manipulated,
+   and give the PUMA/BIM pair (§0.8, which splits in vivo) a clean read. Recorded in
+   `paper/myc_mito.qmd` as a planned integration.
+1e. **After script 44 runs:** decide the title from §0.8's table. If PART C's fgsea returns a
+   coherent collapse module, a mechanism-naming title is licensed; if it returns lineage-identity
+   sets and MYC-target retention (which is what the dry run suggested), take the two-input title and
+   put the dependence reframe in the Discussion.
 3. **Propagation.** Section 3.5 (strand 1) of `2026-07-25_death_narrative_dose_vs_competence.md`
    currently makes the developmental case on the tier-median LFCs. The NES pair for
    `MITOCARTA_OXPHOS_SUBUNITS` — **WT -2.670 versus Myc+ -2.715** — is a stronger and simpler
@@ -630,9 +833,13 @@ membership through `functions/reconcile_gene_symbols.R`. Tier medians and the pr
 `results/priming_arm_teb.rds` (script 42) as reported in
 `docs/2026-07-25_death_narrative_dose_vs_competence.md`. Content figures (+21-27%) are script 32.
 The METABRIC fork statistics are `docs/2026-07-06_block_A_review.md` (AP7). The `redox -> MB2 fork`
-coupling is `docs/2026-07-18_narrative_synthesis_five_questions.md` (scripts 35/36). The
-`NRF1 -> Bbc3` and `HS_TEB` apoptosis-loading statements are
-`docs/library_reference/Gray_et_al_developmental_TFS_selection.md`.
+coupling is `docs/2026-07-18_narrative_synthesis_five_questions.md` (scripts 35/36). The `HS_TEB`
+apoptosis-loading statement is `docs/library_reference/Gray_et_al_developmental_TFS_selection.md`.
+The **`NRF1 -> Bbc3` axis is cited to the author's PGC-1a westerns**, not to that note — see §0.8
+check 2 for why the note cannot carry it. The `LE` = "low-expressing" definition and the LE-cluster
+age distribution are **Gray et al. 2023, Cell Reports 42:113293** (`docs/GRAY_2023_paper.pdf`, p.7
+and Fig. 4), read directly; they contradict the gloss in `data/genesets_from_library/
+provenance_table.csv` and `docs/library_reference/mammary_dev_sets_catalog.md:108-110`.
 
 **Everything marked `[43]`** — the wild-type comparator table and its matched and paired nulls, the
 within-wild-type fit, the buffer padj values, the mitoPPS ambient and the trade-off asymmetry — is
@@ -649,3 +856,14 @@ Blot and cell-culture values — MYC -50%, the mitochondrial and pro-apoptotic p
 MYAZ experiments including the PGC1a / Bcl-xL implant arms — are the author's, reported as given.
 The prior clause table this note supersedes is
 `docs/2026-07-13_BlockA_revision_walkthrough_and_intro_alignment.md:884-1066`.
+
+**Everything marked `[44]`** — sections 0.7a and 0.8: the ownership hypergeometrics and gene lists,
+the shortlist base rate, the wild-type expression test on both rulers, the `CORE_MITO` decomposition,
+the HE/LE lineage table with its mito-removed columns, and the collapse-scan positions of `Bbc3` and
+`Bcl2l11` — is `results/collapse_module_ownership.rds`
+(`scripts/44_collapse_module_and_ownership.R`). **PROVISIONAL: read-only reconciliation of
+2026-07-27, verified only by a scratchpad-redirected dry run. Reconcile against the author's own run
+and drop these flags, exactly as was done for `[43]`.** The script's built-in positive control
+reproduced Issue #4's OXPHOS-subunit wild-type value to four decimals (-0.2548228 against -0.2548),
+its interaction-sign assertion returned 1.000, and its two collapse statistics agreed at Spearman
+0.961.
