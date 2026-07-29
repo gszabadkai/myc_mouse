@@ -18,21 +18,47 @@ Narrative source: Google Doc `MK_Myc_Paper`, tab **Gyorgy Writing**.
 
 | slot | script | supports | inputs |
 |---|---|---|---|
+| **Fig. 1B** | `fig1B_cell_state_composition.R` | "no major changes in the overall composition of major mammary cell states (BMYO, LHS, LASP), but a clear TEB-ductal shift away from the pubertal proliferative state at 12W" | `dev_program_myc_integration.rds`, `myc_endogenous_amplification.rds`, `gsva_scores.rds` |
+| **Fig. 1C** | `fig1C_myc_teb_proliferation.R` | "an endogenous Myc program contributed to the pubertal TEB state in WT … the transgene amplified the TEB and proliferation effects and suppressed the BMYO lineage in favor of LHS" | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds` |
 | **Fig. S1A** | `figS1A_geneset_library.R` | "a large custom library of ~900 genesets, covering MYC identity … metabolic pathways"; "fGSEA ranking and GSVA scoring" | `data/genesets_from_library/provenance_table.csv` |
 | **Fig. S1B** | `figS1B_design_contrasts.R` | "timeline: 6W vs 12W of the WT or Myc+ genotypes, or cross sectional: WT vs Myc+ at 6W or 12W" | none (schematic) |
 
-## Next, blocked on a re-run
+### The 17 → 26 → 27 re-run, done 2026-07-29 15:33
 
-Both read objects that predate the 2026-07-24 gene-symbol reconciliation. **Author action,
-Option A — re-source in Positron, in order: `scripts/17_gsva_overview.R` →
-`scripts/26_dev_program_myc_integration.R` → `scripts/27_myc_endogenous_amplification.R`.**
-Script 17 is the slow one (`limma::mroast`, `nrot = 9999`, 902 sets). The panels call
-`require_fresher_than()` and stop rather than draw a stale number.
+`dev_program_myc_integration.rds` (Jul 15) and `myc_endogenous_amplification.rds` (Jul 8) predated
+the 2026-07-24 gene-symbol reconciliation that rebuilt `gsva_scores.rds`, and script 26 also reads
+`gsva_overview.rds` (Jul 6) at `26:68`. All three re-sourced with `set.seed(1)`; **every number in
+`state_stats` and `prog_stats` is unchanged to three significant figures**, which is what the
+reconciliation's scope predicted — its large recovery was ATP synthase / OXPHOS, and these panels
+read mammary-development, MYC and proliferation sets. The panels call `require_fresher_than()` and
+stop rather than draw a stale number, so the guard stays useful for the next such rebuild.
 
-| slot | script | supports | inputs |
-|---|---|---|---|
-| **Fig. 1B** | `fig1B_cell_state_composition.R` | "no major changes in the overall composition of major mammary cell states (BMYO, LHS, LASP), but a clear TEB-ductal shift away from the pubertal proliferative state at 12W" | `dev_program_myc_integration.rds`, `gsva_scores.rds` |
-| **Fig. 1C** | `fig1C_myc_teb_proliferation.R` | "an endogenous Myc program contributed to the pubertal TEB state in WT … the transgene amplified the TEB and proliferation effects and suppressed the BMYO lineage in favor of LHS" | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds` |
+**One reproducibility note.** `limma::mroast` (`17:379`) is rotation-based and script 17 does *not*
+seed it — its only `set.seed` is inside `perm_trajectory_contrast` (`17:495`). The roast columns of
+`gsva_overview$coef_table` therefore differ slightly between runs. They feed nothing in these panels
+(which use the OLS coefficients and the GSVA scores), but a `set.seed()` before line 379 would be a
+one-line durable fix if the roast p-values are ever quoted.
+
+### Where the panels and the written sentences disagree
+
+Both 1B and 1C draw what the objects say, which is not in every respect what paragraph 1 currently
+says. Carried in each script's `LEGEND` block and repeated here because it needs a decision:
+
+- **"no major changes in the overall composition"** — in within-group SD, the wild-type 6→12W shift
+  is BMYO **+0.10**, LASP **−0.70**, LHS **−0.60**, TEB-ductal **−0.91**. BMYO is flat; the two
+  luminal states fall by two thirds of what the TEB axis does. Script 26's own PART C2 header says
+  the same ("the data do NOT support a BMYO expansion (flat); the WT change is luminal (LASP/LHS)
+  DECLINE"). All four are non-significant at n=6 (p 0.24–0.86).
+- **"a clear TEB-ductal shift"** — not supported by the sample-level test (**p = 0.24** in wild type).
+  What licenses "clear" is the matched-null ruler: TEB-vs-ductal (HS) **−0.422 at the 0th percentile**
+  (`docs/2026-07-26_introduction_alignment_and_the_question.md` §0.7). In Myc+ the timeline shift
+  *is* significant (**p = 0.001**).
+- **"the transgene amplified the TEB … effects"** — TEB-ductal has **no** genotype main effect
+  (+0.63 SD, **p = 0.14**). Proliferation does (+1.01 SD, p = 0.019) and MYC-in-TEB does (+1.61 SD,
+  p = 6.2e-04), but the latter is MYC *targets* scored in the TEB context, not the TEB phenotype.
+- **"suppressed the BMYO lineage in favor of differentiation to LHS"** — the BMYO half **holds** and
+  is the powered state result (−0.98 SD, p = 0.023). The LHS half does not: no genotype main effect
+  (p = 0.86), but a time-dependent flip (interaction p = 0.097; below wild type at 6W, above at 12W).
 
 ## Not built here
 
