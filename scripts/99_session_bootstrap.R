@@ -41,7 +41,7 @@
 
 if (!requireNamespace("here", quietly = TRUE)) stop("bootstrap needs the 'here' package")
 
-boot_full <- isTRUE(getOption("myc.bootstrap.full", FALSE))
+boot_full <- isTRUE(getOption("myc.bootstrap.full", TRUE))
 boot_load <- isTRUE(getOption("myc.bootstrap.load", TRUE))
 
 root <- here::here()
