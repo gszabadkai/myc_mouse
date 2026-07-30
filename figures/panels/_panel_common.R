@@ -29,7 +29,7 @@
 #   source(here::here("figures", "panels", "_panel_common.R"))
 #   LEGEND <- panel_legend(slot = "Fig. 1B", what = ..., detail = ..., bounds = ...)
 #   ... build `p` ...
-#   save_panel_p(p, "fig1B_cell_state_composition", height = 70)
+#   save_panel_p(p, "fig1B_myc_teb_proliferation", height = 80)
 #   if (FALSE) { print(p) }        # sandbox, skipped by source()
 #
 # The composite object is ALWAYS named `p`: both rebuild_panels.R and
@@ -117,17 +117,42 @@ mito_class_labels <- c("mitocarta_proper"  = "MitoCarta / OXPHOS",
                        "construction_MITO" = "mitochondrial by construction",
                        "non_mito"          = "non-mitochondrial")
 
-# --- a diverging fill for z-score heatmaps -----------------------------------
-# PRGn, CVD-safe, and deliberately NOT blue-red: blue and orange-red now carry
-# genotype meaning everywhere else in the figure set, so a blue-red heatmap would
-# invite the reader to see genotype in the fill. Purple = low, green = high, the
-# same direction as verdict_cols.
-heat_fill <- function(limit, name = "z") {
-  ggplot2::scale_fill_gradient2(
-    low = "#762A83", mid = "#F7F7F7", high = "#1B7837", midpoint = 0,
-    limits = c(-limit, limit), oob = scales::squish, name = name,
-    breaks = c(-limit, 0, limit),
-    labels = sprintf("%+.1f", c(-limit, 0, limit)))
+# --- THE manuscript diverging fill -------------------------------------------
+# Author's specification (2026-07-30), to be used for every diverging quantity in
+# the manuscript: deep espresso brown at the negative extreme, stark white at
+# zero, crisp mint green at the positive extreme. Deliberately not blue-red --
+# blue and orange-red carry genotype meaning everywhere else in the figure set,
+# so a blue-red fill would invite the reader to see genotype in it.
+ms_diverging <- c(neg = "#4A3525", zero = "#FAFAFA", pos = "#2A8A6D")
+
+# Signed tick labels, with the author's rule that zero is written "0" and never
+# "0.0" or "+0.0". %+g drops trailing zeros, so 3 -> "+3" and 1.5 -> "+1.5".
+lab_signed <- function(x) ifelse(x == 0, "0", sprintf("%+g", x))
+
+# WHITE IS PINNED TO ZERO, AND THE TWO SIDES ARE SCALED SEPARATELY. `limits` may
+# be one number (symmetric, +/- that) or two (the observed range). The asymmetric
+# form matters whenever the data are lopsided: on a +3.0 / -1.7 range a symmetric
+# ramp leaves every negative value in the first third of the brown, where it is
+# indistinguishable from zero, so the fill stops carrying magnitude on that side.
+# Pinning white to zero and rescaling each arm keeps the sign unambiguous and
+# spends the whole ramp -- at the cost that equal ink no longer means equal
+# magnitude ACROSS the sign change. That trade is only acceptable where a
+# quantitative axis carries the magnitude anyway; say so in the legend block.
+heat_fill <- function(limits, name = NULL, breaks = ggplot2::waiver()) {
+  if (length(limits) == 1L) limits <- c(-abs(limits), abs(limits))
+  stopifnot(length(limits) == 2L, limits[1] < 0, limits[2] > 0)
+  ggplot2::scale_fill_gradientn(
+    colours = unname(ms_diverging[c("neg", "zero", "pos")]),
+    values  = scales::rescale(c(limits[1], 0, limits[2])),
+    limits  = limits, oob = scales::squish, name = name,
+    breaks  = breaks, labels = lab_signed)
+}
+
+# Ink that stays legible on that ramp. The brown end goes dark fast and the mint
+# end stays mid-tone, so the switch is asymmetric: white ink earlier on negative
+# fills than on positive ones.
+ink_on_fill <- function(x, limit) {
+  ifelse(x < -0.45 * limit | x > 0.75 * limit, "white", "grey10")
 }
 
 # --- per-sample composites and the design contrasts --------------------------

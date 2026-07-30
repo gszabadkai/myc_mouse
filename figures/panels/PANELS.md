@@ -40,12 +40,27 @@ Contrast vocabulary, also fixed 2026-07-30 and declared once in `_panel_common.R
 The legend blocks map these to the `results/interaction_results.rds` slot names
 (`6>12W_wt` = `timepoint_neg`, `6>12W_myc` = `timepoint_pos`).
 
+## The diverging scale (fixed 2026-07-30, project-wide)
+
+Every diverging quantity in the manuscript uses one ramp, `ms_diverging` in
+`_panel_common.R`: **`#4A3525` deep espresso brown → `#FAFAFA` stark white → `#2A8A6D` crisp mint
+green**. Two rules travel with it:
+
+- **Zero is written `0`**, never `0.0` or `+0.0`. `lab_signed()` enforces it and formats every other
+  tick with an explicit sign.
+- **White is pinned to zero, and the two arms are scaled independently** where the data are
+  lopsided. `heat_fill()` takes either one number (symmetric) or the observed range. On the
+  +3.0 / −1.8 range of Fig. 1B a symmetric ramp left every negative effect in the first third of the
+  brown, where BMYO at −1.16 was indistinguishable from LASP at −0.20 — the fill had stopped
+  carrying magnitude on that side. The cost is that **equal ink does not mean equal magnitude across
+  the sign change**, so the asymmetric form is only for panels where a quantitative axis carries the
+  magnitude anyway, and the colour bar is shown so the asymmetry is inspectable.
+
 ## Built
 
 | slot | script | supports | inputs |
 |---|---|---|---|
-| **Fig. 1B** | `fig1B_cell_state_composition.R` | "no major changes in the overall composition of major mammary cell states (BMYO, LHS, LASP), but a clear TEB-ductal shift away from the pubertal proliferative state at 12W" | `dev_program_myc_integration.rds`, `myc_endogenous_amplification.rds`, `gsva_scores.rds` |
-| **Fig. 1C** | `fig1C_myc_teb_proliferation.R` | "an endogenous Myc program contributed to the pubertal TEB state in WT … the transgene amplified the TEB and proliferation effects and suppressed the BMYO lineage in favor of LHS" + the de-differentiation reading | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds`, `gsva_scores.rds` |
+| **Fig. 1B** | `fig1B_myc_teb_proliferation.R` | "an endogenous Myc program contributed to the pubertal TEB state in WT … the transgene amplified the TEB and proliferation effects and suppressed the BMYO lineage in favor of LHS" + the de-differentiation reading | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds`, `gsva_scores.rds` |
 | **Fig. S1A** | `figS1A_geneset_library.R` | "a large custom library of ~900 genesets, covering MYC identity … metabolic pathways" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1B** | `figS1B_design_contrasts.R` | "timeline: 6W vs 12W of the WT or Myc+ genotypes, or cross sectional: WT vs Myc+ at 6W or 12W" | none (schematic) |
 
@@ -66,27 +81,40 @@ point the fill carries: the library is 40 % mitochondrial by label but **13 % on
 construction lanes are set aside** — 260 of the 393 mito-labelled sets are Gray `_MITO` /
 `_LE_MITO` TF lanes, which are MitoCarta subsets *by build*.
 
-**Fig. 1B** — was 24 points against a group axis, and the trajectories were unreadable. Now a
-**square heatmap laid out as Fig. S1B is**: one 2×2 grid per programme, age across, genotype down,
-filled by the group-mean z-score in within-group SD. A trajectory is read left-to-right and the Myc
-effect top-to-bottom, the same motion in both panels. Fill is PRGn, deliberately not blue-red, so
-the fill cannot be mistaken for genotype. The per-animal spread the tiles average over is kept in
-the script's sandbox.
+**One panel where there were two.** `fig1B_cell_state_composition.R` (a 2×2-per-programme heatmap of
+group-mean z-scores) was **deleted**: it plotted the same GSVA z-scores as the contrast panel, one
+lens further back. `fig1C_myc_teb_proliferation.R` was `git mv`d to
+**`fig1B_myc_teb_proliferation.R`** and now holds the 1B slot. The deleted panel's view is preserved
+in the surviving script's sandbox block, because a contrast plot cannot show a *level* and that is
+occasionally worth checking.
 
-**Fig. 1C** — two structural changes and one addition.
+*Two stale PDFs are left in `outputs/figures/panels/` — `fig1B_cell_state_composition.pdf` and
+`fig1C_myc_teb_proliferation.pdf`. Delete them on the next real run.*
+
+**Fig. 1B (the surviving panel)** — the Cleveland dot form is kept; four changes.
 1. **The pooled genotype column is gone**, replaced by `myc_6W` and `myc_12W`. It was hiding the
    result: TEB-ductal is **+1.02 SD at 6 weeks and +0.23 SD at 12**, and the pooled effect (+0.63 SD,
    p = 0.14) is their average and reads as a null.
-2. **Full width (183 mm), one shared x scale.** All four columns share the SD scale because the
-   comparison the sentence makes is between a genotype effect (up to +3.0 SD) and a development
-   effect (down to −1.7 SD); at 120 mm a −0.6 SD point sat 3 mm off zero and read as nothing.
-3. **Block 3 is new — the Gray HE/LE lineage-identity axes**, six composites (AP, BA, HS × HE, LE)
-   built here as the mean over `TFT_<TF>_GRAY_<lineage>_<HE|LE>`, with the `_MITO` promotions
-   excluded. `HE` = high-expressing = differentiated end, `LE` = low-**expressing** =
-   lineage-suppressed end (the provenance table's gloss is wrong; see
-   `docs/library_reference/Gray_et_al_developmental_TFS_selection.md` §2a).
+2. **Effect size is encoded twice** — dot position *and* dot fill on the manuscript diverging scale.
+   Significance is a small asterisk, not a second fill colour: at n = 6 per cell the effect size is
+   the interesting quantity and the p-value is the footnote. This is what lets the panel go back to
+   **single column (89 mm)**, where 4.7 SD spans ~15 mm per column and a −0.8 SD dot sits 2.5 mm off
+   zero — the fill is what makes its magnitude read. All four columns still share one x scale,
+   because the comparison the sentence makes is between a genotype effect (up to +3.0 SD) and a
+   development effect (down to −1.8 SD).
+3. **Two blocks, not three.** Developmental state and lineage identity were the same question asked
+   twice, so they are merged under **lineage identity**, each MEC state followed by the LE composite
+   of its own lineage — BMYO with BA, LASP with AP, LHS with HS — and the paired row labelled `-LE`.
+4. **Only the LE arm is drawn.** HE and LE are near-mirror images (they anticorrelate at −0.71 /
+   −0.76 / −0.22 within a lineage), so the HE rows cost six lines to say one thing. `HE` =
+   high-expressing = differentiated end, `LE` = low-**expressing** = lineage-suppressed end (the
+   provenance table's gloss is wrong; see
+   `docs/library_reference/Gray_et_al_developmental_TFS_selection.md` §2a). **The HE numbers must
+   still be reported in the text** — see the bounds below, because the opposition of the two signs is
+   what licenses the de-differentiation reading and the drawn arm is the one exposed to the
+   common-mode axis.
 
-The Fig. 1C additions were computed **in the figure script**, not in a new numbered analysis
+The Fig. 1B additions were computed **in the figure script**, not in a new numbered analysis
 script, because the figure layer already fits exactly these contrasts (`fig01_mito_content.R:82-84`,
 `figS1_mitocarta_survey_share.R`, `figS2_oxphos_complex_share.R`, `figS8_myc_network_levels.R`) with
 script 27's idiom (`27:103-106`). The shared machinery — `composite_of()`, `wsd_of()`,
@@ -133,14 +161,15 @@ Carried in each script's `LEGEND` block and repeated here because it needs a dec
   deepens with age (−0.80 SD at 6W, −1.16 SD at 12W, p = 0.066). The LHS half is a **reversal, not a
   main effect**: −0.63 SD at 6W, +0.79 SD at 12W (pooled p = 0.86, interaction p = 0.097). The
   sentence is true at 12 weeks and false at 6.
-- **The de-differentiation reading is the stronger version of that sentence.** Myc lowers every
-  differentiated (HE) composite and raises every lineage-suppressed (LE) composite, in all three
-  lineages, at both ages, most strongly at 6 weeks (AP −0.82 / +1.51, BA −1.00 / +1.55,
-  HS −0.85 / +1.31 SD). **Bound:** the LE composites sit almost on the global common-mode axis
-  (r 0.85–0.90 with the mean of all 885 scores) and the HE composites do not (−0.37, −0.57, +0.07);
-  the LE lanes are also larger (165–788 genes vs 26–159) and carry more mitochondrial genes. What
-  a common-mode axis cannot produce is **opposite signs within a lineage**, and that opposition is
-  what the reading rests on.
+- **The de-differentiation reading is the stronger version of that sentence.** Myc raises every
+  lineage-suppressed (LE) composite and lowers every differentiated (HE) composite, in all three
+  lineages, at both ages, most strongly at 6 weeks (AP +1.51 / −0.82, BA +1.55 / −1.00,
+  HS +1.31 / −0.85 SD). **Bound, and it applies to the arm that is on the panel:** the LE composites
+  sit almost on the global common-mode axis (r 0.85–0.90 with the mean of all 885 scores) and the
+  undrawn HE composites do not (−0.37, −0.57, +0.07); the LE lanes are also larger (165–788 genes vs
+  26–159) and carry more mitochondrial genes. What a common-mode axis cannot produce is **opposite
+  signs within a lineage**, so the reading rests on the opposition — which means the HE numbers have
+  to appear in the Results text even though they are not drawn.
 - **This panel set is not the attenuation result.** On the MYC programme the genotype effect is the
   same at both ages (+2.36 vs +2.28 SD), so in cohort-relative GSVA space there is nothing to
   attenuate. The attenuation result is a DESeq2 effect-size result (×0.55, scripts 29–31 and 40).
@@ -160,16 +189,17 @@ Carried in each script's `LEGEND` block and repeated here because it needs a dec
 | slot | why |
 |---|---|
 | **Fig. 1A** | Whole-mount / histology of the hyperplastic ductal expansion — the author's bench image, assembled outside R. |
-| **Fig. 1D** | The library ranked by normalised effect size (paragraph 2). Next increment; `fgsea_percategory.rds` and `pathway_loading.rds` are on disk and reconciled. |
+| **Fig. 1C onward** | Vacated by the 1C→1B renumber. Paragraph 2's panel (the library ranked by normalised effect size) takes it. Next increment; `fgsea_percategory.rds` and `pathway_loading.rds` are on disk and reconciled. |
+| MEC state *levels* | The four groups as a 2×2 grid per programme, group-mean z. Built, reviewed, dropped as redundant with the contrasts; kept in `fig1B_myc_teb_proliferation.R`'s sandbox. |
+| Gray HE arm | Computed and asserted, reported in the legend block, not drawn — see point 4 above. |
 | sample PCA | Deferred 2026-07-29 — belongs to the global-axis section (alignment along the mitochondrial axis), not to the opening overview. |
 | DE counts per contrast | Deferred 2026-07-29 — belongs to the attenuation section. Numbers already checked: 6W genotype contrast = **2777** genes at FDR 10 %, **1967** at FDR 5 %; the `interaction` contrast has **0** at either threshold. |
 
 ## Assembly
 
 Deferred until the narrative fixes the numbering. Then a `figures/figure*_overview.R` composes
-the signed-off panels with patchwork `tag_levels = "A"` and this table records the mapping. Note
-that Fig. 1C is now **double-column (183 mm)** while 1B and the S1 panels are single-column, which
-constrains the layout: 1C wants its own full-width row.
+the signed-off panels with patchwork `tag_levels = "A"` and this table records the mapping. Every
+panel is now **single column (89 mm)**, so the layout is unconstrained.
 
 The four already-assembled manuscript figures (`figures/figure1_myc_mitochondrion.R`,
 `figure2_developmental_window.R`, `figureS1_compartment_detail.R`, `figureS2_controls.R`) are
