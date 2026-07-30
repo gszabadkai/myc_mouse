@@ -209,10 +209,13 @@ Myc fork" from "Myc drives biogenesis generically".
 
 - **Myc raises both forks, by almost the same amount** — MB2_UF +1.63 / +1.59 SD, MB1_UF +1.73 /
   +1.34 SD — and the two scores **correlate 0.982** (230 shared genes of 626 and 419).
-- Drawn in **raw GSVA units on one shared axis**, deliberately *not* SD-standardised. The
-  difference's within-group SD is 0.082 against 0.335 and 0.297, about a quarter; standardising
-  would make the residual look as large as the thing it is a residual of, which is precisely the
-  contrast this panel exists not to manufacture.
+- **Only the difference is drawn** (author, 2026-07-30), as a small boxplot with the animals on it,
+  because the difference *is* the test. The two component scores are in the legend block and in the
+  script's sandbox. It is in **raw GSVA units**: the difference's within-group SD is 0.082 against
+  0.335 and 0.297, about a quarter, so putting it on a standardised axis would make the residual look
+  as large as the thing it is a residual of.
+- Groups are ordered **age-major** so the two boxes a reader compares are adjacent, with a bracket
+  per age carrying an asterisk only where the genotype contrast clears p < 0.05.
 - **The cancellation is the point:** MB2_UF and MB1_UF each correlate 0.94 / 0.95 with the global
   common-mode axis; their difference falls to **0.49**. The difference is the only one of the three
   rows that is not largely the common mode.
