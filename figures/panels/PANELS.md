@@ -80,7 +80,9 @@ The classification is script 37's rule (`37:445-462`) re-derived over the whole 
 **asserted identical to `pathway_loading.rds$mito_classification` on the 885 sets they share**. The
 point the fill carries: the library is 40 % mitochondrial by label but **13 % once the
 construction lanes are set aside** — 260 of the 393 mito-labelled sets are Gray `_MITO` /
-`_LE_MITO` TF lanes, which are MitoCarta subsets *by build*.
+`_LE_MITO` TF lanes, which are MitoCarta subsets *by build*. The key sits **inside the panel, bottom
+right**, in the wedge the sorted bars leave empty — the smallest four categories occupy under a
+tenth of the width there — which took the panel from 64 mm to 52 mm high.
 
 **One panel where there were two.** `fig1B_cell_state_composition.R` (a 2×2-per-programme heatmap of
 group-mean z-scores) was **deleted**: it plotted the same GSVA z-scores as the contrast panel, one
@@ -89,10 +91,10 @@ lens further back. `fig1C_myc_teb_proliferation.R` was `git mv`d to
 in the surviving script's sandbox block, because a contrast plot cannot show a *level* and that is
 occasionally worth checking.
 
-*Two orphaned PDFs sit in `outputs/figures/panels/` — `fig1B_cell_state_composition.pdf` and
-`fig1C_myc_teb_proliferation.pdf`, both from 12:10 on 2026-07-30. Their scripts no longer exist, so
-`rebuild_panels.R` will never refresh them and `fig1C_...pdf` in particular is a near-twin of the
-current 1B. Delete both.*
+*The two orphaned PDFs left by the rename — `fig1B_cell_state_composition.pdf` and
+`fig1C_myc_teb_proliferation.pdf` — were deleted on 2026-07-30. `rebuild_panels.R` only ever writes
+the slugs its scripts name, so a rename or deletion always strands the old PDF; check
+`outputs/figures/panels/` against the Built table after either.*
 
 **Fig. 1B (the surviving panel)** — the Cleveland dot form is kept; six changes.
 

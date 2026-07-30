@@ -95,7 +95,9 @@ cat_lab <- c(
   "Metabolism"                         = "Metabolism",
   "Apoptosis"                          = "Apoptosis",
   "Biogenesis_apoptosis_intersections" = "Biogenesis x apoptosis",
-  "MYC_signatures"                     = "MYC signatures",
+  # mouse nomenclature, as on Fig. 1B: the two panels must not disagree about how
+  # the same collection of sets is spelled
+  "MYC_signatures"                     = "Myc signatures",
   "Biogenesis_discrimination"          = "Biogenesis discrimination",
   "Proliferation"                      = "Proliferation")
 stopifnot(setequal(names(cat_lab), unique(lib$category)))
@@ -135,13 +137,21 @@ p <- ggplot2::ggplot(tab, ggplot2::aes(x = n, y = category, fill = class3)) +
                              breaks = class_levels, name = NULL) +
   ggplot2::scale_x_continuous(limits = c(0, XMAX), expand = c(0, 0)) +
   ggplot2::labs(x = "gene sets (n)", y = NULL) +
-  # one class per row: "mitochondrial by construction" alone is wider than half of
-  # an 89 mm column at this type size, and the key must stay in stacking order
+  # One class per row: "mitochondrial by construction" alone is wider than half of
+  # an 89 mm column at this type size, and the key must stay in stacking order.
+  # The key sits INSIDE the panel, bottom right, in the wedge the sorted bars
+  # leave empty -- the categories run smallest at the bottom and the axis runs to
+  # 500, so the four smallest bars occupy under a tenth of the width there. That
+  # buys back the ~12 mm a bottom key was costing.
   ggplot2::guides(fill = ggplot2::guide_legend(ncol = 1)) +
   theme_panel() +
-  ggplot2::theme(legend.position = "bottom",
-                 legend.margin = ggplot2::margin(-3, 0, 0, 0),
-                 legend.key.size = ggplot2::unit(2.8, "mm"),
+  ggplot2::theme(legend.position = "inside",
+                 legend.position.inside = c(0.99, 0.02),
+                 legend.justification = c(1, 0),
+                 legend.background = ggplot2::element_blank(),
+                 legend.key = ggplot2::element_blank(),
+                 legend.key.size = ggplot2::unit(2.6, "mm"),
+                 legend.spacing.y = ggplot2::unit(0.4, "mm"),
                  axis.line.y  = ggplot2::element_blank(),
                  axis.ticks.y = ggplot2::element_blank())
 
@@ -180,7 +190,7 @@ LEGEND <- panel_legend(
     "GSVA scoring: scripts/15_gsva_scoring.R; fGSEA per category: scripts/20_fgsea_percategory.R"))
 
 save_panel_p(p, "figS1A_geneset_library",
-             width = fig_w[["single"]], height = 64)
+             width = fig_w[["single"]], height = 52)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()
