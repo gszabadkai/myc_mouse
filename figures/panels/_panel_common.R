@@ -65,8 +65,21 @@ theme_panel <- function(base_size = 7) {
 # New panels take them from here. The existing scripts are deliberately left
 # untouched.
 
-contrast_cols <- c("Myc@6W"   = "#F4A582", "Myc@12W"    = "#B2182B",
-                   "Time WT"  = "#BDBDBD", "Time Myc+"  = "#7B7B7B")
+# --- the contrast vocabulary (author's naming, 2026-07-30) -------------------
+# Two families, and the figures say which is which by NAME, not by a note on the
+# page: genotype contrasts are the Myc effect measured at one age, development
+# contrasts are the 6->12W trajectory within one genotype. These strings are what
+# gets drawn; the mapping to the DESeq2 slot names lives in the legend blocks.
+contrast_geno <- c("myc_6W", "myc_12W")
+contrast_dev  <- c("6>12W_wt", "6>12W_myc")
+contrast_levels <- c(contrast_geno, contrast_dev)
+
+# Colours: the genotype contrasts take the Myc+ hues, because that is what they
+# measure; the development contrasts take greys, because the trajectory is the
+# background against which the Myc effect is read. Deliberately NOT the WT blue
+# for 6>12W_wt -- that would put a sample colour on a contrast.
+contrast_cols <- c("myc_6W"    = "#D55E00", "myc_12W"   = "#E69F00",
+                   "6>12W_wt"  = "#BDBDBD", "6>12W_myc" = "#7B7B7B")
 
 verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
                    "rises"     = "#1B7837")
@@ -83,11 +96,84 @@ tier_cols <- c("OXPHOS"                  = "#E69F00",
                "Central dogma"           = "#D55E00")
 
 # Gene-set quantification methods, as tagged in the library provenance table.
-# A single-hue purple ramp, deliberately NOT the genotype blue/red: across the
-# figure set a reader learns blue = WT and red = Myc+, and reusing that pair for
-# a methods key would spend it on something that is not a genotype. Sequential
-# because the routing is ordinal (fGSEA only -> either -> GSVA only).
+# A single-hue purple ramp, deliberately NOT the genotype palette: across the
+# figure set a reader learns blue = WT and orange-red = Myc+, and reusing those
+# for a methods key would spend them on something that is not a genotype.
+# NOT used in the paper figures -- the author's call (2026-07-30) is that the
+# fGSEA/GSVA routing is minor and belongs in the internal write-up. Kept here for
+# the paper/myc_mito.qmd version of the library panel.
 method_cols <- c("fgsea" = "#54278F", "both" = "#9E9AC8", "gsva" = "#DADAEB")
+
+# Mitochondrial definition of a gene set, three classes, as script 37 defines
+# them (37:445-462) and as the reference figure outputs/pathway_loading/
+# E_library_coverage.pdf draws them. The middle class is the one that matters:
+# the Gray _MITO / _LE_MITO TF lanes ARE MitoCarta subsets by construction, so
+# they are mitochondrial by build rather than by biology and must not be counted
+# as independent mitochondrial coverage.
+mito_class_cols <- c("mitocarta_proper"  = "#D73027",
+                     "construction_MITO" = "#FC8D59",
+                     "non_mito"          = "#4575B4")
+mito_class_labels <- c("mitocarta_proper"  = "MitoCarta / OXPHOS",
+                       "construction_MITO" = "mitochondrial by construction",
+                       "non_mito"          = "non-mitochondrial")
+
+# --- a diverging fill for z-score heatmaps -----------------------------------
+# PRGn, CVD-safe, and deliberately NOT blue-red: blue and orange-red now carry
+# genotype meaning everywhere else in the figure set, so a blue-red heatmap would
+# invite the reader to see genotype in the fill. Purple = low, green = high, the
+# same direction as verdict_cols.
+heat_fill <- function(limit, name = "z") {
+  ggplot2::scale_fill_gradient2(
+    low = "#762A83", mid = "#F7F7F7", high = "#1B7837", midpoint = 0,
+    limits = c(-limit, limit), oob = scales::squish, name = name,
+    breaks = c(-limit, 0, limit),
+    labels = sprintf("%+.1f", c(-limit, 0, limit)))
+}
+
+# --- per-sample composites and the design contrasts --------------------------
+# Both live here because fig1B and fig1C plot the same composites through
+# different lenses and MUST NOT be allowed to drift apart.
+
+# Pooled within-group SD: the project's standardisation convention (scripts/26:335).
+# Not cosmetic -- a difference-of-two-means axis such as TEB minus ductal has ~1.7x
+# the raw spread of a single composite for arithmetic reasons alone, so a shared
+# raw axis would manufacture contrast.
+wsd_of <- function(x, g) sqrt(mean(tapply(x, g, stats::var)))
+
+# Mean GSVA score over a set of rows = the composite. One line, but naming it
+# keeps every panel using the same definition.
+composite_of <- function(scores, sets) {
+  sets <- intersect(sets, rownames(scores))
+  stopifnot(length(sets) > 0L)
+  colMeans(scores[sets, , drop = FALSE])
+}
+
+# The four drawn contrasts plus the interaction, standardised by the programme's
+# own within-group SD. Fitting idiom is script 27's (27:103-106) and the figure
+# layer's own (fig01_mito_content.R:82-84): each contrast is an ordinary least
+# squares fit on the relevant subset, so the two genotype gaps and the two
+# trajectories are estimated the same way rather than read off one pooled model.
+contrast_table <- function(y, timepoint, myc_status, group) {
+  stopifnot(length(y) == length(timepoint), length(y) == length(myc_status),
+            length(y) == length(group))
+  d <- data.frame(y = as.numeric(y),
+                  tp = factor(as.character(timepoint), levels = c("6W", "12W")),
+                  myc = factor(as.character(myc_status), levels = c("neg", "pos")))
+  cf <- function(form, sub, term) {
+    stats::coef(summary(stats::lm(form, data = d[sub, , drop = FALSE])))[term, ]
+  }
+  g6  <- cf(y ~ myc, d$tp  == "6W",  "mycpos")
+  g12 <- cf(y ~ myc, d$tp  == "12W", "mycpos")
+  twt <- cf(y ~ tp,  d$myc == "neg", "tp12W")
+  tmp <- cf(y ~ tp,  d$myc == "pos", "tp12W")
+  int <- cf(y ~ tp * myc, rep(TRUE, nrow(d)), "tp12W:mycpos")
+  w   <- wsd_of(d$y, group)
+  data.frame(
+    contrast = c(contrast_levels, "interaction"),
+    effect = c(g6[1], g12[1], twt[1], tmp[1], int[1]) / w,
+    p      = c(g6[4], g12[4], twt[4], tmp[4], int[4]),
+    within_sd = w, row.names = NULL, stringsAsFactors = FALSE)
+}
 
 # --- export ------------------------------------------------------------------
 # Wraps theme_myc.R's save_panel() so a panel script never needs to know the

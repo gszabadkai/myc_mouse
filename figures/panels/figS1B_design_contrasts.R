@@ -9,16 +9,16 @@
 #
 # A schematic, not a result: the 2x2 design and the five contrasts the DESeq2
 # `~ timepoint * myc_status` model yields, drawn once so every later panel can
-# be read against it. Contrast labels are the names used throughout the analysis
-# (results/interaction_results.rds slots), so a reader can go from the panel to
-# the object without a translation step.
+# be read against it. Contrast labels are the author's figure vocabulary
+# (_panel_common.R: contrast_levels) and the legend maps them to the
+# results/interaction_results.rds slot names.
 #
-# WHY THE TWO AXES ARE DRAWN DIFFERENTLY. The 6W and 12W cohorts were extracted
-# as two separate batches, so batch is perfectly confounded with age; genotype
-# is balanced WITHIN each batch. The vertical (genotype) contrasts are therefore
-# clean and the horizontal (age) contrasts are not separable from batch. That is
-# a property of the design, which is what this panel is for, so it is encoded --
-# solid vs dashed with a two-entry key -- rather than written on the page.
+# WHY THE TWO AXES ARE DRAWN DIFFERENTLY. The key says "genotype" and
+# "development" -- the two contrast families -- and nothing more. The 6W and 12W
+# cohorts were extracted as two separate batches, so batch is perfectly
+# confounded with age and the development contrasts are not separable from it;
+# that is a Methods statement (author, 2026-07-30), so it is in the legend block
+# below and NOT on the page.
 #
 # Input:  none (geometry only; labels from figures/theme_myc.R)
 # Output: outputs/figures/panels/figS1B_design_contrasts.pdf
@@ -27,28 +27,36 @@
 source(here::here("figures", "panels", "_panel_common.R"))
 
 # --- node grid: x = age, y = genotype (WT on top, control first) -------------
-# x spans ~1.8 units across ~70 mm and y spans ~1.6 across ~34 mm, so an x unit
-# is about 1.8x an y unit on the page: HALF_W is set smaller than HALF_H to make
-# the nodes read square.
-HALF_W <- 0.13          # node half-width  (x units)
+# x spans ~1.29 units across ~76 mm and y spans ~1.58 across ~38 mm, so an x unit
+# is about 2.4x a y unit on the page: HALF_W is set well below HALF_H. The node
+# ends up a landscape rectangle roughly 13 x 10 mm, deliberately the same shape
+# as a tile of Fig. 1B, so the two panels read as the same object. (Tightening
+# the x limits to pull the WT / Myc+ labels in shrank the x range, so HALF_W came
+# down from 0.13 with it -- the node's physical size on the page is unchanged.)
+HALF_W <- 0.11          # node half-width  (x units)
 HALF_H <- 0.19          # node half-height (y units)
 GAP    <- 0.03          # clearance between a node edge and an arrow tail
 
+# `ink` follows the palette's lightness, not the genotype: the 6W fills are the
+# saturated Okabe-Ito pair and the 12W fills are the light pair, so "n = 6" is
+# white at 6W and near-black at 12W.
 nodes <- data.frame(
   group = c("6W_neg", "12W_neg", "6W_pos", "12W_pos"),
   x     = c(1,        2,         1,        2),
   y     = c(2,        2,         1,        1),
-  ink   = c("black",  "white",   "black",  "white"),   # legibility on the fill
+  ink   = c("white",  "grey10",  "white",  "grey10"),
   stringsAsFactors = FALSE)
 nodes$fill <- unname(group_cols[nodes$group])
 stopifnot(!any(is.na(nodes$fill)))
 
 # --- contrasts ---------------------------------------------------------------
-# `kind` drives the linetype: "genotype" = within batch (clean),
-# "age" = between batch (confounded). Names match interaction_results.rds.
+# `kind` drives the linetype and is the contrast FAMILY: horizontal = development
+# (6->12W within one genotype), vertical = genotype (the Myc effect at one age).
+# Labels are the author's figure vocabulary; the legend maps them to the DESeq2
+# slot names (6>12W_wt = timepoint_neg, 6>12W_myc = timepoint_pos).
 arrows <- data.frame(
-  label = c("timepoint_neg", "timepoint_pos", "myc_6W", "myc_12W"),
-  kind  = c("age", "age", "genotype", "genotype"),
+  label = c(contrast_dev, contrast_geno),
+  kind  = c("development", "development", "genotype", "genotype"),
   x     = c(1 + HALF_W + GAP, 1 + HALF_W + GAP, 1, 2),
   xend  = c(2 - HALF_W - GAP, 2 - HALF_W - GAP, 1, 2),
   y     = c(2, 1, 2 - HALF_H - GAP, 2 - HALF_H - GAP),
@@ -56,7 +64,7 @@ arrows <- data.frame(
   stringsAsFactors = FALSE)
 
 arrow_lab <- data.frame(
-  label = c("timepoint_neg", "timepoint_pos", "myc_6W", "myc_12W"),
+  label = c(contrast_dev, contrast_geno),
   x     = c(1.5,  1.5,  1 - 0.105, 2 + 0.105),
   y     = c(2.14, 0.86, 1.5,       1.5),
   angle = c(0,    0,    90,        90),
@@ -79,8 +87,8 @@ int_head <- data.frame(x    = c(INT_X0 + INT_STUB, INT_X1 - INT_STUB),
                        xend = c(INT_X0,            INT_X1),
                        y    = c(1.5, 1.5), yend = c(1.5, 1.5))
 
-line_types <- c(genotype = "solid", age = "22")
-line_lab   <- c(genotype = "genotype (within batch)", age = "age (= batch)")
+line_types <- c(genotype = "solid", development = "22")
+line_lab   <- c(genotype = "genotype", development = "development")
 
 # --- panel -------------------------------------------------------------------
 p <- ggplot2::ggplot() +
@@ -116,21 +124,29 @@ p <- ggplot2::ggplot() +
   ggplot2::geom_text(data = arrow_lab,
                      ggplot2::aes(x = x, y = y, label = label, angle = angle),
                      size = 2.1, colour = "grey20") +
-  # axes carry the factor levels, so the nodes stay uncluttered
+  # axes carry the factor levels, so the nodes stay uncluttered. The x limits are
+  # tight against the genotype arrow labels at x = 1 +/- 0.105, which pulls the
+  # WT / Myc+ labels in close to the scheme (author, 2026-07-30); the residual
+  # gap is the axis-text margin, set to a hairline below.
   ggplot2::scale_x_continuous(breaks = c(1, 2), labels = c("6 weeks", "12 weeks"),
-                              limits = c(0.74, 2.26)) +
+                              limits = c(0.855, 2.145)) +
   ggplot2::scale_y_continuous(breaks = c(1, 2),
                               labels = c(unname(geno_labels[["pos"]]),
                                          unname(geno_labels[["neg"]])),
                               limits = c(0.72, 2.30)) +
   ggplot2::scale_linetype_manual(values = line_types, labels = line_lab,
-                                 name = NULL, breaks = c("genotype", "age")) +
+                                 name = NULL,
+                                 breaks = c("genotype", "development")) +
   ggplot2::labs(x = NULL, y = NULL) +
   theme_panel() +
   ggplot2::theme(
     axis.line       = ggplot2::element_blank(),
     axis.ticks      = ggplot2::element_blank(),
     axis.text       = ggplot2::element_text(colour = "black", face = "bold"),
+    axis.text.y     = ggplot2::element_text(colour = "black", face = "bold",
+                                            margin = ggplot2::margin(r = 0.3,
+                                                                     unit = "mm")),
+    plot.margin     = ggplot2::margin(2, 2, 2, 0.5, "mm"),
     legend.position = "bottom",
     legend.margin   = ggplot2::margin(-2, 0, 0, 0),
     legend.key.width = ggplot2::unit(6, "mm"))
@@ -144,12 +160,12 @@ LEGEND <- panel_legend(
     "six animals per group (n = 24)."),
   detail = c(
     "Model: DESeq2 on a `~ timepoint * myc_status` interaction design.",
-    "Cross-sectional (vertical): myc_6W and myc_12W, the genotype gap at each age.",
-    "Timeline (horizontal): timepoint_neg and timepoint_pos, the 6W to 12W change within each genotype.",
-    "Interaction: the difference between the two genotype gaps (myc_12W minus myc_6W), i.e. how much of the Myc effect is lost by 12 weeks.",
-    "Contrast names are the slot names in results/interaction_results.rds, so figure and analysis object use one vocabulary."),
+    "Genotype contrasts (solid, vertical): myc_6W and myc_12W, the Myc effect at each age.",
+    "Development contrasts (dashed, horizontal): 6>12W_wt and 6>12W_myc, the 6 to 12 week change within each genotype.",
+    "Interaction (dotted): the difference between the two genotype contrasts (myc_12W minus myc_6W), i.e. how much of the Myc effect is lost by 12 weeks; equivalently the difference between the two development contrasts.",
+    "The four drawn names map to the slots of results/interaction_results.rds as myc_6W, myc_12W, timepoint_neg (= 6>12W_wt) and timepoint_pos (= 6>12W_myc)."),
   bounds = c(
-    "Batch = timepoint. The 6W and 12W cohorts were extracted as two separate batches, so batch is perfectly confounded with age (dashed arrows). Genotype is balanced within each batch, so the design absorbs the batch effect into the timepoint main effect.",
+    "Batch = timepoint (Methods). The 6W and 12W cohorts were extracted as two separate batches, so batch is perfectly confounded with age and the two development contrasts are not separable from it. Genotype is balanced within each batch, so the design absorbs the batch effect into the timepoint main effect.",
     "Consequently every genotype gap and every interaction is clean, and so is any difference between two temporal contrasts, because the shared offset cancels in a difference. The pure between-age comparison - which is the developmental reading - cannot be separated from batch post hoc; no dissociation-batch, viability or RIN metadata exists.",
     "Purification is by enzymatic dissociation only, with no sorting step, so residual stromal, endothelial and immune signal (3-12%) is contamination rather than tissue composition, and the warm digest itself induces an immediate-early signature."),
   source = c(
