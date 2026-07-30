@@ -88,10 +88,24 @@ lens further back. `fig1C_myc_teb_proliferation.R` was `git mv`d to
 in the surviving script's sandbox block, because a contrast plot cannot show a *level* and that is
 occasionally worth checking.
 
-*Two stale PDFs are left in `outputs/figures/panels/` — `fig1B_cell_state_composition.pdf` and
-`fig1C_myc_teb_proliferation.pdf`. Delete them on the next real run.*
+*Two orphaned PDFs sit in `outputs/figures/panels/` — `fig1B_cell_state_composition.pdf` and
+`fig1C_myc_teb_proliferation.pdf`, both from 12:10 on 2026-07-30. Their scripts no longer exist, so
+`rebuild_panels.R` will never refresh them and `fig1C_...pdf` in particular is a near-twin of the
+current 1B. Delete both.*
 
-**Fig. 1B (the surviving panel)** — the Cleveland dot form is kept; four changes.
+**Fig. 1B (the surviving panel)** — the Cleveland dot form is kept; six changes.
+
+0. **Nomenclature.** The gene and every programme scored on these mouse samples is **Myc**, not
+   MYC. The single exception is the human anchor, which keeps the human spelling.
+0b. **The top block is now `Myc-tumourigenesis`** and gains the **METABRIC MB2 fork** as
+   `Human BRCA-MYC`: the MCbiclust switch that stratifies human breast cancer, whose upper fork is
+   biogenesis-high, proliferative, luminal-progenitor, ER-negative and MYC-activated. Not yet in the
+   narrative. **Which score:** `MB2_UF` is `METABRIC_MB2_HI_CV_GROUP1`, but UF and LF are
+   anticorrelated poles of one switch, so the project's fixed convention (`scripts/18:96-101`,
+   "fixed by the paper + author") is the **contrast UF − LF**, and that is what is drawn — it
+   reproduces `ap7_mb_fork.rds$fork_df$MB2_score` exactly, which is asserted. The upper fork alone
+   is a stronger number (+1.63 p = 0.039 / +1.59 p = 0.005 against the fork's +1.46 p = 0.053 /
+   +1.09 p = 0.045); it is quoted in the legend block and swapping to it is a one-line change.
 1. **The pooled genotype column is gone**, replaced by `myc_6W` and `myc_12W`. It was hiding the
    result: TEB-ductal is **+1.02 SD at 6 weeks and +0.23 SD at 12**, and the pooled effect (+0.63 SD,
    p = 0.14) is their average and reads as a null.

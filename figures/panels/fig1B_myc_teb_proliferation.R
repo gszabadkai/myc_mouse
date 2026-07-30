@@ -24,9 +24,7 @@
 #    scale (deep espresso brown / stark white / crisp mint green, declared once in
 #    _panel_common.R as ms_diverging). Significance is a small asterisk rather
 #    than a second fill colour, because at n=6 per cell the effect size is the
-#    interesting quantity and the p-value is the footnote. The colour bar is
-#    dropped: the fill maps to the same number as the x axis, so the axis is its
-#    key, and the space goes to the rows instead.
+#    interesting quantity and the p-value is the footnote.
 #
 # 1. THE POOLED GENOTYPE COLUMN IS GONE. "Myc+ vs WT" was the genotype main
 #    effect, averaged over both ages, and it was hiding the thing the sentence is
@@ -46,18 +44,18 @@
 #    the argument (see bounds).
 #
 # 2. THE TWO TIMELINES ARE STILL SIDE BY SIDE, AND THEY REALLY DO LOOK ALIKE on
-#    the MYC signatures (-0.60 SD in wild type, -0.68 SD in Myc+). That is not a
+#    the Myc signatures (-0.60 SD in wild type, -0.68 SD in Myc+). That is not a
 #    drawing problem, it is the result: in cohort-relative GSVA space the genotype
-#    gap on the MYC programme is the same at both ages (2.36 vs 2.28 SD), i.e.
+#    gap on the Myc programme is the same at both ages (2.36 vs 2.28 SD), i.e.
 #    THERE IS NO ATTENUATION HERE. The attenuation result lives on a different
 #    ruler -- DESeq2 effect sizes and their fGSEA enrichment, where the Myc effect
 #    rescales x0.55 (scripts 29-31, 40) -- and this panel must not be read as
 #    evidence for or against it. What DOES attenuate here is the developmental
-#    arm: TEB +1.02 -> +0.23, and every lineage-identity axis in block 3 weakens.
-#    That contrast (MYC programme constant, developmental identity fading) is the
+#    arm: TEB +1.02 -> +0.23, and every lineage-identity axis weakens with it.
+#    That contrast (Myc programme constant, developmental identity fading) is the
 #    honest reading and it is the one that sets up the attenuation section.
 #
-# 3. BLOCK 3 IS NEW: the Gray 2023 lineage-identity axes. For each major type
+# 3. THE LINEAGE-IDENTITY BLOCK: the Gray 2023 axes. For each major type
 #    (AP alveolar progenitor, BA basal, HS hormone-sensing) Gray's CHEA3 analysis
 #    gives the regulator programmes of the HIGH-expressing and the LOW-expressing
 #    cells of that type; HE is the differentiated end of the axis and LE the
@@ -69,6 +67,13 @@
 #    the narrative needs. The signs are opposite within a lineage, which is the
 #    one thing a single common-mode axis cannot produce -- see the bounds, because
 #    the LE half sits almost on top of that axis (r 0.85-0.90).
+#
+# 4. THE HUMAN ANCHOR (author, 2026-07-30): the METABRIC MB2 fork joins the top
+#    block, which is renamed "Myc-tumourigenesis" because it is no longer only
+#    signatures -- it now runs from the Myc programme through proliferation to a
+#    human breast-cancer state. Drawn as "Human BRCA-MYC", the one label on the
+#    panel that keeps the human MYC spelling; everything else is mouse Myc.
+#    It does not yet appear in the narrative.
 #
 # Input:  results/myc_endogenous_amplification.rds  (script 27 -- $prog_stats, $prog_wide)
 #         results/dev_program_myc_integration.rds   (script 26 -- $annot, $state_stats)
@@ -123,9 +128,29 @@ for (lin in c("AP", "BA", "HS")) for (end in c("HE", "LE")) {
 stopifnot(lengths(lanes) >= 10, !any(grepl("_MITO$", unlist(lanes))))
 lane_mat <- vapply(lanes, function(s) composite_of(scores, s), numeric(ncol(scores)))
 
+# --- the human anchor: the METABRIC MB2 fork ---------------------------------
+# MB2 is the Myc arm of the MCbiclust multistate switch found in human breast
+# cancer (Menegollo, Bentham et al., Cancer Res 2024, the analytical companion
+# paper): biogenesis-high, proliferative, luminal-progenitor, ER-negative, WITH
+# Myc activation -- against MB1, the same biogenesis-high upper fork WITHOUT Myc.
+#
+# WHICH SCORE. The author asked for "the MB2_UF GSVA scores". MB2_UF is
+# METABRIC_MB2_HI_CV_GROUP1 and its lower fork is GROUP2, and the two are
+# ANTICORRELATED POLES OF ONE SWITCH -- so the project's fixed convention
+# (scripts/18:96-101, "fixed by the paper + author") is that the per-sample score
+# is the CONTRAST UF - LF, a position on the switch, never the UF alone. That is
+# what is drawn. The upper fork on its own is a stronger-looking number
+# (myc_6W +1.63 p = 0.039, myc_12W +1.59 p = 0.005 against the fork's +1.46
+# p = 0.053 and +1.09 p = 0.045) and is reported in the legend block; swapping to
+# it is a one-line change, but it would break the convention.
+mb2_uf <- "METABRIC_MB2_HI_CV_GROUP1"
+mb2_lf <- "METABRIC_MB2_HI_CV_GROUP2"
+stopifnot(all(c(mb2_uf, mb2_lf) %in% rownames(scores)))
+mb2_fork <- scores[mb2_uf, ] - scores[mb2_lf, ]
+
 Y <- cbind(pw[, c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif",
                   "teb_ductal")],
-           state_mat, lane_mat)
+           state_mat, lane_mat, mb2_fork = mb2_fork)
 
 # --- the contrasts, one table -------------------------------------------------
 tab <- do.call(rbind, lapply(names(Y), function(nm) {
@@ -152,6 +177,16 @@ for (k in as.character(ss$state)) {
   stopifnot(abs(get1(k, "myc_6W")  - ss$d6[as.character(ss$state) == k])  < 1e-8,
             abs(get1(k, "myc_12W") - ss$d12[as.character(ss$state) == k]) < 1e-8)
 }
+# 18's MB2 fork score, per sample. results/ap7_mb_fork.rds is a Jul-6 object and
+# so predates the gene-symbol reconciliation, which is why it is NOT read through
+# require_fresher_than() -- but the MB2 HI_CV sets were untouched by it and the
+# two agree exactly, so it is still a valid guard on the fork definition.
+ap7_path <- here::here("results", "ap7_mb_fork.rds")
+if (file.exists(ap7_path)) {
+  ap7 <- as.data.frame(readRDS(ap7_path)$fork_df)
+  rownames(ap7) <- ap7$sample
+  stopifnot(max(abs(mb2_fork[rownames(ap7)] - ap7$MB2_score)) < 1e-8)
+}
 
 # --- labels and blocks -------------------------------------------------------
 # Two blocks, not three: the developmental-state axes and the lineage-identity
@@ -164,18 +199,21 @@ for (k in as.character(ss$state)) {
 # at -0.71 / -0.76 / -0.22 within a lineage), so drawing both cost six rows to say
 # one thing. The HE numbers stay in the legend block, because the OPPOSITION of
 # the two signs is what licenses the de-differentiation reading -- see bounds.
+# MOUSE NOMENCLATURE (author, 2026-07-30): the gene and every programme scored on
+# these mouse samples is "Myc", not "MYC". The one exception on the panel is the
+# human anchor, which keeps the human convention -- "Human BRCA-MYC".
 prog_meta <- data.frame(
-  key = c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif",
+  key = c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif", "mb2_fork",
           "teb_ductal", "BMYO", "BA LE", "LASP", "AP LE", "LHS", "HS LE"),
-  label = c("MYC signatures", "MYC-Felsher", "Hallmark MYC V2", "MYC-in-TEB",
-            "Proliferation",
+  label = c("Myc signatures", "Myc-Felsher", "Hallmark Myc V2", "Myc-in-TEB",
+            "Proliferation", "Human BRCA-MYC",
             "TEB - ductal", "BMYO", "-LE", "LASP", "-LE", "LHS", "-LE"),
-  block = c(rep("MYC, proliferation", 5),
+  block = c(rep("Myc-tumourigenesis", 6),
             rep("lineage identity", 7)),
   stringsAsFactors = FALSE)
 stopifnot(all(prog_meta$key %in% unique(tab$key)))
 
-block_levels <- c("MYC, proliferation", "lineage identity")
+block_levels <- c("Myc-tumourigenesis", "lineage identity")
 
 dat <- tab |>
   dplyr::filter(contrast %in% contrast_levels, key %in% prog_meta$key) |>
@@ -187,7 +225,7 @@ dat <- tab |>
     # draws a discrete axis bottom-up, hence rev()
     key      = factor(key, levels = rev(prog_meta$key)),
     sig      = p < 0.05)
-stopifnot(nrow(dat) == 48)
+stopifnot(nrow(dat) == 52)
 
 # --- panel -------------------------------------------------------------------
 # The fill is the SAME quantity as the x position, on the manuscript diverging
@@ -218,11 +256,17 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(x = effect, y = key)) +
                      size = 2.0, colour = "grey15", vjust = -0.45) +
   ggplot2::facet_grid(block ~ contrast, scales = "free_y", space = "free_y") +
   heat_fill(RNG, breaks = c(RNG[1], 0, RNG[2])) +
-  # check.overlap drops the labels that would collide in a 15 mm column, keeping
-  # the ends and the middle, rather than my hand-picking irregular breaks
+  # The default 5 per cent expansion is not enough at this width: the dot at the
+  # extreme of the range (Hallmark Myc V2 at myc_6W, TEB-ductal at 6>12W_myc) is
+  # drawn half outside the panel and clipped. The expansion has to clear the dot
+  # RADIUS plus the asterisk, so it is set explicitly rather than left to default.
+  # check.overlap drops any tick label that would still collide in a ~15 mm column.
   ggplot2::scale_x_continuous(
     breaks = seq(-1, 3, by = 1),
+    expand = ggplot2::expansion(mult = 0.11),
     guide = ggplot2::guide_axis(check.overlap = TRUE)) +
+  # and the same for the top and bottom rows, where the asterisk sits above the dot
+  ggplot2::coord_cartesian(clip = "off") +
   ggplot2::scale_y_discrete(labels = y_labels) +
   ggplot2::labs(x = "effect (within-group SD)", y = NULL) +
   ggplot2::guides(fill = ggplot2::guide_colourbar(
@@ -247,21 +291,30 @@ e <- function(k, cn) tab$effect[tab$key == k & tab$contrast == cn]
 q <- function(k, cn) tab$p[tab$key == k & tab$contrast == cn]
 f <- function(x) sprintf("%+.2f", x)
 
+# the alternative reading of "MB2_UF": the upper fork on its own, quoted in the
+# bounds so the choice of the fork contrast is visible rather than silent
+uf_only <- contrast_table(scores[mb2_uf, ], sample_meta$timepoint,
+                          sample_meta$myc_status, sample_meta$group)
+
 LEGEND <- panel_legend(
   slot = "Fig. 1B",
   what = paste0(
-    "Effect of each of the four contrasts of Fig. S1B on the canonical MYC and ",
+    "Effect of each of the four contrasts of Fig. S1B on the canonical Myc and ",
     "proliferation signatures and on the lineage-identity axes, in units of each ",
     "programme's own within-group standard deviation. Dot position and dot fill ",
     "are the same quantity."),
   detail = c(
     "n = 6 per group, n = 24. Each effect is an ordinary least-squares contrast on the per-sample GSVA composite, fitted on the relevant subset: myc_6W and myc_12W are the genotype difference within one age (6 versus 6), 6>12W_wt and 6>12W_myc the age difference within one genotype (6 versus 6). An asterisk marks p < 0.05, uncorrected.",
-    "Composites are means of GSVA scores over member sets: MYC signatures 17 sets, MYC-Felsher 1, Hallmark MYC V2 1, MYC-in-TEB 4, proliferation 14, TEB-ductal = mean(UP) - mean(DN) over 3 + 3, the three MEC states 13 to 29 sets each from the curated annotation.",
+    "Composites are means of GSVA scores over member sets: Myc signatures 17 sets, Myc-Felsher 1, Hallmark Myc V2 1, Myc-in-TEB 4, proliferation 14, TEB-ductal = mean(UP) - mean(DN) over 3 + 3, the three MEC states 13 to 29 sets each from the curated annotation.",
+    sprintf("Human BRCA-MYC is the METABRIC MB2 fork position: the MCbiclust multistate switch that stratifies human breast cancer, whose upper fork is biogenesis-high, proliferative, luminal-progenitor, ER-negative and MYC-activated, against a lower fork that is glycolytic and stem-like (Menegollo, Bentham et al., Cancer Res 2024). The two forks are anticorrelated poles of one switch, so the per-sample score is the contrast upper minus lower on the highest-variance gene lists (%d and %d mouse genes), not an average - positive means closer to the human MYC-driven state. Myc+ tissue sits toward it at both ages, %s at 6 weeks (p = %.3f) and %s at 12 (p = %.3f).",
+            length(gsva$pathways[[mb2_uf]]), length(gsva$pathways[[mb2_lf]]),
+            f(e("mb2_fork","myc_6W")), q("mb2_fork","myc_6W"),
+            f(e("mb2_fork","myc_12W")), q("mb2_fork","myc_12W")),
     sprintf("Lineage identity pairs each mammary epithelial state with the LE composite of its own lineage - BMYO with basal (BA), LASP with alveolar progenitor (AP), LHS with hormone-sensing (HS) - and the paired row is labelled '-LE'. From Gray et al. 2023: for each major type the regulator programmes detected in the LOW-expressing cells of that type, i.e. the lineage-suppressed end of the axis (AP %d sets, BA %d, HS %d). The matching HIGH-expressing (HE, differentiated) composites are not drawn (AP %d sets, BA %d, HS %d) but are reported below, because the two arms move in opposite directions and that is the argument.",
             length(lanes[["AP LE"]]), length(lanes[["BA LE"]]),
             length(lanes[["HS LE"]]), length(lanes[["AP HE"]]),
             length(lanes[["BA HE"]]), length(lanes[["HS HE"]])),
-    sprintf("MYC AXIS - the genotype effect is large and essentially unchanged with age: MYC signatures %s at 6 weeks (p = %.3f) and %s at 12 (p = %.4f); Hallmark MYC V2 %s and %s; MYC-in-TEB %s (p = %.3f) and %s (p = %.3f). Proliferation is smaller and does not reach significance at either age (%s, p = %.2f; %s, p = %.2f).",
+    sprintf("MYC AXIS - the genotype effect is large and essentially unchanged with age: Myc signatures %s at 6 weeks (p = %.3f) and %s at 12 (p = %.4f); Hallmark Myc V2 %s and %s; Myc-in-TEB %s (p = %.3f) and %s (p = %.3f). Proliferation is smaller and does not reach significance at either age (%s, p = %.2f; %s, p = %.2f).",
             f(e("myc","myc_6W")), q("myc","myc_6W"),
             f(e("myc","myc_12W")), q("myc","myc_12W"),
             f(e("hallmark_v2","myc_6W")), f(e("hallmark_v2","myc_12W")),
@@ -293,12 +346,18 @@ LEGEND <- panel_legend(
     "The interaction is not drawn (it is the difference between the two genotype columns, and equivalently between the two development columns). No programme here has a significant interaction: p = 0.26 to 0.93 for the six signatures and states of script 27, and 0.26 to 0.86 for the six lineage axes."),
   bounds = c(
     "The two contrast families are not equally powered and must not be reported as if they were. Each genotype contrast is 6 versus 6 balanced within batch and is clean. Each development contrast is 6 versus 6 confounded with batch (batch = timepoint), and none of them is significant except the Myc+ TEB trajectory - they are a consistent direction across programmes, described and not claimed.",
-    "THIS PANEL IS NOT THE ATTENUATION RESULT. On the MYC programme the genotype effect is the same size at both ages, so in cohort-relative GSVA space there is no attenuation to see; the attenuation result is a DESeq2 effect-size result (the Myc effect rescales by about 0.55 between the two ages, scripts 29-31 and 40) and is measured on a different ruler. What attenuates in this panel is the developmental arm, not the MYC arm.",
+    "THIS PANEL IS NOT THE ATTENUATION RESULT. On the Myc programme the genotype effect is the same size at both ages, so in cohort-relative GSVA space there is no attenuation to see; the attenuation result is a DESeq2 effect-size result (the Myc effect rescales by about 0.55 between the two ages, scripts 29-31 and 40) and is measured on a different ruler. What attenuates in this panel is the developmental arm, not the Myc arm.",
     "GSVA is cohort-relative, so an effect is a difference in position within these 24 samples. It cannot be read as an absolute change in programme activity, and the four contrasts are internally comparable but not comparable with the DESeq2 log fold changes.",
+    sprintf("The Human BRCA-MYC row is a RESEMBLANCE, not a claim that this tissue is that tumour: it says where the mouse samples sit on a switch defined in human data, mapped to mouse orthologs. It is also a fork CONTRAST, so it has the same arithmetic property as TEB-ductal (within-group SD %.2f, the widest on the panel). The upper fork scored on its own gives a stronger number (%s at 6 weeks, p = %.3f; %s at 12, p = %.4f), but the project convention for these anticorrelated poles is the contrast (scripts/18) and that is what is drawn. Its correlation with the global common-mode axis is 0.88, so the same bound as the LE rows applies. The decisive specificity contrast in the original analysis is MB2 against MB1 - the same biogenesis-high fork WITHOUT Myc - and that is a smaller effect (genotype main effect p = 0.026); this row does not by itself separate 'Myc drives the Myc fork' from 'Myc drives biogenesis generically'.",
+            unique(tab$within_sd[tab$key == "mb2_fork"]),
+            f(uf_only$effect[uf_only$contrast == "myc_6W"]),
+            uf_only$p[uf_only$contrast == "myc_6W"],
+            f(uf_only$effect[uf_only$contrast == "myc_12W"]),
+            uf_only$p[uf_only$contrast == "myc_12W"]),
     "THE DRAWN LE ARM IS THE ONE MOST EXPOSED TO THE COMMON-MODE AXIS. Every per-sample composite in this dataset shares one dominant axis, and the LE composites sit almost on top of it (correlation with the mean of all 885 scores: AP LE 0.88, BA LE 0.90, HS LE 0.85), so an LE rise is not on its own independent evidence - see scripts 36 and 37 and the interpretability trap recorded there. The undrawn HE composites do NOT sit on it (AP -0.37, BA -0.57, HS +0.07), and HE and LE move in OPPOSITE directions within a lineage (they anticorrelate at -0.71, -0.76 and -0.22), which a single common-mode axis cannot produce. The de-differentiation reading rests on that opposition, so the HE arm has to be reported in the text even though it is not on the panel.",
     "The HE and LE lanes are not symmetric objects: the LE lanes are larger (165 to 788 genes against 26 to 159) and carry more mitochondrial genes (median 5 to 9 per cent against 0.7 to 3), both of which make an LE composite track the global axis more closely. They are therefore reported as two arms and never combined into one HE-minus-LE difference score.",
     "These are regulator programmes detected in a cell state, not the state's own expression signature, so a change is evidence about the regulatory programme and only indirectly about lineage identity. Gray's HE/LE are human breast atlas contrasts mapped to mouse orthologs.",
-    "The signatures are heavily inter-correlated (MYC signatures with MYC-Felsher r = 0.99, with Hallmark V2 r = 0.98, with proliferation r = 0.77), so the rows are not independent observations and the composite p-values are indicative. The asterisks are uncorrected and there are 48 of them on the panel; they mark which effects clear a nominal threshold, not which survive multiplicity.",
+    "The signatures are heavily inter-correlated (Myc signatures with Myc-Felsher r = 0.99, with Hallmark V2 r = 0.98, with proliferation r = 0.77), so the rows are not independent observations and the composite p-values are indicative. The asterisks are uncorrected and there are 52 of them on the panel; they mark which effects clear a nominal threshold, not which survive multiplicity.",
     "Endogenous Myc establishing the pubertal TEB phenotype is a literature claim; what these data show is wild-type co-variation consistent with it, plus that the transgene moves the same axis at 6 weeks. Not causal."),
   source = c(
     "results/myc_endogenous_amplification.rds (scripts/27) -- $prog_stats, $prog_wide",
@@ -313,7 +372,7 @@ LEGEND <- panel_legend(
 # dot sits only 2 mm off the zero line -- which is why the fill carries the
 # magnitude as well. Type is set for the final size, not the preview.
 save_panel_p(p, "fig1B_myc_teb_proliferation",
-             width = fig_w[["single"]], height = 74)
+             width = fig_w[["single"]], height = 84)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()
