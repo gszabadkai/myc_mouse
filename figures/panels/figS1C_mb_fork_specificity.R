@@ -87,28 +87,46 @@ brk <- data.frame(
   stringsAsFactors = FALSE)
 brk$lab <- ifelse(brk$p < 0.05, "*", "")
 
-p <- ggplot2::ggplot(dat, ggplot2::aes(x = group, y = value)) +
+# Layers and encoding are the figure layer's established idiom for a per-group
+# distribution (figures/fig01_mito_content.R:118-170): colour AND fill both mapped
+# to group, box at alpha 0.28 with a grey outline, solid points over it, the x
+# axis blanked because the group key does that job, and group_cols / group_labels
+# carried by the colour scale so the legend IS the project's group key.
+pts_layer <- if (requireNamespace("ggbeeswarm", quietly = TRUE)) {
+  ggbeeswarm::geom_quasirandom(width = 0.22, size = 1.1, alpha = 0.95)
+} else {
+  ggplot2::geom_jitter(width = 0.16, height = 0, size = 1.1, alpha = 0.95)
+}
+
+p <- ggplot2::ggplot(dat, ggplot2::aes(x = group, y = value,
+                                       colour = group, fill = group)) +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.2, colour = "grey80") +
-  ggplot2::geom_boxplot(ggplot2::aes(fill = group), width = 0.6,
-                        outlier.shape = NA, linewidth = 0.22,
-                        colour = "grey25", alpha = 0.5) +
-  ggplot2::geom_jitter(ggplot2::aes(fill = group), width = 0.13, height = 0,
-                       shape = 21, size = 1.2, colour = "grey25", stroke = 0.18) +
+  ggplot2::geom_boxplot(outlier.shape = NA, width = 0.6, alpha = 0.28,
+                        colour = "grey35", linewidth = 0.3) +
+  pts_layer +
   ggplot2::geom_segment(data = brk,
                         ggplot2::aes(x = x, xend = xend, y = y, yend = y),
-                        inherit.aes = FALSE, linewidth = 0.22, colour = "grey30") +
+                        inherit.aes = FALSE, linewidth = 0.25, colour = "grey35") +
   ggplot2::geom_text(data = brk,
                      ggplot2::aes(x = (x + xend) / 2, y = y, label = lab),
                      inherit.aes = FALSE, size = 2.2, colour = "grey15",
                      vjust = -0.15) +
+  ggplot2::scale_colour_manual(values = group_cols, breaks = names(group_cols),
+                               labels = group_labels) +
   ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
-  ggplot2::scale_x_discrete(labels = group_labels) +
   ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.06, 0.16))) +
-  ggplot2::labs(x = NULL, y = "MB2_UF - MB1_UF  (GSVA)") +
+  ggplot2::labs(x = NULL, y = "MB2_UF - MB1_UF  (GSVA)", colour = NULL) +
+  ggplot2::guides(colour = ggplot2::guide_legend(
+    nrow = 2, override.aes = list(size = 1.6, alpha = 1, shape = 16))) +
   theme_panel(base_size = 6) +
   ggplot2::theme(
-    axis.text.x = ggplot2::element_text(angle = 40, hjust = 1),
-    plot.margin = ggplot2::margin(1.5, 1.5, 1, 1, "mm"))
+    axis.text.x     = ggplot2::element_blank(),
+    axis.ticks.x    = ggplot2::element_blank(),
+    axis.line.x     = ggplot2::element_blank(),
+    legend.position = "bottom",
+    legend.margin   = ggplot2::margin(-2, 0, 0, 0),
+    legend.key.size = ggplot2::unit(2.6, "mm"),
+    plot.margin     = ggplot2::margin(1.5, 1.5, 1, 1, "mm"))
 
 # --- the legend text (never drawn) -------------------------------------------
 t2 <- ct(mb2); t1 <- ct(mb1)
@@ -125,7 +143,7 @@ LEGEND <- panel_legend(
     "MCbiclust multistate switch: MB2, the MYC arm, minus MB1, the same ",
     "mitochondrial-biogenesis-high proliferative state without MYC."),
   detail = c(
-    "n = 6 animals per group, n = 24; each point is one animal. Boxes are median and quartiles, whiskers 1.5x the interquartile range. Positive means closer to the MYC arm than to the non-MYC one.",
+    "n = 6 animals per group, n = 24; each point is one animal. Boxes are median and quartiles, whiskers 1.5x the interquartile range. Groups are ordered by age, and the key rather than an x axis carries the group labels. Positive means closer to the MYC arm than to the non-MYC one.",
     sprintf("MB2_UF is METABRIC_MB2_HI_CV_GROUP1 (%d mouse-mapped genes) and MB1_UF is METABRIC_MB1_HI_CV_GROUP1 (%d); they share %d genes. Both are the highest-variance gene lists defining the upper fork of their switch (Menegollo, Bentham et al., Cancer Res 2024; scripts/18).",
             length(gsva$pathways[[mb[["MB2_UF"]]]]),
             length(gsva$pathways[[mb[["MB1_UF"]]]]),
@@ -154,7 +172,7 @@ LEGEND <- panel_legend(
     "Contrast definition and the AP7 hypothesis: scripts/18_ap7_mb_fork_projection.R:96-106; earlier form of this panel, outputs/ap7/mb2_over_mb1_boxplot.pdf",
     "Menegollo, Bentham et al., Cancer Res 2024 (CAN-23-3172), the analytical companion paper"))
 
-save_panel_p(p, "figS1C_mb_fork_specificity", width = 50, height = 46)
+save_panel_p(p, "figS1C_mb_fork_specificity", width = 50, height = 52)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()
@@ -179,15 +197,20 @@ if (FALSE) {
     ggplot2::ggplot(dd, ggplot2::aes(x = group, y = value)) +
       ggplot2::geom_hline(yintercept = 0, linewidth = 0.2, colour = "grey80") +
       ggplot2::geom_boxplot(ggplot2::aes(fill = group), width = 0.6,
-                            outlier.shape = NA, linewidth = 0.22,
-                            colour = "grey25", alpha = 0.5) +
-      ggplot2::geom_jitter(width = 0.12, height = 0, size = 0.7, colour = "grey25") +
+                            outlier.shape = NA, linewidth = 0.3,
+                            colour = "grey35", alpha = 0.28) +
+      ggplot2::geom_jitter(ggplot2::aes(colour = group), width = 0.12, height = 0,
+                           size = 0.8, alpha = 0.95) +
       ggplot2::facet_wrap(~ quantity, nrow = 1) +
       ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
-      ggplot2::scale_x_discrete(labels = group_labels) +
-      ggplot2::labs(x = NULL, y = "GSVA score") +
+      ggplot2::scale_colour_manual(values = group_cols, breaks = names(group_cols),
+                                   labels = group_labels) +
+      ggplot2::labs(x = NULL, y = "GSVA score", colour = NULL) +
       theme_panel(base_size = 6) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 40, hjust = 1))
+      ggplot2::theme(axis.text.x = ggplot2::element_blank(),
+                     axis.ticks.x = ggplot2::element_blank(),
+                     axis.line.x = ggplot2::element_blank(),
+                     legend.position = "bottom")
   }
 
   ## MB3 is the independent bistate switch, script 18's own specificity control
