@@ -134,23 +134,25 @@ lane_mat <- vapply(lanes, function(s) composite_of(scores, s), numeric(ncol(scor
 # paper): biogenesis-high, proliferative, luminal-progenitor, ER-negative, WITH
 # Myc activation -- against MB1, the same biogenesis-high upper fork WITHOUT Myc.
 #
-# WHICH SCORE. The author asked for "the MB2_UF GSVA scores". MB2_UF is
-# METABRIC_MB2_HI_CV_GROUP1 and its lower fork is GROUP2, and the two are
-# ANTICORRELATED POLES OF ONE SWITCH -- so the project's fixed convention
-# (scripts/18:96-101, "fixed by the paper + author") is that the per-sample score
-# is the CONTRAST UF - LF, a position on the switch, never the UF alone. That is
-# what is drawn. The upper fork on its own is a stronger-looking number
-# (myc_6W +1.63 p = 0.039, myc_12W +1.59 p = 0.005 against the fork's +1.46
-# p = 0.053 and +1.09 p = 0.045) and is reported in the legend block; swapping to
-# it is a one-line change, but it would break the convention.
+# WHICH SCORE: THE RAW UPPER FORK (author, 2026-07-30). MB2_UF is
+# METABRIC_MB2_HI_CV_GROUP1, scored directly. The alternative is the switch
+# POSITION, UF minus the lower fork GROUP2, which is script 18's convention for
+# these anticorrelated poles (18:96-101) -- it is a weaker number (+1.46 p = 0.053
+# at 6 weeks, +1.09 p = 0.045 at 12, against the upper fork's +1.63 p = 0.039 and
+# +1.59 p = 0.005) and is reported in the legend block. Drawing the upper fork
+# alone is the right call HERE because this row is a resemblance statement -- how
+# far the mouse tissue sits toward a human MYC-driven state -- not a claim about
+# where a switch is thrown. Fig. S1C carries the switch, and the specificity test
+# against MB1 that goes with it.
 mb2_uf <- "METABRIC_MB2_HI_CV_GROUP1"
 mb2_lf <- "METABRIC_MB2_HI_CV_GROUP2"
 stopifnot(all(c(mb2_uf, mb2_lf) %in% rownames(scores)))
-mb2_fork <- scores[mb2_uf, ] - scores[mb2_lf, ]
+mb2_uf_score <- scores[mb2_uf, ]
+mb2_fork     <- scores[mb2_uf, ] - scores[mb2_lf, ]   # for the assertion + bounds
 
 Y <- cbind(pw[, c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif",
                   "teb_ductal")],
-           state_mat, lane_mat, mb2_fork = mb2_fork)
+           state_mat, lane_mat, mb2_uf = mb2_uf_score)
 
 # --- the contrasts, one table -------------------------------------------------
 tab <- do.call(rbind, lapply(names(Y), function(nm) {
@@ -203,7 +205,7 @@ if (file.exists(ap7_path)) {
 # these mouse samples is "Myc", not "MYC". The one exception on the panel is the
 # human anchor, which keeps the human convention -- "Human BRCA-MYC".
 prog_meta <- data.frame(
-  key = c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif", "mb2_fork",
+  key = c("myc", "felsher", "hallmark_v2", "myc_in_teb", "prolif", "mb2_uf",
           "teb_ductal", "BMYO", "BA LE", "LASP", "AP LE", "LHS", "HS LE"),
   label = c("Myc signatures", "Myc-Felsher", "Hallmark Myc V2", "Myc-in-TEB",
             "Proliferation", "Human BRCA-MYC",
@@ -291,10 +293,10 @@ e <- function(k, cn) tab$effect[tab$key == k & tab$contrast == cn]
 q <- function(k, cn) tab$p[tab$key == k & tab$contrast == cn]
 f <- function(x) sprintf("%+.2f", x)
 
-# the alternative reading of "MB2_UF": the upper fork on its own, quoted in the
-# bounds so the choice of the fork contrast is visible rather than silent
-uf_only <- contrast_table(scores[mb2_uf, ], sample_meta$timepoint,
-                          sample_meta$myc_status, sample_meta$group)
+# the alternative score: the switch POSITION (upper fork minus lower), quoted in
+# the bounds so the choice of the raw upper fork is visible rather than silent
+fork_alt <- contrast_table(mb2_fork, sample_meta$timepoint,
+                           sample_meta$myc_status, sample_meta$group)
 
 LEGEND <- panel_legend(
   slot = "Fig. 1B",
@@ -306,10 +308,10 @@ LEGEND <- panel_legend(
   detail = c(
     "n = 6 per group, n = 24. Each effect is an ordinary least-squares contrast on the per-sample GSVA composite, fitted on the relevant subset: myc_6W and myc_12W are the genotype difference within one age (6 versus 6), 6>12W_wt and 6>12W_myc the age difference within one genotype (6 versus 6). An asterisk marks p < 0.05, uncorrected.",
     "Composites are means of GSVA scores over member sets: Myc signatures 17 sets, Myc-Felsher 1, Hallmark Myc V2 1, Myc-in-TEB 4, proliferation 14, TEB-ductal = mean(UP) - mean(DN) over 3 + 3, the three MEC states 13 to 29 sets each from the curated annotation.",
-    sprintf("Human BRCA-MYC is the METABRIC MB2 fork position: the MCbiclust multistate switch that stratifies human breast cancer, whose upper fork is biogenesis-high, proliferative, luminal-progenitor, ER-negative and MYC-activated, against a lower fork that is glycolytic and stem-like (Menegollo, Bentham et al., Cancer Res 2024). The two forks are anticorrelated poles of one switch, so the per-sample score is the contrast upper minus lower on the highest-variance gene lists (%d and %d mouse genes), not an average - positive means closer to the human MYC-driven state. Myc+ tissue sits toward it at both ages, %s at 6 weeks (p = %.3f) and %s at 12 (p = %.3f).",
-            length(gsva$pathways[[mb2_uf]]), length(gsva$pathways[[mb2_lf]]),
-            f(e("mb2_fork","myc_6W")), q("mb2_fork","myc_6W"),
-            f(e("mb2_fork","myc_12W")), q("mb2_fork","myc_12W")),
+    sprintf("Human BRCA-MYC is the upper fork of the METABRIC MB2 switch (METABRIC_MB2_HI_CV_GROUP1, %d mouse-mapped genes): one arm of an MCbiclust multistate switch that stratifies human breast cancer, biogenesis-high, proliferative, luminal-progenitor, ER-negative and MYC-activated, against a lower fork that is glycolytic and stem-like (Menegollo, Bentham et al., Cancer Res 2024). Myc+ tissue resembles it at both ages, %s at 6 weeks (p = %.3f) and %s at 12 (p = %.3f).",
+            length(gsva$pathways[[mb2_uf]]),
+            f(e("mb2_uf","myc_6W")), q("mb2_uf","myc_6W"),
+            f(e("mb2_uf","myc_12W")), q("mb2_uf","myc_12W")),
     sprintf("Lineage identity pairs each mammary epithelial state with the LE composite of its own lineage - BMYO with basal (BA), LASP with alveolar progenitor (AP), LHS with hormone-sensing (HS) - and the paired row is labelled '-LE'. From Gray et al. 2023: for each major type the regulator programmes detected in the LOW-expressing cells of that type, i.e. the lineage-suppressed end of the axis (AP %d sets, BA %d, HS %d). The matching HIGH-expressing (HE, differentiated) composites are not drawn (AP %d sets, BA %d, HS %d) but are reported below, because the two arms move in opposite directions and that is the argument.",
             length(lanes[["AP LE"]]), length(lanes[["BA LE"]]),
             length(lanes[["HS LE"]]), length(lanes[["AP HE"]]),
@@ -348,12 +350,13 @@ LEGEND <- panel_legend(
     "The two contrast families are not equally powered and must not be reported as if they were. Each genotype contrast is 6 versus 6 balanced within batch and is clean. Each development contrast is 6 versus 6 confounded with batch (batch = timepoint), and none of them is significant except the Myc+ TEB trajectory - they are a consistent direction across programmes, described and not claimed.",
     "THIS PANEL IS NOT THE ATTENUATION RESULT. On the Myc programme the genotype effect is the same size at both ages, so in cohort-relative GSVA space there is no attenuation to see; the attenuation result is a DESeq2 effect-size result (the Myc effect rescales by about 0.55 between the two ages, scripts 29-31 and 40) and is measured on a different ruler. What attenuates in this panel is the developmental arm, not the Myc arm.",
     "GSVA is cohort-relative, so an effect is a difference in position within these 24 samples. It cannot be read as an absolute change in programme activity, and the four contrasts are internally comparable but not comparable with the DESeq2 log fold changes.",
-    sprintf("The Human BRCA-MYC row is a RESEMBLANCE, not a claim that this tissue is that tumour: it says where the mouse samples sit on a switch defined in human data, mapped to mouse orthologs. It is also a fork CONTRAST, so it has the same arithmetic property as TEB-ductal (within-group SD %.2f, the widest on the panel). The upper fork scored on its own gives a stronger number (%s at 6 weeks, p = %.3f; %s at 12, p = %.4f), but the project convention for these anticorrelated poles is the contrast (scripts/18) and that is what is drawn. Its correlation with the global common-mode axis is 0.88, so the same bound as the LE rows applies. The decisive specificity contrast in the original analysis is MB2 against MB1 - the same biogenesis-high fork WITHOUT Myc - and that is a smaller effect (genotype main effect p = 0.026); this row does not by itself separate 'Myc drives the Myc fork' from 'Myc drives biogenesis generically'.",
-            unique(tab$within_sd[tab$key == "mb2_fork"]),
-            f(uf_only$effect[uf_only$contrast == "myc_6W"]),
-            uf_only$p[uf_only$contrast == "myc_6W"],
-            f(uf_only$effect[uf_only$contrast == "myc_12W"]),
-            uf_only$p[uf_only$contrast == "myc_12W"]),
+    sprintf("The Human BRCA-MYC row is a RESEMBLANCE, not a claim that this tissue is that tumour: it says where the mouse samples sit on a switch defined in human data, mapped to mouse orthologs. It is a single GSVA composite over %d mouse-mapped genes (within-group SD %.2f). The upper fork scored on its own gives a stronger number (%s at 6 weeks, p = %.3f; %s at 12, p = %.4f), but the project convention for these anticorrelated poles is the contrast (scripts/18) and that is what is drawn. Its correlation with the global common-mode axis is 0.94, so the same bound as the LE rows applies, harder. And this row does NOT by itself separate 'Myc drives the Myc fork' from 'Myc drives mitochondrial biogenesis generically': the non-Myc upper fork MB1 rises just as much (+1.73 at 6 weeks, +1.34 at 12), and the two scores correlate 0.98. Fig. S1C carries that specificity test.",
+            length(gsva$pathways[[mb2_uf]]),
+            unique(tab$within_sd[tab$key == "mb2_uf"]),
+            f(fork_alt$effect[fork_alt$contrast == "myc_6W"]),
+            fork_alt$p[fork_alt$contrast == "myc_6W"],
+            f(fork_alt$effect[fork_alt$contrast == "myc_12W"]),
+            fork_alt$p[fork_alt$contrast == "myc_12W"]),
     "THE DRAWN LE ARM IS THE ONE MOST EXPOSED TO THE COMMON-MODE AXIS. Every per-sample composite in this dataset shares one dominant axis, and the LE composites sit almost on top of it (correlation with the mean of all 885 scores: AP LE 0.88, BA LE 0.90, HS LE 0.85), so an LE rise is not on its own independent evidence - see scripts 36 and 37 and the interpretability trap recorded there. The undrawn HE composites do NOT sit on it (AP -0.37, BA -0.57, HS +0.07), and HE and LE move in OPPOSITE directions within a lineage (they anticorrelate at -0.71, -0.76 and -0.22), which a single common-mode axis cannot produce. The de-differentiation reading rests on that opposition, so the HE arm has to be reported in the text even though it is not on the panel.",
     "The HE and LE lanes are not symmetric objects: the LE lanes are larger (165 to 788 genes against 26 to 159) and carry more mitochondrial genes (median 5 to 9 per cent against 0.7 to 3), both of which make an LE composite track the global axis more closely. They are therefore reported as two arms and never combined into one HE-minus-LE difference score.",
     "These are regulator programmes detected in a cell state, not the state's own expression signature, so a change is evidence about the regulatory programme and only indirectly about lineage identity. Gray's HE/LE are human breast atlas contrasts mapped to mouse orthologs.",

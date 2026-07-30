@@ -63,6 +63,7 @@ green**. Two rules travel with it:
 | **Fig. 1B** | `fig1B_myc_teb_proliferation.R` | "an endogenous Myc program contributed to the pubertal TEB state in WT … the transgene amplified the TEB and proliferation effects and suppressed the BMYO lineage in favor of LHS" + the de-differentiation reading | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds`, `gsva_scores.rds` |
 | **Fig. S1A** | `figS1A_geneset_library.R` | "a large custom library of ~900 genesets, covering MYC identity … metabolic pathways" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1B** | `figS1B_design_contrasts.R` | "timeline: 6W vs 12W of the WT or Myc+ genotypes, or cross sectional: WT vs Myc+ at 6W or 12W" | none (schematic) |
+| **Fig. S1C** | `figS1C_mb_fork_specificity.R` | specificity control for Fig. 1B's `Human BRCA-MYC` row: is the resemblance to the MYC arm of the human switch, or to biogenesis generally? | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
 
 ### Revision of 2026-07-30 (author's review of the first four panels)
 
@@ -102,10 +103,13 @@ current 1B. Delete both.*
    biogenesis-high, proliferative, luminal-progenitor, ER-negative and MYC-activated. Not yet in the
    narrative. **Which score:** `MB2_UF` is `METABRIC_MB2_HI_CV_GROUP1`, but UF and LF are
    anticorrelated poles of one switch, so the project's fixed convention (`scripts/18:96-101`,
-   "fixed by the paper + author") is the **contrast UF − LF**, and that is what is drawn — it
-   reproduces `ap7_mb_fork.rds$fork_df$MB2_score` exactly, which is asserted. The upper fork alone
-   is a stronger number (+1.63 p = 0.039 / +1.59 p = 0.005 against the fork's +1.46 p = 0.053 /
-   +1.09 p = 0.045); it is quoted in the legend block and swapping to it is a one-line change.
+   "fixed by the paper + author") is the **contrast UF − LF**. The author's call (2026-07-30) is
+   the **raw upper fork**, because this row is a *resemblance* statement — how far the mouse tissue
+   sits toward a human MYC-driven state — not a claim about where a switch is thrown. It is also the
+   stronger number (+1.63 p = 0.039 / +1.59 p = 0.005 against the fork contrast's +1.46 p = 0.053 /
+   +1.09 p = 0.045); the fork contrast is quoted in the legend block and asserted against
+   `ap7_mb_fork.rds$fork_df$MB2_score`. **Fig. S1C carries the specificity test that has to go with
+   it.**
 1. **The pooled genotype column is gone**, replaced by `myc_6W` and `myc_12W`. It was hiding the
    result: TEB-ductal is **+1.02 SD at 6 weeks and +0.23 SD at 12**, and the pooled effect (+0.63 SD,
    p = 0.14) is their average and reads as a null.
@@ -197,6 +201,27 @@ Carried in each script's `LEGEND` block and repeated here because it needs a dec
   **885** in the coupling and loading analyses. 986 for "the library", 885 for "scored".
 - **"~3K DEGs"** at 6W is **2777** at FDR 10 % and **1967** at FDR 5 %; the `interaction` contrast
   has **0** at either threshold.
+
+**Fig. S1C (new)** — the specificity control the `Human BRCA-MYC` row needs. MB1 and MB2 share a
+lower fork and diverge into two upper forks that are *both* biogenesis-high and proliferative; the
+only feature distinguishing them is MYC, so MB2_UF against MB1_UF is what separates "Myc drives the
+Myc fork" from "Myc drives biogenesis generically".
+
+- **Myc raises both forks, by almost the same amount** — MB2_UF +1.63 / +1.59 SD, MB1_UF +1.73 /
+  +1.34 SD — and the two scores **correlate 0.982** (230 shared genes of 626 and 419).
+- Drawn in **raw GSVA units on one shared axis**, deliberately *not* SD-standardised. The
+  difference's within-group SD is 0.082 against 0.335 and 0.297, about a quarter; standardising
+  would make the residual look as large as the thing it is a residual of, which is precisely the
+  contrast this panel exists not to manufacture.
+- **The cancellation is the point:** MB2_UF and MB1_UF each correlate 0.94 / 0.95 with the global
+  common-mode axis; their difference falls to **0.49**. The difference is the only one of the three
+  rows that is not largely the common mode.
+- **The timing contradicts the prediction the test was built for.** Script 18 predicted MB2
+  resemblance would peak at 6 weeks (biogenesis being front-loaded) and reported a *pooled* genotype
+  main effect, p = 0.026. Split by age the specificity is **absent at 6 weeks (+0.39 SD, p = 0.59)
+  and present at 12 (+1.62 SD, p = 0.003)**, while the resemblance to MB2_UF itself is flat with age.
+  The interaction is not significant (p = 0.15) at n = 6 per cell, so this is a discrepancy to
+  report, not a reversal to claim. It also runs opposite to the TEB result, which is a 6-week effect.
 
 ## Not built here
 
