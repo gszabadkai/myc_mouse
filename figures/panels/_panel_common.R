@@ -302,11 +302,14 @@ pathway_axis <- function(gsva_path = here::here("results", "gsva_scores.rds"),
 #
 # `category` is the fGSEA table's category column (the GMT file stem, e.g.
 # "01_mitocarta", plus "hallmark_msigdb"), which is what the consumer has.
+# Row names are the author's (2026-07-31). Two of them lean on the colour key
+# rather than saying it twice: "curated mitochondrial" is the by-construction
+# block, and the key that colours it says "mitochondrial by construction".
 programme_levels <- c(
-  "mito-defined by construction", "mitochondrial biogenesis", "OXPHOS", "TCA cycle",
-  "mitochondrial, other", "Myc targets (curated)", "E2F / cell cycle",
+  "curated mitochondrial", "mitochondrial biogenesis", "OXPHOS", "TCA cycle",
+  "mitochondrial metabolism & dynamics", "Myc signatures", "E2F / cell cycle",
   "biosynthetic metabolism", "metabolism, other", "apoptosis",
-  "TF target lanes", "mammary development", "Hallmark comparator")
+  "TF target sets", "mammary development", "MSigDB Hallmarks")
 
 programme_group <- function(set, category) {
   OX   <- "OXPHOS|COMPLEX_[IV]|_SUBUNITS|ASSEMBLY_FACTORS|ELECTRON_CARRIERS|CRISTAE"
@@ -317,21 +320,22 @@ programme_group <- function(set, category) {
     category %in% c("07_biogenesis_discrimination",
                     "09_biogenesis_apoptosis_intersections")
   g <- ifelse(
-    constructed, "mito-defined by construction",
+    constructed, "curated mitochondrial",
     ifelse(category == "01_mitocarta",
            ifelse(grepl(BIOG, set), "mitochondrial biogenesis",
-                  ifelse(grepl(OX, set), "OXPHOS", "mitochondrial, other")),
+                  ifelse(grepl(OX, set), "OXPHOS",
+                         "mitochondrial metabolism & dynamics")),
     ifelse(category == "04_metabolism",
            ifelse(grepl("OXPHOS|ELECTRON|RESPIRAT", set), "OXPHOS",
                   ifelse(grepl("KREBS|_TCA", set), "TCA cycle",
                          ifelse(grepl(BIOSYN, set), "biosynthetic metabolism",
                                 "metabolism, other"))),
-    ifelse(category == "02_myc_signatures",      "Myc targets (curated)",
+    ifelse(category == "02_myc_signatures",      "Myc signatures",
     ifelse(category == "05_proliferation",       "E2F / cell cycle",
-    ifelse(category == "06_tf_targets",          "TF target lanes",
+    ifelse(category == "06_tf_targets",          "TF target sets",
     ifelse(category == "03_mammary_development", "mammary development",
     ifelse(category == "08_apoptosis",           "apoptosis",
-    ifelse(category == "hallmark_msigdb",        "Hallmark comparator",
+    ifelse(category == "hallmark_msigdb",        "MSigDB Hallmarks",
            NA_character_)))))))))
   factor(g, levels = programme_levels)
 }

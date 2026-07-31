@@ -69,10 +69,10 @@ green**. Two rules travel with it:
 |---|---|---|---|
 | **Fig. 1B** | `fig1_myc_teb_proliferation.R` | p1: "an endogenous Myc program contributed to the pubertal TEB state in WT … Transgenic Myc activation amplified the TEB and proliferation state, suppressed the BMYO lineage, and strongly promoted a lineage suppressed (LE) de-differentiation pattern" | `myc_endogenous_amplification.rds`, `dev_program_myc_integration.rds`, `gsva_scores.rds` |
 | **Fig. 1C** | `fig1_pathway_pca.R` | p2: "the dominant principal component axis of these genesets across the whole dataset …" — that there IS one, and where the four groups sit on it | `gsva_scores.rds`, `pathway_loading.rds` (assertions) |
-| **Fig. 1D** | `fig1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
+| **Fig. 1D** | `fig1_nes_ranking.R` | p2: "Mitochondrial biogenesis and OXPHOS complex genesets were overall top ranked based on normalised changes in effect size, along with core (non-mitochondrial) Myc target genesets, followed by …" | `fgsea_percategory.rds`, `ap6_permutation_null.rds` (legend), `provenance_table.csv` |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
-| **Fig. S1C** | `figS1_nes_ranking.R` | p2: "Mitochondrial biogenesis and OXPHOS complex genesets were overall top ranked based on normalised changes in effect size, along with core (non-mitochondrial) Myc target genesets, followed by …" | `fgsea_percategory.rds`, `ap6_permutation_null.rds` (legend), `provenance_table.csv` |
+| **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
 | **Fig. S1D** | `figS1_mb_fork_specificity.R` | not cited yet — specificity control for Fig. 1B's `Human BRCA-MYC` row: is the resemblance to the MYC arm of the human switch, or to biogenesis generally? | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
 
 ### Revision of 2026-07-31 (paragraph 1 rewritten, paragraph 2 written)
@@ -83,7 +83,7 @@ nowhere yet and **rolled down to S1D** to make room for the enrichment ranking p
 cite. Rather than rename for the letters a second time, the letters came out of the filenames —
 see the Convention section.
 
-**Fig. 1C and Fig. 1D are one PCA, drawn twice.** `pathway_axis()` in `_panel_common.R` rebuilds
+**Fig. 1C and Fig. S1C are one PCA, drawn twice.** `pathway_axis()` in `_panel_common.R` rebuilds
 script 37's linear z-score score matrix and its pathway-level PCA — `results/pathway_loading.rds`
 saves the per-set loadings and the variance percentages but not the score matrix or the sample
 scores — and then proves the rebuild before returning: 885 sets, PC1/PC2/PC3 = 76.538 / 8.027 /
@@ -103,7 +103,7 @@ means: 6W Myc+ **+15.2**, 12W Myc+ +4.4, 6W WT −8.4, 12W WT −11.2 — so the
 6 weeks and 15.6 at 12, the same *direction* as the attenuation result and not that result (the
 interaction is not significant, and attenuation is a DESeq2 effect-size result).
 
-**Fig. S1C's ruler is the fGSEA NES**, which is what "normalised changes in effect size" means in
+**Fig. 1D's ruler is the fGSEA NES**, which is what "normalised changes in effect size" means in
 the manuscript's own methods wording ("enrichment … normalised to the whole transcriptome"). The
 source is script 20's per-category run, `fgsea_percategory.rds`. It is a **different ruler** from
 1C/1D on purpose: those are per-sample covariation, this is the genotype contrast on the
@@ -114,6 +114,60 @@ observation the attenuation section opens with.
 **One encoding is new and is declared, not inlined:** `programme_group()` in `_panel_common.R`,
 with `mito_class3()` (script 37's classification rule, `37:445-462`) lifted out of
 `figS1_geneset_library.R` so the three panels that need it share one copy.
+
+### Author's review, same day — four changes
+
+**1D and S1C swapped.** The enrichment ranking is the more relevant main-figure panel: it measures
+what Myc *did* (the genotype contrast on the unshrunken Wald statistic), where 1C and the loadings
+measure what covaries with what. So `fig1_nes_ranking.R` holds **Fig. 1D** and
+`figS1_axis_loadings.R` holds **Fig. S1C**; the files were `git mv`d to match, which is the last
+time a renumber will touch a filename now that the letters are gone.
+
+**THE EXPORT DEVICE CHANGED, and it affects every figure in the project.** The author reported
+uneven character spacing. It is `cairo_pdf`: it writes text as individually positioned glyphs, and
+at the 6 pt these panels use the inter-word advance rounds away — `"Hallmark comparator"` renders
+as `"Hallmarkcomparator"` and `"nucleotide"` as `"nudeotide"` in Preview and every other Core
+Graphics viewer, at every font family tried. The PDF's *text* is correct (`pdftotext` reads back the
+spaces), so it is a rendering artefact, but it is the one the reader sees. `save_panel()` in
+`theme_myc.R` now uses the base `pdf()` device with Helvetica, which writes real strings with font
+metrics and is clean at the same size. **The trade:** Helvetica is one of the 14 standard PDF fonts
+and is referenced rather than embedded (no Ghostscript on this machine, so `embedFonts()` is not
+available). `options(myc.fig.cairo = TRUE)` switches back if a submission demands full embedding.
+All four assembled manuscript figures dry-render unchanged through the new device.
+
+**Fig. 1D, five row names are the author's** and one of them shifts work onto the colour key: the
+by-construction block is now labelled **"curated mitochondrial"** — which is what those sets *are* —
+and the key that colours it is what says they are MitoCarta subsets *by build*. Also
+`Myc targets (curated)` → **Myc signatures**, `mitochondrial, other` →
+**mitochondrial metabolism & dynamics** (the 37 remaining MitoCarta pathways: amino-acid, lipid,
+carbohydrate and one-carbon metabolism, fission and surveillance, chaperones and proteases,
+transport, calcium and signalling), `TF target lanes` → **TF target sets**, `Hallmark comparator` →
+**MSigDB Hallmarks**. The key moved up and left: it cannot go *inside* — two rows of it are ~70 mm
+wide against a 33 mm facet — so top-left in two rows is the cheapest placement, costing two lines
+instead of three.
+
+**Fig. S1C's labels are placed, not repelled.** Five of the seven anchors sit in the left third of
+the ranking and a label is ~200 rank units wide, so any left-hand column puts one label across the
+next label's leader — which is what the first version did. The wedge *above* the curve on the right
+is provably free (the curve falls monotonically, so a straight line from a high-rank anchor to a
+point up and to the right can never re-cross it), and both the anchors and the label slots are
+monotone in y, so the fan cannot cross itself. A `stopifnot` enforces rank order = label order.
+Content changes: `Myc lane x MitoCarta` → **Myc regulon (MitoCarta subset)**; MB1 → **MB2**
+(`METABRIC_MB2_HI_CV_GROUP1`, the same score Fig. 1B draws as Human BRCA-MYC); `nucleotide` dropped;
+and the biogenesis anchor moved from `MITOCARTA_MITOCHONDRIAL_RIBOSOME` to
+`MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA` so the label **mitochondrial biogenesis** names the set it
+points at rather than one member of the programme.
+
+**Fig. 1C has a broken x axis.** One 6-week Myc+ animal sits at PC1 = +44.3 while the next highest
+is +19.1, so an unbroken axis spends a third of the width on nothing. Built as two panels rather
+than with a package (`ggbreak` is not installed, and doing it by hand keeps `coord_fixed(1)` alive
+in both segments, which is the part that matters — within a segment a PC1 unit and a PC2 unit are
+the same length, so the collapse onto PC1 is still the picture and not the panel shape). Segment
+widths are proportional to their spans and the break is marked with slashes. **What it costs:** a
+distance read *across* the gap is not to scale. Two traps found while building it, both recorded in
+the script: `clip = "off"` (needed for the break marks) makes each segment draw *all* 24 animals
+over its neighbour unless the data are filtered per segment; and patchwork does not merge two
+separately built guides, so only the main segment may carry the key. x ticks are by 10.
 
 ### Revision of 2026-07-30 (author's review of the first four panels)
 
@@ -160,7 +214,7 @@ the slugs its scripts name, so a rename or deletion always strands the old PDF; 
    sits toward a human MYC-driven state — not a claim about where a switch is thrown. It is also the
    stronger number (+1.63 p = 0.039 / +1.59 p = 0.005 against the fork contrast's +1.46 p = 0.053 /
    +1.09 p = 0.045); the fork contrast is quoted in the legend block and asserted against
-   `ap7_mb_fork.rds$fork_df$MB2_score`. **Fig. S1C carries the specificity test that has to go with
+   `ap7_mb_fork.rds$fork_df$MB2_score`. **Fig. S1D carries the specificity test that has to go with
    it.**
 1. **The pooled genotype column is gone**, replaced by `myc_6W` and `myc_12W`. It was hiding the
    result: TEB-ductal is **+1.02 SD at 6 weeks and +0.23 SD at 12**, and the pooled effect (+0.63 SD,
@@ -255,7 +309,7 @@ Carried in each script's `LEGEND` block and repeated here because it needs a dec
 ### Added 2026-07-31, for paragraph 2
 
 - **"aligned almost entirely with variability in mitochondria related terms"** — supported at the
-  top of the ranking and bounded three ways on the face of Fig. 1D. Mito sets are 44 % of the
+  top of the ranking and bounded three ways on the face of Fig. S1C. Mito sets are 44 % of the
   library and **100 % of the top 50**, median |loading| 0.90 against 0.61. But **94 of the top 100
   are build-tautological** `_MITO` lanes (MitoCarta subsets by construction); non-mitochondrial
   growth programmes reach **0.98** (the METABRIC biclusters, nucleotide metabolism, pentose
@@ -265,17 +319,27 @@ Carried in each script's `LEGEND` block and repeated here because it needs a dec
 - **"revealing the leading role of mitochondrial remodeling"** — loading is **covariation, not
   primacy**, and script 37 says so in as many words (`pathway_loading.rds$enrichment_verdict`). At
   n = 24 nothing on these panels can order cause; the primacy claim belongs to the perturbations.
-- **Fig. S1C's tier order is right at the top and inverted in the middle.** OXPHOS **+2.42**, curated
-  Myc targets **+2.38** and mitochondrial biogenesis **+2.37** are a three-way tie at the top, exactly
+- **Fig. 1D's tier order is right at the top and inverted in the middle.** OXPHOS **+2.42**, Myc
+  signatures **+2.38** and mitochondrial biogenesis **+2.37** are a three-way tie at the top, exactly
   as written. But the sentence continues "followed by biosynthetic metabolic pathways, E2F and
   overall proliferation signaling", and in the data **E2F / cell cycle (+2.08) sits above
   biosynthetic metabolism (+1.84)**. One-word fix: swap them.
-- **The by-construction row tops Fig. S1C** at **+2.47**, above OXPHOS. It is drawn as its own row in
-  its own colour rather than deleted, because deleting it would flatter every row beneath it. The
-  rows to read as programmes start below it — worth one clause in the legend, not in the Results.
+- **The curated-mitochondrial row tops Fig. 1D** at **+2.47**, above OXPHOS. It is drawn as its own
+  row in its own colour rather than deleted, because deleting it would flatter every row beneath it.
+  The rows to read as programmes start below it — worth one clause in the legend, not in the Results.
+- **Apoptosis is the one row that changes sign** (+0.74 at 6 weeks, −0.94 at 12; every other row's
+  median moves *up*), and the author asked what drives it. **It is not a result.** The row is bimodal
+  and its median sits on zero, so five weak sets crossing zero move it: `TANG_NECROPTOSIS`,
+  `TANG_LYSOSOME_DEPENDENT_CELL_DEATH`, `APOP_INTRINSIC_REACTOME`, `APOP_MODULATION_WP` and
+  `TANG_PYROPTOSIS`, each going from about +0.8 to about −1.3, and **none significant at either
+  age**. The members that *are* significant do not move: `APOP_REGULATION_REACTOME` stays +2.08 →
+  +2.43, `TANG_CUPROPTOSIS` +1.86 → +1.93, while `APOP_HALLMARK` (−1.95 → −1.37) and `APOP_KEGG`
+  stay depleted and if anything rise. Three of the five movers are non-apoptotic death modalities,
+  so there is no mitochondrial-death reading in it either — consistent with script 34, which found
+  the death arm has no independent transcriptomic support.
 - **Three set counts are now in play and each panel uses a different one.** **986** in the library
-  (Fig. S1B, and the number paragraph 2 gives), **885** scored per sample by GSVA (Figs. 1C and 1D),
-  **866** in the enrichment ranking (Fig. S1C: 816 fGSEA-eligible library sets that clear the
+  (Fig. S1B, and the number paragraph 2 gives), **885** scored per sample by GSVA (Figs. 1C and S1C),
+  **866** in the enrichment ranking (Fig. 1D: 816 fGSEA-eligible library sets that clear the
   minSize 10 / maxSize 500 filter, plus 50 fresh Hallmark comparators). 986 is correct where it
   stands; the other two need naming where they are cited.
 
@@ -329,9 +393,9 @@ Myc fork" from "Myc drives biogenesis generically".
 Deferred until the narrative fixes the numbering. Then a `figures/figure*_overview.R` composes
 the signed-off panels with patchwork `tag_levels = "A"` and this table records the mapping. All
 but one panel is **single column (89 mm)** wide (Fig. S1D is 50 mm), so the layout is
-essentially unconstrained. Heights as built: 1B 84, 1C 44, 1D 56, S1A 52, S1B 52, S1C 72,
-S1D 52 mm — so Figure 1's three built panels stack in 184 mm and Supplementary 1's four in 228,
-both inside a single page column.
+essentially unconstrained. Heights as built: 1B 84, 1C 45, 1D 70, S1A 52, S1B 52, S1C 56,
+S1D 52 mm — so Figure 1's three built panels stack in 199 mm and Supplementary 1's four in 212,
+both about one page column.
 
 The four already-assembled manuscript figures (`figures/figure1_myc_mitochondrion.R`,
 `figure2_developmental_window.R`, `figureS1_compartment_detail.R`, `figureS2_controls.R`) are

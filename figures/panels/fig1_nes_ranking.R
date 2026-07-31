@@ -1,24 +1,28 @@
 # =============================================================================
-# figS1_nes_ranking.R -- the library ranked by normalised effect size
+# fig1_nes_ranking.R -- the library ranked by normalised effect size
 # -----------------------------------------------------------------------------
-# SLOT: Fig. S1C. Filenames do not carry the slot letter; figures/panels/PANELS.md
-# is the slug -> slot map.
+# SLOT: Fig. 1D (was Fig. S1C for a day; the author's call on 2026-07-31 is that
+# this is the more relevant main-figure panel, so it swapped with the axis
+# loadings). Filenames do not carry the slot letter; figures/panels/PANELS.md is
+# the slug -> slot map.
 #
 # SUPPORTS (Results, "Myc drives early breast tumourigenesis by inducing OXPHOS
 # and biosynthetic pathways", paragraph 2):
 #   "Mitochondrial biogenesis and OXPHOS complex genesets were overall top ranked
 #    based on normalised changes in effect size, along with core
 #    (non-mitochondrial) Myc target genesets, followed by biosynthetic metabolic
-#    pathways, E2F and overall proliferation signaling (Fig. S1C)."
+#    pathways, E2F and overall proliferation signaling (Fig. 1D)."
 #
 # THE RULER. "Normalised changes in effect size" is the fGSEA normalised
 # enrichment score, which is how the manuscript's own methods paragraph uses the
 # word: enrichment of differential expression normalised to the whole
-# transcriptome. It is a DIFFERENT ruler from Figs. 1C and 1D, and that is the
-# point of having both. Those two are per-sample covariation - which programmes
-# move together across the 24 animals. This one is the genotype CONTRAST - which
-# programmes are enriched among the genes Myc actually moves, ranked on the
-# unshrunken Wald statistic. A programme can top one and not the other.
+# transcriptome. It is a DIFFERENT ruler from Fig. 1C and Fig. S1C, and that is
+# the point of having both. Those two are per-sample covariation - which
+# programmes move together across the 24 animals. This one is the genotype
+# CONTRAST - which programmes are enriched among the genes Myc actually moves,
+# ranked on the unshrunken Wald statistic. A programme can top one and not the
+# other, and that is why this one is the main-figure panel: it is the one that
+# measures what Myc DID rather than what covaries with what.
 #
 # WHY BOTH AGES. The claim is about a ranking, and a ranking that held at one age
 # and not the other would be a different result. It holds: the two columns are
@@ -38,7 +42,7 @@
 # Input:  results/fgsea_percategory.rds  (script 20 -- NES per ranking x category)
 #         results/ap6_permutation_null.rds (script 21 -- the matched null, legend)
 #         data/genesets_from_library/provenance_table.csv (the mito classification)
-# Output: outputs/figures/panels/figS1_nes_ranking.pdf
+# Output: outputs/figures/panels/fig1_nes_ranking.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
@@ -115,7 +119,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(NES, programme, colour = class3)) +
                               expand = ggplot2::expansion(mult = 0.05)) +
   ggplot2::labs(x = "fGSEA normalised enrichment score", y = NULL, colour = NULL) +
   ggplot2::guides(colour = ggplot2::guide_legend(
-    ncol = 1, override.aes = list(size = 1.5, alpha = 1))) +
+    nrow = 2, byrow = TRUE, override.aes = list(size = 1.5, alpha = 1))) +
   ggplot2::coord_cartesian(xlim = RNG, clip = "off") +
   theme_panel(base_size = 6) +
   ggplot2::theme(
@@ -125,12 +129,19 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(NES, programme, colour = class3)) +
     panel.spacing.x    = ggplot2::unit(2.4, "mm"),
     strip.text         = ggplot2::element_text(size = 6, margin = ggplot2::margin(0, 0, 1, 0)),
     axis.text.y        = ggplot2::element_text(margin = ggplot2::margin(r = 0.6, unit = "mm")),
-    legend.position    = "bottom",
-    legend.justification = "left",
-    legend.margin      = ggplot2::margin(-3, 0, 0, 0),
-    legend.key.size    = ggplot2::unit(2.2, "mm"),
-    legend.spacing.y   = ggplot2::unit(0, "mm"),
-    legend.box.spacing = ggplot2::unit(1, "mm"))
+    # The key moves up and left (author, 2026-07-31). It cannot go INSIDE: two
+    # rows of it are ~70 mm wide against a 33 mm facet, so anywhere in the plot
+    # region it would cover the top rows' points. Top-left in two rows is the
+    # cheapest place that does not - it costs 2 lines of height instead of 3, and
+    # it reads before the data rather than after them.
+    legend.position       = "top",
+    legend.justification  = c(0, 0.5),
+    legend.location       = "plot",      # flush with the panel edge, not the axis
+    legend.key            = ggplot2::element_blank(),
+    legend.key.size       = ggplot2::unit(2.2, "mm"),
+    legend.spacing.y      = ggplot2::unit(0, "mm"),
+    legend.margin         = ggplot2::margin(0, 0, 0, -1),
+    legend.box.spacing    = ggplot2::unit(0.8, "mm"))
 
 # --- the legend text (never drawn) -------------------------------------------
 ap6 <- readRDS(here::here("results", "ap6_permutation_null.rds"))$null_table
@@ -147,7 +158,7 @@ n_sig6 <- sum(dat$padj_within_category[dat$contrast == contrast_geno[1]] < 0.05,
 n_sets <- nrow(w)
 
 LEGEND <- panel_legend(
-  slot = "Fig. S1C",
+  slot = "Fig. 1D",
   what = paste0(
     "Every gene set in the library, grouped by programme and ranked by fGSEA ",
     "normalised enrichment score for the Myc effect at each age. One point per ",
@@ -167,7 +178,11 @@ LEGEND <- panel_legend(
             z6("MitoCarta"), z6("Metabolism"), z6("HALLMARK_OXPHOS"),
             z6("HALLMARK_MYC_TARGETS_V1"), z6("HALLMARK_E2F_TARGETS"),
             z6("Proliferation")),
-    "Colour is the three-class mitochondrial definition of Fig. S1B, applied per gene set."),
+    "Colour is the three-class mitochondrial definition of Fig. S1B, applied per gene set. The top row is named for what those sets ARE - curated mitochondrial sets - and the colour key says how they were made.",
+    sprintf("APOPTOSIS IS THE ONE ROW THAT CHANGES SIGN (%+.2f at 6 weeks, %+.2f at 12; every other row's median moves up). It is not a result: the row is bimodal and its median sits on zero, so five weak sets crossing zero move it. Those five are TANG_NECROPTOSIS, TANG_LYSOSOME_DEPENDENT_CELL_DEATH, APOP_INTRINSIC_REACTOME, APOP_MODULATION_WP and TANG_PYROPTOSIS, none significant at either age. The members that ARE significant do not move: APOP_REGULATION_REACTOME stays at +2.1/+2.4 and TANG_CUPROPTOSIS at +1.9, while APOP_HALLMARK and APOP_KEGG stay depleted and if anything rise. Three of the five movers are non-apoptotic death modalities, so there is no mitochondrial death story in it either.",
+            m6$NES[as.character(m6$programme) == "apoptosis"],
+            med_df$NES[med_df$contrast == contrast_geno[2] &
+                       as.character(med_df$programme) == "apoptosis"])),
   bounds = c(
     "THE TOP ROW IS A BUILD TAUTOLOGY, and it is drawn rather than dropped. It collects every set whose membership is MitoCarta intersected with something else - the Gray _MITO transcription-factor lanes and the biogenesis-discrimination and biogenesis-by-apoptosis constructs - so it enriches by mitochondrial gene content, not by the identity of the programme it is named for. The rows to read as programmes start below it.",
     sprintf("SIGNIFICANCE DOES NOT DISCRIMINATE HERE: %d of the %d sets clear padj < 0.05 on the 6-week contrast. The ordering is the readable quantity, not the p-value.",
@@ -183,7 +198,7 @@ LEGEND <- panel_legend(
     "data/genesets_from_library/provenance_table.csv for category_primary; the classification rule is mito_class3() in figures/panels/_panel_common.R",
     "The programme grouping: programme_group() in figures/panels/_panel_common.R"))
 
-save_panel_p(p, "figS1_nes_ranking", width = fig_w[["single"]], height = 72)
+save_panel_p(p, "fig1_nes_ranking", width = fig_w[["single"]], height = 70)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

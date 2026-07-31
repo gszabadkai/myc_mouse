@@ -1,12 +1,14 @@
 # =============================================================================
-# fig1_axis_loadings.R -- what the dominant axis is made of
+# figS1_axis_loadings.R -- what the dominant axis is made of
 # -----------------------------------------------------------------------------
-# SLOT: Fig. 1D. Filenames do not carry the slot letter; figures/panels/PANELS.md
-# is the slug -> slot map.
+# SLOT: Fig. S1C (was Fig. 1D for a day; the author's call on 2026-07-31 is that
+# the enrichment ranking is the more relevant main-figure panel, so the two
+# swapped). Filenames do not carry the slot letter; figures/panels/PANELS.md is
+# the slug -> slot map.
 #
 # SUPPORTS (Results, "Myc drives early breast tumourigenesis by inducing OXPHOS
 # and biosynthetic pathways", paragraph 2), the second half of the sentence
-# Fig. 1C opens:
+# Fig. 1C opens -- and the main figure cites it alongside 1C:
 #   "the dominant principal component axis of these genesets across the whole
 #    dataset aligned almost entirely with variability in mitochondria related
 #    terms, revealing the leading role of mitochondrial remodeling in early
@@ -53,12 +55,12 @@
 #
 # Input:  results/gsva_scores.rds       (script 15)
 #         results/pathway_loading.rds   (script 37 -- classification + assertions)
-# Output: outputs/figures/panels/fig1_axis_loadings.pdf
+# Output: outputs/figures/panels/figS1_axis_loadings.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
 
-if (!requireNamespace("ggrepel", quietly = TRUE)) stop("fig1_axis_loadings needs ggrepel")
+if (!requireNamespace("ggrepel", quietly = TRUE)) stop("figS1_axis_loadings needs ggrepel")
 
 ax  <- pathway_axis()
 cls <- ax$ref$mito_classification
@@ -83,29 +85,36 @@ redox_ref <- stats::median(dat$abs_load[dat$set %in% redox_sets])
 # --- the labelled exemplars ---------------------------------------------------
 # Named explicitly, not taken off the top of the ranking: the point of the panel
 # is that the top of the ranking is not the interesting part. Three mitochondrial
-# (one of them the build tautology) and five non-mitochondrial, spread down the
+# (one of them the build tautology) and four non-mitochondrial, spread down the
 # curve to the redox control. Short labels because the panel is 89 mm; the exact
 # set names are in the legend block.
 #
-# The curve is concave, so there is no one free direction: the space above it is
-# empty only on the right and the space below it only on the left. The labels are
-# therefore PLACED, not repelled -- six stacked down the left with leaders fanning
-# up to the curve, two in the free wedge on the right -- and repel is used only to
-# draw the leader lines (force = 0 leaves the given position alone). Placement is
-# in data units so it is reproducible and moves with the data if the ranking does.
+# WHERE THE LABELS GO, and why it is forced rather than chosen. Five of the seven
+# anchors sit in the left third of the ranking, and a label is ~200 rank units
+# wide, so any left-hand column puts one label across the next label's leader --
+# which is what the first version did. The one region that is provably free is
+# the wedge ABOVE the curve on the right: the curve falls monotonically, so a
+# straight line from a high-rank anchor to a point up and to the right can never
+# re-cross it. So all seven labels are right-aligned at the right edge in RANK
+# ORDER, and because both the anchors and the label slots are monotone in y the
+# leaders fan out without crossing each other or any label box. Positions are in
+# data units and repel is used only to draw the leaders (force = 0 leaves the
+# given position alone).
 lab_spec <- tibble::tribble(
-  ~set,                                ~label,                ~x,  ~y,
-  "TFT_MYC_GRAY_BA_LE_MITO",           "Myc lane x MitoCarta", 25, 0.84,
-  "MITOCARTA_MITOCHONDRIAL_RIBOSOME",  "mitoribosome",         25, 0.75,
-  "MITOCARTA_OXPHOS",                  "OXPHOS",               25, 0.66,
-  "METABRIC_MB1_BICLUSTER_GROUP1",     "human BRCA MB1",       25, 0.57,
-  "METAB_NUCLEOTIDE_REACTOME",         "nucleotide",           25, 0.48,
-  "MYC_felsher_integrative_signature", "Myc (Felsher)",        25, 0.39,
-  "PROLIF_E2F_HALLMARK",               "E2F targets",         505, 1.03,
-  "GS_METAB_GLUTATHIONE",              "glutathione (redox)", 655, 0.79)
+  ~set,                                    ~label,                          ~y,
+  "TFT_MYC_GRAY_BA_LE_MITO",               "Myc regulon (MitoCarta subset)", 1.05,
+  "MITOCARTA_OXPHOS",                      "OXPHOS",                         0.98,
+  "METABRIC_MB2_HI_CV_GROUP1",             "human BRCA-Myc (MB2)",           0.91,
+  "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA", "mitochondrial biogenesis",       0.84,
+  "MYC_felsher_integrative_signature",     "Myc signature (Felsher)",        0.77,
+  "PROLIF_E2F_HALLMARK",                   "E2F targets",                    0.70,
+  "GS_METAB_GLUTATHIONE",                  "glutathione (redox)",            0.63)
 stopifnot(all(lab_spec$set %in% dat$set))
 lab_df <- dplyr::inner_join(lab_spec, dat, by = "set") |>
-  dplyr::mutate(nx = x - rank, ny = y - abs_load)
+  dplyr::arrange(rank) |>
+  dplyr::mutate(x = nrow(dat) - 5, nx = x - rank, ny = y - abs_load)
+# rank order must equal label order, or the fan crosses
+stopifnot(!is.unsorted(lab_df$rank), !is.unsorted(rev(lab_df$y)))
 
 # =============================================================================
 # THE PANEL
@@ -122,7 +131,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(rank, abs_load, colour = class3)) +
     data = lab_df, ggplot2::aes(rank, abs_load, label = label),
     inherit.aes = FALSE, size = 1.75, colour = "grey15", segment.colour = "grey55",
     segment.size = 0.15, min.segment.length = 0, box.padding = 0.10,
-    point.padding = 0.10, nudge_x = lab_df$nx, nudge_y = lab_df$ny, hjust = 0,
+    point.padding = 0.10, nudge_x = lab_df$nx, nudge_y = lab_df$ny, hjust = 1,
     force = 0, force_pull = 0, max.overlaps = Inf, seed = 1) +
   ggplot2::scale_colour_manual(values = mito_class_cols, labels = mito_class_labels,
                                breaks = names(mito_class_cols)) +
@@ -150,7 +159,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(rank, abs_load, colour = class3)) +
 me <- ax$ref$mito_enrichment
 n_med <- function(x) sprintf("%.2f", x)
 LEGEND <- panel_legend(
-  slot = "Fig. 1D",
+  slot = "Fig. S1C",
   what = paste0(
     "All ", nrow(dat), " scored gene sets ranked by the absolute value of their ",
     "loading on the dominant axis of Fig. 1C, coloured by how the set is defined ",
@@ -190,7 +199,7 @@ LEGEND <- panel_legend(
     "The construction caveat: docs/library_reference/Gray_et_al_developmental_TFS_selection.md sec 2c; the verdict it comes from: pathway_loading.rds$enrichment_verdict",
     "Composite loadings and the redox control: scripts/35_ambient_corrected_couplings.R and pathway_loading.rds$axis_loadings"))
 
-save_panel_p(p, "fig1_axis_loadings", width = fig_w[["single"]], height = 56)
+save_panel_p(p, "figS1_axis_loadings", width = fig_w[["single"]], height = 56)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

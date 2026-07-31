@@ -75,32 +75,94 @@ r_gm   <- suppressWarnings(stats::cor(dat$PC1, ax$global_mean))
 # =============================================================================
 # THE PANEL
 # =============================================================================
-# coord_equal is load-bearing: the claim is that one direction carries most of
-# the variance, and a free aspect ratio would let the panel shape decide how that
-# looks. With equal units the PC2 spread is drawn at the size it actually is.
-p <- ggplot2::ggplot(dat, ggplot2::aes(PC1, PC2, colour = group)) +
-  ggplot2::geom_hline(yintercept = 0, linewidth = 0.2, colour = "grey88") +
+# THE BROKEN X AXIS (author, 2026-07-31). One 6-week Myc+ animal sits at PC1 =
+# +44 while the next highest is +19, so an unbroken axis spends a third of the
+# 89 mm on empty space and shrinks everything else to compensate. The break is
+# built as two panels rather than with a package: ggbreak is not installed, and
+# doing it by hand keeps coord_fixed(1) alive in BOTH segments, which is the
+# thing that matters -- within each segment a PC1 unit and a PC2 unit are the
+# same length on the page, so the collapse of the spread onto PC1 is still the
+# picture and not the panel shape. What the break costs is that a distance read
+# ACROSS the gap is no longer meaningful; the outlier's PC1 value is on its own
+# tick, and the legend block gives it.
+YL   <- range(dat$PC2) + c(-1, 1) * 0.06 * diff(range(dat$PC2))
+XMAIN <- c(-27, 21)
+XOUT  <- c(41.5, 47)
+stopifnot(sum(dat$PC1 > XMAIN[2]) == 1L,               # exactly one animal is out
+          all(dat$PC1[dat$PC1 > XMAIN[2]] > XOUT[1]),
+          all(dat$PC1[dat$PC1 < XMAIN[2]] > XMAIN[1]))
+
+# Each segment gets ONLY the animals it contains. Not cosmetic: the break marks
+# need clip = "off", and with clip off a point outside a segment's x range is
+# still drawn -- the outlier panel would paint all 24 animals across the main
+# panel. Centroids are computed from all six animals of a group and belong to
+# whichever segment holds them.
+pca_layer <- function(xlim, ticks, pts, ctr, key = TRUE) {
+  list(
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.2, colour = "grey88"),
+    ggplot2::geom_point(data = pts, size = 1.2, alpha = 0.9),
+    if (nrow(ctr))
+      ggplot2::geom_point(data = ctr, ggplot2::aes(PC1, PC2, fill = group),
+                          shape = 21, size = 2.8, colour = "grey15", stroke = 0.35,
+                          inherit.aes = FALSE),
+    # only the main segment carries the key. patchwork's guide collection does
+    # not merge two separately built guides, so letting both draw one gives eight
+    # entries and letting the outlier segment draw its own gives a stray fifth.
+    ggplot2::scale_colour_manual(values = group_cols, breaks = names(group_cols),
+                                 limits = names(group_cols), drop = FALSE,
+                                 labels = group_labels,
+                                 guide = if (key) "legend" else "none"),
+    ggplot2::scale_fill_manual(values = group_cols, limits = names(group_cols),
+                               drop = FALSE, guide = "none"),
+    ggplot2::scale_x_continuous(breaks = ticks, labels = lab_signed),
+    ggplot2::coord_fixed(ratio = 1, xlim = xlim, ylim = YL, expand = FALSE,
+                         clip = "off"),
+    ggplot2::guides(colour = if (key) ggplot2::guide_legend(
+      nrow = 1, override.aes = list(size = 1.6, alpha = 1, shape = 16)) else "none"),
+    theme_panel(base_size = 6),
+    ggplot2::theme(panel.grid       = ggplot2::element_blank(),
+                   legend.position  = "bottom",
+                   legend.margin    = ggplot2::margin(-3, 0, 0, 0),
+                   legend.key.size  = ggplot2::unit(2.6, "mm"),
+                   legend.spacing.x = ggplot2::unit(0.6, "mm")))
+}
+
+XLAB <- sprintf("PC1 (%.0f%%)", 100 * vfr[1])
+
+# the two slashes that say "this axis is broken" -- drawn on the axis line at the
+# facing edge of each segment, in data units, with clip off
+break_mark <- function(x0, dir) {
+  h <- 0.045 * diff(YL); w <- 0.7
+  ggplot2::annotate("segment",
+                    x = x0 + dir * c(0, w), xend = x0 + dir * c(w, 2 * w),
+                    y = YL[1] - h, yend = YL[1] + h,
+                    linewidth = 0.3, colour = "black")
+}
+
+in_main <- dat$PC1 <= XMAIN[2]
+
+p_main <- ggplot2::ggplot(dat[in_main, ], ggplot2::aes(PC1, PC2, colour = group)) +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.2, colour = "grey88") +
-  ggplot2::geom_point(size = 1.2, alpha = 0.9) +
-  ggplot2::geom_point(data = cen, ggplot2::aes(PC1, PC2, fill = group),
-                      shape = 21, size = 2.8, colour = "grey15", stroke = 0.35,
-                      inherit.aes = FALSE) +
-  ggplot2::scale_colour_manual(values = group_cols, breaks = names(group_cols),
-                               labels = group_labels) +
-  ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
-  ggplot2::coord_equal() +
-  ggplot2::labs(x = sprintf("PC1 (%.0f%%)", 100 * vfr[1]),
-                y = sprintf("PC2 (%.0f%%)", 100 * vfr[2]),
-                colour = NULL) +
-  ggplot2::guides(colour = ggplot2::guide_legend(
-    nrow = 1, override.aes = list(size = 1.7, alpha = 1))) +
-  theme_panel(base_size = 6) +
-  ggplot2::theme(
-    panel.grid       = ggplot2::element_blank(),
-    legend.position  = "bottom",
-    legend.margin    = ggplot2::margin(-3, 0, 0, 0),
-    legend.key.size  = ggplot2::unit(2.6, "mm"),
-    legend.spacing.x = ggplot2::unit(0.6, "mm"))
+  pca_layer(XMAIN, seq(-20, 20, by = 10),
+            dat[in_main, ], cen[cen$PC1 <= XMAIN[2], ]) +
+  break_mark(XMAIN[2] - 1.4, +1) +
+  ggplot2::labs(x = XLAB, y = sprintf("PC2 (%.0f%%)", 100 * vfr[2]), colour = NULL)
+
+p_out <- ggplot2::ggplot(dat[!in_main, ], ggplot2::aes(PC1, PC2, colour = group)) +
+  pca_layer(XOUT, 45, dat[!in_main, ], cen[cen$PC1 > XMAIN[2], ], key = FALSE) +
+  break_mark(XOUT[1] + 1.4, -1) +
+  ggplot2::labs(x = NULL, y = NULL, colour = NULL) +
+  ggplot2::theme(axis.text.y  = ggplot2::element_blank(),
+                 axis.ticks.y = ggplot2::element_blank(),
+                 axis.line.y  = ggplot2::element_blank())
+
+# widths track the two x spans, so a PC1 unit is the same length on both sides of
+# the gap; the guide is collected so the key is drawn once
+p <- patchwork::wrap_plots(p_main, p_out, nrow = 1,
+                           widths = c(diff(XMAIN), diff(XOUT))) +
+  patchwork::plot_layout(guides = "collect") &
+  ggplot2::theme(legend.position = "bottom",
+                 legend.margin   = ggplot2::margin(-3, 0, 0, 0))
 
 # --- the legend text (never drawn) -------------------------------------------
 f1 <- function(x) sprintf("%.1f", x)
@@ -122,7 +184,8 @@ LEGEND <- panel_legend(
             p_geno, p_time, p_int,
             f1(gmean1["6W_pos"]), f1(gmean1["12W_pos"]),
             f1(gmean1["6W_neg"]), f1(gmean1["12W_neg"])),
-    "Axes are drawn on a common scale (coord_equal), so the collapse of the spread onto PC1 is the picture and not the panel shape.",
+    sprintf("The x axis is BROKEN. One 6-week Myc+ animal sits at PC1 = %s while the next highest is %s, so the axis is drawn in two segments with the break marked; the outlier is on its own tick. Within each segment a PC1 unit and a PC2 unit are the same length on the page (coord_fixed) and the segment widths are proportional to their spans, so the collapse of the spread onto PC1 is the picture and not the panel shape - but a distance read ACROSS the gap is not to scale.",
+            f1(max(dat$PC1)), f1(max(dat$PC1[dat$PC1 < max(dat$PC1)]))),
     "n = 6 animals per group. No dispersion region is drawn; at n = 6 an ellipse would read as a confidence interval."),
   bounds = c(
     "Batch = timepoint: the 6W and 12W cohorts were extracted separately, so any axis that separated the samples by age would be unreadable. This one does not - the timepoint term on PC1 is not significant while the genotype term is - and genotype is balanced within each batch, so the reading is clean.",
@@ -137,10 +200,10 @@ LEGEND <- panel_legend(
     "results/pathway_loading.rds (script 37) - PC1/PC2/PC3 percentages, the OXPHOS gate and the gene-level comparison; the rebuild in pathway_axis() is asserted against all three",
     "Method: scripts/36_linear_pathway_coupling.R (quantifier of record), scripts/37_pathway_loading_and_technical_resolution.R PART 2 and PART A2"))
 
-# Height is set by coord_equal, not chosen: at 89 mm wide the PC1 span of ~70
-# units fixes the unit size, and the PC2 span of ~24 units then fixes the panel
-# height. Anything taller is dead space between the axis title and the key.
-save_panel_p(p, "fig1_pathway_pca", width = fig_w[["single"]], height = 44)
+# Height is set by the fixed aspect, not chosen: at 89 mm wide the drawn PC1 span
+# fixes the unit size and the PC2 span of ~27 units then fixes the panel height.
+# Anything taller is dead space between the axis title and the key.
+save_panel_p(p, "fig1_pathway_pca", width = fig_w[["single"]], height = 45)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

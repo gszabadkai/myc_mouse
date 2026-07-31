@@ -62,12 +62,32 @@ theme_myc <- function(base_size = 9) {
       legend.position   = "none")
 }
 
-# --- export: cairo_pdf embeds TrueType (editable text), size in mm ------------
+# --- export: base pdf(), Helvetica, size in mm -------------------------------
+# WHY NOT cairo_pdf (changed 2026-07-31, author reported uneven character
+# spacing). cairo writes text as individually positioned glyphs, and at the 6 pt
+# type these panels use the inter-word advance rounds away: on this system
+# "Hallmark comparator" renders as "Hallmarkcomparator" and "nucleotide" as
+# "nudeotide" in Preview and in every Core Graphics viewer, at every font family
+# tried. The PDF's text content is correct -- pdftotext reads it back with the
+# spaces -- so it is a rendering artefact, but it is the artefact the reader
+# sees. The base pdf() device writes real text strings with font metrics instead
+# and is clean at the same size.
+#
+# THE TRADE. Base pdf() uses Helvetica, one of the 14 standard PDF fonts, which
+# is referenced rather than embedded (there is no Ghostscript on this machine, so
+# embedFonts() is not available). That is fine for working figures and for
+# journals that accept the standard 14; if a submission demands full embedding,
+# set options(myc.fig.cairo = TRUE) to switch back and check the spacing at final
+# size, or embed once in Illustrator on the way out. Every string in this project
+# is ASCII by the coding rules, so nothing needs cairo's UTF-8 handling.
 save_panel <- function(plot, filename, width = fig_w[["double"]], height = 100,
                        units = "mm") {
+  dev <- if (isTRUE(getOption("myc.fig.cairo"))) grDevices::cairo_pdf else
+    function(filename, width, height, ...)
+      grDevices::pdf(file = filename, width = width, height = height,
+                     family = "Helvetica", useDingbats = FALSE)
   ggplot2::ggsave(filename = filename, plot = plot,
-                  width = width, height = height, units = units,
-                  device = grDevices::cairo_pdf)
+                  width = width, height = height, units = units, device = dev)
   message("wrote ", filename, "  (", width, "x", height, " ", units, ")")
   invisible(filename)
 }
