@@ -113,8 +113,8 @@ method_cols <- c("fgsea" = "#54278F", "both" = "#9E9AC8", "gsva" = "#DADAEB")
 mito_class_cols <- c("mitocarta_proper"  = "#D73027",
                      "construction_MITO" = "#FC8D59",
                      "non_mito"          = "#4575B4")
-mito_class_labels <- c("mitocarta_proper"  = "MitoCarta / OXPHOS",
-                       "construction_MITO" = "mitochondrial by construction",
+mito_class_labels <- c("mitocarta_proper"  = "MitoCarta",
+                       "construction_MITO" = "curated (with mitochondria)",
                        "non_mito"          = "non-mitochondrial")
 
 # The rule itself, so the three panels that need it (the library composition, the

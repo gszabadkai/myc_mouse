@@ -37,8 +37,12 @@ group_cols <- c("6W_neg"  = "#0072B2", "12W_neg" = "#56B4E9",
 # key and a group key cannot disagree about which hue means Myc+.
 geno_cols   <- c(neg = "#0072B2", pos = "#D55E00")   # WT blue, Myc+ vermilion
 geno_labels <- c(neg = "WT", pos = "Myc+")
-group_labels <- c("6W_neg" = "6W WT", "12W_neg" = "12W WT",
-                  "6W_pos" = "6W Myc+", "12W_pos" = "12W Myc+")
+# Drawn labels are the author's own names for the four groups (2026-07-31), not a
+# prettified version of them: the Results text, the analysis objects and the
+# figures now all say 6W_wt / 12W_wt / 6W_myc / 12W_myc. The keys stay the
+# on-disk factor levels (neg/pos), because that is what the data carry.
+group_labels <- c("6W_neg" = "6W_wt", "12W_neg" = "12W_wt",
+                  "6W_pos" = "6W_myc", "12W_pos" = "12W_myc")
 
 # --- Nature figure widths (mm); the real size control is physical size -------
 fig_w <- c(single = 89, onehalf = 120, double = 183)

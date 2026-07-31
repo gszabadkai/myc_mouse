@@ -26,12 +26,16 @@ Narrative source: Google Doc `MK_Myc_Paper`, tab **Gyorgy Writing**.
 Set once in `figures/theme_myc.R`, Okabe-Ito, and used **wherever individual sample values are
 shown**:
 
-| group | key on disk | colour |
+| drawn label | key on disk | colour |
 |---|---|---|
-| 6W wt | `6W_neg` | `#0072B2` dark blue |
-| 12W wt | `12W_neg` | `#56B4E9` sky blue |
-| 6W myc | `6W_pos` | `#D55E00` vermilion |
-| 12W myc | `12W_pos` | `#E69F00` orange |
+| `6W_wt` | `6W_neg` | `#0072B2` dark blue |
+| `12W_wt` | `12W_neg` | `#56B4E9` sky blue |
+| `6W_myc` | `6W_pos` | `#D55E00` vermilion |
+| `12W_myc` | `12W_pos` | `#E69F00` orange |
+
+The **drawn labels are the author's own names** (fixed 2026-07-31): `group_labels` in
+`theme_myc.R` prints `6W_wt` / `12W_wt` / `6W_myc` / `12W_myc`, not a prettified `6W WT`. The keys
+stay the on-disk factor levels (`neg`/`pos`) because that is what the data carry.
 
 Hue is genotype, lightness is age — and lightness runs the **opposite** way to the palette this
 replaced (6W is now the saturated end). `geno_cols` is the 6W pair, so a two-level genotype key and
@@ -142,9 +146,8 @@ and the key that colours it is what says they are MitoCarta subsets *by build*. 
 **mitochondrial metabolism & dynamics** (the 37 remaining MitoCarta pathways: amino-acid, lipid,
 carbohydrate and one-carbon metabolism, fission and surveillance, chaperones and proteases,
 transport, calcium and signalling), `TF target lanes` → **TF target sets**, `Hallmark comparator` →
-**MSigDB Hallmarks**. The key moved up and left: it cannot go *inside* — two rows of it are ~70 mm
-wide against a 33 mm facet — so top-left in two rows is the cheapest placement, costing two lines
-instead of three.
+**MSigDB Hallmarks**. (The key's placement was settled in the second review below: one line, under
+the plot.)
 
 **Fig. S1C's labels are placed, not repelled.** Five of the seven anchors sit in the left third of
 the ranking and a label is ~200 rank units wide, so any left-hand column puts one label across the
@@ -157,6 +160,31 @@ Content changes: `Myc lane x MitoCarta` → **Myc regulon (MitoCarta subset)**; 
 and the biogenesis anchor moved from `MITOCARTA_MITOCHONDRIAL_RIBOSOME` to
 `MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA` so the label **mitochondrial biogenesis** names the set it
 points at rather than one member of the programme.
+
+### Author's second review, same day — four more
+
+**Group labels are the author's names, project-wide.** `group_labels` now prints `6W_wt`,
+`12W_wt`, `6W_myc`, `12W_myc`. One edit in `theme_myc.R`, so it lands on every panel and on the four
+assembled figures at their next rebuild.
+
+**The three mitochondrial classes are renamed, also project-wide** (`mito_class_labels`):
+**MitoCarta** / **curated (with mitochondria)** / **non-mitochondrial**. Shorter, and the shortening
+is what lets Fig. 1D's key fit **one line under the plot** — it costs one line of height instead of
+three and cannot collide with a point. Fig. S1B and Fig. S1C pick the names up automatically.
+
+**Fig. 1C's break is off the ticks and both segments are cropped to their data.** The first version
+put the break mark on the `+20` tick, which read as a fault rather than a break. Now the main
+segment runs to +22.6 with its break in the empty run past `+20`, and the outlier segment is 3 units
+wide with its tick at `+44` and its break to the left of it. The panel is 54 mm tall, not 42: with
+`coord_fixed` the height is what makes the plot fill 89 mm of width, and shortening the *axis* (52
+drawn units against 69.5 unbroken) is what the break bought.
+
+**Fig. S1C's labels are under the curve, close to their points, in three lanes** (y = 0.80, 0.60,
+0.44). The lanes are the whole trick and the arithmetic is in the script: a leader dropping to a
+deeper lane crosses a shallower label unless that label *ends before the next anchor begins*, so
+alternating lanes reduces the constraint to "each label is narrower than the gap to the next
+anchor" — which is why three labels are wrapped over two lines and one is right-aligned. The
+wrapping is load-bearing, not decoration. `stopifnot` checks every label sits below its own point.
 
 **Fig. 1C has a broken x axis.** One 6-week Myc+ animal sits at PC1 = +44.3 while the next highest
 is +19.1, so an unbroken axis spends a third of the width on nothing. Built as two panels rather
@@ -393,7 +421,7 @@ Myc fork" from "Myc drives biogenesis generically".
 Deferred until the narrative fixes the numbering. Then a `figures/figure*_overview.R` composes
 the signed-off panels with patchwork `tag_levels = "A"` and this table records the mapping. All
 but one panel is **single column (89 mm)** wide (Fig. S1D is 50 mm), so the layout is
-essentially unconstrained. Heights as built: 1B 84, 1C 45, 1D 70, S1A 52, S1B 52, S1C 56,
+essentially unconstrained. Heights as built: 1B 84, 1C 54, 1D 68, S1A 52, S1B 52, S1C 56,
 S1D 52 mm — so Figure 1's three built panels stack in 199 mm and Supplementary 1's four in 212,
 both about one page column.
 

@@ -119,7 +119,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(NES, programme, colour = class3)) +
                               expand = ggplot2::expansion(mult = 0.05)) +
   ggplot2::labs(x = "fGSEA normalised enrichment score", y = NULL, colour = NULL) +
   ggplot2::guides(colour = ggplot2::guide_legend(
-    nrow = 2, byrow = TRUE, override.aes = list(size = 1.5, alpha = 1))) +
+    nrow = 1, override.aes = list(size = 1.5, alpha = 1))) +
   ggplot2::coord_cartesian(xlim = RNG, clip = "off") +
   theme_panel(base_size = 6) +
   ggplot2::theme(
@@ -129,12 +129,10 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(NES, programme, colour = class3)) +
     panel.spacing.x    = ggplot2::unit(2.4, "mm"),
     strip.text         = ggplot2::element_text(size = 6, margin = ggplot2::margin(0, 0, 1, 0)),
     axis.text.y        = ggplot2::element_text(margin = ggplot2::margin(r = 0.6, unit = "mm")),
-    # The key moves up and left (author, 2026-07-31). It cannot go INSIDE: two
-    # rows of it are ~70 mm wide against a 33 mm facet, so anywhere in the plot
-    # region it would cover the top rows' points. Top-left in two rows is the
-    # cheapest place that does not - it costs 2 lines of height instead of 3, and
-    # it reads before the data rather than after them.
-    legend.position       = "top",
+    # One row, under the plot (author, 2026-07-31). The short class names fit
+    # 89 mm on a single line, which is what makes this possible: it costs one
+    # line of height instead of three, and it cannot collide with any point.
+    legend.position       = "bottom",
     legend.justification  = c(0, 0.5),
     legend.location       = "plot",      # flush with the panel edge, not the axis
     legend.key            = ggplot2::element_blank(),

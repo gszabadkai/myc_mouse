@@ -85,9 +85,14 @@ r_gm   <- suppressWarnings(stats::cor(dat$PC1, ax$global_mean))
 # picture and not the panel shape. What the break costs is that a distance read
 # ACROSS the gap is no longer meaningful; the outlier's PC1 value is on its own
 # tick, and the legend block gives it.
-YL   <- range(dat$PC2) + c(-1, 1) * 0.06 * diff(range(dat$PC2))
-XMAIN <- c(-27, 21)
-XOUT  <- c(41.5, 47)
+# Both segments are cropped close to the data they hold, so the axis is no longer
+# than it has to be, and each break mark sits in the empty run PAST the last tick
+# rather than on top of it (author, 2026-07-31): the main segment's last tick is
+# +20 and its break sits at ~22, the outlier segment's tick is +45 and its break
+# sits at ~43.5.
+YL    <- range(dat$PC2) + c(-1, 1) * 0.05 * diff(range(dat$PC2))
+XMAIN <- c(-26.5, 22.6)
+XOUT  <- c(42.6, 45.6)
 stopifnot(sum(dat$PC1 > XMAIN[2]) == 1L,               # exactly one animal is out
           all(dat$PC1[dat$PC1 > XMAIN[2]] > XOUT[1]),
           all(dat$PC1[dat$PC1 < XMAIN[2]] > XMAIN[1]))
@@ -132,7 +137,7 @@ XLAB <- sprintf("PC1 (%.0f%%)", 100 * vfr[1])
 # the two slashes that say "this axis is broken" -- drawn on the axis line at the
 # facing edge of each segment, in data units, with clip off
 break_mark <- function(x0, dir) {
-  h <- 0.045 * diff(YL); w <- 0.7
+  h <- 0.05 * diff(YL); w <- 0.55
   ggplot2::annotate("segment",
                     x = x0 + dir * c(0, w), xend = x0 + dir * c(w, 2 * w),
                     y = YL[1] - h, yend = YL[1] + h,
@@ -145,16 +150,18 @@ p_main <- ggplot2::ggplot(dat[in_main, ], ggplot2::aes(PC1, PC2, colour = group)
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.2, colour = "grey88") +
   pca_layer(XMAIN, seq(-20, 20, by = 10),
             dat[in_main, ], cen[cen$PC1 <= XMAIN[2], ]) +
-  break_mark(XMAIN[2] - 1.4, +1) +
-  ggplot2::labs(x = XLAB, y = sprintf("PC2 (%.0f%%)", 100 * vfr[2]), colour = NULL)
+  break_mark(XMAIN[2] - 1.5, +1) +
+  ggplot2::labs(x = XLAB, y = sprintf("PC2 (%.0f%%)", 100 * vfr[2]), colour = NULL) +
+  ggplot2::theme(plot.margin = ggplot2::margin(2, 0.5, 2, 2, "mm"))
 
 p_out <- ggplot2::ggplot(dat[!in_main, ], ggplot2::aes(PC1, PC2, colour = group)) +
-  pca_layer(XOUT, 45, dat[!in_main, ], cen[cen$PC1 > XMAIN[2], ], key = FALSE) +
-  break_mark(XOUT[1] + 1.4, -1) +
+  pca_layer(XOUT, 44, dat[!in_main, ], cen[cen$PC1 > XMAIN[2], ], key = FALSE) +
+  break_mark(XOUT[1] + 1.5, -1) +
   ggplot2::labs(x = NULL, y = NULL, colour = NULL) +
   ggplot2::theme(axis.text.y  = ggplot2::element_blank(),
                  axis.ticks.y = ggplot2::element_blank(),
-                 axis.line.y  = ggplot2::element_blank())
+                 axis.line.y  = ggplot2::element_blank(),
+                 plot.margin  = ggplot2::margin(2, 2, 2, 0.5, "mm"))
 
 # widths track the two x spans, so a PC1 unit is the same length on both sides of
 # the gap; the guide is collected so the key is drawn once
@@ -203,7 +210,7 @@ LEGEND <- panel_legend(
 # Height is set by the fixed aspect, not chosen: at 89 mm wide the drawn PC1 span
 # fixes the unit size and the PC2 span of ~27 units then fixes the panel height.
 # Anything taller is dead space between the axis title and the key.
-save_panel_p(p, "fig1_pathway_pca", width = fig_w[["single"]], height = 45)
+save_panel_p(p, "fig1_pathway_pca", width = fig_w[["single"]], height = 54)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

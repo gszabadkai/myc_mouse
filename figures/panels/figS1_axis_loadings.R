@@ -89,32 +89,52 @@ redox_ref <- stats::median(dat$abs_load[dat$set %in% redox_sets])
 # curve to the redox control. Short labels because the panel is 89 mm; the exact
 # set names are in the legend block.
 #
-# WHERE THE LABELS GO, and why it is forced rather than chosen. Five of the seven
-# anchors sit in the left third of the ranking, and a label is ~200 rank units
-# wide, so any left-hand column puts one label across the next label's leader --
-# which is what the first version did. The one region that is provably free is
-# the wedge ABOVE the curve on the right: the curve falls monotonically, so a
-# straight line from a high-rank anchor to a point up and to the right can never
-# re-cross it. So all seven labels are right-aligned at the right edge in RANK
-# ORDER, and because both the anchors and the label slots are monotone in y the
-# leaders fan out without crossing each other or any label box. Positions are in
-# data units and repel is used only to draw the leaders (force = 0 leaves the
-# given position alone).
+# WHERE THE LABELS GO (author, 2026-07-31: under the curve, as close to the point
+# as possible). Each label sits just below and to the right of its own point with
+# a short leader, in TWO LANES -- shallow at y = 0.80, deep at y = 0.60 --
+# alternating down the ranking.
+#
+# The two lanes are what make it work, and the arithmetic is worth writing down
+# because it is the whole reason the first two attempts failed. A leader that
+# drops to the deep lane passes through the shallow lane's band, so it crosses a
+# shallow label unless that label ENDS before the next anchor begins. Alternating
+# means only the immediately following anchor is at risk, so the condition is
+# just: each shallow label is narrower than the gap to the next anchor (107, 80
+# and 146 rank units here), and each deep label is narrower than the gap to the
+# next DEEP anchor (122 and 214). That is why three labels are set over two or
+# three lines -- the wrapping is load-bearing, not decoration. The redox control
+# gets its own depth because by rank 585 the curve has fallen past both lanes.
+#
+# Positions are in data units so they move with the data, and repel is used only
+# to draw the leaders (force = 0 leaves the given position alone).
 lab_spec <- tibble::tribble(
-  ~set,                                    ~label,                          ~y,
-  "TFT_MYC_GRAY_BA_LE_MITO",               "Myc regulon (MitoCarta subset)", 1.05,
-  "MITOCARTA_OXPHOS",                      "OXPHOS",                         0.98,
-  "METABRIC_MB2_HI_CV_GROUP1",             "human BRCA-Myc (MB2)",           0.91,
-  "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA", "mitochondrial biogenesis",       0.84,
-  "MYC_felsher_integrative_signature",     "Myc signature (Felsher)",        0.77,
-  "PROLIF_E2F_HALLMARK",                   "E2F targets",                    0.70,
-  "GS_METAB_GLUTATHIONE",                  "glutathione (redox)",            0.63)
+  ~set,                                    ~label,                       ~x,  ~y,   ~hj,
+  "TFT_MYC_GRAY_BA_LE_MITO",               "Myc regulon\n(mito subset)",  16, 0.60,  0,
+  "MITOCARTA_OXPHOS",                      "OXPHOS",                     122, 0.80,  1,
+  "METABRIC_MB2_HI_CV_GROUP1",             "human BRCA-Myc (MB2)",       164, 0.44,  0,
+  "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA", "mitochondrial\nbiogenesis",  244, 0.60,  0,
+  "MYC_felsher_integrative_signature",     "Myc signature\n(Felsher)",   312, 0.78,  0,
+  "PROLIF_E2F_HALLMARK",                   "E2F targets",                458, 0.60,  0,
+  "GS_METAB_GLUTATHIONE",                  "glutathione (redox)",        594, 0.44,  0)
 stopifnot(all(lab_spec$set %in% dat$set))
 lab_df <- dplyr::inner_join(lab_spec, dat, by = "set") |>
   dplyr::arrange(rank) |>
-  dplyr::mutate(x = nrow(dat) - 5, nx = x - rank, ny = y - abs_load)
-# rank order must equal label order, or the fan crosses
-stopifnot(!is.unsorted(lab_df$rank), !is.unsorted(rev(lab_df$y)))
+  dplyr::mutate(nx = x - rank, ny = y - abs_load)
+# every label must sit below its own point, or the lane logic does not hold
+stopifnot(!is.unsorted(lab_df$rank), all(lab_df$y < lab_df$abs_load))
+
+# ggrepel takes one hjust per layer, so the one right-aligned label is its own
+# layer. Same parameters otherwise.
+lab_layer <- function(hj) {
+  d <- lab_df[lab_df$hj == hj, , drop = FALSE]
+  if (!nrow(d)) return(NULL)
+  ggrepel::geom_text_repel(
+    data = d, ggplot2::aes(rank, abs_load, label = label),
+    inherit.aes = FALSE, size = 1.75, colour = "grey15", segment.colour = "grey55",
+    segment.size = 0.15, min.segment.length = 0, box.padding = 0.08,
+    point.padding = 0.08, nudge_x = d$nx, nudge_y = d$ny, hjust = hj,
+    lineheight = 0.9, force = 0, force_pull = 0, max.overlaps = Inf, seed = 1)
+}
 
 # =============================================================================
 # THE PANEL
@@ -127,12 +147,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(rank, abs_load, colour = class3)) +
   ggplot2::geom_hline(yintercept = redox_ref, linewidth = 0.22,
                       linetype = "13", colour = "grey25") +
   ggplot2::geom_point(size = 0.5, alpha = 0.7, stroke = 0) +
-  ggrepel::geom_text_repel(
-    data = lab_df, ggplot2::aes(rank, abs_load, label = label),
-    inherit.aes = FALSE, size = 1.75, colour = "grey15", segment.colour = "grey55",
-    segment.size = 0.15, min.segment.length = 0, box.padding = 0.10,
-    point.padding = 0.10, nudge_x = lab_df$nx, nudge_y = lab_df$ny, hjust = 1,
-    force = 0, force_pull = 0, max.overlaps = Inf, seed = 1) +
+  lab_layer(0) + lab_layer(1) +
   ggplot2::scale_colour_manual(values = mito_class_cols, labels = mito_class_labels,
                                breaks = names(mito_class_cols)) +
   ggplot2::scale_x_continuous(
