@@ -117,6 +117,22 @@ mito_class_labels <- c("mitocarta_proper"  = "MitoCarta / OXPHOS",
                        "construction_MITO" = "mitochondrial by construction",
                        "non_mito"          = "non-mitochondrial")
 
+# The rule itself, so the three panels that need it (the library composition, the
+# axis loadings and the enrichment ranking) cannot each grow their own copy.
+# Verbatim script 37 (37:445-462); `category` is the library's category_primary.
+# Sets outside the library -- the fresh MSigDB Hallmark comparators in the fGSEA
+# ranking -- fall through to non_mito, which is a naming rule, not a judgement:
+# say so wherever they are drawn.
+mito_class3 <- function(set, category) {
+  category  <- ifelse(is.na(category), "", category)
+  name_mito <- grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set)
+  mito_defined <- category == "MitoCarta" | name_mito |
+    (category == "Metabolism" & grepl("OXPHOS|KREBS|TCA|ELECTRON|RESPIRAT", set))
+  ifelse(category == "MitoCarta", "mitocarta_proper",
+    ifelse(name_mito, "construction_MITO",
+      ifelse(mito_defined, "mitocarta_proper", "non_mito")))
+}
+
 # --- THE manuscript diverging fill -------------------------------------------
 # Author's specification (2026-07-30), to be used for every diverging quantity in
 # the manuscript: deep espresso brown at the negative extreme, stark white at
@@ -200,6 +216,126 @@ contrast_table <- function(y, timepoint, myc_status, group) {
     within_sd = w, row.names = NULL, stringsAsFactors = FALSE)
 }
 
+# --- the dominant pathway axis -----------------------------------------------
+# Figs. 1C and 1D are the sample scores and the per-set loadings of ONE principal
+# component analysis, so they must not each compute it. results/pathway_loading.rds
+# saves the per-set loadings and the variance percentages but NOT the score matrix
+# or the sample scores, so this rebuilds them -- verbatim script 37 PART 2 and
+# PART A2 (37:103-122, 37:221-222) -- and then proves the rebuild against the
+# analysis of record before returning anything.
+#
+# The quantifier is the LINEAR mean gene-wise z-score, not GSVA: script 36 made it
+# the method of record because its correlation IS average cross-gene covariance.
+# GSVA gives the same picture more weakly (PC1 68% against 77%).
+#
+# Deterministic -- no RNG, no permutation -- so a re-run cannot drift; what could
+# drift is the input, and that is what the assertions catch.
+pathway_axis <- function(gsva_path = here::here("results", "gsva_scores.rds"),
+                         ref_path  = here::here("results", "pathway_loading.rds")) {
+  require_fresher_than(ref_path)
+  gs <- readRDS(gsva_path)
+  pl <- readRDS(ref_path)
+
+  M_gsva <- gs$scores
+  expr   <- gs$expr_mat[, colnames(M_gsva), drop = FALSE]      # VST, genes x samples
+  sets   <- rownames(M_gsva)
+  pw     <- gs$pathways[intersect(names(gs$pathways), sets)]
+  stopifnot(identical(as.character(gs$sample_meta$sample), colnames(M_gsva)))
+
+  zg <- t(scale(t(expr)))
+  zg <- zg[is.finite(rowSums(zg)), , drop = FALSE]
+  M  <- t(vapply(sets, function(s) {
+    g <- intersect(pw[[s]], rownames(zg))
+    if (length(g) < 5L) rep(NA_real_, ncol(zg)) else colMeans(zg[g, , drop = FALSE])
+  }, numeric(ncol(zg))))
+  # a set counts only if it is scored in BOTH matrices, so the universe matches
+  keep <- intersect(rownames(M)[stats::complete.cases(M)],
+                    rownames(M_gsva)[stats::complete.cases(M_gsva)])
+  M <- M[keep, , drop = FALSE]
+
+  pc  <- stats::prcomp(t(M), center = TRUE, scale. = FALSE)
+  vfr <- pc$sdev^2 / sum(pc$sdev^2)
+  gm  <- colMeans(M)                                   # per-sample global mean
+  sc  <- pc$x
+  # orient PC1 to track the global mean, so "high" means "high everywhere"
+  if (suppressWarnings(stats::cor(sc[, 1], gm)) < 0) sc[, 1] <- -sc[, 1]
+  lam <- stats::setNames(as.numeric(suppressWarnings(stats::cor(t(M), sc[, 1]))),
+                         rownames(M))
+
+  # --- prove the rebuild against script 37 ------------------------------------
+  ref_v <- pl$sample_pca_var[pl$sample_pca_var$space == "pathway_scores_884", ]
+  mito  <- intersect(gs$set_meta$set_name[gs$set_meta$category_primary == "MitoCarta"], keep)
+  ox    <- grep("OXPHOS|COMPLEX_[IV]|_SUBUNITS|ASSEMBLY_FACTORS|ELECTRON_CARRIERS|CRISTAE",
+                mito, value = TRUE)
+  ox_gate <- suppressWarnings(stats::cor(colMeans(M[ox, , drop = FALSE]), gm))
+  lm_ref  <- pl$loading_movement
+  conc    <- suppressWarnings(stats::cor(lam[lm_ref$set], lm_ref$lambda_design))
+  stopifnot(
+    length(keep) == pl$n_sets,                                    # 885 sets
+    nrow(ref_v) == 1L,
+    max(abs(100 * vfr[1:3] -
+            c(ref_v$pc1_pct, ref_v$pc2_pct, ref_v$pc3_pct))) < 1e-6,
+    abs(ox_gate - pl$ox_gate) < 1e-6,
+    # the raw axis and script 37's design-RESIDUAL axis are different objects;
+    # this is a concordance floor, not an identity (observed 0.968)
+    conc >= 0.9)
+
+  list(M = M, scores = sc, var_frac = vfr, loading = lam, global_mean = gm,
+       ox_gate = ox_gate, concordance_with_residual_axis = conc,
+       sample_meta = gs$sample_meta, set_meta = gs$set_meta, ref = pl)
+}
+
+# --- programme grouping for the enrichment ranking ---------------------------
+# Fig. S1C's y axis. Declared here rather than inline because it IS an encoding:
+# it decides what the reader sees as "a programme", and the sentence it supports
+# names the tiers. Two rules keep it honest.
+#
+# (1) OXPHOS and mitochondrial biogenesis are split by script 37's OWN patterns
+#     (37:137-138), so the panel and the loading analysis mean the same thing by
+#     the words.
+# (2) Every set whose membership is MitoCarta intersected with something else --
+#     the Gray _MITO TF lanes, and the biogenesis-discrimination and
+#     biogenesis x apoptosis constructs -- goes into ONE row, because they are
+#     mitochondrial by build and cannot be evidence that a mitochondrial
+#     programme was independently detected. Hiding them would flatter the result;
+#     spreading them across the other rows would inflate every one of them.
+#
+# `category` is the fGSEA table's category column (the GMT file stem, e.g.
+# "01_mitocarta", plus "hallmark_msigdb"), which is what the consumer has.
+programme_levels <- c(
+  "mito-defined by construction", "mitochondrial biogenesis", "OXPHOS", "TCA cycle",
+  "mitochondrial, other", "Myc targets (curated)", "E2F / cell cycle",
+  "biosynthetic metabolism", "metabolism, other", "apoptosis",
+  "TF target lanes", "mammary development", "Hallmark comparator")
+
+programme_group <- function(set, category) {
+  OX   <- "OXPHOS|COMPLEX_[IV]|_SUBUNITS|ASSEMBLY_FACTORS|ELECTRON_CARRIERS|CRISTAE"
+  BIOG <- "RIBOSOME|CENTRAL_DOGMA|MT_TRNA|MT_RRNA|MTRNA|MTDNA|IMPORT|TRANSLATION"
+  BIOSYN <- paste0("NUCLEOTIDE|PURINE|PYRIMIDINE|AMINO|SER_GLY|BCAA|ONE_CARBON|",
+                   "PPP|PENTOSE|POLYAMINE|CHOLESTEROL|MEVALONATE|LIPID|FATTY|GLYCOLYSIS")
+  constructed <- grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set) |
+    category %in% c("07_biogenesis_discrimination",
+                    "09_biogenesis_apoptosis_intersections")
+  g <- ifelse(
+    constructed, "mito-defined by construction",
+    ifelse(category == "01_mitocarta",
+           ifelse(grepl(BIOG, set), "mitochondrial biogenesis",
+                  ifelse(grepl(OX, set), "OXPHOS", "mitochondrial, other")),
+    ifelse(category == "04_metabolism",
+           ifelse(grepl("OXPHOS|ELECTRON|RESPIRAT", set), "OXPHOS",
+                  ifelse(grepl("KREBS|_TCA", set), "TCA cycle",
+                         ifelse(grepl(BIOSYN, set), "biosynthetic metabolism",
+                                "metabolism, other"))),
+    ifelse(category == "02_myc_signatures",      "Myc targets (curated)",
+    ifelse(category == "05_proliferation",       "E2F / cell cycle",
+    ifelse(category == "06_tf_targets",          "TF target lanes",
+    ifelse(category == "03_mammary_development", "mammary development",
+    ifelse(category == "08_apoptosis",           "apoptosis",
+    ifelse(category == "hallmark_msigdb",        "Hallmark comparator",
+           NA_character_)))))))))
+  factor(g, levels = programme_levels)
+}
+
 # --- export ------------------------------------------------------------------
 # Wraps theme_myc.R's save_panel() so a panel script never needs to know the
 # output directory, and so myc.fig.nosave is honoured in ONE place rather than
@@ -244,6 +380,20 @@ legend_md <- function(x, slug = NULL) {
     "**Detail.**", bul(x$detail), "",
     "**Bounds.**", bul(x$bounds), "",
     if (!is.null(x$source)) c("**Source.**", bul(x$source), "") else NULL)
+}
+
+# Panel filenames stopped carrying the slot letter on 2026-07-31, so name order is
+# no longer figure order; legends.md is ordered by the slot each block declares
+# instead. Main figures before supplementary, then number, then letter -- the
+# order a reader meets them in.
+slug_slot_order <- function(slugs, legends) {
+  slot <- vapply(slugs, function(s) legends[[s]]$slot, character(1))
+  key  <- gsub("[^A-Z0-9]", "", toupper(slot))          # "Fig. S1A" -> "FIGS1A"
+  supp <- grepl("^FIGS", key)
+  rest <- sub("^FIGS?", "", key)
+  num  <- suppressWarnings(as.integer(sub("^([0-9]+).*$", "\\1", rest)))
+  let  <- sub("^[0-9]+", "", rest)
+  slugs[order(supp, num, let, slugs)]
 }
 
 print.panel_legend <- function(x, ...) {

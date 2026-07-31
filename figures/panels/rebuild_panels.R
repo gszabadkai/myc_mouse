@@ -120,7 +120,8 @@ if (!dry_run && any(have)) {
     "under the publication rule the figure carries data, axes and a key, and every",
     "explanation lives in the legend.",
     "")
-  for (s in slugs[have]) md <- c(md, legend_md(legends[[s]], slug = s), "")
+  for (s in slug_slot_order(slugs[have], legends[have]))
+    md <- c(md, legend_md(legends[[s]], slug = s), "")
   writeLines(md, file.path(out_dir, "legends.md"))
   cat("\n  legends.md   ", sum(have), " block(s) -> ",
       file.path("outputs", "figures", "panels", "legends.md"), "\n", sep = "")

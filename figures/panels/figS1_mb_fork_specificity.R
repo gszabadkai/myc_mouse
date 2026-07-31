@@ -1,7 +1,13 @@
 # =============================================================================
-# figS1C_mb_fork_specificity.R -- is the human resemblance MYC-specific, or just
+# figS1_mb_fork_specificity.R -- is the human resemblance MYC-specific, or just
 # mitochondrial biogenesis?
 # -----------------------------------------------------------------------------
+# SLOT: Fig. S1D (was S1C until 2026-07-31). It is not cited in the Results yet
+# -- the Human BRCA-MYC row it supports is drawn but unwritten, and paragraph 2's
+# partial-correlation sentence is where it will land -- so it rolled down to make
+# room for the enrichment ranking that paragraph 2 does cite. Filenames no longer
+# carry the slot letter; figures/panels/PANELS.md is the slug -> slot map.
+#
 # SUPPORTS the Human BRCA-MYC row of Fig. 1B. That row says the Myc+ gland
 # resembles the MB2 upper fork of the human breast-cancer switch. This panel is
 # the control that says whether the resemblance is to the MYC arm SPECIFICALLY.
@@ -33,7 +39,7 @@
 #
 # Input:  results/gsva_scores.rds    (script 15 -- per-sample scores)
 #         results/ap7_mb_fork.rds    (script 18 -- assertion only; see below)
-# Output: outputs/figures/panels/figS1C_mb_fork_specificity.pdf
+# Output: outputs/figures/panels/figS1_mb_fork_specificity.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
@@ -136,7 +142,7 @@ f  <- function(x) sprintf("%+.2f", x)
 gm <- colMeans(scores)
 
 LEGEND <- panel_legend(
-  slot = "Fig. S1C",
+  slot = "Fig. S1D",
   what = paste0(
     "Specificity control for the human breast-cancer resemblance of Fig. 1B. ",
     "Difference between the per-sample GSVA scores for the two upper forks of the ",
@@ -172,7 +178,7 @@ LEGEND <- panel_legend(
     "Contrast definition and the AP7 hypothesis: scripts/18_ap7_mb_fork_projection.R:96-106; earlier form of this panel, outputs/ap7/mb2_over_mb1_boxplot.pdf",
     "Menegollo, Bentham et al., Cancer Res 2024 (CAN-23-3172), the analytical companion paper"))
 
-save_panel_p(p, "figS1C_mb_fork_specificity", width = 50, height = 52)
+save_panel_p(p, "figS1_mb_fork_specificity", width = 50, height = 52)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

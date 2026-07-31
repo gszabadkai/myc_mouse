@@ -1,21 +1,26 @@
 # =============================================================================
-# fig1B_myc_teb_proliferation.R -- what Myc does at each age, and what the
+# fig1_myc_teb_proliferation.R -- what Myc does at each age, and what the
 # gland does over time
 # -----------------------------------------------------------------------------
-# WAS Fig. 1C, IS NOW Fig. 1B (author, 2026-07-30). The cell-state panel that
-# held the 1B slot plotted the same GSVA z-scores as this one, one lens further
-# back, and was dropped as redundant; its 2x2 group-mean view is kept in this
-# script's sandbox block so nothing is lost.
+# SLOT: Fig. 1B. Filenames no longer carry the slot letter (author, 2026-07-31);
+# figures/panels/PANELS.md is the slug -> slot map, so a renumber is a one-line
+# edit there. WAS Fig. 1C before 2026-07-30: the cell-state panel that held the
+# 1B slot plotted the same GSVA z-scores as this one, one lens further back, and
+# was dropped as redundant; its 2x2 group-mean view is kept in this script's
+# sandbox block so nothing is lost.
 #
 # SUPPORTS (Results, "Myc drives early breast tumourigenesis by inducing OXPHOS
-# and biosynthetic pathways", paragraph 1):
-#   "an endogenous Myc program contributed to the pubertal TEB state in WT
-#    animals, promoting proliferation (Fig. 1C), evidenced by the reduction of
-#    the canonical Myc, TEB and proliferation signatures in the adult stage
-#    (WT 6W -> 12W). The addition of the Myc transgene amplified the TEB and
-#    proliferation effects and suppressed the BMYO lineage in favor of
-#    differentiation to LHS. However, the Myc+ 6W -> 12W TEB-proliferation
-#    trajectory also showed a reduction similar to the WT trend"
+# and biosynthetic pathways", paragraph 1, as rewritten 2026-07-31):
+#   "a distinct transition from TEB to ductal states was observed at 12W,
+#    representing a clear divergence from the pubertal proliferative phenotype
+#    (Fig. 1B). Importantly, an endogenous Myc program contributed to the
+#    pubertal TEB state in WT animals, promoting proliferation, evidenced by the
+#    reduction of the canonical Myc, TEB and proliferation signatures in the
+#    adult stage (WT 6W -> 12W). Transgenic Myc activation amplified the TEB and
+#    proliferation state, suppressed the BMYO lineage, and strongly promoted a
+#    lineage suppressed (LE) de-differentiation pattern of the luminal states.
+#    This effect diminished in both the WT and Myc+ 6W -> 12W trajectory,
+#    suggesting an endogenous suppression of the Myc program."
 #
 # WHAT CHANGED, AND WHY (author, 2026-07-30)
 #
@@ -78,7 +83,7 @@
 # Input:  results/myc_endogenous_amplification.rds  (script 27 -- $prog_stats, $prog_wide)
 #         results/dev_program_myc_integration.rds   (script 26 -- $annot, $state_stats)
 #         results/gsva_scores.rds                   (script 15 -- per-sample scores)
-# Output: outputs/figures/panels/fig1B_myc_teb_proliferation.pdf
+# Output: outputs/figures/panels/fig1_myc_teb_proliferation.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
@@ -142,7 +147,7 @@ lane_mat <- vapply(lanes, function(s) composite_of(scores, s), numeric(ncol(scor
 # +1.59 p = 0.005) and is reported in the legend block. Drawing the upper fork
 # alone is the right call HERE because this row is a resemblance statement -- how
 # far the mouse tissue sits toward a human MYC-driven state -- not a claim about
-# where a switch is thrown. Fig. S1C carries the switch, and the specificity test
+# where a switch is thrown. Fig. S1D carries the switch, and the specificity test
 # against MB1 that goes with it.
 mb2_uf <- "METABRIC_MB2_HI_CV_GROUP1"
 mb2_lf <- "METABRIC_MB2_HI_CV_GROUP2"
@@ -301,7 +306,7 @@ fork_alt <- contrast_table(mb2_fork, sample_meta$timepoint,
 LEGEND <- panel_legend(
   slot = "Fig. 1B",
   what = paste0(
-    "Effect of each of the four contrasts of Fig. S1B on the canonical Myc and ",
+    "Effect of each of the four contrasts of Fig. S1A on the canonical Myc and ",
     "proliferation signatures and on the lineage-identity axes, in units of each ",
     "programme's own within-group standard deviation. Dot position and dot fill ",
     "are the same quantity."),
@@ -350,7 +355,7 @@ LEGEND <- panel_legend(
     "The two contrast families are not equally powered and must not be reported as if they were. Each genotype contrast is 6 versus 6 balanced within batch and is clean. Each development contrast is 6 versus 6 confounded with batch (batch = timepoint), and none of them is significant except the Myc+ TEB trajectory - they are a consistent direction across programmes, described and not claimed.",
     "THIS PANEL IS NOT THE ATTENUATION RESULT. On the Myc programme the genotype effect is the same size at both ages, so in cohort-relative GSVA space there is no attenuation to see; the attenuation result is a DESeq2 effect-size result (the Myc effect rescales by about 0.55 between the two ages, scripts 29-31 and 40) and is measured on a different ruler. What attenuates in this panel is the developmental arm, not the Myc arm.",
     "GSVA is cohort-relative, so an effect is a difference in position within these 24 samples. It cannot be read as an absolute change in programme activity, and the four contrasts are internally comparable but not comparable with the DESeq2 log fold changes.",
-    sprintf("The Human BRCA-MYC row is a RESEMBLANCE, not a claim that this tissue is that tumour: it says where the mouse samples sit on a switch defined in human data, mapped to mouse orthologs. It is a single GSVA composite over %d mouse-mapped genes (within-group SD %.2f). The upper fork scored on its own gives a stronger number (%s at 6 weeks, p = %.3f; %s at 12, p = %.4f), but the project convention for these anticorrelated poles is the contrast (scripts/18) and that is what is drawn. Its correlation with the global common-mode axis is 0.94, so the same bound as the LE rows applies, harder. And this row does NOT by itself separate 'Myc drives the Myc fork' from 'Myc drives mitochondrial biogenesis generically': the non-Myc upper fork MB1 rises just as much (+1.73 at 6 weeks, +1.34 at 12), and the two scores correlate 0.98. Fig. S1C carries that specificity test.",
+    sprintf("The Human BRCA-MYC row is a RESEMBLANCE, not a claim that this tissue is that tumour: it says where the mouse samples sit on a switch defined in human data, mapped to mouse orthologs. It is a single GSVA composite over %d mouse-mapped genes (within-group SD %.2f). The upper fork scored on its own gives a stronger number (%s at 6 weeks, p = %.3f; %s at 12, p = %.4f), but the project convention for these anticorrelated poles is the contrast (scripts/18) and that is what is drawn. Its correlation with the global common-mode axis is 0.94, so the same bound as the LE rows applies, harder. And this row does NOT by itself separate 'Myc drives the Myc fork' from 'Myc drives mitochondrial biogenesis generically': the non-Myc upper fork MB1 rises just as much (+1.73 at 6 weeks, +1.34 at 12), and the two scores correlate 0.98. Fig. S1D carries that specificity test.",
             length(gsva$pathways[[mb2_uf]]),
             unique(tab$within_sd[tab$key == "mb2_uf"]),
             f(fork_alt$effect[fork_alt$contrast == "myc_6W"]),
@@ -374,7 +379,7 @@ LEGEND <- panel_legend(
 # exactly that. At this width 4.7 SD spans about 15 mm per column, so a -0.6 SD
 # dot sits only 2 mm off the zero line -- which is why the fill carries the
 # magnitude as well. Type is set for the final size, not the preview.
-save_panel_p(p, "fig1B_myc_teb_proliferation",
+save_panel_p(p, "fig1_myc_teb_proliferation",
              width = fig_w[["single"]], height = 84)
 
 # =============================================================================

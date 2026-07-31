@@ -1,12 +1,19 @@
 # =============================================================================
-# figS1A_geneset_library.R -- composition of the custom gene-set library
+# figS1_geneset_library.R -- composition of the custom gene-set library
 # -----------------------------------------------------------------------------
+# SLOT: Fig. S1B (was S1A until 2026-07-31; paragraph 1 as rewritten cites the
+# design schematic first, so S1A and S1B swapped). Filenames no longer carry the
+# slot letter -- figures/panels/PANELS.md is the slug -> slot map.
+#
 # SUPPORTS (Results, "Myc drives early breast tumourigenesis by inducing OXPHOS
-# and biosynthetic pathways", paragraph 1):
-#   "we constructed and quantified (by effect size, ssGSVA and fGSEA) a large
-#    custom library of ~900 genesets, covering MYC identity (signatures),
-#    oncogenic and cell fate related signalling, bioenergetic and biosynthetic
-#    metabolic pathways (Fig. S1A)"
+# and biosynthetic pathways"), TWO sentences, one in each paragraph:
+#   p1: "This analysis used fGSEA ranking and GSVA scoring based on
+#        custom-curated genesets (Fig. S1B), derived from previous single-cell
+#        RNA-seq datasets (see detailed list in Methods)."
+#   p2: "we extended the custom library to a total of 986 genesets (Fig. S1B,
+#        see Methods) for comprehensive coverage of Myc identity signatures,
+#        cell fate, oncogenic signaling, as well as bioenergetic, biosynthetic
+#        metabolic pathways and associated transcription factor (TF) activities."
 #
 # The panel is the library's own provenance record, read straight off the v1.0
 # snapshot -- CLAUDE.md: consume data/genesets_from_library/, never rebuild the
@@ -40,7 +47,7 @@
 #
 # Input:  data/genesets_from_library/provenance_table.csv   (v1.0 snapshot)
 #         results/pathway_loading.rds                       (script 37 -- assertion only)
-# Output: outputs/figures/panels/figS1A_geneset_library.pdf
+# Output: outputs/figures/panels/figS1_geneset_library.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
@@ -56,20 +63,14 @@ stopifnot(all(c("set_name", "category_primary", "method",
                 "size_mouse", "fgsea_eligible") %in% names(prov)))
 
 # --- the mitochondrial classification, script 37's rule ----------------------
+# mito_class3() is that rule, declared once in _panel_common.R because the axis
+# loadings (Fig. 1D) and the enrichment ranking (Fig. S1C) colour by it too.
 lib <- prov |>
   dplyr::transmute(
-    set       = set_name,
-    category  = dplyr::coalesce(category_primary, ""),
-    name_mito = grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set_name)) |>
-  dplyr::mutate(
-    mito_defined = category == "MitoCarta" | name_mito |
-                   (category == "Metabolism" &
-                    grepl("OXPHOS|KREBS|TCA|ELECTRON|RESPIRAT", set)),
-    class3 = dplyr::case_when(
-      category == "MitoCarta" ~ "mitocarta_proper",
-      name_mito               ~ "construction_MITO",
-      mito_defined            ~ "mitocarta_proper",   # Metabolism OXPHOS/TCA sets
-      TRUE                    ~ "non_mito"))
+    set      = set_name,
+    category = dplyr::coalesce(category_primary, "")) |>
+  dplyr::mutate(class3 = mito_class3(set, category),
+                mito_defined = class3 != "non_mito")
 
 # assertion: identical to script 37 on every set the two share
 pl_path <- here::here("results", "pathway_loading.rds")
@@ -157,7 +158,7 @@ p <- ggplot2::ggplot(tab, ggplot2::aes(x = n, y = category, fill = class3)) +
 
 # --- the legend text (never drawn) -------------------------------------------
 LEGEND <- panel_legend(
-  slot = "Fig. S1A",
+  slot = "Fig. S1B",
   what = paste0(
     "Composition of the custom gene-set library used throughout: ", n_total,
     " sets in nine primary categories, coloured by whether the set is defined ",
@@ -181,15 +182,16 @@ LEGEND <- panel_legend(
     sprintf("TF regulons dominate the count (%d of %d) and are the least specific category; set number is not evidence weight.",
             sum(lib$category == "TF_targets"), n_total),
     "The mitochondrial share of the library is 40 per cent by label but 13 per cent once the construction lanes are set aside. Any statement of the form 'the mitochondrial programmes dominate' has to say which of the two it means.",
-    paste0("The manuscript text currently says '~900 genesets'. The exact figure depends on which count is meant: ",
-           n_total, " in the library, ", n_gsva, " scored per sample, ", n_fgsea,
-           " fGSEA-eligible.")),
+    paste0("Three counts are in play across the section and the panels have to be read with the right one. ",
+           n_total, " sets in the library, which is the number the text gives here; ", n_gsva,
+           " scored per sample by GSVA, which is what the pathway PCA and the axis loadings (Figs. 1C and 1D) run on; and ",
+           n_fgsea, " fGSEA-eligible, of which 816 plus 50 fresh Hallmark comparators (866) survive the minSize 10 / maxSize 500 filter and enter the enrichment ranking (Fig. S1C).")),
   source = c(
     "data/genesets_from_library/provenance_table.csv (v1.0 snapshot; provenance in that directory's README.md)",
     "Mitochondrial classification: scripts/37_pathway_loading_and_technical_resolution.R:445-462, asserted identical here; reference figure outputs/pathway_loading/E_library_coverage.pdf",
     "GSVA scoring: scripts/15_gsva_scoring.R; fGSEA per category: scripts/20_fgsea_percategory.R"))
 
-save_panel_p(p, "figS1A_geneset_library",
+save_panel_p(p, "figS1_geneset_library",
              width = fig_w[["single"]], height = 52)
 
 # =============================================================================

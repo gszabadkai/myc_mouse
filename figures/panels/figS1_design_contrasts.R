@@ -1,11 +1,15 @@
 # =============================================================================
-# figS1B_design_contrasts.R -- the four comparisons, drawn once
+# figS1_design_contrasts.R -- the four comparisons, drawn once
 # -----------------------------------------------------------------------------
+# SLOT: Fig. S1A (was S1B until 2026-07-31; paragraph 1 as rewritten cites the
+# design before the library, so S1A and S1B swapped). Filenames no longer carry
+# the slot letter -- figures/panels/PANELS.md is the slug -> slot map.
+#
 # SUPPORTS (Results, "Myc drives early breast tumourigenesis by inducing OXPHOS
 # and biosynthetic pathways", paragraph 1):
-#   "to compare the transcriptome on the purified MEC population, using
-#    timeline: 6W vs 12W of the WT or Myc+ genotypes, or cross sectional:
-#    WT vs Myc+ at 6W or 12W comparisons"
+#   "we compared the transcriptome of the purified MEC population using both
+#    longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional
+#    (WT versus Myc+ at 6W or 12W) comparisons (Fig. S1A)"
 #
 # A schematic, not a result: the 2x2 design and the five contrasts the DESeq2
 # `~ timepoint * myc_status` model yields, drawn once so every later panel can
@@ -21,7 +25,7 @@
 # below and NOT on the page.
 #
 # Input:  none (geometry only; labels from figures/theme_myc.R)
-# Output: outputs/figures/panels/figS1B_design_contrasts.pdf
+# Output: outputs/figures/panels/figS1_design_contrasts.pdf
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
@@ -153,7 +157,7 @@ p <- ggplot2::ggplot() +
 
 # --- the legend text (never drawn) -------------------------------------------
 LEGEND <- panel_legend(
-  slot = "Fig. S1B",
+  slot = "Fig. S1A",
   what = paste0(
     "Design and the four comparisons. Purified mammary epithelial cells from ",
     "MMTV-Myc transgenic mice and wild-type littermates at 6 and 12 weeks, ",
@@ -172,7 +176,7 @@ LEGEND <- panel_legend(
     "Design and contrasts: scripts/03_deseq_results_qc.R; contrast objects in results/interaction_results.rds",
     "Batch = timepoint: CLAUDE.md, and paper/myc_mito.qmd @sec-overview"))
 
-save_panel_p(p, "figS1B_design_contrasts",
+save_panel_p(p, "figS1_design_contrasts",
              width = fig_w[["single"]], height = 52)
 
 # =============================================================================
