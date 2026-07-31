@@ -134,13 +134,14 @@ pca_layer <- function(xlim, ticks, pts, ctr, key = TRUE) {
 
 XLAB <- sprintf("PC1 (%.0f%%)", 100 * vfr[1])
 
-# the two slashes that say "this axis is broken" -- drawn on the axis line at the
-# facing edge of each segment, in data units, with clip off
-break_mark <- function(x0, dir) {
-  h <- 0.05 * diff(YL); w <- 0.55
-  ggplot2::annotate("segment",
-                    x = x0 + dir * c(0, w), xend = x0 + dir * c(w, 2 * w),
-                    y = YL[1] - h, yend = YL[1] + h,
+# ONE back-slash per side (author, 2026-07-31), sitting exactly on the end of the
+# axis line: one closes the main segment, one opens the outlier segment. Drawn in
+# data units at the segment terminus, so it moves if the limits move; clip = "off"
+# lets the half that overhangs the panel show.
+break_mark <- function(x0) {
+  h <- 0.038 * diff(YL); w <- 0.75
+  ggplot2::annotate("segment", x = x0 - w, xend = x0 + w,
+                    y = YL[1] + h, yend = YL[1] - h,
                     linewidth = 0.3, colour = "black")
 }
 
@@ -150,13 +151,13 @@ p_main <- ggplot2::ggplot(dat[in_main, ], ggplot2::aes(PC1, PC2, colour = group)
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.2, colour = "grey88") +
   pca_layer(XMAIN, seq(-20, 20, by = 10),
             dat[in_main, ], cen[cen$PC1 <= XMAIN[2], ]) +
-  break_mark(XMAIN[2] - 1.5, +1) +
+  break_mark(XMAIN[2]) +
   ggplot2::labs(x = XLAB, y = sprintf("PC2 (%.0f%%)", 100 * vfr[2]), colour = NULL) +
   ggplot2::theme(plot.margin = ggplot2::margin(2, 0.5, 2, 2, "mm"))
 
 p_out <- ggplot2::ggplot(dat[!in_main, ], ggplot2::aes(PC1, PC2, colour = group)) +
   pca_layer(XOUT, 44, dat[!in_main, ], cen[cen$PC1 > XMAIN[2], ], key = FALSE) +
-  break_mark(XOUT[1] + 1.5, -1) +
+  break_mark(XOUT[1]) +
   ggplot2::labs(x = NULL, y = NULL, colour = NULL) +
   ggplot2::theme(axis.text.y  = ggplot2::element_blank(),
                  axis.ticks.y = ggplot2::element_blank(),

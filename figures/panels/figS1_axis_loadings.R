@@ -110,29 +110,36 @@ redox_ref <- stats::median(dat$abs_load[dat$set %in% redox_sets])
 lab_spec <- tibble::tribble(
   ~set,                                    ~label,                       ~x,  ~y,   ~hj,
   "TFT_MYC_GRAY_BA_LE_MITO",               "Myc regulon\n(mito subset)",  16, 0.60,  0,
-  "MITOCARTA_OXPHOS",                      "OXPHOS",                     122, 0.80,  1,
-  "METABRIC_MB2_HI_CV_GROUP1",             "human BRCA-Myc (MB2)",       164, 0.44,  0,
+  "MITOCARTA_OXPHOS",                      "OXPHOS",                     142, 0.80,  1,
+  "METABRIC_MB2_HI_CV_GROUP1",             "human BRCA-Myc (MB2)",       148, 0.44,  0,
   "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA", "mitochondrial\nbiogenesis",  244, 0.60,  0,
   "MYC_felsher_integrative_signature",     "Myc signature\n(Felsher)",   312, 0.78,  0,
   "PROLIF_E2F_HALLMARK",                   "E2F targets",                458, 0.60,  0,
-  "GS_METAB_GLUTATHIONE",                  "glutathione (redox)",        594, 0.44,  0)
+  "GS_METAB_GLUTATHIONE",                  "glutathione (redox)",        600, 0.72,  0)
 stopifnot(all(lab_spec$set %in% dat$set))
 lab_df <- dplyr::inner_join(lab_spec, dat, by = "set") |>
   dplyr::arrange(rank) |>
   dplyr::mutate(nx = x - rank, ny = y - abs_load)
-# every label must sit below its own point, or the lane logic does not hold
-stopifnot(!is.unsorted(lab_df$rank), all(lab_df$y < lab_df$abs_load))
+# The lane logic needs every label under its own point. The redox control is the
+# one exception, on purpose (author, 2026-07-31): by rank 585 the curve has fallen
+# past all three lanes, so the only empty space near that point is ABOVE it.
+stopifnot(!is.unsorted(lab_df$rank),
+          all(lab_df$y < lab_df$abs_load | lab_df$set == "GS_METAB_GLUTATHIONE"))
 
-# ggrepel takes one hjust per layer, so the one right-aligned label is its own
-# layer. Same parameters otherwise.
-lab_layer <- function(hj) {
-  d <- lab_df[lab_df$hj == hj, , drop = FALSE]
-  if (!nrow(d)) return(NULL)
+# Label text and leader take the colour of the set's own class (author,
+# 2026-07-31): a second way to tell the labels apart that costs nothing, and it
+# is the key's encoding rather than a new one.
+lab_df$col <- unname(mito_class_cols[as.character(lab_df$class3)])
+
+# ggrepel takes one hjust and one segment colour per layer, so the labels are
+# drawn one row at a time. Same parameters otherwise.
+lab_layer <- function(i) {
+  d <- lab_df[i, , drop = FALSE]
   ggrepel::geom_text_repel(
     data = d, ggplot2::aes(rank, abs_load, label = label),
-    inherit.aes = FALSE, size = 1.75, colour = "grey15", segment.colour = "grey55",
-    segment.size = 0.15, min.segment.length = 0, box.padding = 0.08,
-    point.padding = 0.08, nudge_x = d$nx, nudge_y = d$ny, hjust = hj,
+    inherit.aes = FALSE, size = 1.75, colour = d$col, segment.colour = d$col,
+    segment.size = 0.2, min.segment.length = 0, box.padding = 0.08,
+    point.padding = 0.08, nudge_x = d$nx, nudge_y = d$ny, hjust = d$hj,
     lineheight = 0.9, force = 0, force_pull = 0, max.overlaps = Inf, seed = 1)
 }
 
@@ -147,7 +154,7 @@ p <- ggplot2::ggplot(dat, ggplot2::aes(rank, abs_load, colour = class3)) +
   ggplot2::geom_hline(yintercept = redox_ref, linewidth = 0.22,
                       linetype = "13", colour = "grey25") +
   ggplot2::geom_point(size = 0.5, alpha = 0.7, stroke = 0) +
-  lab_layer(0) + lab_layer(1) +
+  lapply(seq_len(nrow(lab_df)), lab_layer) +
   ggplot2::scale_colour_manual(values = mito_class_cols, labels = mito_class_labels,
                                breaks = names(mito_class_cols)) +
   ggplot2::scale_x_continuous(
@@ -196,7 +203,7 @@ LEGEND <- panel_legend(
                          lab_df$rank[order(lab_df$rank)],
                          n_med(lab_df$loading[order(lab_df$rank)])),
                  collapse = "; "),
-           ". They are named exemplars chosen to span the curve, not the top of the ranking."),
+           ". They are named exemplars chosen to span the curve, not the top of the ranking. Each label and its leader take the colour of the set's own class, so the key doubles as a way to tell the labels apart. All of them sit below their own point except the redox control, which sits above it: by rank 585 the curve has fallen far enough that the empty space near that point is above the line, not below."),
     sprintf("The classification is the same three classes as Fig. S1B: %d MitoCarta or respiratory sets, %d mitochondrial by construction, %d non-mitochondrial.",
             sum(dat$class3 == "mitocarta_proper"),
             sum(dat$class3 == "construction_MITO"),

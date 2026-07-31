@@ -186,12 +186,20 @@ alternating lanes reduces the constraint to "each label is narrower than the gap
 anchor" — which is why three labels are wrapped over two lines and one is right-aligned. The
 wrapping is load-bearing, not decoration. `stopifnot` checks every label sits below its own point.
 
+**And each label and its leader take the colour of the set's own class** (third review, same day),
+so the key doubles as a way to tell the labels apart. All seven sit below their own point except
+the redox control, which sits above it: by rank 585 the curve has fallen past all three lanes, so
+the empty space near that point is above the line. The `stopifnot` names that one exception rather
+than being relaxed.
+
 **Fig. 1C has a broken x axis.** One 6-week Myc+ animal sits at PC1 = +44.3 while the next highest
 is +19.1, so an unbroken axis spends a third of the width on nothing. Built as two panels rather
 than with a package (`ggbreak` is not installed, and doing it by hand keeps `coord_fixed(1)` alive
 in both segments, which is the part that matters — within a segment a PC1 unit and a PC2 unit are
 the same length, so the collapse onto PC1 is still the picture and not the panel shape). Segment
-widths are proportional to their spans and the break is marked with slashes. **What it costs:** a
+widths are proportional to their spans, and the break is **one back-slash per side, sitting exactly
+on the end of each axis line** (third review): one closes the main segment, one opens the outlier
+segment. **What it costs:** a
 distance read *across* the gap is not to scale. Two traps found while building it, both recorded in
 the script: `clip = "off"` (needed for the break marks) makes each segment draw *all* 24 animals
 over its neighbour unless the data are filtered per segment; and patchwork does not merge two
