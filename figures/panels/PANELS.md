@@ -411,12 +411,53 @@ Myc fork" from "Myc drives biogenesis generically".
   The interaction is not significant (p = 0.15) at n = 6 per cell, so this is a discrepancy to
   report, not a reversal to claim. It also runs opposite to the TEB result, which is a 6-week effect.
 
+## Planned — Figures 2 and 3 (Order D, 2026-08-02)
+
+The narrative for the next two Results sections is fixed:
+`docs/2026-08-02_results_narrative_final_order_D.md`. **Section 1 = the oncogene (Figure 2),
+section 2 = the tissue and the trigger (Figure 3)**; the cell and MYC-ER work becomes Figure 4.
+Panels are written when their Results sentence exists, as for paragraphs 1 and 2 — these rows are
+the commissioned list, not built work.
+
+**Most of it is a port, not a build.** `figures/fig01`–`fig05` and `figS1`–`figS8` were built for
+the Quarto write-up and already draw nearly all of this; the work is moving them into this
+directory's idiom (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared
+palette and contrast vocabulary, no prose on the page).
+
+| slot | supports | port from | inputs |
+|---|---|---|---|
+| **Fig. 2A** | s1: the reallocation, ranked, with the 12W point joined by a connector so the fade reads in the same panel | `figures/fig02_reallocation_ranked.R` | `background_vs_myc.rds$ruler` |
+| **Fig. 2B** | s1: "mitochondrial content rises 21–27 %" — the ruler that makes 2A mean what it says | `figures/fig01_mito_content.R` (group boxplot idiom, `:118-170`) | `mito_content_proxies.rds` |
+| **Fig. 2C** | s1: "rescaled, not reshaped" — Myc@12W vs Myc@6W over 143 pathways, slope 0.552, R² 0.80, null percentile | `figures/fig03_background_vs_myc.R` panel B | `background_vs_myc.rds$regressions`, `$regression_null` |
+| **Fig. 2D** | s1: "it is dose" — transgene message flat/rising vs target output narrowing, beside the blot quantification | `figures/figS8_myc_network_levels.R` | `interaction_results.rds`, WB (author) |
+| **Fig. 3A** | s2: what the normal gland does — WT 6→12W per arm vs expression-matched nulls. Carries the withdrawal, the assembly-factor control, the catabolic rise **and** the proliferation negative in one panel | `figures/fig04_substrate_specificity.R` panel A | `substrate_specificity_tradeoff.rds$wt_null` |
+| **Fig. 3B** | s2: Myc builds the organelle and the means of its execution; then everything fades at ×0.55 except the trigger | `figures/fig05_death_arm.R` panels A+B | `priming_arm_teb.rds$priming`, `collapse_module_ownership.rds` |
+| **Fig. 3C** | s2: "Foxo3 sits beside it" — **NEW, no port.** Departure-from-dose distribution over 8774 genes, `Foxo3` (0.46th pct) and `Bbc3` (0.51st) marked, `Bax` (59th) and `Bcl2l11` (92nd) as controls | none | `collapse_module_ownership.rds$collapse_genes` |
+| **Fig. 3D** | s2: the coupling that names the experiment — `Myc × OXPHOS-priority → Bbc3:Bcl-xL` p 0.0052, redox control p 0.72 | `figures/fig04_substrate_specificity.R` (trade-off panel) | `substrate_specificity_tradeoff.rds$tradeoff` |
+
+Supplementary, all ports: the two-ruler scatter (`figS5`, 94 % content-up against a two-sided
+priority spread); the full 144-pathway reallocation with padj (`figS3`/`figS4`); a four-gene
+contrast table (`Foxo3`/`Bbc3`/`Bax`/`Bcl2l1` × five contrasts); and the luminal-release panel if
+that beat is taken.
+
+**Deliberately not panels.** The DE counts (1967 → 135 at FDR 5 %, 2777 → 239 at 10 %, median
+|LFC| of the survivors *rising* 0.678 → 0.869) and the interaction standard-error point (0.333 vs
+0.233). Both are threshold arithmetic; drawn, they would flatter a −93 % that is really a −45 %.
+
+**Three numbers in that narrative are new to this repo** and were derived read-only on 2026-08-02
+(no script re-run): `cor(Myc@6W priority, WT-time priority)` = **−0.02** across 143 pathways, so
+the background reprioritisation is *independent* of Myc's, not its mirror; median `lfcSE` **0.333**
+(interaction) vs **0.233** (genotype); and `Foxo3` at the **0.456th percentile** of the
+departure-from-dose scan, adjacent to `Bbc3` at the 0.513th, holding that position within the 4199
+Myc-induced genes alone. If any of the three is cited in the manuscript it should get a home in a
+numbered script rather than living only in the figure layer.
+
 ## Not built here
 
 | slot | why |
 |---|---|
 | **Fig. 1A** | Whole-mount / histology of the hyperplastic ductal expansion — the author's bench image, assembled outside R. |
-| **Fig. 1E onward** | Paragraph 2's closing sentence — the partial (Myc-signal-independent) correlation of the library to proliferation, de-differentiation, apoptotic priming and the human MYC-driven tumour signature. Next increment; `ambient_corrected_couplings.rds`, `linear_pathway_coupling` outputs and `mitopps_priming_pgc1a.rds` are on disk. Read `docs/2026-07-18_narrative_synthesis_five_questions.md` §0.5/§0.6 first: the raw ambient is the wrong null, "OXPHOS is central" is untestable rather than false, and `cholesterol → fork` was demoted. |
+| **Fig. 1E** | **SUPERSEDED, author 2026-08-02 — not a slot.** The partial-correlation paragraph (proliferation, de-differentiation, apoptotic priming, the human MYC-driven signature) is superseded by scripts 35/36: the raw ambient is the wrong null, "OXPHOS is central" is untestable rather than false, and `cholesterol → fork` was demoted. The paragraph stays in the Doc **only as a source of reusable statements** — ignore it as narrative, and build no panel for it. |
 | Gene-level vs pathway-level PCA | Author's call 2026-07-31: pathway lens only, to keep the figure from turning into a methods argument. The comparison (gene PC1 = 44 %, a composition axis; the Myc programme rides at gene-PC2) is in Fig. 1C's legend block, and script 37's figures A2/A3/A4 hold the drawn version if a supplementary is ever wanted. |
 | Scree / dimensionality | Same reason. The numbers that matter (PC1 76.5 %, effective dimensionality 1.7, 79 % one-signed loadings) are in Fig. 1C's legend block. |
 | MEC state *levels* | The four groups as a 2×2 grid per programme, group-mean z. Built, reviewed, dropped as redundant with the contrasts; kept in `fig1_myc_teb_proliferation.R`'s sandbox. |
