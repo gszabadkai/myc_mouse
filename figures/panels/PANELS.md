@@ -86,6 +86,7 @@ green**. Two rules travel with it:
 | **Fig. 1F** | `fig1_reallocation_ranked.R` | p3: "a resource reallocation altered intra-compartmental priorities, as quantified by MitoPPS … promoted protein import/homeostasis, translation, OXPHOS subunits … demoted dynamics and surveillance, including fission, mitophagy, and apoptosis alongside calcium signalling"; **and** p4: "a similar effect on the mitopathway priority scores was observed (see Fig. 1F)" | `background_vs_myc.rds` (`$ruler`, `$ruler_summary`), `mitopps_scores.rds` (assertion only) |
 | **Fig. 1G** | `fig1_rescaled_not_reshaped.R` | p4: "the entire structure is present at half amplitude and unchanged in shape both in the whole and mitochondrial transcriptome (overall R2, OXPHOS R2, p)" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `background_vs_myc.rds` (`$ruler`, `$regressions`, `$regression_boot`, `$regression_null`, `$null_draws`) |
 | **Fig. 1H** | `fig1_nes_preserved_sharpened.R` | p4: "this ranking was not just maintained but enhanced: the normalized enrichment score for the mitochondrial OXPHOS set and MYC integrative signatures increased substantially" | `fgsea_percategory.rds` |
+| **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -584,6 +585,67 @@ run to the right edge.
 
 Size: 89 x 55 mm.
 
+### Fig. 2E, built 2026-08-04 — the first panel of section 2
+
+The substrate panel. Everything after it depends on the wild-type gland having changed
+*developmentally* between six and twelve weeks, because the MYC-ER animals never saw Myc. It is
+also the negative limb that keeps Fig. 2F honest: had proliferation collapsed here, the
+respiratory withdrawal would be its shadow rather than a finding.
+
+**The ruler is the fGSEA NES on `timepoint_neg`** (author's call, 2026-08-04) — the same
+instrument as Figs. 1D and 1H, so "enrichment" means one thing across the figure set. **One
+ranked list, so the normaliser is shared**, which is what makes this comparison safe in exactly
+the way Fig. 1H's *cross-contrast* comparison was not. No statement about the size of an NES
+crosses a contrast anywhere on this panel.
+
+**Four rows, and two of them exist because a family with a sign built into it cannot share a row
+with one that has not.**
+
+| row | n | median NES | padj < 0.05 |
+|---|---|---|---|
+| TEB programmes | 38 | **−1.58** | **29** — and every one of the 38 is depleted |
+| ductal (TEB-down) | 3 | **+1.06** | 1 |
+| TEB x MitoCarta | 12 | +0.49 | 0 |
+| proliferation | 14 | **−0.89** | **0** |
+
+**The `_VS_DUCTAL_*_DN` sets were found inside the TEB row on the first render and taken out.**
+They hold the genes *lower* in the end bud than in the duct, so their sign is inverted by
+construction and pooling them cancels part of the effect being measured. On their own row they
+become the control the sentence needs: *"lost as expected in the puberty-adult transition"* is a
+**directional** claim, and a panel showing only sets going down could be showing a ranking that
+drifts down. These rise. Two of the three lineages show the reciprocal outright (basal +1.45
+against its UP set's −2.34, hormone-sensing +1.06 against −2.76); the alveolar pair does not
+(−1.13 against −1.22, neither significant). Same role the OXPHOS assembly factors play in
+`figures/fig04_substrate_specificity.R` panel A.
+
+**The `*_TEB_MITO` lanes get the treatment Fig. 1D gives the same class** — their own row, not
+deletion and not dilution. 17–59 genes each, MitoCarta subsets by build, median +0.49: they do
+not track the programme they are named for.
+
+**Three rulers agree on the TEB arm and two are independent of composition.** Gene-level
+set-average raw log2FC **−0.4220** over 148 genes, the **0th percentile** of 2000
+expression-matched random sets; purity-adjusted per-sample composite (`score ~ tp * genotype +
+epithelial + immune`) **−0.4200, p 0.0053**. They agree to **0.002**, so residual stromal or
+immune contamination does not explain the loss. Asserted in the script, reported in the legend
+block, not drawn.
+
+**Dashed guides at NES = ±1** — the scale of an unmoved set, since fGSEA divides the enrichment
+score by the mean of the same-signed permutation null. It is the reference the proliferation row
+is read against, and that row's median (−0.89) sits inside it.
+
+**`programme_group()` is deliberately not the grouping here** — it would scatter the TEB lanes
+across five of its rows, and the sentence is about the TEB *context*, which cuts across them. The
+proliferation roster is not re-typed either: it is `substrate_specificity_tradeoff.rds
+$defs$prolif_sets`, asserted `setequal`, so the panel and the arm-level statistic quoted in the
+legend describe one set of genes.
+
+**One ggrepel constraint worth remembering:** `position` and `nudge_x`/`nudge_y` are mutually
+exclusive, so a label on a jittered point cannot be nudged. Constrain the repulsion instead
+(`direction = "y"`, `ylim = ...` into the empty strip above the top row).
+
+Size: 89 x 44 mm. Shape is significance (Fig. 1F's encoding); one ink; key inside, top right —
+every TEB programme is depleted, so the top row ends well left of zero and that corner is empty.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -761,6 +823,28 @@ Six checks against the text as written. None of them is a result changing; all s
   priority ruler and belongs with the "see Fig. 1F" clause); **p < 0.002**, and that p attaches to
   the **R2 only** — the slope is reached by 64 of 500 shuffles (p = 0.13).
 
+### Added 2026-08-04, from Fig. 2E
+
+- **"the overall proliferation signalling remained relatively stable" — right, and it needs one
+  qualifier.** On the enrichment ruler it is as clean as it gets: **not one of the 14 curated
+  proliferation sets is significant** on `6>12W_wt`, and the family median (−0.89) sits inside
+  the ±1 band an unmoved set occupies — against the TEB programmes' −1.58 with 29 of 38
+  significant. But on the gene-level ruler `PROLIF_*` pooled (731 genes) moves **−0.047 log2 at
+  the 1.3rd percentile of its own expression-matched null, p = 0.013**. It is *small, not
+  immobile* — script 43's own phrase. Suggested: keep "relatively stable" and make it
+  quantitative — **the TEB arm moves 8.9 times as far**.
+- **The generic proliferation regulons agree with the curated sets and the lineage-context lanes
+  of the same transcription factors do not.** `TFT_E2F1_DOROTHEA_ABC` −1.18 and
+  `TFT_E2F1_CHIPATLAS` +0.86 are both n.s., but the Gray `_LE` lanes fall hard (FOXM1_HS_LE
+  −2.10, TFDP1_HS_LE −2.08, MYBL2_HS_LE −2.04, E2F1_HS_LE −1.72, all padj < 1e−3). Those are
+  lineage-identity lanes, not cell-cycle sets. **What the normal gland withdraws from is lineage
+  and morphogenesis; the cell cycle itself does not move** — the same reading Fig. 1H's
+  off-diagonal clouds gave, arriving where the narrative wants it. Worth a clause.
+- **The direction is controlled and the control is on the panel** (see the Fig. 2E entry): the
+  ductal `_DN` sets rise where the TEB `_UP` sets fall, in two of the three lineages. If the
+  sentence wants a stronger verb than "lost", *"the gland moved from the end-bud to the ductal
+  programme"* is what the data say.
+
 ### One text number still to make exact
 
 - **"~3K DEGs"** at 6W is **2777** at FDR 10 % and **1967** at FDR 5 %; the `interaction` contrast
@@ -842,7 +926,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **2A** | the R26-LSL-CAG-MYCER<sup>T2</sup> x MMTV-Cre model | bench | — |
 | **2B/2C** | 48 h tamoxifen: proliferation and apoptosis by IHC, 6W vs 12W | bench | — |
 | **2D** | 13-day follow-up: MEC expansion and E-cadherin ductal expansion only at 12W | bench | — |
-| **2E** | "the TEB signature was lost as expected in the puberty-adult transition, [while] the overall proliferation signalling remained relatively stable" | `fig2_wt_teb_proliferation.R` | `substrate_specificity_tradeoff.rds$wt_null`, `priming_arm_teb.rds$teb_signatures` |
+| **2E** | "the TEB signature was lost as expected in the puberty-adult transition, [while] the overall proliferation signalling remained relatively stable" | **BUILT 2026-08-04** `fig2_wt_teb_proliferation.R` | `fgsea_percategory.rds` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$defs`, `priming_arm_teb.rds$teb_signatures` |
 | **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `fig2_wt_mito_contraction.R` | `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority`, `background_vs_myc.rds$ruler` |
 | **2G** | "Most pro-anti-apoptotic ratios established by MYC at 6W are reduced according to the global rescaling … the PUMA/BCL-XL ratio exhibited a significant reversal" | `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming`, `$pair_null` |
 | **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` |
@@ -858,7 +942,8 @@ Myc fork" from "Myc drives biogenesis generically".
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G → 2H → S2D → 2I`.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E` **built and signed off**; `2F → S2B → S2C → 2G → 2H → S2D
+→ 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
