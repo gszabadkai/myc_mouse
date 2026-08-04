@@ -87,6 +87,7 @@ green**. Two rules travel with it:
 | **Fig. 1G** | `fig1_rescaled_not_reshaped.R` | p4: "the entire structure is present at half amplitude and unchanged in shape both in the whole and mitochondrial transcriptome (overall R2, OXPHOS R2, p)" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `background_vs_myc.rds` (`$ruler`, `$regressions`, `$regression_boot`, `$regression_null`, `$null_draws`) |
 | **Fig. 1H** | `fig1_nes_preserved_sharpened.R` | p4: "this ranking was not just maintained but enhanced: the normalized enrichment score for the mitochondrial OXPHOS set and MYC integrative signatures increased substantially" | `fgsea_percategory.rds` |
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
+| **Fig. S2B** | `figS2_reallocation_independence.R` | s2p1: "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `background_vs_myc.rds` (`$ruler`, `$geometry`), `interaction_results.rds`, `gsva_scores.rds` (`$expr_mat`, the split-baseline control) |
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
@@ -758,6 +759,59 @@ arms to script 40's ruler at 1e−6 via `$defs$arms`, and script 08's mitoPPS di
 
 Size: 89 x 70 mm.
 
+### Fig. S2B, built 2026-08-04 — and the whole-transcriptome half needed a control
+
+Two scatters: what the wild-type gland does between six and twelve weeks against what Myc does at
+six weeks. Left, 143 MitoPathways on the mitoPPS **priority** ruler (the ruler the word
+*reallocation* refers to) — **r = −0.022**, and on the content ruler −0.038. Right, 15,191 genes on
+the DESeq2 log2 fold change — **r = +0.228**.
+
+**That +0.23 is a property of the design, not of the biology, and the panel had to say so.**
+`myc_6W` = 6W_myc − 6W_wt and `6>12W_wt` = 12W_wt − 6W_wt: **the same six wild-type animals are
+subtracted in both**, so a fluctuation in that baseline pushes the two contrasts the same way.
+Two independent estimates of how much:
+
+| | value |
+|---|---|
+| observed | **+0.228** |
+| predicted from the standard errors (Cov = Var(6W_wt) = SE²/2) | **+0.198** |
+| **measured, split baseline** — Myc effect against one half of the six wild-type animals, temporal effect against the other | **−0.025** (median −0.021, range −0.44 to +0.16, 60 % negative) |
+
+**The split-baseline control is exhaustive, not sampled.** There are exactly `choose(6,3) = 20`
+assignments and all 20 are used, so the panel has **no RNG in it** — nothing to seed and nothing to
+drift. It runs on the VST matrix rather than on re-fitted DESeq2 models, because re-fitting is an
+analysis and not a figure; **what licenses the surrogate is asserted** — with the baseline *shared*,
+the VST version reproduces the drawn DESeq2 correlation to **0.002** (+0.230 against +0.228).
+Splitting halves the baseline's n, which adds independent noise and pulls |r| toward zero; undoing
+that inflation gives −0.032 rather than −0.025, so the conclusion does not depend on which is used.
+
+**So the sentence is right on both scopes** — −0.02 mitochondrial, −0.03 whole transcriptome — but
+the whole-transcriptome number only becomes negligible once the shared baseline is broken, and the
+raw +0.23 is what a reader would otherwise compute. The dashed line on the right-hand panel is the
+corrected relationship; the solid line is the observed one. Script 40's `$artifact_ledger` records
+this class of artefact as **"STRUCTURAL — do not cite"**; this panel is the constructive version of
+that warning, and script 40's `$split_runs` is the same technique applied to a different statistic
+(Issue #6's wild-type convergence).
+
+**The artefact pushes the wrong way for the mitochondrial panel too**, which makes that negative
+conservative: the priority contrasts share the same wild-type baseline, so the sharing forces a
+*positive* correlation, and what is observed is −0.02.
+
+**Cosine is not correlation here, and script 40 reports the cosine.** On the content ruler the
+uncentred cosine is **+0.210** and the correlation is **−0.038** — both content vectors have a large
+positive mean and the cosine picks up that shared offset. The script asserts its recomputation
+matches `$geometry` exactly on both rulers, so the panel is provably drawing script 40's vectors;
+but the sentence's word is *correlation*, so the correlation is what is drawn. (Script 40's own null
+agrees with the reading: the cosine sits at the **41st percentile** of its permutation null, i.e. at
+chance, and the projection at the **9.8th**.)
+
+**One bound that must not be dropped:** this is *not* the statement that the Myc+ gland's own
+temporal change is independent of the wild-type one. That regression (`shared`, Myc+time ~ WTtime)
+has slope **0.749** — much of the Myc+ gland's drift *is* the wild-type drift. Different pairs of
+vectors; they must not be run together in the text.
+
+Size: 89 x 52 mm; 109 of 15,191 genes fall outside the drawn window (none of the 143 pathways).
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -1079,12 +1133,12 @@ Myc fork" from "Myc drives biogenesis generically".
 | slot | supports | script |
 |---|---|---|
 | **S2A** | "these alterations were not a consequence of decreased MYC expression at 12W" | bench |
-| **S2B** | "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `figS2_reallocation_independence.R` |
+| **S2B** | "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | **BUILT 2026-08-04** `figS2_reallocation_independence.R` |
 | **S2C** | "the overall apoptotic priming remains stable in the WT timeline" | `figS2_priming_balance.R` |
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F` **built**; `S2B → S2C → 2G → 2H → S2D → 2I` remain.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B` **built**; `S2C → 2G → 2H → S2D → 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
