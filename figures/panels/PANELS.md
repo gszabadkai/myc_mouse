@@ -179,9 +179,21 @@ Sizes: 89 x 72 mm, top:bottom heights 3:1.
 
 ### Fig. 1G, built 2026-08-04 — and it fills in the `R2=***` placeholders
 
-Two facets over a null strip. **The panel's job is to separate two quantities the sentence runs
-together.** "Half amplitude" is the **slope**; "unchanged in shape" is the **R2**. They are
-independent, and only one of them is beyond its null:
+**Two facets, and that is all** (author's review, same day). The first version also carried the
+numbers on the right-hand facet and a null distribution underneath. Both came off: *"too much
+statistics detail — slope and R-squared is OK for the whole genome; on the mitochondrial plot it
+is enough to label the OXPHOS points with the different colour, there is no need to write out the
+numbers, can go in the text. Also, the bottom panel is not necessary, it just shows the
+significance level, which can again go in the text."* Everything removed is still **computed and
+asserted** in the script and reported in the legend block, and the drawn null is kept in the
+sandbox — so the text has its numbers and the page does not spend a strip on one p-value.
+
+The `R2` on the left is a **real superscript**, via plotmath (`R^2~%.2f`, `parse = TRUE`), which
+keeps the source ASCII per the coding rules and renders correctly through the base `pdf()` device
+where a literal character would not.
+
+**The distinction the sentence turns on, now text-only:** "half amplitude" is the **slope**;
+"unchanged in shape" is the **R2**. They are independent, and only one of them is beyond its null:
 
 | | observed | null median | null max | draws >= observed | p |
 |---|---|---|---|---|---|
@@ -190,7 +202,7 @@ independent, and only one of them is beyond its null:
 
 A shuffled set of the same size and expression can halve an effect. What it cannot do is halve it
 *coherently*. **So the p that belongs in the parenthesis is the R2 one, and the sentence should
-not attach a p to the slope.** The null is drawn under the scatter rather than left to the text.
+not attach a p to the slope.**
 
 **The numbers for the placeholders:**
 
@@ -221,8 +233,8 @@ legend block, as Fig. 1E states its own capped point.
 the layer data and draws the marker once per row — with a 500-row null that turned the "observed"
 label into a black smear. Use `annotate()` for single marks.
 
-Sizes: 89 x 62 mm, top:bottom heights 2.6:1. OXPHOS highlight is `ms_diverging[["pos"]]` mint,
-which is declared and is not a sample colour.
+Size: 89 x 50 mm. OXPHOS highlight is `ms_diverging[["pos"]]` mint — declared, and not a sample
+colour; it carries a one-item key rather than an in-panel label.
 
 ### Revision of 2026-07-31 (paragraph 1 rewritten, paragraph 2 written)
 

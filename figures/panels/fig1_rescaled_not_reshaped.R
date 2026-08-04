@@ -8,21 +8,22 @@
 #    in shape both in the whole and mitochondrial transcriptome (overall R2 = ...,
 #    OXPHOS R2 = ..., p < ..., Fig. 1G)"
 #
-# Three quantities, and the panel has to separate two of them that are easy to
-# confuse. HALF AMPLITUDE is the SLOPE. UNCHANGED IN SHAPE is the R2 -- how much
-# of the twelve-week profile the six-week profile predicts once the slope is
-# allowed. They are independent, and only one of them is beyond its null:
+#   LEFT    per gene, the 2,648 genes Myc moves at six weeks, with the slope and
+#           R2 on the face of it
+#   RIGHT   per pathway, the 143 nuclear-encoded MitoPathways, OXPHOS marked by
+#           colour only
+#
+# WHAT IS DELIBERATELY NOT DRAWN (author, 2026-08-04): the numbers on the right,
+# and the null. Both go in the text. They are still computed here and reported in
+# the legend block, because the sentence needs them and because one of them is the
+# distinction the sentence turns on:
 #
 #     slope 0.552   64 of 500 expression-matched shuffles reach it -> p = 0.13
 #     R2    0.801    0 of 500 reach it (null max 0.719)            -> p < 0.002
 #
-# So the defensible claim is the SHAPE one, and the panel puts the null under the
-# scatter rather than leaving it to the text. A shuffled set of the same size and
-# expression can halve an effect; what it cannot do is halve it COHERENTLY.
-#
-#   LEFT    per gene, the 2,648 genes Myc moves at six weeks
-#   RIGHT   per pathway, the 143 nuclear-encoded MitoPathways, OXPHOS marked
-#   BOTTOM  the null for the right-hand R2, with the observed value on it
+# HALF AMPLITUDE is the slope; UNCHANGED IN SHAPE is the R2. A shuffled set of the
+# same size and expression can halve an effect. What it cannot do is halve it
+# COHERENTLY -- so the p belongs to the shape claim and not to the amplitude one.
 #
 # WHY THE LEFT FACET IS 2,648 GENES AND NOT 8,774. The rate of record, script 44's
 # `global_rate_fitted` = 0.487, is fitted on exactly this set (padj < 0.1 at six
@@ -41,7 +42,6 @@
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
-if (!requireNamespace("patchwork", quietly = TRUE)) stop("Fig. 1G needs patchwork")
 
 cm  <- readRDS(here::here("results", "collapse_module_ownership.rds"))
 bg  <- readRDS(here::here("results", "background_vs_myc.rds"))
@@ -136,58 +136,67 @@ fits <- rbind(
              int = unname(stats::coef(p_ox)[1]), cls = "ox"))
 fits$facet <- factor(fits$facet, levels = fac)
 
-# The two numbers the sentence quotes, placed top-left in each facet. A slope and
-# an R2 are the data of a regression panel, not an explanation of it.
-ann <- rbind(
-  data.frame(facet = fac[["gene"]], cls = "bg",
-             lab = sprintf("slope %.2f\nR2 %.2f", stats::coef(g_fit),
-                           g_r2(gsub_)), dy = 0),
-  data.frame(facet = fac[["path"]], cls = "bg",
-             lab = sprintf("slope %.2f\nR2 %.2f", stats::coef(p_all)[2],
-                           summary(p_all)$r.squared), dy = 0),
-  data.frame(facet = fac[["path"]], cls = "ox",
-             lab = sprintf("OXPHOS %.2f / %.2f", stats::coef(p_ox)[2],
-                           summary(p_ox)$r.squared), dy = 1))
-ann$facet <- factor(ann$facet, levels = fac)
-ann <- merge(ann, lims, by = "facet")
-ann$x <- ann$lo
-ann$y <- ann$hi - (ann$hi - ann$lo) * ann$dy * 0.13
+# ONLY the gene facet carries numbers (author, 2026-08-04). Two annotations rather
+# than one two-line string, because the R2 is written with a real superscript:
+# plotmath keeps the source ASCII (`R^2`, per the coding rules) and renders it
+# properly, which a literal character would not do reliably through the base pdf()
+# device. On the right the OXPHOS colour does the work and its numbers go in the
+# text.
+ann <- data.frame(
+  facet = factor(rep(fac[["gene"]], 2), levels = fac),
+  x   = -GLIM,
+  y   = GLIM - c(0, 1) * 2 * GLIM * 0.075,
+  lab = c(sprintf("slope~%.2f", stats::coef(g_fit)),
+          sprintf("R^2~%.2f",   g_r2(gsub_))),
+  stringsAsFactors = FALSE)
 
 cls_cols <- c(bg = "grey35", ox = OX_COL)
 
-p_top <- ggplot2::ggplot(pts, ggplot2::aes(x, y)) +
+p <- ggplot2::ggplot(pts, ggplot2::aes(x, y)) +
   ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "22",
                        linewidth = 0.25, colour = "grey65") +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.2, colour = "grey85") +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.2, colour = "grey85") +
   ggplot2::geom_point(data = pts[pts$cls == "bg", ], colour = "grey55",
                       size = 0.35, alpha = 0.35, stroke = 0) +
-  ggplot2::geom_point(data = pts[pts$cls == "ox", ], colour = OX_COL,
+  ggplot2::geom_point(data = pts[pts$cls == "ox", ], ggplot2::aes(colour = cls),
                       size = 0.9, alpha = 0.95, stroke = 0) +
   ggplot2::geom_abline(data = fits,
                        ggplot2::aes(slope = slope, intercept = int, colour = cls),
                        linewidth = 0.45, show.legend = FALSE) +
-  ggplot2::geom_text(data = ann, ggplot2::aes(x = x, y = y, label = lab, colour = cls),
-                     hjust = 0, vjust = 1, size = 1.7, lineheight = 0.95,
-                     show.legend = FALSE) +
+  ggplot2::geom_text(data = ann, ggplot2::aes(x = x, y = y, label = lab),
+                     parse = TRUE, hjust = 0, vjust = 1, size = 1.8,
+                     colour = "grey25", inherit.aes = FALSE) +
   ggplot2::geom_blank(data = rbind(
     data.frame(facet = lims$facet, x = lims$lo, y = lims$lo),
     data.frame(facet = lims$facet, x = lims$hi, y = lims$hi))) +
   ggplot2::facet_wrap(~ facet, nrow = 1, scales = "free") +
-  ggplot2::scale_colour_manual(values = cls_cols) +
+  ggplot2::scale_colour_manual(values = cls_cols, breaks = "ox",
+                               labels = c(ox = "OXPHOS"), name = NULL) +
   ggplot2::scale_x_continuous(labels = lab_signed) +
   ggplot2::scale_y_continuous(labels = lab_signed) +
   ggplot2::labs(x = "Myc effect at 6W (log2)", y = "Myc effect at 12W (log2)") +
+  ggplot2::guides(colour = ggplot2::guide_legend(
+    override.aes = list(size = 1.5, alpha = 1))) +
   theme_panel(base_size = 6) +
   ggplot2::theme(
     strip.text      = ggplot2::element_text(face = "plain", size = 5.6,
                                             margin = ggplot2::margin(0, 0, 0.6, 0, "mm")),
     panel.spacing.x = ggplot2::unit(2.4, "mm"),
+    legend.position = "bottom",
+    legend.margin   = ggplot2::margin(-2, 0, 0, 0),
+    legend.key.size = ggplot2::unit(2.4, "mm"),
     plot.margin     = ggplot2::margin(1, 1.5, 0.5, 1.5, "mm"))
 
 # =============================================================================
-# the null -- the statistic that makes "unchanged in shape" a claim
+# the null -- COMPUTED, NOT DRAWN
 # =============================================================================
+# It is the statistic that makes "unchanged in shape" a claim rather than a
+# description, but the author's call (2026-08-04) is that a null distribution on
+# the page is one significance level's worth of ink for a number the text can
+# carry in five words. So it is computed, asserted, and reported in the legend
+# block, and the panel stays a scatter. The drawn form is kept in the sandbox.
+#
 # 500 label shuffles WITHIN expression deciles, which preserve set size, expression
 # and the pathway OVERLAP structure (MitoPathways nest, and the nesting alone
 # creates cross-pathway correlation). Script 40's PART B; the resampled secondary
@@ -201,35 +210,6 @@ p_sl   <- (sum(sl_nul >= reg_row$slope) + 1) / (length(sl_nul) + 1)
 
 stopifnot(abs(stats::median(r2_nul) - rnull$null_median[rnull$statistic == "rescale_r2"]) < 1e-6,
           sum(r2_nul >= r2_obs) == 0L)
-
-nulld <- data.frame(r2 = r2_nul)
-dn2   <- stats::density(r2_nul, adjust = 0.9)
-
-p_bot <- ggplot2::ggplot(nulld, ggplot2::aes(x = r2)) +
-  ggplot2::geom_density(adjust = 0.9, fill = "grey88", colour = "grey40",
-                        linewidth = 0.3) +
-  # annotate(), NOT geom_*(x = , y = ): a bare geom inherits the 500-row data and
-  # draws the marker five hundred times, which turns the label into a black smear.
-  ggplot2::annotate("segment", x = r2_obs, xend = r2_obs, y = 0,
-                    yend = max(dn2$y) * 1.10, linewidth = 0.5, colour = "grey10") +
-  ggplot2::annotate("point", x = r2_obs, y = max(dn2$y) * 1.10, size = 1.1,
-                    shape = 25, fill = "grey10", colour = "grey10") +
-  ggplot2::annotate("text", x = r2_obs, y = max(dn2$y) * 1.10,
-                    label = sprintf("observed %.2f  ", r2_obs),
-                    hjust = 1, vjust = 0.35, size = 1.7, colour = "grey10") +
-  ggplot2::scale_x_continuous(limits = c(0, r2_obs * 1.06),
-                              expand = ggplot2::expansion(mult = c(0.01, 0.01))) +
-  ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.02, 0.28))) +
-  ggplot2::labs(x = "R2 of the same regression on expression-matched shuffled sets",
-                y = NULL) +
-  theme_panel(base_size = 6) +
-  ggplot2::theme(
-    axis.text.y  = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank(),
-    axis.line.y  = ggplot2::element_blank(),
-    plot.margin  = ggplot2::margin(1.5, 1.5, 1, 1.5, "mm"))
-
-p <- patchwork::wrap_plots(p_top, p_bot, ncol = 1, heights = c(2.6, 1))
 
 # =============================================================================
 # the legend text (never drawn)
@@ -276,7 +256,7 @@ LEGEND <- panel_legend(
     "results/collapse_module_ownership.rds (scripts/44) -- $collapse_genes, $defs$global_rate_fitted",
     "Earlier double-column form: figures/fig03_background_vs_myc.R panel B"))
 
-save_panel_p(p, "fig1_rescaled_not_reshaped", height = 62)
+save_panel_p(p, "fig1_rescaled_not_reshaped", height = 50)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()
@@ -303,6 +283,27 @@ if (FALSE) {
              null_med  = c(stats::median(sl_nul), stats::median(r2_nul)),
              null_max  = c(max(sl_nul), max(r2_nul)),
              p_emp     = c(p_sl, p_r2)) |> print(row.names = FALSE, digits = 3)
+
+  ## the null, drawn -- the form that was on the panel until 2026-08-04
+  {
+    dn2 <- stats::density(r2_nul, adjust = 0.9)
+    ggplot2::ggplot(data.frame(r2 = r2_nul), ggplot2::aes(x = r2)) +
+      ggplot2::geom_density(adjust = 0.9, fill = "grey88", colour = "grey40",
+                            linewidth = 0.3) +
+      ggplot2::annotate("segment", x = r2_obs, xend = r2_obs, y = 0,
+                        yend = max(dn2$y) * 1.10, linewidth = 0.5, colour = "grey10") +
+      ggplot2::annotate("point", x = r2_obs, y = max(dn2$y) * 1.10, size = 1.1,
+                        shape = 25, fill = "grey10", colour = "grey10") +
+      ggplot2::annotate("text", x = r2_obs, y = max(dn2$y) * 1.10,
+                        label = sprintf("observed %.2f  ", r2_obs),
+                        hjust = 1, vjust = 0.35, size = 1.7, colour = "grey10") +
+      ggplot2::scale_x_continuous(limits = c(0, r2_obs * 1.06)) +
+      ggplot2::labs(x = "R2 on expression-matched shuffled sets", y = NULL) +
+      theme_panel(base_size = 6) +
+      ggplot2::theme(axis.text.y = ggplot2::element_blank(),
+                     axis.ticks.y = ggplot2::element_blank(),
+                     axis.line.y = ggplot2::element_blank())
+  }
 
   ## which pathways sit furthest from the fitted line -- the reshaping that IS there
   r143$resid <- stats::resid(p_all)
