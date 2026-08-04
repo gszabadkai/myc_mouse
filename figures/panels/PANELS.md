@@ -84,6 +84,7 @@ green**. Two rules travel with it:
 | **Fig. 1D** | `fig1_nes_ranking.R` | p2: "Mitochondrial biogenesis and OXPHOS complex genesets were overall top ranked based on normalised changes in effect size, along with core (non-mitochondrial) MYC target genesets, followed by …" | `fgsea_percategory.rds`, `ap6_permutation_null.rds` (legend), `provenance_table.csv` |
 | **Fig. 1E** | `fig1_mito_content.R` | p3: "it drove a quantitative expansion by systemically upregulating 94% of 143 nuclear-encoded mitochondrial pathways, increasing the mitochondrial transcriptomic fraction by 21–27% (padj < 0.001)" — **both** clauses, two rulers, two parts | `mito_content_proxies.rds` (`$shares`, `$share_stats`), `background_vs_myc.rds` (`$ruler`, `$ruler_summary`) |
 | **Fig. 1F** | `fig1_reallocation_ranked.R` | p3: "a resource reallocation altered intra-compartmental priorities, as quantified by MitoPPS … promoted protein import/homeostasis, translation, OXPHOS subunits … demoted dynamics and surveillance, including fission, mitophagy, and apoptosis alongside calcium signalling"; **and** p4: "a similar effect on the mitopathway priority scores was observed (see Fig. 1F)" | `background_vs_myc.rds` (`$ruler`, `$ruler_summary`), `mitopps_scores.rds` (assertion only) |
+| **Fig. 1G** | `fig1_rescaled_not_reshaped.R` | p4: "the entire structure is present at half amplitude and unchanged in shape both in the whole and mitochondrial transcriptome (overall R2, OXPHOS R2, p)" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `background_vs_myc.rds` (`$ruler`, `$regressions`, `$regression_boot`, `$regression_null`, `$null_draws`) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -175,6 +176,53 @@ on wild type and orange on Myc+, a tier key reusing them invites the reader to s
 tier. Thirteen named rows need no tier colour.
 
 Sizes: 89 x 72 mm, top:bottom heights 3:1.
+
+### Fig. 1G, built 2026-08-04 — and it fills in the `R2=***` placeholders
+
+Two facets over a null strip. **The panel's job is to separate two quantities the sentence runs
+together.** "Half amplitude" is the **slope**; "unchanged in shape" is the **R2**. They are
+independent, and only one of them is beyond its null:
+
+| | observed | null median | null max | draws >= observed | p |
+|---|---|---|---|---|---|
+| slope | 0.552 | 0.419 | — | **64 of 500** | 0.13 |
+| **R2** | **0.801** | 0.298 | **0.719** | **0 of 500** | **< 0.002** |
+
+A shuffled set of the same size and expression can halve an effect. What it cannot do is halve it
+*coherently*. **So the p that belongs in the parenthesis is the R2 one, and the sentence should
+not attach a p to the slope.** The null is drawn under the scatter rather than left to the text.
+
+**The numbers for the placeholders:**
+
+| in the sentence | number | what it is |
+|---|---|---|
+| whole transcriptome, slope | **0.487** | through the origin, over the 2,648 genes Myc moves at 6W (padj < 0.1, \|LFC\| ≥ 0.2, baseMean ≥ 20) — script 44's `global_rate_fitted`, asserted |
+| whole transcriptome, "overall R2" | **0.51** | over the same 2,648. Over **all 8,774** reported genes the slope barely moves (0.450) but R2 falls to **0.381** — regression dilution from six thousand genes Myc does not move |
+| mitochondrial, slope | **0.552** | intercept 0.0001, so a pure rescaling and not a shift; bootstrap 0.514–0.605 |
+| mitochondrial, "overall R2" | **0.801** | |
+| **"OXPHOS R2"** | **0.761** | the 19 OXPHOS pathways, content ruler, slope 0.525. **Not 0.945** — that is the *priority* ruler, and mixing rulers inside one parenthesis would be wrong. The priority figures (slope 0.644, R2 0.789; OXPHOS 0.945) belong with the "see Fig. 1F" clause |
+| "p <" | **0.002** | empirical, 0 of 500 expression-matched shuffles reach R2 0.801 |
+
+**"Whole transcriptome" needs one word.** The panel's left facet is labelled *Myc-responsive genes
+(2,648)*, because that is the set the rate of record is fitted on. If the sentence keeps "whole
+transcriptome" it should quote 0.450 / 0.381; if it quotes 0.487 / 0.51 it should say "the genes
+Myc moves". Either is fine; they must not be crossed.
+
+**R2 is the squared Pearson correlation throughout**, so the two facets use one definition. A
+through-origin `lm` reports an *uncentred* R2 instead (0.565 rather than 0.513 on the left), which
+is not comparable to the pathway facet and must never be the quoted number.
+
+**Both facets are windowed for display** — ±3.0 log2 on the left (22 of 2,648 genes outside) and
++1.05 on the right (2 of 143: Glycine metabolism +1.14 and the four-gene Glycine cleavage system
++1.95). Every fitted line and every number is computed on the complete set; the counts are in the
+legend block, as Fig. 1E states its own capped point.
+
+**One trap found here, worth remembering:** `geom_segment(x = , y = )` with no `data =` inherits
+the layer data and draws the marker once per row — with a 500-row null that turned the "observed"
+label into a black smear. Use `annotate()` for single marks.
+
+Sizes: 89 x 62 mm, top:bottom heights 2.6:1. OXPHOS highlight is `ms_diverging[["pos"]]` mint,
+which is declared and is not a sample colour.
 
 ### Revision of 2026-07-31 (paragraph 1 rewritten, paragraph 2 written)
 
@@ -528,14 +576,12 @@ Six checks against the text as written. None of them is a result changing; all s
 - **`Bbc3` is written "(p < 0.01)"**; the interaction p is **0.0081** and its genome-wide BH is
   **0.84**. What licenses the test is that `Bbc3` was **pre-specified from the cell experiments**,
   and the text does not yet say so. One clause, once.
-- **Fig. 1G's "overall R2, OXPHOS R2, p" placeholders.** The numbers that exist: over the 143
-  mitochondrial pathways, slope **0.552**, intercept 0, **R² = 0.801** (bootstrap 0.514–0.605),
-  and that R² sits at the **100th percentile** of expression-matched shuffled sets. On the
-  priority ruler, slope 0.644, R² 0.789. Within the OXPHOS tier, **R² 0.761 content / 0.945
-  priority**. For "the whole transcriptome" the number with a home in a numbered script is script
-  44's fitted global rate **0.487** over 8,774 genes
-  (`collapse_module_ownership.rds$defs$global_rate_fitted`). Which pair the sentence quotes is
-  open — settle it when 1G is built.
+- **Fig. 1G's "overall R2, OXPHOS R2, p" placeholders — RESOLVED 2026-08-04**, see the Fig. 1G
+  entry above for the table. Short form: whole transcriptome slope **0.487** / R2 **0.51** over
+  the 2,648 genes Myc moves (0.450 / **0.381** over all 8,774 — say which); mitochondrial slope
+  **0.552** / R2 **0.801**; **OXPHOS R2 0.761** on the content ruler (*not* 0.945, which is the
+  priority ruler and belongs with the "see Fig. 1F" clause); **p < 0.002**, and that p attaches to
+  the **R2 only** — the slope is reached by 64 of 500 shuffles (p = 0.13).
 
 ### One text number still to make exact
 
