@@ -210,19 +210,29 @@ ann <- data.frame(
 p <- ggplot2::ggplot(dd, ggplot2::aes(x, y)) +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85") +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85") +
-  ggplot2::geom_point(colour = "grey35", size = 0.3, alpha = 0.13, stroke = 0) +
+  # TWO POINT LAYERS, because the two facets differ in density by two orders of
+  # magnitude: 143 pathways need full ink to be visible at all, 15,191 genes need
+  # almost none or the cloud fills solid and the lines cannot be read over it.
+  ggplot2::geom_point(data = dd[dd$facet == FAC[1], ],
+                      colour = "grey20", size = 0.85, alpha = 0.9, stroke = 0) +
+  ggplot2::geom_point(data = dd[dd$facet == FAC[2], ],
+                      colour = "grey35", size = 0.3, alpha = 0.13, stroke = 0) +
   ggplot2::geom_abline(data = L, ggplot2::aes(slope = slope, intercept = intercept,
                                               linetype = kind),
                        linewidth = 0.35, colour = "grey10") +
   ggplot2::geom_text(data = ann, ggplot2::aes(label = lab), parse = TRUE,
-                     x = -Inf, y = Inf, hjust = -0.45, vjust = 1.6,
+                     x = -Inf, y = Inf, hjust = -0.45, vjust = 1.3,
                      size = 1.9, colour = "grey20", inherit.aes = FALSE) +
   ggplot2::scale_linetype_manual(values = c("observed" = "solid",
                                             "baseline not shared" = "22"),
                                  name = NULL, drop = FALSE) +
   ggplot2::facet_wrap(~ facet, nrow = 1, scales = "free") +
   ggplot2::scale_x_continuous(labels = lab_signed) +
-  ggplot2::scale_y_continuous(labels = lab_signed) +
+  # extra headroom at the top so the r annotation has a strip of its own: at
+  # 143 and 15,191 points there is no corner that is reliably empty, and a label
+  # landing on a datum is worse than a slightly taller panel.
+  ggplot2::scale_y_continuous(labels = lab_signed,
+                              expand = ggplot2::expansion(mult = c(0.05, 0.16))) +
   ggplot2::labs(x = "Myc effect at 6W  (myc_6W)",
                 y = "wild-type 6>12W  (6>12W_wt)") +
   theme_panel(base_size = 6) +
@@ -273,7 +283,8 @@ LEGEND <- panel_legend(
     "THIS IS NOT THE STATEMENT THAT THE Myc+ GLAND'S OWN TEMPORAL CHANGE IS INDEPENDENT OF THE WILD-TYPE ONE. That regression (`shared`, Myc+time ~ WTtime, script 40) has a slope of 0.749 -- much of the Myc+ gland's drift IS the wild-type drift. The two claims are about different pairs of vectors and must not be run together.",
     "A correlation of zero is not independence in the mechanistic sense. It says the two programmes do not move the same pathways in the same direction; it does not say they cannot interact, and the interaction contrast is where that question is asked.",
     "The split-baseline control is a control on the CORRELATION only. It uses VST group means, not DESeq2's negative-binomial fits, so it must not be quoted as an effect size.",
-    "n = 6 per group. Every correlation here is over pathways or genes, not over animals, so its precision is not the n = 6 precision -- but the underlying contrasts are, and the split control's spread (sd 0.15 across assignments) is a direct picture of that."),
+    "n = 6 per group. Every correlation here is over pathways or genes, not over animals, so its precision is not the n = 6 precision -- but the underlying contrasts are, and the split control's spread (sd 0.15 across assignments) is a direct picture of that.",
+    "The two panels are drawn with different point ink because they differ in density by two orders of magnitude: 143 points at full opacity on the left, 15,191 at 13% on the right. Ink is not comparable between them; position is."),
   source = c(
     "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler for both rulers on both contrasts; $geometry for the cosine identity check; $split_runs is the same split-baseline technique applied to a different statistic",
     "results/interaction_results.rds (scripts/03_deseq_results_qc.R) -- raw (unshrunken) DESeqResults for myc_6W and timepoint_neg",

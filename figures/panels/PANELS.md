@@ -810,6 +810,19 @@ temporal change is independent of the wild-type one. That regression (`shared`, 
 has slope **0.749** — much of the Myc+ gland's drift *is* the wild-type drift. Different pairs of
 vectors; they must not be run together in the text.
 
+**Two point layers, because the facets differ in density by two orders of magnitude** (author's
+review, 2026-08-05: the mitochondrial points were almost invisible). 143 points at full opacity on
+the left; 15,191 at 13 % on the right, where anything darker fills solid and the two lines cannot
+be read over it. Ink is therefore not comparable between the panels — position is — and the legend
+block says so. Both `r` annotations sit in a strip of headroom added by the y-scale expansion,
+because at these densities no corner is reliably empty and a label landing on a datum is worse
+than a slightly taller panel.
+
+**A better way to check a panel, found here:** `qlmanage -t -s 2400 -o <dir> <file>.pdf` renders
+through Core Graphics, which is exactly what the author sees in Preview. `sips` draws small
+filled circles as **crosses** — a rasteriser artefact that had me about to change a point shape
+that was never wrong. Use `qlmanage` when a glyph looks off.
+
 Size: 89 x 52 mm; 109 of 15,191 genes fall outside the drawn window (none of the 143 pathways).
 
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
