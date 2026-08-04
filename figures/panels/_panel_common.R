@@ -422,6 +422,21 @@ programme_group <- function(set, category) {
 save_panel_p <- function(plot, slug,
                          width = fig_w[["single"]], height = 70, units = "mm") {
   stopifnot(is.character(slug), length(slug) == 1L, nzchar(slug))
+  # myc.fig.capture: record the DESIGNED size and write nothing. Each panel names
+  # its size in its own save_panel_p() call and nowhere else, so anything that has
+  # to lay panels out at true size -- panels_to_pdf.R -- must read it from here
+  # rather than keep a second copy that can drift. The registry lives in the
+  # global environment because rebuild_panels.R sources each script into a child
+  # of it, so a registry local to this file would be a fresh one per panel.
+  if (isTRUE(getOption("myc.fig.capture"))) {
+    reg <- get0(".myc_panel_sizes", envir = globalenv(), ifnotfound = NULL)
+    if (is.null(reg)) {
+      reg <- new.env(parent = emptyenv())
+      assign(".myc_panel_sizes", reg, envir = globalenv())
+    }
+    assign(slug, list(width = width, height = height, units = units), envir = reg)
+    return(invisible(NULL))
+  }
   if (isTRUE(getOption("myc.fig.nosave"))) {
     message("myc.fig.nosave = TRUE -- not writing ", slug, ".pdf")
     return(invisible(NULL))

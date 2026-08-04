@@ -2,11 +2,13 @@
 # figS1_mb_fork_specificity.R -- is the human resemblance MYC-specific, or just
 # mitochondrial biogenesis?
 # -----------------------------------------------------------------------------
-# SLOT: Fig. S1D (was S1C until 2026-07-31). It is not cited in the Results yet
-# -- the Human BRCA-MYC row it supports is drawn but unwritten, and paragraph 2's
-# partial-correlation sentence is where it will land -- so it rolled down to make
-# room for the enrichment ranking that paragraph 2 does cite. Filenames no longer
-# carry the slot letter; figures/panels/PANELS.md is the slug -> slot map.
+# SLOT: NONE (2026-08-04). It held S1C, then S1D, and is now displaced out of the
+# figure altogether: the written Fig. S1D is the MYC western blot, and this panel
+# is still cited nowhere. It keeps building and keeps its legend block, and it
+# gets its letter back the day a sentence asks for it -- renumbering it a fourth
+# time before then would be three renames for nothing. figures/panels/PANELS.md
+# is the slug -> slot map; anything that lays panels out by slot (panels_to_pdf.R)
+# skips this one because the slot below is not a Figure 1 or S1 letter.
 #
 # SUPPORTS the Human BRCA-MYC row of Fig. 1B. That row says the Myc+ gland
 # resembles the MB2 upper fork of the human breast-cancer switch. This panel is
@@ -142,7 +144,7 @@ f  <- function(x) sprintf("%+.2f", x)
 gm <- colMeans(scores)
 
 LEGEND <- panel_legend(
-  slot = "Fig. S1D",
+  slot = "not currently cited",
   what = paste0(
     "Specificity control for the human breast-cancer resemblance of Fig. 1B. ",
     "Difference between the per-sample GSVA scores for the two upper forks of the ",

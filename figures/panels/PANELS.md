@@ -91,7 +91,7 @@ green**. Two rules travel with it:
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
 | **Fig. S1E** | `figS1_myc_transcript_stable.R` | p5: "this decline occurred despite stable transcript levels; the expression gap remained constant between 6W_myc and 12W_myc for MYC" | `dds_int_run.rds`, `interaction_results.rds`, `combined_df_annotated.rds`, `collapse_module_ownership.rds` (legend) |
 | **Fig. S1F** | `figS1_myc_network.R` | p5: "… and the proximal MYC/MAX/MXD network" — the negative control on the alternative to dose | `interaction_results.rds`, `combined_df_annotated.rds` |
-| *(no slot)* | `figS1_mb_fork_specificity.R` | **displaced 2026-08-04.** It held S1D, and the written S1D is the MYC western blot. Still cited nowhere: it is the specificity control for Fig. 1B's `Human BRCA-MYC` row. It keeps building and keeps its legend block; it is not renumbered a third time until a sentence asks for it. | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
+| *(no slot)* | `figS1_mb_fork_specificity.R` | **displaced 2026-08-04.** It held S1D, and the written S1D is the MYC western blot. Still cited nowhere: it is the specificity control for Fig. 1B's `Human BRCA-MYC` row. It keeps building and keeps its legend block, and its `panel_legend(slot = )` now reads **`not currently cited`** rather than a letter, so anything that lays panels out by slot skips it. It gets a letter back the day a sentence asks for one. | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
 
 ### Fig. 1E, built 2026-08-04
 
@@ -583,6 +583,40 @@ The key is **under** the plot here, unlike 1G and 1H — this panel has no empty
 run to the right edge.
 
 Size: 89 x 55 mm.
+
+### The circulation document — `panels_to_pdf.R`, added 2026-08-04
+
+`outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
+Supplementary 1, **one to a page, in slot order, with the slot as the page title**. For
+collaborators reading the Results in the Doc who want to see the panel each sentence cites
+without assembling a figure. 12 pages, 105 x 111 mm.
+
+```
+source(here::here("figures", "panels", "panels_to_pdf.R"))
+```
+
+**It re-renders rather than concatenating the existing PDFs**, because this machine has no
+Ghostscript, qpdf, pdftk, pdfjam or LaTeX and neither the `qpdf` nor the `pdftools` R package is
+installed — nothing available can place one PDF page inside another. Re-rendering is also the
+better answer: it stays vector, it cannot go stale against the scripts, and the page titles come
+from the `panel_legend()` blocks rather than from a list kept by hand.
+
+**Every panel is drawn at its designed physical size**, centred on a page just big enough for the
+largest. Scaling a ggplot to fill a page does not magnify it — the type stays at 6 pt while the
+plot area stretches, which is a different picture from the one that was signed off. At true size
+each page looks exactly like the manuscript figure will, and the reader magnifies with the
+viewer's zoom.
+
+**Sizes are read from each panel's own `save_panel_p()` call** through a new `myc.fig.capture`
+hook in `_panel_common.R`, which records the designed size and writes nothing. So this file keeps
+no second copy of a number that lives in the panel script. The registry sits in the global
+environment because each panel is sourced into a child of it.
+
+**One R trap, and it cost a debugging round:** `on.exit()` at the *top level* of a sourced script
+attaches to the frame evaluating that single expression, so it fires immediately. Here it restored
+`myc.fig.capture` before a single panel had run, and every panel wrote its own PDF instead of
+reporting its size. There is no `on.exit()` anywhere in that file now; the option and the device
+are restored explicitly at the foot.
 
 ## Where the panels and the written sentences disagree
 
