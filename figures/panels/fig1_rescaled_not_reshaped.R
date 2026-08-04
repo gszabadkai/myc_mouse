@@ -8,13 +8,14 @@
 #    in shape both in the whole and mitochondrial transcriptome (overall R2 = ...,
 #    OXPHOS R2 = ..., p < ..., Fig. 1G)"
 #
-#   LEFT    per gene, the 2,648 genes Myc moves at six weeks, with the slope and
-#           R2 on the face of it
+#   LEFT    per gene, the 2,648 genes Myc moves at six weeks
 #   RIGHT   per pathway, the 143 nuclear-encoded MitoPathways, OXPHOS marked by
-#           colour only
+#           colour only, with the key inside the frame
 #
-# WHAT IS DELIBERATELY NOT DRAWN (author, 2026-08-04): the numbers on the right,
-# and the null. Both go in the text. They are still computed here and reported in
+# Each facet carries the slope and R2 of its own line and nothing else.
+#
+# WHAT IS DELIBERATELY NOT DRAWN (author, 2026-08-04): the OXPHOS fit line and its
+# numbers, and the null. All three go in the text. They are still computed here and reported in
 # the legend block, because the sentence needs them and because one of them is the
 # distinction the sentence turns on:
 #
@@ -127,28 +128,34 @@ n_out_p <- sum(pmax(r143$c_m6, r143$c_m12) > PHI)
 inside  <- (pts$facet == fac[["gene"]] & pmax(abs(pts$x), abs(pts$y)) <= GLIM) |
            (pts$facet == fac[["path"]] & pmax(pts$x, pts$y) <= PHI)
 pts <- pts[inside, ]
+# ONE fitted line per facet (author, 2026-08-04): the whole set. The OXPHOS
+# pathways are marked by colour and nothing else -- a second line at slope 0.525
+# beside one at 0.552 is two lines saying they are the same, which the points
+# already say more directly, and their numbers go in the text.
 fits <- rbind(
-  data.frame(facet = fac[["gene"]], slope = unname(stats::coef(g_fit)), int = 0,
-             cls = "bg"),
+  data.frame(facet = fac[["gene"]], slope = unname(stats::coef(g_fit)), int = 0),
   data.frame(facet = fac[["path"]], slope = unname(stats::coef(p_all)[2]),
-             int = unname(stats::coef(p_all)[1]), cls = "bg"),
-  data.frame(facet = fac[["path"]], slope = unname(stats::coef(p_ox)[2]),
-             int = unname(stats::coef(p_ox)[1]), cls = "ox"))
+             int = unname(stats::coef(p_all)[1])))
 fits$facet <- factor(fits$facet, levels = fac)
 
-# ONLY the gene facet carries numbers (author, 2026-08-04). Two annotations rather
-# than one two-line string, because the R2 is written with a real superscript:
-# plotmath keeps the source ASCII (`R^2`, per the coding rules) and renders it
-# properly, which a literal character would not do reliably through the base pdf()
-# device. On the right the OXPHOS colour does the work and its numbers go in the
-# text.
-ann <- data.frame(
-  facet = factor(rep(fac[["gene"]], 2), levels = fac),
-  x   = -GLIM,
-  y   = GLIM - c(0, 1) * 2 * GLIM * 0.075,
-  lab = c(sprintf("slope~%.2f", stats::coef(g_fit)),
-          sprintf("R^2~%.2f",   g_r2(gsub_))),
+# Each facet carries the slope and R2 of its own line. Two annotations rather than
+# one two-line string, because the R2 is written with a real superscript: plotmath
+# keeps the source ASCII (`R^2`, per the coding rules) and renders it properly,
+# which a literal character would not do reliably through the base pdf() device.
+# The numbers are QUOTED inside the plotmath string. Unquoted, `R^2~0.80` is
+# parsed as a number and printed as 0.8 -- the trailing zero, which is the
+# significant figure the reader is being given, silently disappears.
+ann <- rbind(
+  data.frame(facet = fac[["gene"]], x = -GLIM,
+             y = GLIM - c(0, 1) * 2 * GLIM * 0.075,
+             lab = c(sprintf('slope~"%.2f"', stats::coef(g_fit)),
+                     sprintf('R^2~"%.2f"',   g_r2(gsub_)))),
+  data.frame(facet = fac[["path"]], x = PLO,
+             y = PHI - c(0, 1) * (PHI - PLO) * 0.075,
+             lab = c(sprintf('slope~"%.2f"', stats::coef(p_all)[2]),
+                     sprintf('R^2~"%.2f"',   summary(p_all)$r.squared))),
   stringsAsFactors = FALSE)
+ann$facet <- factor(ann$facet, levels = fac)
 
 cls_cols <- c(bg = "grey35", ox = OX_COL)
 
@@ -162,8 +169,8 @@ p <- ggplot2::ggplot(pts, ggplot2::aes(x, y)) +
   ggplot2::geom_point(data = pts[pts$cls == "ox", ], ggplot2::aes(colour = cls),
                       size = 0.9, alpha = 0.95, stroke = 0) +
   ggplot2::geom_abline(data = fits,
-                       ggplot2::aes(slope = slope, intercept = int, colour = cls),
-                       linewidth = 0.45, show.legend = FALSE) +
+                       ggplot2::aes(slope = slope, intercept = int),
+                       linewidth = 0.45, colour = "grey20") +
   ggplot2::geom_text(data = ann, ggplot2::aes(x = x, y = y, label = lab),
                      parse = TRUE, hjust = 0, vjust = 1, size = 1.8,
                      colour = "grey25", inherit.aes = FALSE) +
@@ -179,12 +186,19 @@ p <- ggplot2::ggplot(pts, ggplot2::aes(x, y)) +
   ggplot2::guides(colour = ggplot2::guide_legend(
     override.aes = list(size = 1.5, alpha = 1))) +
   theme_panel(base_size = 6) +
+  # The one-item key sits INSIDE the right facet, bottom right (author,
+  # 2026-08-04), which is the wedge the diagonal cloud leaves empty -- high six-week
+  # effect with a low twelve-week one is exactly what does not happen. Under the
+  # plot it cost a whole row of height for one dot.
   ggplot2::theme(
     strip.text      = ggplot2::element_text(face = "plain", size = 5.6,
                                             margin = ggplot2::margin(0, 0, 0.6, 0, "mm")),
     panel.spacing.x = ggplot2::unit(2.4, "mm"),
-    legend.position = "bottom",
-    legend.margin   = ggplot2::margin(-2, 0, 0, 0),
+    legend.position        = "inside",
+    legend.position.inside = c(0.995, 0.02),
+    legend.justification   = c(1, 0),
+    legend.background      = ggplot2::element_blank(),
+    legend.margin   = ggplot2::margin(0, 0, 0, 0),
     legend.key.size = ggplot2::unit(2.4, "mm"),
     plot.margin     = ggplot2::margin(1, 1.5, 0.5, 1.5, "mm"))
 
@@ -256,7 +270,7 @@ LEGEND <- panel_legend(
     "results/collapse_module_ownership.rds (scripts/44) -- $collapse_genes, $defs$global_rate_fitted",
     "Earlier double-column form: figures/fig03_background_vs_myc.R panel B"))
 
-save_panel_p(p, "fig1_rescaled_not_reshaped", height = 50)
+save_panel_p(p, "fig1_rescaled_not_reshaped", height = 46)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()

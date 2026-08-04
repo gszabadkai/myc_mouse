@@ -188,9 +188,19 @@ significance level, which can again go in the text."* Everything removed is stil
 asserted** in the script and reported in the legend block, and the drawn null is kept in the
 sandbox — so the text has its numbers and the page does not spend a strip on one p-value.
 
-The `R2` on the left is a **real superscript**, via plotmath (`R^2~%.2f`, `parse = TRUE`), which
-keeps the source ASCII per the coding rules and renders correctly through the base `pdf()` device
-where a literal character would not.
+Three more cuts in the same review: the **OXPHOS fit line** came off (a second line at slope
+0.525 beside one at 0.552 is two lines saying they are the same, which the points say better),
+the **overall mitochondrial slope and R2 went on** to the right-hand facet so each facet carries
+its own line's numbers, and the **OXPHOS key moved inside the frame** — bottom right of the right
+facet, which is the wedge the diagonal cloud leaves empty, since a large six-week effect with a
+small twelve-week one is exactly what does not happen. Under the plot it cost a whole row of
+height for one dot.
+
+The `R2` is a **real superscript**, via plotmath (`parse = TRUE`), which keeps the source ASCII
+per the coding rules and renders correctly through the base `pdf()` device where a literal
+character would not. **The number must be quoted inside the plotmath string** (`R^2~"0.80"`): left
+unquoted it is parsed as a number and printed as `0.8`, silently dropping the significant figure
+the reader is being given.
 
 **The distinction the sentence turns on, now text-only:** "half amplitude" is the **slope**;
 "unchanged in shape" is the **R2**. They are independent, and only one of them is beyond its null:
@@ -233,8 +243,8 @@ legend block, as Fig. 1E states its own capped point.
 the layer data and draws the marker once per row — with a 500-row null that turned the "observed"
 label into a black smear. Use `annotate()` for single marks.
 
-Size: 89 x 50 mm. OXPHOS highlight is `ms_diverging[["pos"]]` mint — declared, and not a sample
-colour; it carries a one-item key rather than an in-panel label.
+Size: 89 x 46 mm. OXPHOS highlight is `ms_diverging[["pos"]]` mint — declared, and not a sample
+colour.
 
 ### Revision of 2026-07-31 (paragraph 1 rewritten, paragraph 2 written)
 
