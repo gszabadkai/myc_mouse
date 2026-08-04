@@ -643,42 +643,67 @@ rules and the label bought. Shape is significance (Fig. 1F's encoding); one ink;
 right — every TEB programme is depleted, so the top row ends well left of zero and that corner is
 empty.
 
-### Fig. 2F, built 2026-08-04 — three clauses, two rulers, eleven rows
+### Fig. 2F, built 2026-08-04 — the two rulers against each other
 
-The sentence carries three claims and names two instruments, so the panel is eleven MitoPathways
-ranked on the wild-type 6→12W contrast and drawn **twice**: content (set-average raw log2FC — what
-the compartment *has*) and priority (mitoPPS, pairwise-ratio, content-blind — what it *spends its
-budget on*). Separate facets on separate scales, because they are separate units; what is
-comparable is the **order**, and the order is the result.
+**The form is `figures/fig04_substrate_specificity.R` panel C** (author's review, same day: *"I
+think 2F worked better on fig04 panel C, showing the PPS and logFC plotted against each other and
+colour coded up and down, according to the continuous colour scale"*). The first version was
+eleven named pathways ranked in two side-by-side columns; this one puts **all 143** on the plane
+and lets the named ones sit in it.
 
-| row | n | content | priority | compartment rank (content / priority) |
+- **x = content**, set-average raw log2FC — what the compartment *has*.
+- **y = priority**, mitoPPS pairwise-ratio, content-blind — what it *spends its budget on*.
+- **fill = the manuscript diverging ramp on x**, espresso down / white at zero / mint up. It
+  repeats the x axis rather than adding a variable — Fig. 1B's "encoded twice" idiom — so **no
+  colour bar is drawn**: the x axis is the key, and the asymmetric arm scaling is inspectable
+  there.
+
+**The plane says three things two ranked lists could not.** The cloud runs along a **diagonal**
+(Spearman 0.82, Pearson 0.79 over the 143), so the two rulers agree and the lower-left quadrant is
+the conjunction the claim needs — a content fall alone could be normalisation, a content-blind
+ratio fall alone could be a reshuffle inside a growing compartment. The cloud's **centre sits up
+and right of the origin** (median +0.041 content, 72 % above zero), so the respiratory arm falls
+*against* a rising compartment rather than with it — the clause that licenses "withdraw", now
+visible instead of asserted. And the **OXPHOS assembly factors sit at the origin, a few
+millimetres from their own subunits**: that distance is the entire specificity claim.
+
+| pathway | n | content | priority | compartment rank |
 |---|---|---|---|---|
 | CIV subunits | 17 | **−0.411** | **−0.180** | 0th / 1st |
 | CI subunits | 36 | −0.253 | −0.155 | 3rd / 2nd |
 | CIII subunits | 9 | −0.251 | −0.126 | 3rd / 4th |
 | CV subunits | 19 | −0.216 | −0.069 | 4th / 15th |
-| Mitochondrial ribosome | 83 | −0.024 | −0.041 | 24th / 30th |
+| mitoribosome | 83 | −0.024 | −0.041 | 24th / 30th |
 | **OXPHOS assembly factors** | 66 | **+0.001** | **−0.002** | 29th / 47th |
-| Central dogma | 230 | +0.036 | −0.011 | 47th / 42nd |
+| central dogma | 230 | +0.036 | −0.011 | 47th / 42nd |
 | **CII subunits** | 4 | **+0.088** | **+0.026** | 69th / 66th |
-| Lipid metabolism | 111 | +0.122 | +0.063 | 76th / 79th |
-| Amino acid metabolism | 79 | +0.184 | +0.082 | 88th / 83rd |
-| Fatty acid oxidation | 39 | +0.227 | +0.144 | 93rd / 94th |
+| lipid metabolism | 111 | +0.122 | +0.063 | 76th / 79th |
+| amino acid metabolism | 79 | +0.184 | +0.082 | 88th / 83rd |
+| fatty acid oxidation | 39 | +0.227 | +0.144 | 93rd / 94th |
 
-**Both rulers are drawn because either alone is answerable.** A content drop could be a
-normalisation effect; a drop in a content-blind ratio could be a reshuffle inside a growing
-compartment. Across all 143 non-mtDNA pathways the two agree at **Spearman 0.82** (Pearson 0.79).
+**Significance — the author asked, and here is everything that exists.** Nothing is drawn, and the
+reason is on the record:
 
-**The background is rising, and that is what makes "withdraw" the right verb.** The median
-MitoPathway *gains* content over this window (**+0.041, 72 % of the 143 above zero**). The
-respiratory arm is not falling with the compartment; it is falling against it.
+1. **Per pathway, priority ruler.** Script 08 *does* test this contrast (`Temporal_Myc-` in
+   `mitopps_scores.rds$mitopps_pairwise`, and its `diff` is asserted **identical** to the ruler's
+   `p_tn`). **0 of 143 clear BH < 0.05**; the smallest adjusted p is 0.12. What it does show is
+   **coherence**: 23 pathways clear an unadjusted 0.05 against 7.2 expected, **binomial
+   p = 8e−7** — the compartment moves together and no single pathway carries it.
+2. **Per pathway, content ruler.** None exists in the saved objects. A one-sample t over
+   member-gene fold changes could be computed but ignores inter-gene correlation and would be
+   anti-conservative for exactly the coherently-regulated sets this panel is about. Deliberately
+   not done.
+3. **Arm level, expression-matched null (script 43, 2000 draws).** This is where it is decisive:
+   pooled OXPHOS subunits **percentile 0.0** (p < 0.0005) against their own assembly factors at
+   **50.2**; mitoribosome 26.4; amino-acid **100.0** and lipid **99.9** upward.
+4. **THE NUMBER TO QUOTE IN THE TEXT, and it was not in the panel brief:** script 43's **paired
+   null** redraws *both* sets of a contrast together and tests the **difference** — which is what
+   "the chain falls *while* biogenesis does not" actually claims. **OXPHOS subunits minus
+   mitoribosome = −0.230, percentile 0.05, p = 0.0005**; minus nucleotide metabolism −0.255,
+   p = 0.0085; minus the pooled proliferation set −0.208, p < 0.0005.
 
-**The internal control is on the panel, one row below the four complexes:** the assembly factors
-*of the same complexes* sit at **+0.001 / −0.002**, percentile **50.2** of script 43's
-expression-matched null, where the pooled subunits sit at **0.0**. What the gland withdraws is the
-structural stoichiometry of the chain, not the machinery that builds it. This is the row that
-makes the claim specific rather than a general shrinkage — and it is measured in the same
-libraries on the same two batches, which is the strongest available answer to `batch = timepoint`.
+A glyph would have to mark 8 tested pathways among 135 untested ones, which reads as 135
+negatives — so the panel carries the pattern and the legend carries the tests.
 
 **"Across all complexes" has one exception, and it needs a word in the text.** **CII subunits
 +0.088 / +0.026** — the only respiratory complex with no mtDNA-encoded subunit, outside the proton
@@ -695,22 +720,28 @@ genotype-associated**, so a temporal contrast is exactly where it cannot be read
 mtDNA-up mitonuclear discordance is what it looks like; on this axis it is not adjudicable. Stated
 in the legend block so the omission is visible.
 
-**No significance is drawn and none exists** for this contrast — script 40 saves adjusted p-values
-for the genotype contrasts only. What exists is script 43's expression-matched null, which covers
-five of the eleven rows and is quoted in the legend. Within-compartment percentiles are a *rank
-among MitoPathways*, not a test, and are labelled as such.
+**Windowed for display, and what falls outside is the membership-loose caveat made visible.** Two
+pathways sit below the drawn priority range (Vitamin D metabolism −0.403, 4 genes; Selenoproteins
+−0.318, 5) and are named in the legend; every number is computed on the complete 143. **Every
+pathway at the periphery of this cloud is a set of three to six genes** — GABA metabolism 6,
+catechol 3, molybdenum cofactor 5, the carnitine pair 5 and 6 — because a set mean's noise scales
+as 1/√n. The core of the cloud is where the large sets are.
 
-**Scripts 40 and 43 computed the wild-type arms independently and the script asserts they agree**
-to 1e−6, via `$defs$arms` (script 43's own arm→pathway map) — an identity check across two
-analyses, not a re-derivation in the figure layer.
+**The labels are placed, not repelled — and the placement is arithmetic.** Seven of the eleven sit
+in the knot at the origin or on the crowded upper diagonal, where ggrepel has nowhere local to put
+them and stacks them on each other (it did, twice). The plane has two **provably empty** regions —
+upper-left (nothing gains priority while losing content) and the right band past +0.28 content —
+and the script **re-derives that emptiness from the data with `in_box()` in a `stopifnot`** rather
+than trusting a render. Lane order matches the points' own vertical order, which is what makes it
+impossible for two leaders to cross, and that too is asserted. Same principle as Fig. S1C's three
+lanes. The four respiratory complexes keep ggrepel, because the lower left is empty around them.
 
-Two small fixes worth remembering: a facet strip **clips at the panel edge** (the trap Fig. 1E hit
-with its arm names), so strip labels are short and `strip.clip = "off"`; and with two facets
-`theme_classic` draws a y axis line down **each**, where the second reads as an unlabelled second
-axis — `axis.line.y`/`axis.ticks.y` are blanked and the zero line inside each panel is the
-reference.
+**Scripts 40, 43 and 08 all describe these numbers and the script asserts they agree**: script 43's
+arms to script 40's ruler at 1e−6 via `$defs$arms`, and script 08's mitoPPS diff to the ruler's
+`p_tn` **exactly** (max difference 0). `require_fresher_than()` is deliberately *not* called on
+`mitopps_scores.rds` — the same one-minute timestamp artefact Fig. 1F documents.
 
-Size: 89 x 56 mm.
+Size: 89 x 70 mm.
 
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
@@ -930,6 +961,12 @@ Six checks against the text as written. None of them is a result changing; all s
   assembly factors of the same complexes sit at **+0.001 / −0.002**, percentile 50.2 of the
   matched null. *The gland withdraws the stoichiometry of the chain, not the machinery that
   builds it.*
+- **The statistic to put in the sentence is the PAIRED null, not either arm's own.** "The
+  respiratory chain falls *while* biogenesis does not" is a comparative claim, and script 43
+  tests it by redrawing both sets together: **OXPHOS subunits minus mitoribosome = −0.230,
+  p = 0.0005** (minus nucleotide metabolism −0.255, p = 0.0085; minus the pooled proliferation
+  set −0.208, p < 0.0005). Per pathway nothing survives BH on either ruler — 0 of 143 — so the
+  text should not attach a p-value to any single MitoPathway.
 - **The mtDNA arm is not on the panel and the text should not quote it either.** It is the largest
   movement in the compartment (+0.633 / +0.525) and it is the one quantity that is
   time-associated rather than genotype-associated, so the wild-type temporal contrast is exactly
