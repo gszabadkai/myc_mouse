@@ -85,6 +85,7 @@ green**. Two rules travel with it:
 | **Fig. 1E** | `fig1_mito_content.R` | p3: "it drove a quantitative expansion by systemically upregulating 94% of 143 nuclear-encoded mitochondrial pathways, increasing the mitochondrial transcriptomic fraction by 21–27% (padj < 0.001)" — **both** clauses, two rulers, two parts | `mito_content_proxies.rds` (`$shares`, `$share_stats`), `background_vs_myc.rds` (`$ruler`, `$ruler_summary`) |
 | **Fig. 1F** | `fig1_reallocation_ranked.R` | p3: "a resource reallocation altered intra-compartmental priorities, as quantified by MitoPPS … promoted protein import/homeostasis, translation, OXPHOS subunits … demoted dynamics and surveillance, including fission, mitophagy, and apoptosis alongside calcium signalling"; **and** p4: "a similar effect on the mitopathway priority scores was observed (see Fig. 1F)" | `background_vs_myc.rds` (`$ruler`, `$ruler_summary`), `mitopps_scores.rds` (assertion only) |
 | **Fig. 1G** | `fig1_rescaled_not_reshaped.R` | p4: "the entire structure is present at half amplitude and unchanged in shape both in the whole and mitochondrial transcriptome (overall R2, OXPHOS R2, p)" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `background_vs_myc.rds` (`$ruler`, `$regressions`, `$regression_boot`, `$regression_null`, `$null_draws`) |
+| **Fig. 1H** | `fig1_nes_preserved_sharpened.R` | p4: "this ranking was not just maintained but enhanced: the normalized enrichment score for the mitochondrial OXPHOS set and MYC integrative signatures increased substantially" | `fgsea_percategory.rds` |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -465,6 +466,54 @@ seed it — its only `set.seed` is inside `perm_trajectory_contrast` (`17:495`).
 `gsva_overview$coef_table` therefore differ slightly between runs. They feed nothing in these panels
 (which use the OLS coefficients and the GSVA scores), but a `set.seed()` before line 379 would be a
 one-line durable fix if the roast p-values are ever quoted.
+
+### Fig. 1H, built 2026-08-04 — and it does not support the sentence as written
+
+866 gene sets, NES at twelve weeks against NES at six, identity line, and the two programmes the
+sentence names picked out by `programme_group()` — the same encoding Fig. 1D groups its rows by,
+so "OXPHOS" and "Myc signatures" mean the same thing on both panels.
+
+**"Maintained" is strongly true and is the panel's real result.** Spearman **0.933** over 866
+sets while the effect size halves (Fig. 1G). Better still: the 92 sets that cross sign between the
+ages — the two off-diagonal clouds — are **84 % mammary-development and TF-target sets**. Set them
+aside and Spearman over the remaining 774 rises to **0.967**. *What holds its order is the
+metabolic, mitochondrial and Myc core; what reshuffles is lineage identity* — which is section 2's
+subject, arriving early.
+
+**"Enhanced" needs the sentence changed.** Two independent reasons, and the panel shows the first:
+
+1. **The rise is not specific.** Every point is above the line, not just the named ones —
+   **81 % of all 866 sets rise (median +0.312)**, and **93 % of the 403 already enriched at six
+   weeks (median +0.319)**. As families the two named rise by *the median amount*: OXPHOS
+   **+0.308, the 49th percentile**; Myc signatures **+0.386, the 60th**. The individual sets the
+   Order D doc quoted are the best members of their families, not typical of them —
+   `MITOCARTA_OXPHOS` +0.52 (76th pct), `MYC_felsher_integrative_signature` +0.55 (78th),
+   `HALLMARK_MYC_TARGETS_V1` +0.75 (87th).
+2. **A global NES rise is what a weaker ranking mechanically produces.** fGSEA normalises each
+   enrichment score against a permutation null built from *that same ranked list*. The twelve-week
+   Wald list is much flatter than the six-week one — **SD 1.221 vs 1.744, IQR 1.503 vs 2.176,
+   9.5 % of genes past |stat| = 2 vs 22.5 %** — so random sets reach smaller enrichment scores,
+   the normaliser shrinks, and the same relative enrichment scores a higher NES. **No claim of
+   increased Myc activity can rest on this panel.**
+
+**What is true, and is a better sentence:** NES is enrichment *relative to the rest of the
+transcriptome*, so these programmes **hold their position at the top of the ranking while the
+amplitude halves** — the residual Myc signal is more concentrated on them than it was. That is the
+retention asymmetry of scripts 29–31 (Myc core retains 0.74–0.77 against the mitochondrial arms'
+0.50–0.58) read on a different instrument. It is a statement about **position, not magnitude**,
+and it sits naturally beside Fig. 1G rather than against it.
+
+**One encoding note:** `ms_diverging` is a *ramp* everywhere else in the manuscript; this is the
+one panel that spends its two poles as categorical colours (mint = OXPHOS, matching Fig. 1G;
+espresso = Myc signatures). Neither is a sample colour. Flagged in the legend block, not left to
+be noticed.
+
+Also visible and unplaced: the upper-left cloud is the **release of Myc's suppression of luminal
+hormone-sensing identity** (`MG_LHS_CONSENSUS` −3.20 → +2.05, `MG_LHOR_SAEKI` −3.45 → +2.00) —
+the largest single departure from the dose line in the transcriptome, and still a beat the Results
+has not placed.
+
+Size: 89 x 62 mm; key inside, bottom right.
 
 ## Where the panels and the written sentences disagree
 
