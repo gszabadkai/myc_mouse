@@ -90,6 +90,7 @@ green**. Two rules travel with it:
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
 | **Fig. S1E** | `figS1_myc_transcript_stable.R` | p5: "this decline occurred despite stable transcript levels; the expression gap remained constant between 6W_myc and 12W_myc for MYC" | `dds_int_run.rds`, `interaction_results.rds`, `combined_df_annotated.rds`, `collapse_module_ownership.rds` (legend) |
+| **Fig. S1F** | `figS1_myc_network.R` | p5: "… and the proximal MYC/MAX/MXD network" — the negative control on the alternative to dose | `interaction_results.rds`, `combined_df_annotated.rds` |
 | *(no slot)* | `figS1_mb_fork_specificity.R` | **displaced 2026-08-04.** It held S1D, and the written S1D is the MYC western blot. Still cited nowhere: it is the specificity control for Fig. 1B's `Human BRCA-MYC` row. It keeps building and keeps its legend block; it is not renumbered a third time until a sentence asks for it. | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
 
 ### Fig. 1E, built 2026-08-04
@@ -548,6 +549,40 @@ has its own inline multiplicative copy from before the helper existed; it should
 next time it is touched.*
 
 Size: 55 x 55 mm.
+
+### Fig. S1F, built 2026-08-04
+
+The second half of S1E's sentence, and a **negative control on the most obvious alternative to
+dose**: MYC cannot bind an E-box without MAX and competes for the same sites with the MXD/MNT
+family, so a fall in MAX or a rise in the repressors would attenuate its output at constant MYC.
+Neither happens.
+
+**It draws the CONTRAST, not the level** — the sentence's claim is about the gap, so the gap is on
+the axis: each gene's Myc genotype effect at six weeks and at twelve, joined, with the roles as
+facet strips. The levels form needs ten facets and 183 mm to say the same thing less directly
+(`figS8_myc_network_levels.R` panel B).
+
+**Nothing clears significance at either age** — closest are `Mxi1` (+0.33, padj 0.096) and `Mlx`
+(+0.39, padj 0.156) — and no interaction is below **padj 0.83**. So there is no significance
+encoding on the panel: a key whose filled entry never appears is worse than saying it once in the
+legend.
+
+**The error bar is on the six-week point only, and it is drawn OVER the connector in the six-week
+colour.** Drawn underneath and in grey it read as spanning both points, which makes a twelve-week
+point falling outside it look like a significant difference between the ages. One bar is enough
+because **the two ages are equally precise: standard errors agree to within 0.024 log2 across all
+ten genes, median ratio 1.01** — asserted in the script. That equality is worth having on its own:
+*twelve weeks is not the noisier cohort*, which is the objection every attenuation result in the
+paper has to survive.
+
+**Two genes cannot carry a negative** and the bars show it rather than leaving it to be assumed:
+`Mxd3` (baseMean 14, SE 0.52) and `Mlxipl` (baseMean 45, SE 0.33) are wide enough that a real
+half-log2 effect would be missed.
+
+The key is **under** the plot here, unlike 1G and 1H — this panel has no empty corner, the MLX rows
+run to the right edge.
+
+Size: 89 x 55 mm.
 
 ## Where the panels and the written sentences disagree
 
