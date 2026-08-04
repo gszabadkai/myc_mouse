@@ -83,6 +83,7 @@ green**. Two rules travel with it:
 | **Fig. 1C** | `fig1_pathway_pca.R` | p2: "the dominant principal component axis of these genesets across the whole dataset …" — that there IS one, and where the four groups sit on it | `gsva_scores.rds`, `pathway_loading.rds` (assertions) |
 | **Fig. 1D** | `fig1_nes_ranking.R` | p2: "Mitochondrial biogenesis and OXPHOS complex genesets were overall top ranked based on normalised changes in effect size, along with core (non-mitochondrial) MYC target genesets, followed by …" | `fgsea_percategory.rds`, `ap6_permutation_null.rds` (legend), `provenance_table.csv` |
 | **Fig. 1E** | `fig1_mito_content.R` | p3: "it drove a quantitative expansion by systemically upregulating 94% of 143 nuclear-encoded mitochondrial pathways, increasing the mitochondrial transcriptomic fraction by 21–27% (padj < 0.001)" — **both** clauses, two rulers, two parts | `mito_content_proxies.rds` (`$shares`, `$share_stats`), `background_vs_myc.rds` (`$ruler`, `$ruler_summary`) |
+| **Fig. 1F** | `fig1_reallocation_ranked.R` | p3: "a resource reallocation altered intra-compartmental priorities, as quantified by MitoPPS … promoted protein import/homeostasis, translation, OXPHOS subunits … demoted dynamics and surveillance, including fission, mitophagy, and apoptosis alongside calcium signalling"; **and** p4: "a similar effect on the mitopathway priority scores was observed (see Fig. 1F)" | `background_vs_myc.rds` (`$ruler`, `$ruler_summary`), `mitopps_scores.rds` (assertion only) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -129,6 +130,51 @@ Every such object is `as.data.frame()`d on read. And `rownames(x) <- …` on a t
 and will eventually stop working.
 
 Sizes: 89 x 78 mm, top:bottom heights 2.5:1, guides collected to one row at the foot.
+
+### Fig. 1F, built 2026-08-04
+
+Cited **twice** — paragraph 3 for the reallocation itself, paragraph 4 for "a similar effect on
+the mitopathway priority scores was observed (see Fig. 1F)" — so the 6W→12W fade has to read in
+the same panel. Two parts again, and the second is the pair to Fig. 1E's.
+
+**TOP — the thirteen the sentence names**, ranked, each with its 12W effect joined to its 6W one
+by a connector. Colour is the declared contrast vocabulary (`contrast_cols`: `myc_6W`,
+`myc_12W`); **shape is significance** — filled at padj < 0.05 at six weeks, open otherwise —
+because the significance is heterogeneous in a way that matters to the sentence (below).
+
+**Why named rows and not all 144 ranked.** The sentence names twelve things. A 144-point ranked
+chart with twelve leader labels is unreadable at 89 mm, and unlabelled it cannot support the
+sentence at all. `figures/fig02_reallocation_ranked.R` is the all-144 form and needed 183 mm to
+label seven tiers.
+
+**BOTTOM — the compartment the thirteen came out of**, which is what answers the cherry-picking
+objection: all 143 non-mtDNA pathways at 6W, the *same construction* as Fig. 1E's lower strip on
+the other ruler. **That pairing is the point.** On content, 95.1 % sit above zero; on priority,
+56.6 %. Two panels, two strips, and the difference between them *is* "MYC-driven mitochondrial
+alterations manifested through two mechanisms".
+
+**One x scale for both parts**, fixed over everything drawn, with the top part's tick labels
+dropped so the axis at the foot serves both. A vertical dropped from any row lands where that
+pathway sits in the whole compartment; separate scales would have made that reading wrong.
+
+**n is printed in every row label.** Several of the largest effects rest on four genes (glycine
+cleavage 4, serine 4), and MitoCarta sets are membership-loose — a big effect on a four-gene set
+is one gene, not a module. That belongs on the panel, not in the legend.
+
+**Provenance asserted, freshness guard deliberately NOT called.** `$ruler$p_m6` is asserted
+identical (to 0, not to a tolerance) to script 08's `mitopps_pairwise` diff and padj. But
+`results/mitopps_scores.rds` is timestamped one minute *before* `results/gsva_scores.rds` although
+both came out of the same 2026-07-24 re-run, so `require_fresher_than()` would stop this panel for
+an artefact of the ordering inside that session. The identity check is the stronger guard.
+
+**`tier_cols` was re-keyed in `_panel_common.R`** while building this: its keys were abbreviated
+strings that matched nothing on disk, so any lookup would have returned `NA` silently. They are
+now the seven values `$ruler$tier` carries, with a separate `tier_labels` for display. **1F does
+not use it** — four of those hues are the sample palette, and on a page where panel E spends blue
+on wild type and orange on Myc+, a tier key reusing them invites the reader to see genotype in a
+tier. Thirteen named rows need no tier colour.
+
+Sizes: 89 x 72 mm, top:bottom heights 3:1.
 
 ### Revision of 2026-07-31 (paragraph 1 rewritten, paragraph 2 written)
 
@@ -450,10 +496,31 @@ Six checks against the text as written. None of them is a result changing; all s
   sit at 0.08–0.11). The effect *size* is the same at both ages — every interaction p is 0.35–0.81
   — so the pooled test is the right one, but the text should not imply a six-week significance
   that the six-week data alone do not carry.
-- **"OXPHOS subunits (all complexes)" is not exact on the priority ruler.** Complex IV sits at
-  **+0.017**, flat; CV (+0.165) and CIII (+0.160) carry the tier. And the **assembly factors** of
-  those same complexes are at **−0.028** — the subunit-versus-assembly split is the interesting
-  half and it reappears in the wild-type withdrawal. Write *subunits, led by complexes V and III*.
+- **"MYC *significantly* promoted … OXPHOS subunits (all complexes)" — the word `significantly`
+  does not reach that far, and this is the one item on the list that needs a real change.**
+  Checked against script 08's own BH-adjusted p across all 144 pathways at 6W (33 clear 0.05):
+
+  | in the sentence | priority at 6W | padj | verdict |
+  |---|---|---|---|
+  | translation | +0.117 | **0.042** | supported (translation factors +0.143, padj 0.0043) |
+  | pyruvate | +0.328 | **0.042** | supported |
+  | serine | +0.212 | **0.016** | supported |
+  | protein import / homeostasis | +0.117 | 0.053 | **marginal at tier level** — but SAM 0.016, chaperones 0.039, protein homeostasis 0.044 all clear it |
+  | glycine cleavage | +0.405 | 0.118 | **not significant**, and it is the *largest* promotion on the list |
+  | **OXPHOS subunits** | +0.112 | **0.274** | **not significant** |
+  | — CI / CII / CIII / CIV / CV | +0.055 / +0.021 / +0.160 / +0.017 / +0.165 | 0.37 / 0.54 / 0.16 / 0.86 / 0.15 | **not one complex is significant** |
+  | dynamics & surveillance | −0.156 | **0.028** | supported |
+  | fission | −0.202 | **0.016** | supported |
+  | apoptosis | −0.247 | **0.043** | supported |
+  | mitophagy | −0.182 | 0.084 | **not significant** |
+  | calcium signalling | −0.075 | **0.026** | supported (calcium homeostasis; the uniporter is −0.306 at padj 0.060) |
+
+  So: no part of the OXPHOS arm is significant on this ruler, and the **one OXPHOS row that is,
+  is `CIII assembly factors` at −0.141 (padj 0.022) — demoted.** Suggested repair: move OXPHOS out
+  of the "significantly promoted" clause and into a separate one — *"the OXPHOS subunits moved in
+  the same direction (+0.112) while their assembly factors did not (−0.028), a split that returns
+  in the wild-type timeline"* — which is a more interesting sentence and is the one section 2
+  needs. Fig. 1F draws all of this with filled/open points, so the panel and the text must agree.
 - **"MYC significantly promoted … biosynthetic pathways including glycine cleavage, pyruvate, and
   serine metabolism"** is right, and it is worth knowing those are the *largest* single
   promotions (+0.41 / +0.33 / +0.21) — larger than OXPHOS, which leads as a **tier** and not as a

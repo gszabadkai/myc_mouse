@@ -93,14 +93,36 @@ direction_cols <- c(up = "#D6604D", down = "#4393C3")
 # the geometry and the p-value is the footnote (Fig. 1B's rule).
 sig_cols <- c(sig = "#E41A1C", ns = "grey45")
 
-# MitoPathway Level-1 tiers: Okabe-Ito, with grey72 for the Metabolism catch-all.
-tier_cols <- c("OXPHOS"                  = "#E69F00",
-               "Mitochondrial dynamics"  = "#56B4E9",
-               "Metabolism"              = "grey72",
-               "Protein import, sorting" = "#009E73",
-               "Signaling"               = "#F0E442",
-               "Small molecule transport" = "#0072B2",
-               "Central dogma"           = "#D55E00")
+# MitoPathway Level-1 tiers. KEYED TO THE NAMES THE DATA CARRY -- the seven values
+# of background_vs_myc.rds$ruler$tier, which are mitopps_scores.rds$pathway_tier1_map
+# verbatim. The first version of this vector used abbreviated keys that matched
+# nothing on disk, so a lookup silently returned NA; display shortening belongs in
+# tier_labels, not in the keys. Same principle as group_cols, which keys on the
+# on-disk neg/pos and prints the author's names.
+#
+# NOT USED BY FIG. 1F, deliberately. Four of these hues are the sample palette, and
+# on a page where panel E spends blue on wild type and orange on Myc+, a tier key
+# reusing them invites the reader to see genotype in a tier. 1F names thirteen
+# pathways on its y axis instead, so it needs no tier colour at all. Kept for a
+# panel that draws all 144 at once, where a key is unavoidable -- and such a panel
+# should re-pick these hues away from the sample palette first.
+tier_cols <- c("Protein import, sorting and homeostasis" = "#009E73",
+               "Mitochondrial central dogma"             = "#D55E00",
+               "OXPHOS"                                  = "#E69F00",
+               "Metabolism"                              = "grey72",
+               "Signaling"                               = "#F0E442",
+               "Small molecule transport"                = "#0072B2",
+               "Mitochondrial dynamics and surveillance" = "#56B4E9")
+
+# Display shortenings for the same seven, as figures/fig02_reallocation_ranked.R:43
+# named them. Long MitoCarta names do not fit a single-column axis.
+tier_labels <- c("Protein import, sorting and homeostasis" = "Protein import / homeostasis",
+                 "Mitochondrial central dogma"             = "Central dogma",
+                 "OXPHOS"                                  = "OXPHOS",
+                 "Metabolism"                              = "Metabolism",
+                 "Signaling"                               = "Signaling",
+                 "Small molecule transport"                = "SM transport",
+                 "Mitochondrial dynamics and surveillance" = "Dynamics & surveillance")
 
 # Gene-set quantification methods, as tagged in the library provenance table.
 # A single-hue purple ramp, deliberately NOT the genotype palette: across the
