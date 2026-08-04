@@ -70,7 +70,6 @@
 # =============================================================================
 
 source(here::here("figures", "panels", "_panel_common.R"))
-if (!requireNamespace("ggrepel", quietly = TRUE)) stop("fig2F needs ggrepel")
 
 bv_path <- here::here("results", "background_vs_myc.rds")
 ss_path <- here::here("results", "substrate_specificity_tradeoff.rds")
@@ -186,51 +185,67 @@ stopifnot(all(w$c[w$pathway %in% FOUR] < 0), all(w$p[w$pathway %in% FOUR] < 0),
 YLO <- -0.26
 XR <- range(r143$c) + c(-1, 1) * diff(range(r143$c)) * 0.05
 YR <- c(YLO, max(r143$p) + diff(range(r143$p)) * 0.05)
-
-# --- where the labels go, and why it is arithmetic rather than nudging ---------
-# Seven of the eleven named pathways sit inside the knot at the origin or on the
-# crowded upper diagonal, where ggrepel has nowhere local to put a label and
-# stacks them on each other. But this plane has two large PROVABLY EMPTY regions,
-# and the assertions below re-derive that emptiness from the data rather than
-# trusting this render:
-#
-#   upper left   nothing gains priority while losing content
-#   right band   past +0.28 content, nothing sits near zero priority
-#
-# So the knot's labels go left and the catabolic labels go right, each on its own
-# lane with a leader. LANE ORDER MATCHES THE POINTS' OWN VERTICAL ORDER, which is
-# what makes it impossible for two leaders to cross. Same principle as Fig. S1C's
-# three lanes; the four respiratory complexes keep ggrepel, because the lower left
-# is empty around them.
-KNOT  <- c("CII subunits", "OXPHOS assembly factors",
-           "Mitochondrial central dogma", "Mitochondrial ribosome")
-CATAB <- c("Fatty acid oxidation", "Amino acid metabolism", "Lipid metabolism")
-stopifnot(setequal(c(KNOT, CATAB, FOUR), NAMED))
-
-in_box <- function(x1, x2, y1, y2)
-  sum(r143$c >= x1 & r143$c <= x2 & r143$p >= y1 & r143$p <= y2)
-
-KNOT_X  <- -0.07;  KNOT_LANES  <- c(0.270, 0.215, 0.160, 0.105)
-CATAB_X <-  0.285; CATAB_LANES <- c(0.100, 0.050, 0.000)
-stopifnot(
-  # the label regions are empty of data, checked and not assumed
-  in_box(XR[1], KNOT_X, min(KNOT_LANES) - 0.02, max(KNOT_LANES) + 0.02) == 0L,
-  in_box(CATAB_X, XR[2], min(CATAB_LANES) - 0.02, max(CATAB_LANES) + 0.02) == 0L,
-  # lanes are assigned in the points' own vertical order, so no two leaders cross
-  !is.unsorted(rev(w$p[match(KNOT, w$pathway)])),
-  !is.unsorted(rev(w$p[match(CATAB, w$pathway)])))
-
-placed <- rbind(
-  data.frame(pathway = KNOT,  x_lab = KNOT_X,  y_lab = KNOT_LANES,  h = 1),
-  data.frame(pathway = CATAB, x_lab = CATAB_X, y_lab = CATAB_LANES, h = 0))
-placed$c   <- w$c[match(placed$pathway, w$pathway)]
-placed$p   <- w$p[match(placed$pathway, w$pathway)]
-placed$lab <- w$lab[match(placed$pathway, w$pathway)]
-placed$x0  <- placed$x_lab + ifelse(placed$h == 1, 0.012, -0.012)
 outside <- r143[r143$p < YLO, ]
 drawn   <- r143[r143$p >= YLO, ]
 stopifnot(nrow(outside) == 2L, all(outside$n <= 6L),
           !any(outside$pathway %in% NAMED))
+
+# --- where the labels go, and why it is arithmetic rather than nudging ---------
+# EVERY label is placed; none is repelled (author's review, 2026-08-04: the leader
+# must leave the label ON THE LABEL'S OWN LINE, which ggrepel cannot promise --
+# it draws from wherever the box edge happens to be). Seven of the eleven also sit
+# inside the knot at the origin or on the crowded upper diagonal, where repel had
+# nowhere local to put them and stacked them on each other twice.
+#
+# THREE LANES, each in a region the assertions below prove is EMPTY of data:
+#   upper left   nothing gains priority while losing content     -> the knot
+#   bottom band  nothing sits below -0.135 right of -0.10        -> the complexes
+#   right band   past +0.285 content, nothing sits near zero     -> the catabolic
+#
+# The knot's order is the author's: central dogma ABOVE OXPHOS assembly. Ordering
+# lanes by the points' own y would put assembly above, and its leader -- which
+# ends further LEFT -- then crosses the central-dogma leader, which starts lower
+# and ends further right. Rather than encode a rule of thumb, the crossing test
+# below checks every pair of leaders directly.
+KNOT    <- c("CII subunits", "Mitochondrial central dogma",
+             "OXPHOS assembly factors", "Mitochondrial ribosome")
+COMPLEX <- c("CV subunits", "CIII subunits", "CI subunits", "CIV subunits")
+CATAB   <- c("Fatty acid oxidation", "Amino acid metabolism", "Lipid metabolism")
+stopifnot(setequal(c(KNOT, COMPLEX, CATAB), NAMED), setequal(COMPLEX, FOUR))
+
+placed <- rbind(
+  data.frame(pathway = KNOT,    x_lab = -0.070, h = 1,
+             y_lab = c(0.270, 0.215, 0.160, 0.105)),
+  data.frame(pathway = COMPLEX, x_lab = -0.100, h = 0,
+             y_lab = c(-0.161, -0.189, -0.217, -0.245)),
+  data.frame(pathway = CATAB,   x_lab =  0.285, h = 0,
+             y_lab = c(0.100, 0.050, 0.000)))
+placed$c   <- w$c[match(placed$pathway, w$pathway)]
+placed$p   <- w$p[match(placed$pathway, w$pathway)]
+placed$lab <- w$lab[match(placed$pathway, w$pathway)]
+# the leader leaves the text on the text's own line, just past its end
+placed$x0  <- placed$x_lab + ifelse(placed$h == 1, 0.012, -0.012)
+
+# --- the two things that could go wrong, both checked against the data ---------
+in_box <- function(x1, x2, y1, y2)
+  sum(r143$c >= x1 & r143$c <= x2 & r143$p >= y1 & r143$p <= y2)
+
+# (a) no lane sits on top of a data point. Boxes cover the text extent, not just
+# the anchor, and are re-derived here rather than trusted from a render.
+stopifnot(in_box(XR[1],  -0.070, 0.085,  0.290) == 0L,     # knot, right-aligned
+          in_box(-0.110,  0.200, -0.258, -0.148) == 0L,    # complexes, left-aligned
+          in_box(0.273,   XR[2], -0.020,  0.120) == 0L)    # catabolic, left-aligned
+
+# (b) no two leaders cross. Standard orientation test, all 55 pairs.
+ccw <- function(ax, ay, bx, by, cx, cy) (cy - ay) * (bx - ax) > (by - ay) * (cx - ax)
+crosses <- function(i, j) {
+  a <- c(placed$x0[i], placed$y_lab[i]); b <- c(placed$c[i], placed$p[i])
+  d <- c(placed$x0[j], placed$y_lab[j]); e <- c(placed$c[j], placed$p[j])
+  ccw(a[1], a[2], d[1], d[2], e[1], e[2]) != ccw(b[1], b[2], d[1], d[2], e[1], e[2]) &&
+  ccw(a[1], a[2], b[1], b[2], d[1], d[2]) != ccw(a[1], a[2], b[1], b[2], e[1], e[2])
+}
+pairs_ij <- utils::combn(nrow(placed), 2)
+stopifnot(!any(apply(pairs_ij, 2, function(k) crosses(k[1], k[2]))))
 
 p <- ggplot2::ggplot(drawn, ggplot2::aes(c, p)) +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey80") +
@@ -254,12 +269,6 @@ p <- ggplot2::ggplot(drawn, ggplot2::aes(c, p)) +
   ggplot2::geom_text(data = placed, inherit.aes = FALSE,
                      ggplot2::aes(x = x_lab, y = y_lab, label = lab, hjust = h),
                      size = 1.65, colour = "grey15") +
-  ggrepel::geom_text_repel(
-    data = w[w$pathway %in% FOUR, ], ggplot2::aes(label = lab), size = 1.65,
-    colour = "grey15", seed = 5, xlim = c(XR[1], 0.02), ylim = c(YR[1], 0.02),
-    min.segment.length = 0, segment.size = 0.2, segment.colour = "grey55",
-    box.padding = 0.34, point.padding = 0.3, max.overlaps = Inf,
-    force = 3, force_pull = 0.2, max.iter = 40000, max.time = 2) +
   # White pinned to zero and the two arms scaled independently -- the declared
   # helper. No colour bar: the fill repeats the x axis, so the axis is the key and
   # the asymmetry is inspectable there.

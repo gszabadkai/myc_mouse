@@ -727,14 +727,29 @@ pathway at the periphery of this cloud is a set of three to six genes** — GABA
 catechol 3, molybdenum cofactor 5, the carnitine pair 5 and 6 — because a set mean's noise scales
 as 1/√n. The core of the cloud is where the large sets are.
 
-**The labels are placed, not repelled — and the placement is arithmetic.** Seven of the eleven sit
-in the knot at the origin or on the crowded upper diagonal, where ggrepel has nowhere local to put
-them and stacks them on each other (it did, twice). The plane has two **provably empty** regions —
-upper-left (nothing gains priority while losing content) and the right band past +0.28 content —
-and the script **re-derives that emptiness from the data with `in_box()` in a `stopifnot`** rather
-than trusting a render. Lane order matches the points' own vertical order, which is what makes it
-impossible for two leaders to cross, and that too is asserted. Same principle as Fig. S1C's three
-lanes. The four respiratory complexes keep ggrepel, because the lower left is empty around them.
+**Every label is placed and none is repelled — and the placement is arithmetic.** Two reasons, one
+of them the author's (review of 2026-08-04): **the leader must leave the label on the label's own
+line**, and ggrepel cannot promise that — it draws from wherever the box edge happens to fall, so
+a repelled label and a placed one do not look like the same object. And seven of the eleven sit in
+the knot at the origin or on the crowded upper diagonal, where repel had nowhere local to put them
+and stacked them on each other (it did, twice). **ggrepel is no longer a dependency of this panel.**
+
+Three lanes, each in a region the script proves is empty:
+
+| lane | region | holds |
+|---|---|---|
+| upper left | nothing gains priority while losing content | the knot's four |
+| bottom band | nothing sits below −0.135 right of −0.10 | the four complexes |
+| right band | past +0.285 content, nothing sits near zero | the catabolic three |
+
+**The emptiness is re-derived from the data** with `in_box()` inside a `stopifnot`, over boxes that
+cover the text extent rather than the anchor — not trusted from a render. **And the no-crossing
+guarantee is a direct test, not a rule of thumb**: an orientation test over all 55 pairs of leaders.
+That change was forced by the author's second note — *"swap OXPHOS assembly with central dogma to
+avoid crossing lines"* — which is correct and which the old heuristic (lane order = the points' own
+vertical order) would have forbidden: OXPHOS assembly sits *above* central dogma in y, but its
+point lies further **left**, so ordering by y crosses the two leaders. Ordering by what actually
+matters needed the real test. Same principle as Fig. S1C's three lanes.
 
 **Scripts 40, 43 and 08 all describe these numbers and the script asserts they agree**: script 43's
 arms to script 40's ruler at 1e−6 via `$defs$arms`, and script 08's mitoPPS diff to the ruler's
