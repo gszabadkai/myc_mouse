@@ -87,6 +87,7 @@ green**. Two rules travel with it:
 | **Fig. 1G** | `fig1_rescaled_not_reshaped.R` | p4: "the entire structure is present at half amplitude and unchanged in shape both in the whole and mitochondrial transcriptome (overall R2, OXPHOS R2, p)" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `background_vs_myc.rds` (`$ruler`, `$regressions`, `$regression_boot`, `$regression_null`, `$null_draws`) |
 | **Fig. 1H** | `fig1_nes_preserved_sharpened.R` | p4: "this ranking was not just maintained but enhanced: the normalized enrichment score for the mitochondrial OXPHOS set and MYC integrative signatures increased substantially" | `fgsea_percategory.rds` |
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
+| **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -642,6 +643,75 @@ rules and the label bought. Shape is significance (Fig. 1F's encoding); one ink;
 right — every TEB programme is depleted, so the top row ends well left of zero and that corner is
 empty.
 
+### Fig. 2F, built 2026-08-04 — three clauses, two rulers, eleven rows
+
+The sentence carries three claims and names two instruments, so the panel is eleven MitoPathways
+ranked on the wild-type 6→12W contrast and drawn **twice**: content (set-average raw log2FC — what
+the compartment *has*) and priority (mitoPPS, pairwise-ratio, content-blind — what it *spends its
+budget on*). Separate facets on separate scales, because they are separate units; what is
+comparable is the **order**, and the order is the result.
+
+| row | n | content | priority | compartment rank (content / priority) |
+|---|---|---|---|---|
+| CIV subunits | 17 | **−0.411** | **−0.180** | 0th / 1st |
+| CI subunits | 36 | −0.253 | −0.155 | 3rd / 2nd |
+| CIII subunits | 9 | −0.251 | −0.126 | 3rd / 4th |
+| CV subunits | 19 | −0.216 | −0.069 | 4th / 15th |
+| Mitochondrial ribosome | 83 | −0.024 | −0.041 | 24th / 30th |
+| **OXPHOS assembly factors** | 66 | **+0.001** | **−0.002** | 29th / 47th |
+| Central dogma | 230 | +0.036 | −0.011 | 47th / 42nd |
+| **CII subunits** | 4 | **+0.088** | **+0.026** | 69th / 66th |
+| Lipid metabolism | 111 | +0.122 | +0.063 | 76th / 79th |
+| Amino acid metabolism | 79 | +0.184 | +0.082 | 88th / 83rd |
+| Fatty acid oxidation | 39 | +0.227 | +0.144 | 93rd / 94th |
+
+**Both rulers are drawn because either alone is answerable.** A content drop could be a
+normalisation effect; a drop in a content-blind ratio could be a reshuffle inside a growing
+compartment. Across all 143 non-mtDNA pathways the two agree at **Spearman 0.82** (Pearson 0.79).
+
+**The background is rising, and that is what makes "withdraw" the right verb.** The median
+MitoPathway *gains* content over this window (**+0.041, 72 % of the 143 above zero**). The
+respiratory arm is not falling with the compartment; it is falling against it.
+
+**The internal control is on the panel, one row below the four complexes:** the assembly factors
+*of the same complexes* sit at **+0.001 / −0.002**, percentile **50.2** of script 43's
+expression-matched null, where the pooled subunits sit at **0.0**. What the gland withdraws is the
+structural stoichiometry of the chain, not the machinery that builds it. This is the row that
+makes the claim specific rather than a general shrinkage — and it is measured in the same
+libraries on the same two batches, which is the strongest available answer to `batch = timepoint`.
+
+**"Across all complexes" has one exception, and it needs a word in the text.** **CII subunits
++0.088 / +0.026** — the only respiratory complex with no mtDNA-encoded subunit, outside the proton
+circuit, and also a TCA enzyme. It is the only one that does not fall. But **n = 4**, and MitoCarta
+sets are membership-loose, so it is a direction to note and not a mechanism to claim. Suggested:
+*"across the four complexes that carry mtDNA-encoded subunits"*, or simply *"CI, CIII, CIV and
+CV"*.
+
+**The mtDNA-encoded subunits are excluded** by the same `is_mtdna` rule Figs. 1E and 1F use — and
+they are the largest movement in the compartment (**+0.633 content, +0.525 priority**). That is not
+tidiness: the mtDNA-encoded read fraction is confounded three ways (real content, the proliferation
+denominator, dissociation leak) and it is the one quantity that is **time-associated rather than
+genotype-associated**, so a temporal contrast is exactly where it cannot be read. A nuclear-down /
+mtDNA-up mitonuclear discordance is what it looks like; on this axis it is not adjudicable. Stated
+in the legend block so the omission is visible.
+
+**No significance is drawn and none exists** for this contrast — script 40 saves adjusted p-values
+for the genotype contrasts only. What exists is script 43's expression-matched null, which covers
+five of the eleven rows and is quoted in the legend. Within-compartment percentiles are a *rank
+among MitoPathways*, not a test, and are labelled as such.
+
+**Scripts 40 and 43 computed the wild-type arms independently and the script asserts they agree**
+to 1e−6, via `$defs$arms` (script 43's own arm→pathway map) — an identity check across two
+analyses, not a re-derivation in the figure layer.
+
+Two small fixes worth remembering: a facet strip **clips at the panel edge** (the trap Fig. 1E hit
+with its arm names), so strip labels are short and `strip.clip = "off"`; and with two facets
+`theme_classic` draws a y axis line down **each**, where the second reads as an unlabelled second
+axis — `axis.line.y`/`axis.ticks.y` are blanked and the zero line inside each panel is the
+reference.
+
+Size: 89 x 56 mm.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -842,6 +912,29 @@ Six checks against the text as written. None of them is a result changing; all s
   end-bud programme toward the ductal one"* is what the data say — and that phrasing is worth
   more here than the control being drawn, because the text is where it now lives.
 
+### Added 2026-08-04, from Fig. 2F
+
+- **"across all complexes" has one exception.** CI, CIII, CIV and CV subunits all fall on both
+  rulers; **CII subunits rise (+0.088 content, +0.026 priority)**. Complex II is the only
+  respiratory complex with no mtDNA-encoded subunit and the only one outside the proton circuit —
+  but the set is **four genes**, so this is a direction to note, not a mechanism. One-word fix:
+  *"across the four complexes that carry mtDNA-encoded subunits"*, or name them.
+- **"OXPHOS subunit LFC and MitoPPS drop" is the strongest form of the claim and it is worth
+  saying why both are quoted:** a content fall alone could be normalisation, a content-blind
+  ratio fall alone could be a reshuffle inside a growing compartment. Across the 143 pathways the
+  two rulers agree at **Spearman 0.82**.
+- **The clause the sentence is missing is the background.** The median MitoPathway **gains**
+  content over this window (+0.041, 72 % above zero), so the respiratory arm is falling *against*
+  a rising compartment, not with it. That is what licenses "withdraw", and it is one clause.
+- **The assembly-factor control deserves a half-sentence in the text**, not just the panel: the
+  assembly factors of the same complexes sit at **+0.001 / −0.002**, percentile 50.2 of the
+  matched null. *The gland withdraws the stoichiometry of the chain, not the machinery that
+  builds it.*
+- **The mtDNA arm is not on the panel and the text should not quote it either.** It is the largest
+  movement in the compartment (+0.633 / +0.525) and it is the one quantity that is
+  time-associated rather than genotype-associated, so the wild-type temporal contrast is exactly
+  where it cannot be read.
+
 ### One text number still to make exact
 
 - **"~3K DEGs"** at 6W is **2777** at FDR 10 % and **1967** at FDR 5 %; the `interaction` contrast
@@ -924,7 +1017,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **2B/2C** | 48 h tamoxifen: proliferation and apoptosis by IHC, 6W vs 12W | bench | — |
 | **2D** | 13-day follow-up: MEC expansion and E-cadherin ductal expansion only at 12W | bench | — |
 | **2E** | "the TEB signature was lost as expected in the puberty-adult transition, [while] the overall proliferation signalling remained relatively stable" | **BUILT 2026-08-04** `fig2_wt_teb_proliferation.R` | `fgsea_percategory.rds` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$defs`, `priming_arm_teb.rds$teb_signatures` |
-| **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `fig2_wt_mito_contraction.R` | `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority`, `background_vs_myc.rds$ruler` |
+| **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | **BUILT 2026-08-04** `fig2_wt_mito_contraction.R` | `background_vs_myc.rds$ruler` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority` + `$defs` |
 | **2G** | "Most pro-anti-apoptotic ratios established by MYC at 6W are reduced according to the global rescaling … the PUMA/BCL-XL ratio exhibited a significant reversal" | `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming`, `$pair_null` |
 | **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` |
 | **2I** | "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" — **author's call 2026-08-04: this gets a panel, and it is 2I, not a supplementary** | `fig2_oxphos_puma_coupling.R` | `substrate_specificity_tradeoff.rds$tradeoff`, `priming_arm_teb.rds$axis_scores` + `$coincidence_fit` |
@@ -939,8 +1032,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E` **built and signed off**; `2F → S2B → S2C → 2G → 2H → S2D
-→ 2I` remain.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F` **built**; `S2B → S2C → 2G → 2H → S2D → 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
