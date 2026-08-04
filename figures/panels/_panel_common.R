@@ -86,6 +86,13 @@ verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
 
 direction_cols <- c(up = "#D6604D", down = "#4393C3")
 
+# Ink for a bracket's p-value label on a per-group distribution panel. Declared
+# here because figures/fig01_mito_content.R:106 inlines it and this layer must not
+# grow a second copy of the same decision. It applies ONLY to bracket labels:
+# significance is never a fill or a point colour in this project -- effect size is
+# the geometry and the p-value is the footnote (Fig. 1B's rule).
+sig_cols <- c(sig = "#E41A1C", ns = "grey45")
+
 # MitoPathway Level-1 tiers: Okabe-Ito, with grey72 for the Metabolism catch-all.
 tier_cols <- c("OXPHOS"                  = "#E69F00",
                "Mitochondrial dynamics"  = "#56B4E9",
