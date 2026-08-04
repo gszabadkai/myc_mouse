@@ -245,6 +245,52 @@ contrast_table <- function(y, timepoint, myc_status, group) {
     within_sd = w, row.names = NULL, stringsAsFactors = FALSE)
 }
 
+# --- comparison brackets over a per-group panel -------------------------------
+# The idiom figures/fig01_mito_content.R:69-103 established: a horizontal bar with
+# two short end ticks and its label above it, spanning the groups it compares.
+# Declared here so the panels that use it cannot each grow their own geometry.
+#
+# WHAT THE CALLER OWNS, and must: the x positions. They follow the order the panel
+# DRAWS, and that order follows the TEST -- genotype-major (both wild-type boxes,
+# then both Myc+) where the contrast is a genotype main effect, age-major where
+# the contrasts are within-age gaps. There is no default that is right for both.
+#
+#   comps  a data.frame with x1, x2, level (integer, stacks the bars upward) and
+#          lab (the string drawn above the bar)
+#   yr     the range of the DRAWN data in that panel, on the drawn scale
+#
+# Additive on whatever scale is drawn, so it is correct on a log axis as well as a
+# linear one. Returns comps with y, y_lab, tick, xmid added, plus attr "headroom"
+# -- the y a geom_blank must reserve, because a geom_text has no data extent and a
+# free scale would otherwise clip the topmost label.
+bracket_frame <- function(comps, yr, pad = 0.09, step = 0.10, tick = 0.022) {
+  stopifnot(all(c("x1", "x2", "level", "lab") %in% names(comps)), length(yr) == 2L)
+  span <- diff(yr)
+  comps$y     <- yr[2] + span * (pad + step * (comps$level - 1))
+  comps$y_lab <- comps$y + span * 0.012
+  comps$tick  <- span * tick
+  comps$xmid  <- (comps$x1 + comps$x2) / 2
+  structure(comps, headroom = max(comps$y) + span * 0.075)
+}
+
+# The three layers the frame draws. Kept together because a bracket drawn without
+# its ticks reads as a rule across the panel rather than as a comparison.
+bracket_layers <- function(brk, size = 1.75, linewidth = 0.22) {
+  list(
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x1, xend = x2, y = y, yend = y, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x1, xend = x1, y = y, yend = y - tick, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x2, xend = x2, y = y, yend = y - tick, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_text(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = xmid, y = y_lab, label = lab, colour = col),
+      vjust = 0, size = size))
+}
+
 # --- the dominant pathway axis -----------------------------------------------
 # Figs. 1C and 1D are the sample scores and the per-set loadings of ONE principal
 # component analysis, so they must not each compute it. results/pathway_loading.rds

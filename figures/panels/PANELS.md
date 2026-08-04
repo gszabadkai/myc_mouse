@@ -89,6 +89,7 @@ green**. Two rules travel with it:
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
+| **Fig. S1E** | `figS1_myc_transcript_stable.R` | p5: "this decline occurred despite stable transcript levels; the expression gap remained constant between 6W_myc and 12W_myc for MYC" | `dds_int_run.rds`, `interaction_results.rds`, `combined_df_annotated.rds`, `collapse_module_ownership.rds` (legend) |
 | *(no slot)* | `figS1_mb_fork_specificity.R` | **displaced 2026-08-04.** It held S1D, and the written S1D is the MYC western blot. Still cited nowhere: it is the specificity control for Fig. 1B's `Human BRCA-MYC` row. It keeps building and keeps its legend block; it is not renumbered a third time until a sentence asks for it. | `gsva_scores.rds`, `ap7_mb_fork.rds` (assertion) |
 
 ### Fig. 1E, built 2026-08-04
@@ -515,6 +516,39 @@ has not placed.
 
 Size: 89 x 62 mm; key inside, bottom right.
 
+### Fig. S1E, built 2026-08-04
+
+The control the western blot needs. If the message fell too, the attenuation would need no
+further explanation and the dose argument would collapse into "the transgene was silenced". It
+does not fall: the genotype gap is **+1.68 → +1.82 log2** and the Myc+ gland does not decline
+across the window (**−0.10, padj 0.76**). Measured as retention, `Myc` is the **most retained gene
+in the transcriptome** — 1.085, the 99.99th percentile of 8,774.
+
+**Age-major group order, the opposite of Fig. 1E, and for the same reason: the order follows the
+test.** 1E draws one pooled genotype main effect, so both wild-type boxes sit together and one
+bracket spans it. Here the tests are the two *within-age* gaps, so each age's pair must be
+adjacent. Neither order is a default.
+
+**The y axis is log2 of normalised counts, labelled in counts** — on that scale "the gap remained
+constant" is a constant vertical distance and can be read off the panel. On a linear count axis it
+could not be.
+
+**The brackets carry DESeq2, not a t-test on the drawn points.** Effects and adjusted p-values come
+from the raw unshrunken interaction model, and the script asserts the empirical log2 difference
+between drawn group means reproduces each DESeq2 fold change to **within 0.1** — so the picture and
+the statistic are the same quantity. Neither this panel nor `dds_int_run.rds` is gated by
+`require_fresher_than()`: the Step 1 objects predate the gene-symbol reconciliation because that
+was a set-membership fix which never touched counts or per-gene results.
+
+**New shared geometry in `_panel_common.R`:** `bracket_frame()` and `bracket_layers()`, the bar +
+two end ticks + label idiom `fig01_mito_content.R:69-103` established. Additive on whatever scale
+is drawn, so it is correct on a log axis. **The caller owns the x positions** — they follow the
+drawn order, which follows the test, and there is no default right for both panels. *Fig. 1E still
+has its own inline multiplicative copy from before the helper existed; it should adopt this the
+next time it is touched.*
+
+Size: 55 x 55 mm.
+
 ## Where the panels and the written sentences disagree
 
 Carried in each script's `LEGEND` block and repeated here because it needs a decision.
@@ -644,6 +678,10 @@ Six checks against the text as written. None of them is a result changing; all s
   serine metabolism"** is right, and it is worth knowing those are the *largest* single
   promotions (+0.41 / +0.33 / +0.21) — larger than OXPHOS, which leads as a **tier** and not as a
   leaf. The sentence as written is fine; do not let a later draft turn it into "OXPHOS leads".
+- **"the expression gap remained constant *between 6W_myc and 12W_myc*"** — a gap is between
+  genotypes, not between ages. Both readings happen to be true and Fig. S1E draws both (the
+  genotype gap +1.68 → +1.82; no decline within Myc+, −0.10 at padj 0.76), but the sentence should
+  say which it means.
 - **`Bbc3` is written "(p < 0.01)"**; the interaction p is **0.0081** and its genome-wide BH is
   **0.84**. What licenses the test is that `Bbc3` was **pre-specified from the cell experiments**,
   and the text does not yet say so. One clause, once.
