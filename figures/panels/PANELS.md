@@ -598,29 +598,31 @@ ranked list, so the normaliser is shared**, which is what makes this comparison 
 the way Fig. 1H's *cross-contrast* comparison was not. No statement about the size of an NES
 crosses a contrast anywhere on this panel.
 
-**Four rows, and two of them exist because a family with a sign built into it cannot share a row
-with one that has not.**
+**Two rows, and nothing else** — author's review the same day: *"this looks quite messy.
+Certainly there is no need to separately label the TEBvsDuctal(HS) and the median bars. TEB-down
+can be omitted. I'm not sure that the TEBxMitoCarta adds to the interpretation."* The first
+version drew four rows, a median rule per row and a label on the strongest set. What is left is
+the sentence and only the sentence:
 
 | row | n | median NES | padj < 0.05 |
 |---|---|---|---|
 | TEB programmes | 38 | **−1.58** | **29** — and every one of the 38 is depleted |
-| ductal (TEB-down) | 3 | **+1.06** | 1 |
-| TEB x MitoCarta | 12 | +0.49 | 0 |
 | proliferation | 14 | **−0.89** | **0** |
 
-**The `_VS_DUCTAL_*_DN` sets were found inside the TEB row on the first render and taken out.**
-They hold the genes *lower* in the end bud than in the duct, so their sign is inverted by
-construction and pooling them cancels part of the effect being measured. On their own row they
-become the control the sentence needs: *"lost as expected in the puberty-adult transition"* is a
-**directional** claim, and a panel showing only sets going down could be showing a ranking that
-drifts down. These rise. Two of the three lineages show the reciprocal outright (basal +1.45
-against its UP set's −2.34, hormone-sensing +1.06 against −2.76); the alveolar pair does not
-(−1.13 against −1.22, neither significant). Same role the OXPHOS assembly factors play in
-`figures/fig04_substrate_specificity.R` panel A.
+**The median rules came off because the ±1 guides do their job better.** fGSEA divides the
+enrichment score by the mean of the same-signed permutation null, so |NES| ≈ 1 is where a set
+that has not moved lands. Against that reference the proliferation row needs no summary statistic
+— it *sits on the band* — and the TEB row's real statement is not its median but that **all 38 of
+its members are below −1.1**, which the cloud shows directly.
 
-**The `*_TEB_MITO` lanes get the treatment Fig. 1D gives the same class** — their own row, not
-deletion and not dilution. 17–59 genes each, MitoCarta subsets by build, median +0.49: they do
-not track the programme they are named for.
+**Two families came off the page and stayed in the legend block, computed and asserted.** The
+three `_VS_DUCTAL_*_DN` sets (the direction control: they rise where the TEB sets fall — basal
++1.45 against its UP set's −2.34, hormone-sensing +1.06 against −2.76; the alveolar pair shows
+neither) and the twelve `*_TEB_MITO` construction lanes (median +0.49, none significant; 17–59
+genes each, MitoCarta subsets by build). **Omitting them from the page is not the same as folding
+them into the TEB row**, which is what the script's structure enforces: the `_DN` sets have their
+sign inverted by construction and would cancel part of the effect, and the `_MITO` lanes are
+Fig. 1D's by-construction class. The four families are identified in one place and two are drawn.
 
 **Three rulers agree on the TEB arm and two are independent of composition.** Gene-level
 set-average raw log2FC **−0.4220** over 148 genes, the **0th percentile** of 2000
@@ -629,22 +631,16 @@ epithelial + immune`) **−0.4200, p 0.0053**. They agree to **0.002**, so resid
 immune contamination does not explain the loss. Asserted in the script, reported in the legend
 block, not drawn.
 
-**Dashed guides at NES = ±1** — the scale of an unmoved set, since fGSEA divides the enrichment
-score by the mean of the same-signed permutation null. It is the reference the proliferation row
-is read against, and that row's median (−0.89) sits inside it.
-
 **`programme_group()` is deliberately not the grouping here** — it would scatter the TEB lanes
 across five of its rows, and the sentence is about the TEB *context*, which cuts across them. The
 proliferation roster is not re-typed either: it is `substrate_specificity_tradeoff.rds
 $defs$prolif_sets`, asserted `setequal`, so the panel and the arm-level statistic quoted in the
 legend describe one set of genes.
 
-**One ggrepel constraint worth remembering:** `position` and `nudge_x`/`nudge_y` are mutually
-exclusive, so a label on a jittered point cannot be nudged. Constrain the repulsion instead
-(`direction = "y"`, `ylim = ...` into the empty strip above the top row).
-
-Size: 89 x 44 mm. Shape is significance (Fig. 1F's encoding); one ink; key inside, top right —
-every TEB programme is depleted, so the top row ends well left of zero and that corner is empty.
+Size: 89 x 30 mm — the smallest panel in the set, which is what dropping two rows, the median
+rules and the label bought. Shape is significance (Fig. 1F's encoding); one ink; key inside, top
+right — every TEB programme is depleted, so the top row ends well left of zero and that corner is
+empty.
 
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
@@ -840,10 +836,11 @@ Six checks against the text as written. None of them is a result changing; all s
   lineage-identity lanes, not cell-cycle sets. **What the normal gland withdraws from is lineage
   and morphogenesis; the cell cycle itself does not move** — the same reading Fig. 1H's
   off-diagonal clouds gave, arriving where the narrative wants it. Worth a clause.
-- **The direction is controlled and the control is on the panel** (see the Fig. 2E entry): the
-  ductal `_DN` sets rise where the TEB `_UP` sets fall, in two of the three lineages. If the
-  sentence wants a stronger verb than "lost", *"the gland moved from the end-bud to the ductal
-  programme"* is what the data say.
+- **The direction is controlled, in the legend block rather than on the panel** (author's call;
+  see the Fig. 2E entry): the ductal `_DN` sets rise where the TEB `_UP` sets fall, in two of the
+  three lineages. If the sentence wants a stronger verb than "lost", *"the gland moved from the
+  end-bud programme toward the ductal one"* is what the data say — and that phrasing is worth
+  more here than the control being drawn, because the text is where it now lives.
 
 ### One text number still to make exact
 
