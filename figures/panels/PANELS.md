@@ -89,6 +89,7 @@ green**. Two rules travel with it:
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
 | **Fig. S2B** | `figS2_reallocation_independence.R` | s2p1: "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `background_vs_myc.rds` (`$ruler`, `$geometry`), `interaction_results.rds`, `gsva_scores.rds` (`$expr_mat`, the split-baseline control) |
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
+| **Fig. 2H** | `fig2_departure_from_dose.R` | s2p2: "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `interaction_results.rds`, `combined_df_annotated_raw.rds` |
 | **Fig. 2G** | `fig2_priming_ratios.R` | s2p2: "most apoptotic priming ratios … remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling … the PUMA/BCL-XL ratio showed a striking reversal" | `priming_arm_teb.rds` (`$priming`, `$pair_null`), `collapse_module_ownership.rds` (`$defs$global_rate_fitted`, `$wt_genes`) |
 | **Fig. S2C** | `figS2_priming_balance.R` | s2p1: "the overall apoptotic priming remains stable in the WT timeline" | `collapse_module_ownership.rds$wt_genes`, `substrate_specificity_tradeoff.rds$buffer`, `background_vs_myc.rds$ruler`, `interaction_results.rds` + `combined_df_annotated_raw.rds` (power control) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
@@ -981,6 +982,58 @@ propagates. Use `which()`.
 
 Size: 89 x 58 mm.
 
+### Fig. 2H, built 2026-08-05 — and the panel carries the half that failed
+
+Script 44 turns Fig. 1G's global rescaling into a **per-gene residual**: for each of 8,774 genes,
+how far its twelve-week Myc effect departs from what the rate predicts, over its own standard
+error, signed so that negative means *collapsed further than the dose explains*. The panel is that
+distribution, with a rug of every gene in the bottom percentile and three genes marked.
+
+| | z | genes below | percentile |
+|---|---|---|---|
+| `Foxo3` | **−2.53** | 39 of 8,774 | **0.46** |
+| `Bbc3` | **−2.49** | 44 | **0.51** |
+| `Bcl2l11` | +1.01 | 8,036 | 91.6 |
+
+**"Closely tracking" has a sharp form and the script asserts it: only FOUR genes of 8,774 lie
+between them.**
+
+**Why `Bcl2l11` is on the panel.** The scan was **pre-registered with two genes** — script 44's
+`pre_specified_genes` are `Bbc3` and `Bcl2l11`, named in advance from the cell experiments — and
+**they split**: `Bbc3` collapses at percentile 0.51, `Bcl2l11` sits in the ordinary middle at 91.6
+with an interaction p of 0.86. Drawing only the half that worked would be the wrong panel, so both
+are marked and the key distinguishes **pre-specified** (filled) from **found in the scan** (open).
+
+**`Foxo3` was NOT pre-specified — it was found here**, and that is the panel's main caveat rather
+than a footnote. Forty-four genes sit below the 0.5th percentile with it and they are mostly
+unrelated (`Adh7`, `Agpat2`, `Aldh3a2`, `Ccnjl`, `Cntnap2`, `Inhba`, `Wfdc2`, `Vtcn1` …). **Position
+alone is therefore not evidence.** What makes `Foxo3` a lead rather than one of forty-four names is
+the **prior** — FOXO3 is PUMA's canonical p53-independent activator, with direct ChIP evidence —
+and the text should introduce it that way round.
+
+**The same departure is reached by two different routes, which the text should keep.** `Foxo3`:
+Myc raises it at six weeks (+0.243) and lowers it at twelve (−0.242), and the **wild-type gland
+raises it with age (+0.473) while the Myc+ gland does not (−0.013)**. `Bbc3`: +0.258 → −0.283, with
+the wild-type gland flat (+0.062) and the Myc+ gland falling (−0.479). One is a failure to follow
+the normal developmental rise; the other is an active loss.
+
+**None of the interactions survives correction** — `Bbc3` p = 0.0081 (BH 0.84), `Foxo3` p = 0.0074
+(BH 1.00), `Bcl2l11` p = 0.86 — which is the expected outcome for an interaction at n = 6 per cell
+and is why the licence is pre-specification rather than the p-value. **A z of −2.5 among 8,774
+genes is a rank statement, not a test**, and the legend says so.
+
+**And the arrow is not the obvious one.** PUMA restrains the mitochondrial pyruvate carrier (Kim,
+*Cancer Cell* 2019), so "PUMA falls, therefore respiration falls" is backwards; respiration sits
+upstream (Dey & Moraes), and FOXO3 → BBC3 closes it into a negative-feedback circuit rather than a
+linear chain. Nothing on this panel establishes a direction.
+
+**One nicety worth keeping:** neither gene is in the 2,648-gene set the rate was fitted on (their
+six-week adjusted p-values are 0.22 and 0.21), so neither contributes to its own expectation.
+
+Size: 89 x 44 mm; windowed at z = +4, with the four genes beyond it named in the legend (they are
+genes Myc *retains* better than the dose predicts — `Myc` itself is there at z +5.03, the 99.99th
+percentile, which is Fig. S1E's result read on this scan).
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -1294,7 +1347,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **2E** | "the TEB signature was lost as expected in the puberty-adult transition, [while] the overall proliferation signalling remained relatively stable" | **BUILT 2026-08-04** `fig2_wt_teb_proliferation.R` | `fgsea_percategory.rds` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$defs`, `priming_arm_teb.rds$teb_signatures` |
 | **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | **BUILT 2026-08-04** `fig2_wt_mito_contraction.R` | `background_vs_myc.rds$ruler` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority` + `$defs` |
 | **2G** | **sentence corrected 2026-08-05:** "While most apoptotic priming ratios established by MYC at 6W remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling of the MYC effect, the PUMA/BCL-XL ratio showed a striking reversal, deviating significantly from the expected pattern" | **BUILT 2026-08-05** `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming` + `$pair_null`, `collapse_module_ownership.rds$defs$global_rate_fitted` + `$wt_genes` |
-| **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` |
+| **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | **BUILT 2026-08-05** `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` + `$defs`, `interaction_results.rds`, `combined_df_annotated_raw.rds` |
 | **2I** | "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" — **author's call 2026-08-04: this gets a panel, and it is 2I, not a supplementary** | `fig2_oxphos_puma_coupling.R` | `substrate_specificity_tradeoff.rds$tradeoff`, `priming_arm_teb.rds$axis_scores` + `$coincidence_fit` |
 
 ### Supplementary 2
@@ -1307,7 +1360,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G` **built**; `2H → S2D → 2I` remain.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G → 2H` **built**; `S2D → 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
