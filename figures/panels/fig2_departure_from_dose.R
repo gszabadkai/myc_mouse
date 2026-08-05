@@ -7,12 +7,12 @@
 #
 # THE SCAN. Fig. 1G showed that the Myc effect at twelve weeks is the six-week
 # effect rescaled by a global factor. Script 44 turns that into a per-gene
-# residual: for each of 8,774 genes, how far its twelve-week effect departs from
-# what the rescaling predicts, divided by its own standard error and signed so
+# residual: for each of 8,774 genes, how far its twelve-week effect differs from
+# what the global Myc scaling predicts, divided by its own standard error, signed so
 # that NEGATIVE means "collapsed further than the dose explains".
 #
-#   Bbc3   z = -2.49, 44 of 8,774 genes below it       (0.51st percentile)
-#   Foxo3  z = -2.53, 39 below it                      (0.46th percentile)
+#   Bbc3   z = -2.49, 44 of 8,774 genes below it       (percentile 0.51)
+#   Foxo3  z = -2.53, 39 below it                      (percentile 0.46)
 #
 # and ONLY FOUR GENES LIE BETWEEN THEM. That is what "closely tracking" means
 # here, and it is the panel.
@@ -22,7 +22,9 @@
 # Bbc3 and Bcl2l11) and they SPLIT: Bbc3 collapses at the 0.51st percentile,
 # Bcl2l11 sits at the 91.6th, which is the ordinary middle of the distribution.
 # So the pre-registration half-succeeded, and drawing only the half that worked
-# would be the wrong panel.
+# would be the wrong panel. WHICH gene was pre-specified is not drawn -- all three
+# marks are identical -- because that is a fact about the analysis rather than
+# about a gene's position. It is in the legend block.
 #
 # AND FOXO3 WAS NOT PRE-SPECIFIED. It was found in this scan. What makes it a
 # lead rather than one of forty-four names is the prior -- FOXO3 is PUMA's
@@ -127,35 +129,26 @@ p <- ggplot2::ggplot(dd, ggplot2::aes(x, y)) +
                         ggplot2::aes(x = z, xend = z, y = 0, yend = h),
                         linewidth = 0.35, colour = "grey15") +
   ggplot2::geom_point(data = MARK, inherit.aes = FALSE,
-                      ggplot2::aes(x = z, y = h, shape = role),
-                      size = 1.5, stroke = 0.35, colour = "grey15",
-                      fill = "grey15") +
+                      ggplot2::aes(x = z, y = h),
+                      size = 1.5, stroke = 0.35, colour = "grey15") +
   ggplot2::geom_text(data = MARK, inherit.aes = FALSE,
                      ggplot2::aes(x = z, y = h, label = lab),
                      hjust = -0.18, vjust = 0.4, size = 1.8, colour = "grey15",
                      fontface = "italic") +
-  ggplot2::scale_shape_manual(values = c("pre-specified" = 21,
-                                         "found in the scan" = 1),
-                              breaks = c("pre-specified", "found in the scan"),
-                              name = NULL) +
   ggplot2::scale_x_continuous(limits = c(XLO, XHI), labels = lab_signed,
                               expand = ggplot2::expansion(mult = 0)) +
   ggplot2::scale_y_continuous(limits = c(0, HMAX * 1.06),
                               expand = ggplot2::expansion(mult = 0)) +
-  ggplot2::labs(x = "departure from the dose expectation  (z)",
+  ggplot2::labs(x = "difference from global Myc scaling  (z)",
                 y = "genes (density)") +
-  ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 1.5))) +
   theme_panel(base_size = 6) +
-  # Key inside, top right: the distribution's right tail is thin and the marks
-  # are all left of centre.
+  # NO KEY, and therefore no shape encoding either (author's review, 2026-08-05:
+  # the panel is obvious without one). The three marks are identical; WHICH of
+  # them was pre-specified and which was found in the scan is a fact about the
+  # analysis, not a property of a gene's position, so it belongs in the legend
+  # block. An unexplained difference between glyphs on the page would be worse
+  # than no difference.
   ggplot2::theme(
-    legend.position        = "inside",
-    legend.position.inside = c(0.995, 0.99),
-    legend.justification   = c(1, 1),
-    legend.background      = ggplot2::element_blank(),
-    legend.margin          = ggplot2::margin(0, 0, 0, 0),
-    legend.key.size        = ggplot2::unit(2.4, "mm"),
-    legend.spacing.y       = ggplot2::unit(0.3, "mm"),
     axis.text.y            = ggplot2::element_blank(),
     axis.ticks.y           = ggplot2::element_blank(),
     plot.margin            = ggplot2::margin(1.5, 2.5, 1, 1.5, "mm"))

@@ -1002,7 +1002,16 @@ between them.**
 `pre_specified_genes` are `Bbc3` and `Bcl2l11`, named in advance from the cell experiments — and
 **they split**: `Bbc3` collapses at percentile 0.51, `Bcl2l11` sits in the ordinary middle at 91.6
 with an interaction p of 0.86. Drawing only the half that worked would be the wrong panel, so both
-are marked and the key distinguishes **pre-specified** (filled) from **found in the scan** (open).
+are marked.
+
+**No key, and therefore no shape encoding either** (author's review, 2026-08-05: the panel is
+obvious without one). The first version distinguished pre-specified from found-in-the-scan by
+filled and open marks; with the key gone that difference would be unexplained ink, which is worse
+than no difference. All three marks are now identical, and *which* gene was pre-specified — a fact
+about the analysis, not about a gene's position — is in the legend block where it belongs.
+
+**The axis reads `difference from global Myc scaling (z)`** (author's wording; kept in the
+project's `Myc` casing so it matches Figs. 2E/2G/S1E).
 
 **`Foxo3` was NOT pre-specified — it was found here**, and that is the panel's main caveat rather
 than a footnote. Forty-four genes sit below the 0.5th percentile with it and they are mostly
