@@ -14,10 +14,13 @@
 # reading -- Bnip3 RISES.
 #
 # THE ROSTER is figures/fig04_substrate_specificity.R panel D's: the 25 pro- and
-# 7 anti-apoptotic MitoCarta transcripts, plus the five non-MitoCarta brakes (the
-# IAPs and the Bcl2a1 paralog), which are not in the apoptosis sets and answer a
-# separate question -- "does the gland BUFFER?" -- from "does it move its
-# apoptotic transcripts?".
+# 7 anti-apoptotic MitoCarta transcripts, plus five more anti-apoptotic genes that
+# MitoCarta does not contain and the apoptosis sets therefore miss -- the caspase
+# inhibitors XIAP, cIAP1/2 (Birc2/3) and survivin (Birc5), and a Bcl2a1 paralog.
+# They get their own row because they answer a different question: "does the gland
+# BUFFER against death?" rather than "does it move its apoptotic transcripts?".
+# The row is labelled for what they ARE (IAPs & Bcl2a1) rather than for how they
+# were excluded, and the script asserts the membership so the label stays true.
 #
 # "OVERALL PRIMING" IS A BALANCE, so the composite is quoted in the legend on both
 # rulers of Fig. 2F: across the window the pro arm moves +0.025 and the anti arm
@@ -73,11 +76,20 @@ d <- data.frame(
   class = ifelse(wg$arm == "PRO", "pro-apoptotic", "anti-apoptotic"),
   lfc = wg$wt_time, padj = wg$padj_wt, lfc_myc = wg$myc_6W,
   stringsAsFactors = FALSE)
-# the brakes that are NOT in the apoptosis sets -- the IAPs and the Bcl2a1
-# paralog. fig04's rule, verbatim: whatever of $buffer is not already present.
+# The third row is the OTHER anti-apoptotic arm: the caspase inhibitors (XIAP and
+# the cIAPs, plus survivin) and a Bcl2a1 paralog. They are not MitoCarta members,
+# so they are absent from the apoptosis sets the first two rows come from -- and
+# they answer a different question, "does the gland BUFFER?", rather than "does it
+# move its apoptotic transcripts?". fig04's rule, verbatim: whatever of $buffer is
+# not already present.
+#
+# THE ROW IS NAMED FOR ITS MEMBERS, so the members are checked. If $buffer ever
+# gains a gene that is neither an IAP nor a Bcl2a1 paralog, the label stops being
+# true and this stops the panel rather than mislabelling it.
 add <- bf[!bf$gene %in% d$gene, ]
+stopifnot(setequal(add$gene, c("Xiap", "Birc2", "Birc3", "Birc5", "Bcl2a1b")))
 d <- rbind(d, data.frame(
-  gene = add$gene, baseMean = add$baseMean, class = "brake (non-MitoCarta)",
+  gene = add$gene, baseMean = add$baseMean, class = "IAPs & Bcl2a1",
   lfc = add$lfc_wt_time, padj = add$padj_wt_time, lfc_myc = add$lfc_myc_6W,
   stringsAsFactors = FALSE))
 d <- d[is.finite(d$lfc), ]
@@ -85,7 +97,7 @@ d <- d[is.finite(d$lfc), ]
 n_class <- table(d$class)
 stopifnot(nrow(d) == 37L, n_class[["pro-apoptotic"]] == 25L,
           n_class[["anti-apoptotic"]] == 7L,
-          n_class[["brake (non-MitoCarta)"]] == 5L)
+          n_class[["IAPs & Bcl2a1"]] == 5L)
 
 # Two of the 32 apoptosis-set members have no current MGI symbol in the
 # annotation table; they stay in the distribution and simply go unlabelled.
@@ -137,7 +149,7 @@ stopifnot(nrow(comp) == 3L, !anyNA(comp$content))
 # =============================================================================
 # the panel
 # =============================================================================
-LEV <- c("brake (non-MitoCarta)", "anti-apoptotic", "pro-apoptotic")
+LEV <- c("IAPs & Bcl2a1", "anti-apoptotic", "pro-apoptotic")
 d$row <- factor(sprintf("%s (%d)", d$class, n_class[d$class]),
                 levels = sprintf("%s (%d)", LEV, n_class[LEV]))
 
@@ -244,7 +256,7 @@ LEGEND <- panel_legend(
     sprintf("Three genes are labelled because later panels turn on them: %s, the only mover; %s (PUMA) at %+.3f, padj %.2f, which is flat across the window and is the subject of Figs. 2G and 2H; and %s (Bcl-xL) at %+.3f, padj %.2f, the denominator of the ratio Fig. 2G reports.",
             "Bnip3", "Bbc3", d$lfc[d$gene == "Bbc3"], d$padj[d$gene == "Bbc3"],
             "Bcl2l1", d$lfc[d$gene == "Bcl2l1"], d$padj[d$gene == "Bcl2l1"]),
-    "The five brakes are drawn as their own row because they answer a different question. Whether the gland moves its apoptotic transcripts and whether it BUFFERS against them are separate, and the IAPs and the Bcl2a1 paralog are not members of the apoptosis sets."),
+    "The third row is the OTHER anti-apoptotic arm: the caspase inhibitors XIAP, cIAP1 and cIAP2 (Birc2, Birc3) and survivin (Birc5), plus the Bcl2a1b paralog. None is a MitoCarta gene, so none is in the apoptosis sets the first two rows are drawn from, and they answer a different question -- whether the gland BUFFERS against death rather than whether it moves its apoptotic transcripts. Their membership is asserted in the script, so the row label cannot drift away from what it names. Nothing in this row moves either (padj 0.32 to 0.88)."),
   bounds = c(
     "BATCH = TIMEPOINT. The 6W and 12W cohorts were extracted as two separate batches, so this panel reads as \"no detectable movement at n = 6 on a confounded axis\", not as \"no movement\". The power control above is what makes the first reading worth having.",
     "A NEGATIVE ON TRANSCRIPTS IS NOT A NEGATIVE ON PRIMING. Apoptotic priming is a property of the protein complement and of how close the mitochondrion sits to the threshold; transcript levels are a substrate for it, not a measurement of it. The measurement is BH3 profiling, and this panel is the reason to do it rather than a substitute.",

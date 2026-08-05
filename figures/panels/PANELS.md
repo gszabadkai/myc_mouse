@@ -830,9 +830,16 @@ Size: 89 x 52 mm; 109 of 15,191 genes fall outside the drawn window (none of the
 
 The port of `figures/fig04_substrate_specificity.R` panel D. Every transcript of the mitochondrial
 death apparatus across the wild-type window: the **25 pro-** and **7 anti-apoptotic** MitoCarta
-genes, plus the **5 non-MitoCarta brakes** (the IAPs and the Bcl2a1 paralog) as their own row,
-because "does the gland move its apoptotic transcripts" and "does it BUFFER" are different
-questions.
+genes, plus **five more anti-apoptotic genes MitoCarta does not contain** — the caspase inhibitors
+XIAP, cIAP1/2 (`Birc2`/`Birc3`) and survivin (`Birc5`), and the `Bcl2a1b` paralog — as their own
+row, because "does the gland move its apoptotic transcripts" and "does it BUFFER against death"
+are different questions.
+
+**That row is labelled `IAPs & Bcl2a1`, not `brake (non-MitoCarta)`** (author's review, 2026-08-05:
+*"it is not clear what brake (non-MitoCarta) means"*). The old name said how the genes were
+*excluded* from the sets above rather than what they *are*. **The script now asserts the row's
+membership**, so if `$buffer` ever gains a gene that is neither an IAP nor a Bcl2a1 paralog the
+panel stops rather than mislabelling the row. Nothing in it moves either (padj 0.32–0.88).
 
 **One of 37 moves, and it moves the wrong way for a loss of priming:** `Bnip3` **+0.63, padj
 0.021** — a pro-apoptotic gene going *up*. Nothing else clears 0.05 on either arm or among the
