@@ -930,7 +930,9 @@ its six-week effect and `Bcl2l1` **0.57** — both at the global 0.49 — so the
 `Bbc3` retains **−1.10** against that same denominator, which is the whole of the difference.
 Drawing the members too would double the panel to make a point the ratios already carry.
 
-**Shape is "established at 6W", and it is load-bearing rather than decorative.** Retention is a
+**Shape is "significantly induced at 6W", and it is load-bearing rather than decorative** (author's
+review, 2026-08-05: *"established" not very clear — "induced" or "significantly induced" would be
+better*; the criterion is the unadjusted p of the six-week genotype coefficient). Retention is a
 *quotient*, so it is meaningless where the six-week effect is not distinguishable from zero. Three
 of the seven pairs are in that state (p6 = 0.40–0.71) and their positions carry no information
 about loss — `Pmaip1`'s retention is +2.08 and `Bmf`'s −0.83 purely because their denominators are
@@ -950,8 +952,10 @@ counterweight is in the legend: on the empirical null the most extreme pair is n
 **Two numbers must not be interchanged.** The gene-level `Bbc3` interaction (**p = 0.0081**, Fig.
 2H's subject) is a different statistic from the *ratio* interaction quoted here (**p = 0.037**).
 
-**The line is imposed, not fitted**, and a bare line through a scatter reads as a regression — so
-it carries its factor on the page (`x 0.49`). The two Mcl-1 pairs are quoted in the legend rather
+**The line is imposed, not fitted**, and a bare line through a scatter reads as a regression — so it
+is **named on the page in the manuscript's own words**: `global rescaling (slope 0.49)` (author's
+review: `x 0.49` was unclear). The slot it sits in is asserted clear of every point *and* of the
+line it names, rather than eyeballed. The two Mcl-1 pairs are quoted in the legend rather
 than drawn: a second denominator needs a second encoding, and the comparison only works with the
 denominator held fixed. (`Bax:Mcl1` +0.487 → +0.408, retention 0.84, established; `Bbc3:Mcl1`
 +0.260 → −0.149, −0.57, **not** established. PUMA reverses against both, but only the Bcl-xL one

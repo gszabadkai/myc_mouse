@@ -38,7 +38,7 @@
 # Bbc3 retains -1.10 against that same denominator. Drawing the members as well
 # would double the panel to make a point the ratios already carry.
 #
-# SHAPE IS "ESTABLISHED AT SIX WEEKS", and it is load-bearing rather than
+# SHAPE IS "SIGNIFICANTLY INDUCED AT SIX WEEKS", and it is load-bearing rather than
 # decorative: retention is a RATIO, so it is meaningless where the six-week effect
 # is not distinguishable from zero. Three of the seven pairs are in that state
 # (p6 = 0.40 to 0.71) and their positions must not be read as retention.
@@ -76,11 +76,11 @@ stopifnot(nrow(pr) == 9L,
 # denominators needs a second encoding to say which is which, and the comparison
 # the sentence makes only works when the denominator is held fixed.
 d <- pr[pr$anti == "Bcl2l1", ]
-d$established <- d$p6 < 0.05
-stopifnot(nrow(d) == 7L, sum(d$established) == 4L,
-          identical(sort(d$pro[d$established]), sort(c("Bax", "Bak1", "Bid", "Bbc3"))),
+d$induced <- d$p6 < 0.05   # Myc significantly raised this ratio at six weeks
+stopifnot(nrow(d) == 7L, sum(d$induced) == 4L,
+          identical(sort(d$pro[d$induced]), sort(c("Bax", "Bak1", "Bid", "Bbc3"))),
           # the reversal, asserted so a re-run cannot flip it silently
-          d$d12[d$pro == "Bbc3"] < 0, all(d$d12[d$established & d$pro != "Bbc3"] > 0))
+          d$d12[d$pro == "Bbc3"] < 0, all(d$d12[d$induced & d$pro != "Bbc3"] > 0))
 
 # Cross-instrument check: script 42 fits the log ratio per sample, script 44
 # reports each member's DESeq2 fold change. The ratio must be the difference of
@@ -99,10 +99,10 @@ YR <- range(c(d$d12, RATE * d$d6)) +
       c(-1, 1) * diff(range(c(d$d12, RATE * d$d6))) * 0.10
 
 # The residual from the expected line, drawn ONLY where retention is interpretable
-# -- i.e. only for the four ratios Myc established at six weeks. For the other
+# -- i.e. only for the four ratios Myc significantly induced at six weeks. For the other
 # three the six-week effect is not distinguishable from zero, so the distance from
 # the line is not a deviation from anything.
-res <- d[d$established, ]
+res <- d[d$induced, ]
 res$y_exp <- RATE * res$d6
 
 # Labels are placed, not repelled, with the leader leaving the text on its own
@@ -133,6 +133,16 @@ clash <- vapply(seq_len(nrow(LAB)), function(i)
       d$d12 > LAB$y1[i] & d$d12 < LAB$y2[i]), logical(1))
 stopifnot(!any(clash), min(LAB$x1) > XR[1], max(LAB$x2) < XR[2])
 
+# The line's own label, and the slot it sits in: above the line, left of the four
+# induced ratios. Checked clear of every point and of the line itself.
+ANN_X <- 0.28; ANN_Y <- 0.36
+ANN_W <- 16 * CH; ANN_H <- 2.1 * LH                 # two lines, 16 characters wide
+stopifnot(
+  !any(d$d6 > ANN_X - CH & d$d6 < ANN_X + ANN_W &
+       d$d12 > ANN_Y - ANN_H & d$d12 < ANN_Y + LH / 2),
+  ANN_Y - ANN_H > RATE * (ANN_X + ANN_W),           # clears the line it names
+  ANN_X + ANN_W < XR[2])
+
 p <- ggplot2::ggplot(d, ggplot2::aes(d6, d12)) +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey80") +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey80") +
@@ -142,19 +152,21 @@ p <- ggplot2::ggplot(d, ggplot2::aes(d6, d12)) +
   ggplot2::geom_segment(data = res, inherit.aes = FALSE,
                         ggplot2::aes(x = d6, xend = d6, y = d12, yend = y_exp),
                         linetype = "22", linewidth = 0.3, colour = "grey45") +
-  ggplot2::geom_point(ggplot2::aes(shape = established), size = 1.6,
+  ggplot2::geom_point(ggplot2::aes(shape = induced), size = 1.6,
                       stroke = 0.35, colour = "grey15", fill = "grey15") +
   # The line is IMPOSED, not fitted, and a bare line through a scatter reads as a
-  # regression -- so it carries its factor. 0.49 is Fig. 1G's global rescaling
-  # rate, not something estimated from these seven points.
-  ggplot2::annotate("text", x = 0.40, y = RATE * 0.40 + 0.045, label = "x 0.49",
-                    hjust = 0, vjust = 0, size = 1.7, colour = "grey35") +
+  # regression -- so it is NAMED on the page, in the manuscript's own words. The
+  # slot it sits in is checked empty below.
+  ggplot2::annotate("text", x = ANN_X, y = ANN_Y,
+                    label = sprintf("global rescaling\n(slope %.2f)", RATE),
+                    hjust = 0, vjust = 1, size = 1.7, colour = "grey35",
+                    lineheight = 0.95) +
   ggplot2::geom_text(data = LAB, inherit.aes = FALSE,
                      ggplot2::aes(x = x, y = y, label = pro, hjust = hj, vjust = vj),
                      size = 1.7, colour = "grey15", fontface = "italic") +
   ggplot2::scale_shape_manual(values = c(`TRUE` = 21, `FALSE` = 1),
                               breaks = c(TRUE, FALSE),
-                              labels = c("established at 6W", "not established"),
+                              labels = c("significantly induced at 6W", "not induced"),
                               name = NULL) +
   ggplot2::scale_x_continuous(limits = XR, labels = lab_signed,
                               expand = ggplot2::expansion(mult = 0)) +
@@ -191,7 +203,7 @@ LEGEND <- panel_legend(
     "on each ratio at twelve weeks against the same effect at six. The line is ",
     "the expected pattern -- the Myc effect rescaled by the global rate of Fig. ",
     "1G -- and the dashed drops are each ratio's distance from it. Filled points ",
-    "are the ratios Myc established at six weeks."),
+    "are the ratios Myc significantly induced at six weeks (p < 0.05)."),
   detail = c(
     sprintf("n = 6 per group. Each ratio is fitted per sample as log2(pro) - log2(Bcl-xL) and the Myc effect is the genotype coefficient of `ratio ~ timepoint * genotype` within each age. The expected line has slope %.3f, the global rescaling rate of the Myc effect fitted over the 2,648 genes Myc moves (script 44; Fig. 1G quotes it as 0.487, against 0.552 for the mitochondrial compartment).",
             RATE),
@@ -205,10 +217,10 @@ LEGEND <- panel_legend(
             pr$int_adj[pr$pair == "Bbc3:Bcl2l1"], pr$int_p_adj[pr$pair == "Bbc3:Bcl2l1"]),
     sprintf("WHY THE OTHER RATIOS HOLD, WHICH IS THE SENTENCE'S CLAUSE ABOUT THE MEMBERS: the two large members decline together at the global rate, so their ratio is left where Myc put it. Bax retains %.2f of its six-week effect and Bcl-xL %.2f, against the global %.2f, and their ratio retains %.2f. Bbc3 retains %.2f against the same denominator, which is the whole of the difference.",
             ret("Bax"), ret("Bcl2l1"), RATE, row_of("Bax")$retention, ret("Bbc3")),
-    sprintf("THE DENOMINATOR IS SHARED, and that is what makes the comparison internal rather than a claim against an outside null: every ratio here is against Bcl-xL, so \"it is just the global attenuation\" is refuted from inside the panel. Two further pairs use Mcl-1 and are not drawn: %s %+.3f to %+.3f (retention %.2f, established at six weeks, p = %.4f) and %s %+.3f to %+.3f (%.2f, NOT established, p = %.2f). PUMA reverses against both denominators, but only the Bcl-xL one was there to begin with.",
+    sprintf("THE DENOMINATOR IS SHARED, and that is what makes the comparison internal rather than a claim against an outside null: every ratio here is against Bcl-xL, so \"it is just the global attenuation\" is refuted from inside the panel. Two further pairs use Mcl-1 and are not drawn: %s %+.3f to %+.3f (retention %.2f, induced at six weeks, p = %.4f) and %s %+.3f to %+.3f (%.2f, NOT induced, p = %.2f). PUMA reverses against both denominators, but only the Bcl-xL one was there to begin with.",
             mcl$pair[1], mcl$d6[1], mcl$d12[1], mcl$retention[1], mcl$p6[1],
             mcl$pair[2], mcl$d6[2], mcl$d12[2], mcl$retention[2], mcl$p6[2]),
-    sprintf("THE OPEN POINTS ARE NOT WEAK RESULTS, THEY ARE ABSENT ONES. Myc did not establish those three ratios at six weeks (%s p = %.2f, %s p = %.2f, %s p = %.2f), and retention is a quotient, so their positions carry no information about loss -- Pmaip1's retention is %.1f and Bmf's %.2f purely because the denominators are near zero. No residual is drawn for them.",
+    sprintf("THE OPEN POINTS ARE NOT WEAK RESULTS, THEY ARE ABSENT ONES (the criterion is the unadjusted p of the six-week genotype coefficient, p < 0.05). Myc did not significantly induce those three ratios at six weeks (%s p = %.2f, %s p = %.2f, %s p = %.2f), and retention is a quotient, so their positions carry no information about loss -- Pmaip1's retention is %.1f and Bmf's %.2f purely because the denominators are near zero. No residual is drawn for them.",
             "Bcl2l11", row_of("Bcl2l11")$p6, "Bmf", row_of("Bmf")$p6,
             "Pmaip1", row_of("Pmaip1")$p6,
             row_of("Pmaip1")$retention, row_of("Bmf")$retention)),
@@ -217,7 +229,7 @@ LEGEND <- panel_legend(
             row_of("Bbc3")$int_p, pr$int_p_adj[pr$pair == "Bbc3:Bcl2l1"],
             pr$int_p_bh[pr$pair == "Bbc3:Bcl2l1"], null_of("Bbc3")$p_emp_cond,
             null_of("Bbc3")$pct_retention_cond, null_of("Bbc3")$n_conditional),
-    sprintf("THE LICENCE IS PRE-SPECIFICATION, and the text should say so once: PUMA was named in advance from the PGC1a cell experiments, not selected from this panel. The honest counterweight is that on the empirical null the most extreme pair is not PUMA but %s (p = %.4f) -- and Myc never established that ratio (p = %.2f), which is exactly why the conditional null is the one to read.",
+    sprintf("THE LICENCE IS PRE-SPECIFICATION, and the text should say so once: PUMA was named in advance from the PGC1a cell experiments, not selected from this panel. The honest counterweight is that on the empirical null the most extreme pair is not PUMA but %s (p = %.4f) -- and Myc never induced that ratio (p = %.2f), which is exactly why the conditional null is the one to read.",
             "Bmf", null_of("Bmf")$p_emp_cond, row_of("Bmf")$p6),
     "PRIMING IS NOT DEATH. These are transcript ratios; apoptotic priming is a property of the protein complement and of how close the mitochondrion sits to the threshold. BH3 profiling is the measurement, and Fig. S2C is the reason to do it.",
     "The gene-level interaction for `Bbc3` itself (p = 0.0081) is a DIFFERENT statistic from the ratio interaction quoted here (p = 0.037 raw). Fig. 2H is where the gene-level one belongs; the two must not be interchanged.",
@@ -255,6 +267,6 @@ if (FALSE) {
 
   ## the drawn ratios against the expected line, as residuals
   data.frame(pro = d$pro, d6 = d$d6, d12 = d$d12, expected = RATE * d$d6,
-             residual = d$d12 - RATE * d$d6, established = d$established) |>
+             residual = d$d12 - RATE * d$d6, induced = d$induced) |>
     (\(x) x[order(x$residual), ])() |> print(row.names = FALSE, digits = 3)
 }
