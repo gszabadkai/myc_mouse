@@ -167,30 +167,62 @@ d$y <- as.integer(d$row) + d$dy
 
 # The three the later panels turn on: the one mover, PUMA (Fig. 2H) and Bcl-xL,
 # the denominator of the ratio Fig. 2G reports.
-# LABELS ARE PLACED, and every leader leaves the text on the text's own line --
-# the convention Fig. 2F settled. Two go into a lane above the top row, which the
-# y limit reserves; Bcl-xL goes out to the left, into the half of the anti row
-# that is empty (nothing in it falls below -0.15). The regions are checked below
-# rather than eyeballed.
-SHOW <- c("Bnip3", "Bbc3", "Bcl2l1")
+# LABELS ARE PLACED, IN ITALICS, and every leader leaves the text on the text's
+# own line -- the convention Fig. 2F settled. Seven genes are named (author's
+# review, 2026-08-05: the major players, not only the mover), which is more than
+# will fit beside their own points, so they go into four lanes:
+#
+#   top    a lane above the pro row that the y limit reserves
+#   mid    the gap between the pro and anti rows, for the one pro gene whose
+#          neighbour in x is too close to share the top lane
+#   right  inline, for the anti gene that is the rightmost point of its row
+#   left   the empty left half of the anti row
+#
+# Every position below is checked against the data rather than eyeballed: the
+# top-lane labels must not overlap each other at the drawn text size, and the
+# left-hand lane must be empty where the leader runs.
+SHOW <- c("Bax", "Bbc3", "Bcl2l11", "Bnip3", "Bak1", "Bcl2", "Bcl2l1")
+MODE <- c("top",  "top", "top",     "top",  "mid",  "right", "left")
 lab <- d[match(SHOW, d$gene), ]
 stopifnot(!anyNA(lab$lfc))
-TOP_LANE <- length(levels(d$row)) + 0.55
-LEFT_X   <- -0.30
-lab$mode  <- c("top", "top", "left")
-lab$x_lab <- ifelse(lab$mode == "top", lab$lfc, LEFT_X)
-lab$y_lab <- ifelse(lab$mode == "top", TOP_LANE, lab$y)
-# where the leader leaves the text: just under it for the top lane, just past its
-# right-hand end for the left-hand one
-lab$x0 <- ifelse(lab$mode == "top", lab$x_lab, lab$x_lab + 0.012)
-lab$y0 <- ifelse(lab$mode == "top", lab$y_lab - 0.05, lab$y_lab)
-stopifnot(
-  # the two top-lane labels are far enough apart in x not to touch
-  abs(diff(lab$lfc[lab$mode == "top"])) > 0.3,
-  # and the left-hand lane is empty of data at that height
-  !any(d$lfc < LEFT_X + 0.06 & abs(d$y - lab$y[lab$mode == "left"]) < 0.35))
+lab$mode <- MODE
 
-XR <- range(d$lfc) + c(-1, 1) * diff(range(d$lfc)) * 0.10
+TOP_LANE <- length(levels(d$row)) + 0.62      # above the pro row
+MID_LANE <- 2.55                              # the gap between pro and anti
+LEFT_X   <- -0.30
+
+lab$x_lab <- ifelse(lab$mode == "left",  LEFT_X,
+             ifelse(lab$mode == "right", lab$lfc + 0.055, lab$lfc))
+lab$y_lab <- ifelse(lab$mode == "top", TOP_LANE,
+             ifelse(lab$mode == "mid", MID_LANE, lab$y))
+lab$hj <- ifelse(lab$mode == "left", 1, ifelse(lab$mode == "right", 0, 0.5))
+lab$vj <- ifelse(lab$mode == "top", 0, ifelse(lab$mode == "mid", 1, 0.5))
+# where the leader leaves the text: under it for the top lane, over it for the
+# mid lane, past its end for the two inline ones
+lab$x0 <- ifelse(lab$mode == "left",  lab$x_lab + 0.012,
+          ifelse(lab$mode == "right", lab$x_lab - 0.012, lab$x_lab))
+lab$y0 <- ifelse(lab$mode == "top", lab$y_lab - 0.05,
+          ifelse(lab$mode == "mid", lab$y_lab + 0.05, lab$y_lab))
+
+# --- the checks ---------------------------------------------------------------
+# Half-width of a label in DATA units, from the drawn text size: 1.7 in ggplot is
+# about 4.84 pt, a Helvetica character averages half an em, and the x axis spans
+# `diff(XR)` units across the panel's plotting width. Conservative by design.
+XR0    <- range(d$lfc); XR <- XR0 + c(-1, 1) * diff(XR0) * 0.10
+CHAR_W <- diff(XR) / 72                        # ~ one character, in x units
+hw     <- nchar(lab$gene) * CHAR_W / 2
+top    <- lab[lab$mode == "top", ]; hw_top <- hw[lab$mode == "top"]
+o      <- order(top$x_lab); top <- top[o, ]; hw_top <- hw_top[o]
+stopifnot(
+  # no two top-lane labels touch
+  all(diff(top$x_lab) > (utils::head(hw_top, -1) + utils::tail(hw_top, -1))),
+  # the rightmost top-lane label stays inside the panel
+  max(top$x_lab + hw_top) < XR[2],
+  # the left-hand lane is clear of data at that height
+  !any(d$lfc < LEFT_X + 2 * CHAR_W &
+       abs(d$y - lab$y[lab$mode == "left"]) < 0.35),
+  # the inline right-hand label belongs to the rightmost point of its row
+  lab$lfc[lab$mode == "right"] == max(d$lfc[d$row == lab$row[lab$mode == "right"]]))
 
 p <- ggplot2::ggplot(d, ggplot2::aes(lfc, y)) +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey45") +
@@ -201,9 +233,8 @@ p <- ggplot2::ggplot(d, ggplot2::aes(lfc, y)) +
                         linewidth = 0.2, colour = "grey55") +
   ggplot2::geom_text(data = lab, inherit.aes = FALSE,
                      ggplot2::aes(x = x_lab, y = y_lab, label = gene,
-                                  hjust = ifelse(mode == "top", 0.5, 1),
-                                  vjust = ifelse(mode == "top", 0, 0.5)),
-                     size = 1.7, colour = "grey15") +
+                                  hjust = hj, vjust = vj),
+                     size = 1.7, colour = "grey15", fontface = "italic") +
   ggplot2::scale_shape_manual(values = c(`TRUE` = 21, `FALSE` = 1),
                               breaks = c(TRUE, FALSE),
                               labels = c("padj < 0.05", "n.s."), name = NULL) +
@@ -253,9 +284,13 @@ LEGEND <- panel_legend(
             comp$myc_content[1], comp$myc_content[2], prime_myc),
     sprintf("THE POWER CONTROL, because a negative at n = 6 needs one: on these SAME %d transcripts, in the same libraries and at the same n, the genotype contrast at six weeks reaches padj < 0.05 for %d of them, against %d across the window. The measurement can see movement in these genes; there is none to see here.",
             sum(!is.na(d$padj_myc)), n_sig_myc, n_sig_wt),
-    sprintf("Three genes are labelled because later panels turn on them: %s, the only mover; %s (PUMA) at %+.3f, padj %.2f, which is flat across the window and is the subject of Figs. 2G and 2H; and %s (Bcl-xL) at %+.3f, padj %.2f, the denominator of the ratio Fig. 2G reports.",
-            "Bnip3", "Bbc3", d$lfc[d$gene == "Bbc3"], d$padj[d$gene == "Bbc3"],
-            "Bcl2l1", d$lfc[d$gene == "Bcl2l1"], d$padj[d$gene == "Bcl2l1"]),
+    sprintf("SEVEN GENES ARE NAMED, in mouse symbols; the proteins the text calls them by are Bax (BAX), Bak1 (BAK), Bcl2l11 (BIM), Bbc3 (PUMA), Bnip3 (BNIP3), Bcl2 (BCL-2) and Bcl2l1 (BCL-XL). None moves except Bnip3: Bax %+.3f (padj %.2f), Bak1 %+.3f (%.2f), Bcl2l11 %+.3f (%.2f), Bbc3 %+.3f (%.2f), Bcl2 %+.3f (%.2f), Bcl2l1 %+.3f (%.2f). Bbc3 and Bcl2l1 are the numerator and denominator of the ratio Figs. 2G and 2H turn on, and both are flat across the window.",
+            d$lfc[d$gene == "Bax"],     d$padj[d$gene == "Bax"],
+            d$lfc[d$gene == "Bak1"],    d$padj[d$gene == "Bak1"],
+            d$lfc[d$gene == "Bcl2l11"], d$padj[d$gene == "Bcl2l11"],
+            d$lfc[d$gene == "Bbc3"],    d$padj[d$gene == "Bbc3"],
+            d$lfc[d$gene == "Bcl2"],    d$padj[d$gene == "Bcl2"],
+            d$lfc[d$gene == "Bcl2l1"],  d$padj[d$gene == "Bcl2l1"]),
     "The third row is the OTHER anti-apoptotic arm: the caspase inhibitors XIAP, cIAP1 and cIAP2 (Birc2, Birc3) and survivin (Birc5), plus the Bcl2a1b paralog. None is a MitoCarta gene, so none is in the apoptosis sets the first two rows are drawn from, and they answer a different question -- whether the gland BUFFERS against death rather than whether it moves its apoptotic transcripts. Their membership is asserted in the script, so the row label cannot drift away from what it names. Nothing in this row moves either (padj 0.32 to 0.88)."),
   bounds = c(
     "BATCH = TIMEPOINT. The 6W and 12W cohorts were extracted as two separate batches, so this panel reads as \"no detectable movement at n = 6 on a confounded axis\", not as \"no movement\". The power control above is what makes the first reading worth having.",

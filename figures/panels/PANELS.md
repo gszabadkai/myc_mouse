@@ -860,9 +860,21 @@ none to see here. Adjusted p-values for the genotype contrast are Ensembl-keyed,
 are mapped through the annotation table and **the mapping is checked against baseMean rather than
 trusted**.
 
-**Three genes are labelled because later panels turn on them:** `Bnip3` (the mover), `Bbc3` (PUMA)
-at **+0.062, padj 0.88** — flat across the window, and the subject of Figs. 2G/2H — and `Bcl2l1`
-(Bcl-xL) at **−0.107, padj 0.79**, the denominator of the ratio Fig. 2G reports.
+**Seven genes are named, in italics** (author's review, 2026-08-05: the major players, not only the
+mover). In mouse symbols, with the proteins the text calls them by: `Bax` (BAX) −0.145,
+`Bak1` (BAK) +0.023, `Bcl2l11` (BIM) +0.255, `Bbc3` (PUMA) +0.062, `Bnip3` (BNIP3) **+0.635**,
+`Bcl2` (BCL-2) +0.461, `Bcl2l1` (BCL-XL) −0.107. **Only `Bnip3` clears padj 0.05**; the rest sit at
+0.37–0.99. `Bbc3` and `Bcl2l1` are the numerator and denominator of the ratio Figs. 2G and 2H turn
+on, and both are flat across the window.
+
+**Seven labels do not fit beside their own points, so they go into four lanes** — a reserved lane
+above the pro row; the gap between the pro and anti rows for the one pro gene whose x-neighbour is
+too close to share the top lane (`Bak1`, 0.039 from `Bbc3`); inline to the right for `Bcl2`, which
+*is* the rightmost point of its row; and out to the left for `Bcl2l1`. **Every position is checked
+against the data**: a half-width in x units is derived from the drawn text size, and `stopifnot`
+requires that no two top-lane labels touch, that the rightmost stays inside the panel, that the
+left lane is clear of data, and that the inline label really does belong to its row's extreme
+point. Nothing here is nudged until it looks right.
 
 **Deterministic vertical offsets, not jitter.** Within a row the genes are ordered by fold change
 and the offsets cycle through a fixed ladder, so neighbours in x are separated in y by
