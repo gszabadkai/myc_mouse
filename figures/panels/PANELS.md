@@ -89,6 +89,7 @@ green**. Two rules travel with it:
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
 | **Fig. S2B** | `figS2_reallocation_independence.R` | s2p1: "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `background_vs_myc.rds` (`$ruler`, `$geometry`), `interaction_results.rds`, `gsva_scores.rds` (`$expr_mat`, the split-baseline control) |
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
+| **Fig. 2G** | `fig2_priming_ratios.R` | s2p2: "most apoptotic priming ratios … remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling … the PUMA/BCL-XL ratio showed a striking reversal" | `priming_arm_teb.rds` (`$priming`, `$pair_null`), `collapse_module_ownership.rds` (`$defs$global_rate_fitted`, `$wt_genes`) |
 | **Fig. S2C** | `figS2_priming_balance.R` | s2p1: "the overall apoptotic priming remains stable in the WT timeline" | `collapse_module_ownership.rds$wt_genes`, `substrate_specificity_tradeoff.rds$buffer`, `background_vs_myc.rds$ruler`, `interaction_results.rds` + `combined_df_annotated_raw.rds` (power control) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
@@ -897,6 +898,71 @@ measurement, and this panel is a reason to do it rather than a substitute for it
 
 Size: 89 x 38 mm.
 
+### Fig. 2G, built 2026-08-05 — Fig. 1G's plot, one level up
+
+**The sentence was corrected first** (author, 2026-08-05), and the correction is what the panel is
+built to: *"While most apoptotic priming ratios established by MYC at 6W **remained stable, since
+both pro- and anti-apoptotic proteins diminished** in accordance with the global rescaling of the
+MYC effect, the PUMA/BCL-XL ratio showed a striking reversal, deviating significantly from the
+expected pattern."* The earlier draft said the *ratios* were reduced; what declines together is
+the **members**, which is why the ratios are left where Myc put them. The data say the corrected
+version.
+
+**The panel is Fig. 1G's axes at the level of ratios.** x = the Myc effect on a pro-apoptotic:
+Bcl-xL log2 ratio at six weeks, y = the same at twelve, and the line is the **expected pattern** —
+the Myc effect rescaled by the **global rate 0.487** (script 44's `global_rate_fitted`, the number
+Fig. 1G quotes). A ratio that merely follows the rescaling lands on the line.
+
+| ratio | 6W | 12W | retention | |
+|---|---|---|---|---|
+| `Bax` | +0.901 | +0.495 | **0.55** | on the line |
+| `Bid` | +0.946 | +0.396 | 0.42 | on the line |
+| `Bak1` | +0.688 | +0.185 | 0.27 | a little under it |
+| **`Bbc3`** | **+0.674** | **−0.061** | **−0.09** | **crosses zero** |
+
+**One shared denominator, which is what makes the comparison internal** — script 42's own design
+note. Every ratio is against Bcl-xL, so *"it is just the global attenuation"* is refuted from
+inside the panel rather than against an outside null: BAX priming retains the global rate while
+PUMA priming reverses **against the same denominator**.
+
+**The members are in the legend, not on the panel, and they are exact.** `Bax` retains **0.52** of
+its six-week effect and `Bcl2l1` **0.57** — both at the global 0.49 — so their ratio retains 0.55.
+`Bbc3` retains **−1.10** against that same denominator, which is the whole of the difference.
+Drawing the members too would double the panel to make a point the ratios already carry.
+
+**Shape is "established at 6W", and it is load-bearing rather than decorative.** Retention is a
+*quotient*, so it is meaningless where the six-week effect is not distinguishable from zero. Three
+of the seven pairs are in that state (p6 = 0.40–0.71) and their positions carry no information
+about loss — `Pmaip1`'s retention is +2.08 and `Bmf`'s −0.83 purely because their denominators are
+near zero. **No residual is drawn for them**, and the four that are drawn are exactly the four the
+sentence's scope ("established by MYC at 6W") names.
+
+**"Significantly" needs its scope, and this is the item for the text.** The PUMA:Bcl-xL interaction
+is **p = 0.037 raw, 0.017 purity-adjusted** — but its **BH across the nine pairs is 0.33**, and
+against script 42's matched-pair null (random pro-like/anti-like pairs matched on expression,
+conditioned on a six-week effect at least as large) the **empirical p is 0.082**, the 92nd
+percentile of 510 matched pairs. It is a nominal result with a **pre-specified** licence — PUMA was
+named in advance from the PGC1a cell experiments — not a multiplicity-surviving one. The honest
+counterweight is in the legend: on the empirical null the most extreme pair is not PUMA but `Bmf`
+(p = 0.025), and Myc never established that ratio (p6 = 0.40), which is precisely why the
+*conditional* null is the one to read.
+
+**Two numbers must not be interchanged.** The gene-level `Bbc3` interaction (**p = 0.0081**, Fig.
+2H's subject) is a different statistic from the *ratio* interaction quoted here (**p = 0.037**).
+
+**The line is imposed, not fitted**, and a bare line through a scatter reads as a regression — so
+it carries its factor on the page (`x 0.49`). The two Mcl-1 pairs are quoted in the legend rather
+than drawn: a second denominator needs a second encoding, and the comparison only works with the
+denominator held fixed. (`Bax:Mcl1` +0.487 → +0.408, retention 0.84, established; `Bbc3:Mcl1`
++0.260 → −0.149, −0.57, **not** established. PUMA reverses against both, but only the Bcl-xL one
+was there to begin with.)
+
+**One R trap, and it cost a run:** `wg[[col]][wg$gene == g]` where `$gene` contains NA returns
+extra `NA` elements rather than dropping them — a logical index with NA does not subset, it
+propagates. Use `which()`.
+
+Size: 89 x 58 mm.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -1209,7 +1275,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **2D** | 13-day follow-up: MEC expansion and E-cadherin ductal expansion only at 12W | bench | — |
 | **2E** | "the TEB signature was lost as expected in the puberty-adult transition, [while] the overall proliferation signalling remained relatively stable" | **BUILT 2026-08-04** `fig2_wt_teb_proliferation.R` | `fgsea_percategory.rds` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$defs`, `priming_arm_teb.rds$teb_signatures` |
 | **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | **BUILT 2026-08-04** `fig2_wt_mito_contraction.R` | `background_vs_myc.rds$ruler` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority` + `$defs` |
-| **2G** | "Most pro-anti-apoptotic ratios established by MYC at 6W are reduced according to the global rescaling … the PUMA/BCL-XL ratio exhibited a significant reversal" | `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming`, `$pair_null` |
+| **2G** | **sentence corrected 2026-08-05:** "While most apoptotic priming ratios established by MYC at 6W remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling of the MYC effect, the PUMA/BCL-XL ratio showed a striking reversal, deviating significantly from the expected pattern" | **BUILT 2026-08-05** `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming` + `$pair_null`, `collapse_module_ownership.rds$defs$global_rate_fitted` + `$wt_genes` |
 | **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` |
 | **2I** | "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" — **author's call 2026-08-04: this gets a panel, and it is 2I, not a supplementary** | `fig2_oxphos_puma_coupling.R` | `substrate_specificity_tradeoff.rds$tradeoff`, `priming_arm_teb.rds$axis_scores` + `$coincidence_fit` |
 
@@ -1223,7 +1289,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C` **built**; `2G → 2H → S2D → 2I` remain.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G` **built**; `2H → S2D → 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
