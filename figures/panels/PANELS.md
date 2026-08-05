@@ -1114,14 +1114,25 @@ plot.
 
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
-`outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
-Supplementary 1, **one to a page, in slot order, with the slot as the page title**. For
-collaborators reading the Results in the Doc who want to see the panel each sentence cites
-without assembling a figure. 12 pages, 105 x 111 mm.
+**Two documents as of 2026-08-05**, one per figure, because that is how the Results is read:
+
+| file | pages | page size |
+|---|---|---|
+| `outputs/figures/panels/Figure1_and_S1_panels.pdf` | 12 | 105 x 111 mm |
+| `outputs/figures/panels/Figure2_and_S2_panels.pdf` | **8** | 105 x 97 mm |
+
+Every built panel, **one to a page, in slot order, with the slot as the page title**, for
+collaborators who want to see the panel each sentence cites without assembling a figure. One
+`source()` writes both:
 
 ```
 source(here::here("figures", "panels", "panels_to_pdf.R"))
 ```
+
+**Which document a panel lands in is decided by the slot its own `panel_legend()` declares**, not
+by a list kept here — so a panel that changes figure moves documents by editing its own script.
+Anything whose slot matches neither figure is reported and skipped (currently
+`figS1_mb_fork_specificity`, which is still cited nowhere).
 
 **It re-renders rather than concatenating the existing PDFs**, because this machine has no
 Ghostscript, qpdf, pdftk, pdfjam or LaTeX and neither the `qpdf` nor the `pdftools` R package is
