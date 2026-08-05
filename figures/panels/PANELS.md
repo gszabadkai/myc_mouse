@@ -89,6 +89,8 @@ green**. Two rules travel with it:
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
 | **Fig. S2B** | `figS2_reallocation_independence.R` | s2p1: "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `background_vs_myc.rds` (`$ruler`, `$geometry`), `interaction_results.rds`, `gsva_scores.rds` (`$expr_mat`, the split-baseline control) |
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
+| **Fig. 2I** | `fig2_oxphos_puma_coupling.R` | s2p2: "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" | `substrate_specificity_tradeoff.rds` (`$tradeoff`, `$tradeoff_perm`, `$ambient`), `priming_arm_teb.rds` (`$axis_scores`, `$purity`), `gsva_scores.rds` |
+| **Fig. S2D** | `figS2_puma_inducers.R` | s2p2: "no changes in the transcriptome of other known PUMA inducers were observed" | `priming_arm_teb.rds$exclusions$puma_inputs` |
 | **Fig. 2H** | `fig2_departure_from_dose.R` | s2p2: "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `interaction_results.rds`, `combined_df_annotated_raw.rds` |
 | **Fig. 2G** | `fig2_priming_ratios.R` | s2p2: "most apoptotic priming ratios … remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling … the PUMA/BCL-XL ratio showed a striking reversal" | `priming_arm_teb.rds` (`$priming`, `$pair_null`), `collapse_module_ownership.rds` (`$defs$global_rate_fitted`, `$wt_genes`) |
 | **Fig. S2C** | `figS2_priming_balance.R` | s2p1: "the overall apoptotic priming remains stable in the WT timeline" | `collapse_module_ownership.rds$wt_genes`, `substrate_specificity_tradeoff.rds$buffer`, `background_vs_myc.rds$ruler`, `interaction_results.rds` + `combined_df_annotated_raw.rds` (power control) |
@@ -1043,6 +1045,73 @@ Size: 89 x 44 mm; windowed at z = +4, with the four genes beyond it named in the
 genes Myc *retains* better than the dose predicts — `Myc` itself is there at z +5.03, the 99.99th
 percentile, which is Fig. S1E's result read on this scan).
 
+### Fig. S2D and Fig. 2I, built 2026-08-05 — the last two, run here rather than in Positron
+
+The author was away and authorised a one-off deviation from Option A: these two were written, **run
+and their PDFs generated in this session**. Everything else about them is unchanged — the same
+assertions, the same legend blocks, the same `rebuild_panels.R`.
+
+**Fig. S2D — the alternative to Foxo3, tested.** Fig. 2H's obvious objection is that some *other*
+upstream input to PUMA moved and Foxo3 is a bystander. The roster is script 42's own
+`exclusions$puma_inputs` — the p53 family (`Trp73`), the E2F arm (`E2f1`), the integrated stress
+response (`Atf4`, `Ddit3`, `Trib3`, `Chac1`, `Eif2ak3`, `Nupr1`, `Sesn2`) and the FOXO family
+(`Foxo1`, `Foxo3`, `Foxo4`) — drawn as the Myc effect at each age, joined. **Nothing reaches
+padj < 0.05 at either age and no interaction survives** (asserted; smallest adjusted p 0.19 at six
+weeks, 0.70 at twelve, all interaction padj = 1).
+
+- **`Foxo3` is in the roster and is drawn, in bold**, because it is the one gene here that is *not*
+  "other": +0.243 → −0.242, interaction −0.486, the same sign change as `Bbc3`. Leaving it out
+  would make the panel look like a clean negative when it is a negative **with one exception**, and
+  the exception is the preceding sentence. **The text should name it as the exception** rather than
+  let the reader assume the roster excludes it.
+- **The other two FOXO paralogues do not do it** — `Foxo1` −0.184 → −0.300, `Foxo4` +0.071 →
+  −0.072 — so the Foxo3 result is not a family-wide effect.
+- **One gene moves on a different axis and is named in the legend so the panel is not read as
+  flatter than it is:** `Trp73` rises **+2.14 across the wild-type window at padj 0.0039** — on a
+  mean expression of **12 counts**, at the floor of what this design can measure, and on the
+  batch-confounded contrast. Not a Myc effect, not on this panel's axis.
+- **Bound that matters:** a transcript-level negative is not a pathway-level one. The ISR and the
+  p53 axis act substantially through protein stability, phosphorylation and localisation — ATF4 in
+  particular is translationally controlled and can be fully active with an unchanged message. What
+  this excludes is a *transcriptional* re-routing of PUMA's inputs, which is the alternative the
+  text raises.
+
+Size: 89 x 52 mm; key under the plot (Fig. S1F's solution — twelve full-width rows leave no empty
+corner, and inside it landed on the bottom row).
+
+**Fig. 2I — what an interaction between a genotype and a coupling looks like: two slopes that
+differ.** One point per animal, its mitoPPS priority score against its PUMA:Bcl-xL log ratio, a
+line fitted within each genotype.
+
+| axis | wild type | Myc+ | script 43's interaction |
+|---|---|---|---|
+| **OXPHOS subunits** | **−4.80** | **+4.35** | **+6.09, p = 0.0052** |
+| redox | −7.70 | −6.72 | +2.16, p = 0.72 |
+
+**On the OXPHOS axis the two genotypes couple in opposite directions; on redox they are parallel.**
+
+- **Redox is the right control precisely because it is not a null axis.** Both genotypes couple to
+  it, and strongly (wild-type slope −7.70). What it does not do is couple *differently*. An axis
+  nothing couples to would not have excluded the possibility that the PUMA ratio simply tracks
+  mitochondrial scores in general.
+- **The panel is a reconstruction and says so.** Script 43 fits on its own log matrix; this rebuilds
+  the ratio from the VST matrix and **reproduces the recorded interaction to 1.2 %** (asserted).
+  The claim is checked tightly and the control qualitatively — a relative error on a near-null
+  coefficient is not a meaningful quantity, so redox is required only to still read as nothing
+  (refit p 0.74). **The number for the text is script 43's.**
+- **Read it as a lead.** The permutation null in the same object puts it at the **91.7th percentile
+  of 5,000 draws (empirical p = 0.083)**, and adding a timepoint term moves p from 0.0052 to 0.088.
+  It is the one axis-by-genotype interaction in the corpus that reaches nominal significance.
+- **A wording item:** *"no such link exists for other redox and metabolic axes"* — script 43's
+  trade-off analysis carries **exactly two axes**, OXPHOS subunits and redox. The sentence should
+  say *"for the redox axis"* unless a wider panel is run. What *is* broader is the outcome side:
+  two axes against five outcomes, and only this one reaches p < 0.05.
+- **Do not quote the raw correlations.** Pooled across genotypes the PUMA ratio correlates +0.04
+  with the OXPHOS axis and −0.48 with redox — the pooling artefact two opposite slopes produce.
+
+Size: 89 x 56 mm; four-group sample palette on the points, genotype on the lines, key under the
+plot.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -1357,7 +1426,7 @@ Myc fork" from "Myc drives biogenesis generically".
 | **2F** | "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | **BUILT 2026-08-04** `fig2_wt_mito_contraction.R` | `background_vs_myc.rds$ruler` (drawn), `substrate_specificity_tradeoff.rds$wt_null` + `$comparator_priority` + `$defs` |
 | **2G** | **sentence corrected 2026-08-05:** "While most apoptotic priming ratios established by MYC at 6W remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling of the MYC effect, the PUMA/BCL-XL ratio showed a striking reversal, deviating significantly from the expected pattern" | **BUILT 2026-08-05** `fig2_priming_ratios.R` | `priming_arm_teb.rds$priming` + `$pair_null`, `collapse_module_ownership.rds$defs$global_rate_fitted` + `$wt_genes` |
 | **2H** | "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | **BUILT 2026-08-05** `fig2_departure_from_dose.R` | `collapse_module_ownership.rds$collapse_genes` + `$defs`, `interaction_results.rds`, `combined_df_annotated_raw.rds` |
-| **2I** | "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" — **author's call 2026-08-04: this gets a panel, and it is 2I, not a supplementary** | `fig2_oxphos_puma_coupling.R` | `substrate_specificity_tradeoff.rds$tradeoff`, `priming_arm_teb.rds$axis_scores` + `$coincidence_fit` |
+| **2I** | "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" — **author's call 2026-08-04: this gets a panel, and it is 2I, not a supplementary** | **BUILT 2026-08-05** `fig2_oxphos_puma_coupling.R` | `substrate_specificity_tradeoff.rds` (`$tradeoff`, `$tradeoff_perm`, `$ambient`), `priming_arm_teb.rds` (`$axis_scores`, `$purity`), `gsva_scores.rds$expr_mat` |
 
 ### Supplementary 2
 
@@ -1366,10 +1435,10 @@ Myc fork" from "Myc drives biogenesis generically".
 | **S2A** | "these alterations were not a consequence of decreased MYC expression at 12W" | bench |
 | **S2B** | "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | **BUILT 2026-08-04** `figS2_reallocation_independence.R` |
 | **S2C** | "the overall apoptotic priming remains stable in the WT timeline" | **BUILT 2026-08-05** `figS2_priming_balance.R` |
-| **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
+| **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | **BUILT 2026-08-05** `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G → 2H` **built**; `S2D → 2I` remain.
+**ALL FOURTEEN BUILT** (2026-08-05): `1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C → 2G → 2H → S2D → 2I`. Only the author's bench panels remain (1A, S1D, S2A, 2A–2D).
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
