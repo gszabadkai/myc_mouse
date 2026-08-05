@@ -954,8 +954,22 @@ counterweight is in the legend: on the empirical null the most extreme pair is n
 
 **The line is imposed, not fitted**, and a bare line through a scatter reads as a regression — so it
 is **named on the page in the manuscript's own words**: `global rescaling (slope 0.49)` (author's
-review: `x 0.49` was unclear). The slot it sits in is asserted clear of every point *and* of the
-line it names, rather than eyeballed. The two Mcl-1 pairs are quoted in the legend rather
+review: `x 0.49` was unclear).
+
+**That label lies ALONG the line, and it has to.** A horizontal caption cannot sit parallel to a
+sloped line — over the width of the text the line climbs further than the text is tall, so one end
+always drifts away from it (author: it *"slipped too high, not close enough to the line"*).
+Rotating fixes it, and the angle is the line's angle **on the page**, which depends on the panel's
+aspect: `tan(angle) = slope × (plot height / y range) / (plot width / x range)` ≈ 22°. The two
+plot-area constants are measured for this panel size and the script says so — the clearance
+assertion catches a label that has drifted off the line, but not one drawn at the wrong angle, so
+they must be re-checked if the panel is resized. Clearance itself is a **perpendicular** distance
+to the line, so it does not depend on the rotation being exactly right.
+
+**The key sits in the bottom-right wedge** (author's review: at top left its text crossed the zero
+line). The expected line climbs to the right, so beneath it in that corner is the one region no
+point and neither reference line can reach — which also meant moving `Bbc3`'s label from below its
+point to its left. The two Mcl-1 pairs are quoted in the legend rather
 than drawn: a second denominator needs a second encoding, and the comparison only works with the
 denominator held fixed. (`Bax:Mcl1` +0.487 → +0.408, retention 0.84, established; `Bbc3:Mcl1`
 +0.260 → −0.149, −0.57, **not** established. PUMA reverses against both, but only the Bcl-xL one

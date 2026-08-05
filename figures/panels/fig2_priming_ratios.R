@@ -111,10 +111,10 @@ res$y_exp <- RATE * res$d6
 # no label box contains another point.
 LAB <- data.frame(
   pro   = c("Bax", "Bid", "Bak1",  "Bbc3", "Pmaip1", "Bcl2l11", "Bmf"),
-  dx    = c(-0.022, 0,     0.022,   0,      0.022,    0.022,     0.022),
-  dy    = c(0,     -0.055, 0,      -0.055,  0,        0,         0),
-  hj    = c(1,      0.5,   0,       0.5,    0,        0,         0),
-  vj    = c(0.5,    1,     0.5,     1,      0.5,      0.5,       0.5),
+  dx    = c(-0.022, 0,     0.022,  -0.022,  0.022,    0.022,     0.022),
+  dy    = c(0,     -0.055, 0,       0,      0,        0,         0),
+  hj    = c(1,      0.5,   0,       1,      0,        0,         0),
+  vj    = c(0.5,    1,     0.5,     0.5,    0.5,      0.5,       0.5),
   stringsAsFactors = FALSE)
 LAB <- merge(LAB, d[, c("pro", "d6", "d12")], by = "pro")
 LAB$x <- LAB$d6 + LAB$dx
@@ -133,15 +133,31 @@ clash <- vapply(seq_len(nrow(LAB)), function(i)
       d$d12 > LAB$y1[i] & d$d12 < LAB$y2[i]), logical(1))
 stopifnot(!any(clash), min(LAB$x1) > XR[1], max(LAB$x2) < XR[2])
 
-# The line's own label, and the slot it sits in: above the line, left of the four
-# induced ratios. Checked clear of every point and of the line itself.
-ANN_X <- 0.28; ANN_Y <- 0.36
-ANN_W <- 16 * CH; ANN_H <- 2.1 * LH                 # two lines, 16 characters wide
-stopifnot(
-  !any(d$d6 > ANN_X - CH & d$d6 < ANN_X + ANN_W &
-       d$d12 > ANN_Y - ANN_H & d$d12 < ANN_Y + LH / 2),
-  ANN_Y - ANN_H > RATE * (ANN_X + ANN_W),           # clears the line it names
-  ANN_X + ANN_W < XR[2])
+# THE LINE'S OWN LABEL LIES ALONG THE LINE. A horizontal caption cannot sit
+# parallel to a sloped line -- over the width of the text the line climbs further
+# than the text is tall, so one end always drifts away from it (author's review:
+# it "slipped too high, not close enough to the line"). Rotating fixes that, and
+# the angle is the line's angle ON THE PAGE, which depends on the panel's aspect:
+#
+#   tan(angle) = slope * (plot height / y range) / (plot width / x range)
+#
+# The plotting area is the panel minus its margins and axis furniture; the two
+# constants below are measured for THIS panel size and must be re-checked if it
+# changes -- the assertion at the foot catches a label that has drifted off the
+# line, but not one drawn at the wrong angle.
+PLOT_W <- 76.5; PLOT_H <- 47.5                      # mm, inside the axes, at 89 x 58
+ANN_ANGLE <- atan(RATE * (PLOT_H / diff(YR)) / (PLOT_W / diff(XR))) * 180 / pi
+ANN_LAB   <- sprintf("global rescaling (slope %.2f)", RATE)
+ANN_X     <- 0.06                                   # anchored ON the line
+ANN_Y     <- RATE * ANN_X
+
+# the text runs along the line from ANN_X for its own width; nothing may sit in
+# the band just above that stretch. Perpendicular distance to the line, so the
+# check does not depend on the rotation being exactly right.
+ANN_X2 <- ANN_X + nchar(ANN_LAB) * CH * cos(ANN_ANGLE * pi / 180)
+perp   <- abs(d$d12 - RATE * d$d6) / sqrt(1 + RATE^2)
+stopifnot(ANN_ANGLE > 15, ANN_ANGLE < 40, ANN_X2 < XR[2],
+          !any(d$d6 > ANN_X - CH & d$d6 < ANN_X2 & perp < 2 * LH))
 
 p <- ggplot2::ggplot(d, ggplot2::aes(d6, d12)) +
   ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey80") +
@@ -157,10 +173,9 @@ p <- ggplot2::ggplot(d, ggplot2::aes(d6, d12)) +
   # The line is IMPOSED, not fitted, and a bare line through a scatter reads as a
   # regression -- so it is NAMED on the page, in the manuscript's own words. The
   # slot it sits in is checked empty below.
-  ggplot2::annotate("text", x = ANN_X, y = ANN_Y,
-                    label = sprintf("global rescaling\n(slope %.2f)", RATE),
-                    hjust = 0, vjust = 1, size = 1.7, colour = "grey35",
-                    lineheight = 0.95) +
+  ggplot2::annotate("text", x = ANN_X, y = ANN_Y, label = ANN_LAB,
+                    hjust = 0, vjust = -0.4, angle = ANN_ANGLE,
+                    size = 1.7, colour = "grey35") +
   ggplot2::geom_text(data = LAB, inherit.aes = FALSE,
                      ggplot2::aes(x = x, y = y, label = pro, hjust = hj, vjust = vj),
                      size = 1.7, colour = "grey15", fontface = "italic") +
@@ -176,12 +191,13 @@ p <- ggplot2::ggplot(d, ggplot2::aes(d6, d12)) +
                 y = "Myc effect at 12W") +
   ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 1.5))) +
   theme_panel(base_size = 6) +
-  # Key inside, top left: the expected line runs up to the right, so the wedge
-  # above it on the left is where nothing can sit.
+  # Key inside, BOTTOM RIGHT (author's review: at top left its text crossed the
+  # zero line). The expected line climbs to the right, so the wedge beneath it in
+  # that corner is the one region no point and neither reference line can reach.
   ggplot2::theme(
     legend.position        = "inside",
-    legend.position.inside = c(0.005, 0.99),
-    legend.justification   = c(0, 1),
+    legend.position.inside = c(0.995, 0.005),
+    legend.justification   = c(1, 0),
     legend.background      = ggplot2::element_blank(),
     legend.margin          = ggplot2::margin(0, 0, 0, 0),
     legend.key.size        = ggplot2::unit(2.4, "mm"),
