@@ -89,6 +89,7 @@ green**. Two rules travel with it:
 | **Fig. 2E** | `fig2_wt_teb_proliferation.R` | s2p1: "The 6\>12W_wt comparison showed that while the TEB signature was lost as expected in the puberty-adult transition, the overall proliferation signalling remained relatively stable" | `fgsea_percategory.rds` (`$fgsea`, the `timepoint_neg` ranking), `substrate_specificity_tradeoff.rds` (`$comparator`, `$wt_null`, `$defs`), `priming_arm_teb.rds` (`$teb_signatures`) |
 | **Fig. S2B** | `figS2_reallocation_independence.R` | s2p1: "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | `background_vs_myc.rds` (`$ruler`, `$geometry`), `interaction_results.rds`, `gsva_scores.rds` (`$expr_mat`, the split-baseline control) |
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
+| **Fig. S2C** | `figS2_priming_balance.R` | s2p1: "the overall apoptotic priming remains stable in the WT timeline" | `collapse_module_ownership.rds$wt_genes`, `substrate_specificity_tradeoff.rds$buffer`, `background_vs_myc.rds$ruler`, `interaction_results.rds` + `combined_df_annotated_raw.rds` (power control) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
 | **Fig. S1B** | `figS1_geneset_library.R` | p1: "fGSEA ranking and GSVA scoring based on custom-curated genesets"; p2: "we extended the custom library to a total of 986 genesets" | `provenance_table.csv`, `pathway_loading.rds` (assertion), `gsva_scores.rds` (count) |
 | **Fig. S1C** | `figS1_axis_loadings.R` | p2: "… aligned almost entirely with variability in mitochondria related terms" — what the axis is made of, with its bound | `gsva_scores.rds`, `pathway_loading.rds` (`mito_classification`, `mito_enrichment`) |
@@ -825,6 +826,58 @@ that was never wrong. Use `qlmanage` when a glyph looks off.
 
 Size: 89 x 52 mm; 109 of 15,191 genes fall outside the drawn window (none of the 143 pathways).
 
+### Fig. S2C, built 2026-08-05 — a negative, with the control a negative needs
+
+The port of `figures/fig04_substrate_specificity.R` panel D. Every transcript of the mitochondrial
+death apparatus across the wild-type window: the **25 pro-** and **7 anti-apoptotic** MitoCarta
+genes, plus the **5 non-MitoCarta brakes** (the IAPs and the Bcl2a1 paralog) as their own row,
+because "does the gland move its apoptotic transcripts" and "does it BUFFER" are different
+questions.
+
+**One of 37 moves, and it moves the wrong way for a loss of priming:** `Bnip3` **+0.63, padj
+0.021** — a pro-apoptotic gene going *up*. Nothing else clears 0.05 on either arm or among the
+brakes.
+
+**"Overall priming" is a balance, and both arms move together, so the balance does not move.**
+On script 40's ruler — the same instrument as Fig. 2F — across the window the pro arm shifts
+**+0.025** and the anti arm **+0.045** on content (difference **−0.020**), and **+0.054** against
+**+0.046** on the content-blind priority ruler (difference **+0.008**). For contrast, **Myc moves
+the two arms apart**: +0.156 pro against −0.024 anti at six weeks, a difference of **+0.180** —
+an order of magnitude larger, and in the opposite geometry. *The balance is something Myc changes
+and development does not.*
+
+**The power control, because a negative at n = 6 needs one.** On the same transcripts, in the same
+libraries, at the same n, the **genotype** contrast reaches padj < 0.05 for **6 of 35** mapped
+genes, against **1** across the window. The measurement can see movement in these genes; there is
+none to see here. Adjusted p-values for the genotype contrast are Ensembl-keyed, so the symbols
+are mapped through the annotation table and **the mapping is checked against baseMean rather than
+trusted**.
+
+**Three genes are labelled because later panels turn on them:** `Bnip3` (the mover), `Bbc3` (PUMA)
+at **+0.062, padj 0.88** — flat across the window, and the subject of Figs. 2G/2H — and `Bcl2l1`
+(Bcl-xL) at **−0.107, padj 0.79**, the denominator of the ratio Fig. 2G reports.
+
+**Deterministic vertical offsets, not jitter.** Within a row the genes are ordered by fold change
+and the offsets cycle through a fixed ladder, so neighbours in x are separated in y by
+construction. Better than random jitter at avoiding overplot, reproducible without a seed, and —
+the reason it matters here — it makes every point's position *known*, so the three labels can be
+placed rather than repelled. Two go into a lane above the top row that the y limit reserves; Bcl-xL
+goes out to the left, into the half of the anti row that is empty. Both regions are **asserted**
+empty, and every leader leaves the text on the text's own line (Fig. 2F's convention).
+
+**One trap this panel does not fall into, and the legend says so explicitly.**
+`MITOCARTA_APOPTOSIS_PRO`/`_ANTI` are MitoCarta sets, so a coupling between a priming composite and
+a mitochondrial axis is mito-vs-mito and circular (script 34). **That warning does not transfer
+here**: this is a temporal contrast on the transcripts themselves, not a coupling, and nothing on
+the panel is correlated with a mitochondrial score. It would be easy to import the caveat wrongly.
+
+**And the bound that must travel with it:** a negative on *transcripts* is not a negative on
+*priming*. Priming is a property of the protein complement and of how close the mitochondrion sits
+to the threshold; transcript levels are its substrate, not its measurement. BH3 profiling is the
+measurement, and this panel is a reason to do it rather than a substitute for it.
+
+Size: 89 x 38 mm.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 `outputs/figures/panels/Figure1_and_S1_panels.pdf` — every built panel of Figure 1 and
@@ -1147,11 +1200,11 @@ Myc fork" from "Myc drives biogenesis generically".
 |---|---|---|
 | **S2A** | "these alterations were not a consequence of decreased MYC expression at 12W" | bench |
 | **S2B** | "the WT temporal program operated independently of the MYC-driven reallocation, showing a negligible correlation across the mitochondrial and the whole transcriptome" | **BUILT 2026-08-04** `figS2_reallocation_independence.R` |
-| **S2C** | "the overall apoptotic priming remains stable in the WT timeline" | `figS2_priming_balance.R` |
+| **S2C** | "the overall apoptotic priming remains stable in the WT timeline" | **BUILT 2026-08-05** `figS2_priming_balance.R` |
 | **S2D** | "no changes in the transcriptome of other known PUMA inducers were observed" — the roster already exists as `priming_arm_teb.rds$exclusions$puma_inputs` (12 genes: `E2f1`, `Trp73`, `Atf4`, `Ddit3` …) | `figS2_puma_inducers.R` |
 
 **Fourteen new panel scripts, built one at a time in citation order:**
-`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B` **built**; `S2C → 2G → 2H → S2D → 2I` remain.
+`1E → 1F → 1G → 1H → S1E → S1F → 2E → 2F → S2B → S2C` **built**; `2G → 2H → S2D → 2I` remain.
 Most are ports of `figures/fig01`–`fig05` / `figS8` into this directory's idiom
 (`theme_panel()`, a `panel_legend()` block, `save_panel_p()`, the declared palette and contrast
 vocabulary, no prose on the page); **1H, 2H, S2B, S2C and S2D have no port and are new builds.**
