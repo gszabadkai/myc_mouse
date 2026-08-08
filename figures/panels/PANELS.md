@@ -1112,6 +1112,96 @@ line fitted within each genotype.
 Size: 89 x 56 mm; four-group sample palette on the points, genotype on the lines, key under the
 plot.
 
+### ROUND 2 (2026-08-09) — four alternatives for Figure 2, on one grammar
+
+**Why.** The section is written and every commissioned panel is built, but the panels read as
+supplementary material: each answers its own sentence carefully and none carries the argument.
+The author's requirement — *"the figures have to talk by themselves, people do not read the
+text"* — and the message they must deliver:
+
+> A complex interplay between the WT and Myc-driven timelines leads to **OXPHOS subunit repression,
+> more than the overall MYC effect decline**; that decline is coupled to the **selective loss of the
+> PUMA/Bcl-xL ratio**, presumably through **Foxo3**; the lost trigger is why the adult gland cannot
+> die.
+
+The reworded Doc section puts **both timelines side by side in every claim**, and that is exactly
+what the built panels do not do. **Every current panel is kept.** These four are alternatives; the
+author picks per slot.
+
+**THE GRAMMAR: the two timelines.** `x = 6>12W_wt`, `y = 6>12W_myc`, identity line = *development
+alone*. Declared once as **`two_timeline_base()`** in `_panel_common.R` so the four cannot drift
+apart. Quadrants gain a fixed meaning the reader learns once, and the device is **exact, not
+approximate**: script 40's ruler satisfies `c_tp = c_tn + c_int` to floating point (1.2e-16 on
+content, bit-identical on priority, asserted), so **a vertical drop from the diagonal IS the
+interaction**. `coord_equal()` is not cosmetic — both axes are the same quantity, so equal scaling
+is honest *and* it pins the diagonal at exactly 45°, which is what lets its label lie along it
+without the aspect arithmetic Fig. 2G needed.
+
+**Talking within the publication rule.** `theme_panel()` still blanks title/subtitle/caption. What
+carries meaning is **naming drawn elements** — `development alone` along the diagonal,
+`below the line = lost under Myc as well` in a corner — the device Fig. 2G already uses for its
+`global rescaling (slope 0.49)` line. Naming a drawn element is what a key does.
+
+| slot | script | what it draws |
+|---|---|---|
+| **Fig. 2F (alt)** | `fig2_two_timelines_mito_alt.R` | 143 MitoPathways on the plane; arrows from the diagonal down to eleven named arms = the Myc-specific loss |
+| **Fig. 2G (alt)** | `fig2_death_two_timelines_alt.R` | the death machinery, per gene, same plane |
+| **Fig. 2H+I (alt)** | `fig2_puma_chain_alt.R` | **A** the chain per animal (heatmap) + **B** the OXPHOS→PUMA coupling |
+| **Fig. S2D (alt)** | `figS2_p53_arm_alt.R` | the p53 arm, same plane, with `Bbc3`/`Foxo3` as the movers |
+
+**Fig. 2F (alt).** Development **raises** the compartment (median +0.041, 72 % above zero) while
+**stripping OXPHOS**; the Myc+ gland lowers everything (93 % below the diagonal); OXPHOS ends
+deepest because the two terms **add** — subunits −0.255 in development, −0.150 more from Myc,
+−0.405 under Myc. The **assembly-factor control is on the panel**: +0.001 in development, and only
+the global Myc term (−0.175) after. One ruler deliberately — drawing both rulers *and* both
+timelines at 89 mm is what made the first version unreadable; the priority ruler is in the legend
+and the sandbox redraws the panel on it with one substitution.
+
+**Fig. 2G (alt).** `Bbc3` (+0.06 → **−0.48**, padj 0.016) is the only BH3-only sensor that is flat
+in development and lost under Myc — asserted. `Bcl2l1` sits at the origin, so the ratio's reversal
+is **all numerator**. `Bmf` (+1.02 → +0.84, significant on both) sits **on** the diagonal: the one
+death gene the window itself moves, and the panel's own negative control. **`Bax` also falls
+significantly under Myc (−0.376, padj 0.008)** and is visible — it is an effector, so "specific to
+`Bbc3`" holds *among the BH3-only sensors*, and the sentence should say so.
+
+**Fig. 2H+I (alt).** Part A's premise had to be corrected against the data mid-build: it is **not**
+a block that falls together. Group means of the standardised rows:
+
+| | OXPHOS | `Foxo3` | `Bbc3` | `Bcl2l1` | PUMA:Bcl-xL |
+|---|---|---|---|---|---|
+| 6W_wt | +0.07 | −0.90 | −0.12 | +0.74 | −0.55 |
+| 12W_wt | −0.78 | **+0.89** | +0.18 | +0.39 | −0.16 |
+| 6W_myc | +0.95 | +0.01 | +0.84 | −0.71 | +0.94 |
+| 12W_myc | −0.25 | −0.00 | **−0.90** | −0.42 | −0.23 |
+
+Read **down the two timelines**: in the wild-type gland OXPHOS falls, **`Foxo3` rises** and PUMA is
+untouched; under Myc OXPHOS falls from a higher start, **`Foxo3` fails to rise** and **PUMA
+collapses**. That is the text's own sentence, and `Bcl2l1` follows neither. Three build decisions
+are on the record: the fill is **clipped at 2 SD** (one animal at |z| 2.7 otherwise leaves every
+tile pale); each group gets a **bordered mean column with its value printed**, because a mean of
+six z-scores is necessarily paler than its animals and would be the weakest mark on the panel
+exactly where the claim lives; and the number is **rotated 90°**, since a 28-column tile is 2.5 mm
+wide and `+0.95` is not. Part B is the current 2I, reconstructed and asserted to 1.2 %.
+
+**Fig. S2D (alt).** The author's point — *the p53-dependent arm is not moving* — needs
+`exclusions$p53_axis`, not the `puma_inputs` roster the current S2D draws (which contains one
+p53-family gene). The arm forms a **horizontal band at y ≈ 0**, not a cluster at the origin: several
+drift on the wild-type axis (`Eda2r` −0.99 at padj 0.019, the one p53-arm gene to clear 0.05 on
+either timeline, on 101 counts — named in the legend so the panel is not read as flatter than it
+is) while the whole arm stays within ±0.26 under Myc. **`Bbc3` leaves the band; `Foxo3` leaves the
+diagonal** — two different ways of moving, and the grammar shows both.
+
+**Circulation.** `panels_to_pdf.R` now writes a **third** document, `Figure2_alternatives.pdf`
+(4 pages), matched on the `(alt)` slot suffix, and the two committed documents **exclude** that
+suffix — so they are unchanged at 12 and 8 pages, verified.
+
+**Text items this round turned up.** `Foxo3` is **rank 1 and `Bbc3` rank 2 of the 26
+biogenesis/cell-death mechanism genes by interaction p** (0.0074, 0.0081; gap to third `Pgs1` at
+0.066) — the framing the reworded text already uses, and far stronger than the 8,774-gene
+percentile the current 2H draws. `Bmf` rises in **both** timelines and belongs in the text as the
+contrast to `Bbc3`. `Bax` falls significantly under Myc, so "specific to `Bbc3`" needs "among the
+BH3-only sensors". `Trp73` moves on the wild-type timeline (+2.14, padj 0.004) on **12 counts**.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 **Two documents as of 2026-08-05**, one per figure, because that is how the Results is read:

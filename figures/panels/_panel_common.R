@@ -291,6 +291,59 @@ bracket_layers <- function(brk, size = 1.75, linewidth = 0.22) {
       vjust = 0, size = size))
 }
 
+# --- the two-timeline plane ---------------------------------------------------
+# THE GRAMMAR FIGURE 2's ALTERNATIVES SHARE (author's choice, 2026-08-09). One set
+# of axes, learned once and reused: x is what the WILD-TYPE gland does between six
+# and twelve weeks, y is what the Myc+ gland does over the same window.
+#
+# The identity line is DEVELOPMENT ALONE. A point on it changed exactly as the
+# normal gland did; the vertical distance BELOW it is the Myc-specific term. That
+# reading is exact rather than approximate: script 40's ruler satisfies
+# c_tp = c_tn + c_int and p_tp = p_tn + p_int to the last bit, so a drop from the
+# line IS the interaction. Every panel using this asserts that identity.
+#
+# COORD_EQUAL IS NOT COSMETIC. Both axes carry the same quantity in the same
+# units, so equal scaling is the honest framing -- and it pins the identity line
+# at exactly 45 degrees, which is what lets a label lie along it without computing
+# the panel's aspect. Fig. 2G had to measure that angle by hand; here it is free.
+#
+# `lim` is one symmetric pair for BOTH axes. Callers that draw two rulers with
+# different ranges should build two plots and combine them, not facet: a facet
+# with free scales cannot keep coord_equal honest.
+two_timeline_base <- function(lim, diag_label = "development alone",
+                              diag_at = 0.30, quadrant = NULL,
+                              quadrant_at = c(0.98, 0.03), quadrant_hjust = 1) {
+  stopifnot(length(lim) == 2L, lim[1] < lim[2])
+  at <- function(f) lim[1] + diff(lim) * f
+  out <- list(
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85"),
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85"),
+    ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "22",
+                         linewidth = 0.35, colour = "grey45"))
+  if (!is.null(diag_label))
+    out <- c(out, list(ggplot2::annotate(
+      "text", x = at(diag_at), y = at(diag_at), label = diag_label,
+      angle = 45, hjust = 0, vjust = -0.5, size = 1.65, colour = "grey45")))
+  if (!is.null(quadrant))
+    out <- c(out, list(ggplot2::annotate(
+      "text", x = at(quadrant_at[1]), y = at(quadrant_at[2]), label = quadrant,
+      hjust = 1, vjust = 0, size = 1.65, colour = "grey35", fontface = "italic")))
+  c(out, list(
+    ggplot2::scale_x_continuous(labels = lab_signed),
+    ggplot2::scale_y_continuous(labels = lab_signed),
+    ggplot2::coord_equal(xlim = lim, ylim = lim, expand = FALSE)))
+}
+
+# The two poles of the manuscript ramp, spent categorically. Figs. 1G/1H already
+# do this for OXPHOS (mint) against the Myc signatures (espresso); the two-timeline
+# panels reuse the same mint for the arms that RISE in development and the same
+# espresso for the respiratory arm that falls, so a reader who has met Figure 1
+# has met these. Neither is a sample colour. Flag it in the legend block, as 1H
+# does, rather than leaving it to be noticed.
+pole_cols <- c(down = unname(ms_diverging[["neg"]]),
+               up   = unname(ms_diverging[["pos"]]),
+               other = "grey72")
+
 # --- the dominant pathway axis -----------------------------------------------
 # Figs. 1C and 1D are the sample scores and the per-set loadings of ONE principal
 # component analysis, so they must not each compute it. results/pathway_loading.rds

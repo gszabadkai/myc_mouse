@@ -45,9 +45,15 @@ out_dir    <- here::here("outputs", "figures", "panels")
 # which slots go into which document. The regexes are anchored on the slot string
 # each panel_legend() declares, so a panel that changes figure moves documents by
 # editing its own script and nothing here.
+# The ALTERNATIVES (2026-08-09) are matched on their "(alt)" slot suffix and get
+# their own document, and the two committed ones EXCLUDE that suffix -- so the
+# circulation PDFs the author already has do not change page count or order when
+# a new alternative is added. The author reads Figure2_and_S2_panels.pdf and
+# Figure2_alternatives.pdf side by side and picks per slot.
 DOCS <- list(
-  list(file = "Figure1_and_S1_panels.pdf", re = "^Fig\\. S?1"),
-  list(file = "Figure2_and_S2_panels.pdf", re = "^Fig\\. S?2"))
+  list(file = "Figure1_and_S1_panels.pdf", re = "^Fig\\. S?1",   not = "\\(alt\\)"),
+  list(file = "Figure2_and_S2_panels.pdf", re = "^Fig\\. S?2",   not = "\\(alt\\)"),
+  list(file = "Figure2_alternatives.pdf",  re = "\\(alt\\)$", not = NULL))
 
 MARGIN    <- 8    # mm, around everything
 TITLE_H   <- 11   # mm, the strip the page title sits in
@@ -136,7 +142,8 @@ write_doc <- function(sel, file) {
 cat("\n")
 used <- character(0)
 for (doc in DOCS) {
-  keep <- vapply(panels, function(x) grepl(doc$re, x$slot), logical(1))
+  keep <- vapply(panels, function(x) grepl(doc$re, x$slot) &&
+                   (is.null(doc$not) || !grepl(doc$not, x$slot)), logical(1))
   if (!any(keep)) { cat("  no panels for ", doc$file, "\n", sep = ""); next }
   used <- c(used, names(panels)[keep])
   write_doc(panels[keep], doc$file)
