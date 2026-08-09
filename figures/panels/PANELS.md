@@ -1202,6 +1202,47 @@ percentile the current 2H draws. `Bmf` rises in **both** timelines and belongs i
 contrast to `Bbc3`. `Bax` falls significantly under Myc, so "specific to `Bbc3`" needs "among the
 BH3-only sensors". `Trp73` moves on the wild-type timeline (+2.14, padj 0.004) on **12 counts**.
 
+### ROUND 2 REVIEW (2026-08-09) — the author's changes, panel by panel
+
+The four alternatives were reviewed together and each got a list. Recorded here as they land.
+
+**Fig. 2F (alt) — done.** Five changes, all made.
+
+1. **No drop arrows.** The vertical distance from the diagonal is still the interaction and still
+   exact; twelve arrowheads over a 143-point cloud cost more ink than they returned.
+2. **One continuous fill, on the wild-type log2FC** (`heat_fill`, the manuscript ramp, symmetric
+   ±0.558, white pinned to zero), replacing the two-colour respiratory/catabolic rosters. The
+   rosters survive **only as the twelve labels**. The fill is **redundant with the x axis by
+   construction** — that is the point, and the legend block says so: the plane sorts by what
+   development did without a roster deciding it for the reader.
+   *Consequence that forced a geometry change:* zero on this ramp is `#FAFAFA`, so a solid point at
+   the compartment median (+0.041) would be invisible. Points are now **outlined circles**
+   (`shape = 21`, grey45 stroke), labelled arms larger with a darker stroke.
+3. **`development alone` moved to the top of the line.** Its glyph run is a 14 mm segment lying
+   along the diagonal, so the placement is checked with a real **point-to-segment distance in panel
+   fractions**, not a bounding box. The binding constraint is catechol metabolism, 1.9 mm below the
+   run; at this font size **no placement on the upper diagonal clears both** that point by ≥2.6 mm
+   *and* the corner — pushed further up, the last letter clips (it did, and `qlmanage` caught it).
+   Anchor `diag_at = 0.79`, assertion threshold 0.025 of the panel, with the reason in the script.
+4. **`below the line = lost under MYC`** (was "… under Myc as well").
+5. **Both axes carry `(set average log2FC)`.**
+6. **The key is horizontal and inside, top left** (second pass): laid the same way as the axis it
+   repeats, so the eye reads the two as one scale. The quadrant it occupies is the empty one —
+   x below zero with y above it would be a pathway the normal gland strips and Myc restores, and
+   there is none — asserted rather than assumed. Moving it off the right also let the square data
+   region grow to the full column width. One trap: `theme_classic` sets `axis.text` to `rel(0.8)`
+   of `base_size`, so a legend text size copied from `base_size` prints **larger than the axis it
+   repeats**; the key's numbers are set to 4.8 explicitly.
+
+**One shared bug fixed on the way:** `two_timeline_base()` declared `quadrant_hjust` and then
+hard-wired `hjust = 1`, so a caller asking for a centred note silently got a right-aligned one.
+Both existing callers now pass 1 explicitly, which is what they already render — **nothing moved**.
+Had it been fixed silently, 2F's note would have centred straight onto the glycine-cleavage point.
+
+**A note on `MYC` vs `Myc`.** The quadrant text is the author's wording verbatim. The axes on the
+same panel say `Myc+`, so the panel currently spells the oncogene two ways; say the word and it
+becomes `Myc` everywhere.
+
 ### The circulation document — `panels_to_pdf.R`, added 2026-08-04
 
 **Two documents as of 2026-08-05**, one per figure, because that is how the Results is read:

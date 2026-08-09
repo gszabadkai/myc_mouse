@@ -35,6 +35,20 @@
 # everything; and OXPHOS ends deepest because the two terms ADD. OXPHOS subunits
 # -0.255 in development, -0.150 more from Myc, -0.405 in the Myc+ gland.
 #
+# THE FILL IS THE HORIZONTAL AXIS (author, 2026-08-09): one continuous manuscript
+# diverging ramp on the wild-type change, replacing the two hand-named rosters the
+# first version coloured by. It is a REDUNDANT encoding by construction -- fill
+# and x are the same number -- and that is the point: it sorts the plane by what
+# development did without a roster deciding for the reader, so the respiratory arm
+# arrives espresso in the lower left and the catabolic arms mint on the right. The
+# rosters survive only as the twelve labels, which the sentence names anyway.
+# Points are drawn as outlined circles, not solid ones, because zero on this ramp
+# is #FAFAFA -- a solid point at the median would be invisible on the page.
+#
+# NO ARROWS (author, 2026-08-09). The first version drew the drop from the line to
+# each labelled arm. The distance is still the interaction and still exact; twelve
+# arrowheads over a 143-point cloud just cost more ink than they returned.
+#
 # ONE RULER, DELIBERATELY. The content ruler is the one the sentence's "logFC"
 # names. Drawing both rulers AND both timelines in one 89 mm panel is what made
 # the first version unreadable; the priority ruler gives the same picture and is
@@ -78,24 +92,12 @@ stopifnot(max(abs(d$c_tn + d$c_int - d$c_tp)) < 1e-12,
           max(abs(d$p_tn + d$p_int - d$p_tp)) < 1e-12)
 
 # =============================================================================
-# the three classes and the labelled arms
+# the labelled arms
 # =============================================================================
-# The respiratory chain and the catabolic arms are named here because the
-# sentence names them; everything else is the compartment they are read against.
-# `programme_group()` is not the grouping (it is built for the library's fGSEA
-# categories, not for MitoCarta tiers), and `tier_cols` is not used: four of its
-# seven hues are the sample palette, and this panel has no samples on it.
-RESP  <- c("OXPHOS subunits", "CI subunits", "CII subunits", "CIII subunits",
-           "CIV subunits", "CV subunits", "Complex I", "Complex III",
-           "Complex IV", "Complex V", "OXPHOS")
-CATAB <- c("Fatty acid oxidation", "Carnitine shuttle",
-           "Carnitine synthesis and transport", "Glycine cleavage system",
-           "Amino acid metabolism", "Lipid metabolism", "Pyruvate metabolism",
-           "Branched-chain amino acid metabolism")
-d$class <- ifelse(d$pathway %in% RESP, "respiratory chain",
-                  ifelse(d$pathway %in% CATAB, "catabolic arms", "other"))
-d$class <- factor(d$class, levels = c("respiratory chain", "catabolic arms", "other"))
-
+# The respiratory chain, its assembly and translation controls, and the catabolic
+# arms are labelled because the sentence names them; everything else is the
+# compartment they are read against, and none of it is hidden. There is no
+# categorical colour any more, so this roster decides only what gets a name.
 LAB <- c("CIV subunits", "CI subunits", "CIII subunits", "CV subunits",
          "OXPHOS assembly factors", "Mitochondrial ribosome",
          "Mitochondrial central dogma", "Fatty acid oxidation",
@@ -104,8 +106,7 @@ LAB <- c("CIV subunits", "CI subunits", "CIII subunits", "CV subunits",
 w <- d[match(LAB, d$pathway), ]
 stopifnot(!anyNA(w$c_tn), nrow(w) == length(LAB),
           # the claim the panel is built to show
-          w$c_tp[w$pathway == "CI subunits"] < w$c_tn[w$pathway == "CI subunits"],
-          sum(d$class == "respiratory chain") >= 10L)
+          w$c_tp[w$pathway == "CI subunits"] < w$c_tn[w$pathway == "CI subunits"])
 
 # Shorter names where a MitoCarta name will not fit beside a point; the
 # central-dogma shortening is taken from the declared `tier_labels`.
@@ -118,15 +119,6 @@ SHORT <- c("OXPHOS assembly factors"     = "OXPHOS assembly",
            "Fatty acid oxidation"        = "fatty acid ox.",
            "Carnitine shuttle"           = "carnitine")
 w$lab <- ifelse(w$pathway %in% names(SHORT), SHORT[w$pathway], w$pathway)
-# A labelled arm must be READABLE even when its class ink is the pale "other"
-# grey -- and the three arms in that class here are the controls (the assembly
-# factors, the mitoribosome, the central dogma), which are the point of the
-# panel, not background. Their TEXT therefore takes a dark neutral while their
-# POINT keeps the class colour. Passed as a per-row constant rather than an
-# aesthetic, so the panel keeps one colour scale.
-w$lab_col <- ifelse(w$class == "other", "grey25",
-                    ifelse(w$class == "respiratory chain",
-                           unname(pole_cols[["down"]]), unname(pole_cols[["up"]])))
 stopifnot(identical(unname(tier_labels[["Mitochondrial central dogma"]]),
                     "Central dogma"))       # the declared vector, lower-cased here
 
@@ -134,61 +126,92 @@ stopifnot(identical(unname(tier_labels[["Mitochondrial central dogma"]]),
 # the panel
 # =============================================================================
 LIM <- c(-1, 1) * max(abs(c(d$c_tn, d$c_tp))) * 1.04
+at  <- function(f) LIM[1] + diff(LIM) * f
 
-# The two in-panel annotations sit where nothing can: the diagonal's label on the
-# empty lower-left run of the line (nothing falls that far in BOTH timelines
-# except CIV, which is well above it), and the quadrant note in the corner
-# beneath. Checked against the data rather than eyeballed.
-at <- function(f) LIM[1] + diff(LIM) * f
+# Both in-panel annotations sit where nothing can, and both are CHECKED rather
+# than eyeballed -- in panel fractions, because that is the space a collision
+# happens in.
+#
+# (1) the diagonal's label now runs up the TOP end of the line (author,
+#     2026-08-09: the lower-left end sat on the respiratory cluster). Its glyph
+#     run is a segment offset just above the line, so the test is a real
+#     point-to-segment distance rather than a bounding box: the nearest point is
+#     catechol metabolism, which sits BELOW the line and left of where the text
+#     starts.
+# (2) the quadrant note is right-aligned at mid-width along the bottom edge, so
+#     its glyph run reaches back to about a seventh of the width; the lowest
+#     thing in that strip is the CIII/CV cluster, a good 8 mm above it.
+fx <- (d$c_tn - LIM[1]) / diff(LIM)
+fy <- (d$c_tp - LIM[1]) / diff(LIM)
+seg_dist <- function(s0, s1) {
+  tt <- pmax(0, pmin(1, ((fx - s0[1]) * (s1[1] - s0[1]) +
+                         (fy - s0[2]) * (s1[2] - s0[2])) / sum((s1 - s0)^2)))
+  sqrt((fx - (s0[1] + tt * (s1[1] - s0[1])))^2 +
+       (fy - (s0[2] + tt * (s1[2] - s0[2])))^2)
+}
+DIAG_AT <- 0.79
 stopifnot(
-  !any(abs(d$c_tn - at(0.13)) < diff(LIM) * 0.10 &
-       abs(d$c_tp - at(0.13)) < diff(LIM) * 0.06),
-  !any(d$c_tn > at(0.34) & d$c_tn < at(0.66) & d$c_tp < at(0.10)))
+  # the label's glyph run: 14 mm of text lying along the line, offset about one
+  # line-height ABOVE it. The nearest thing to it is catechol metabolism, which
+  # sits BELOW the line; 0.025 of the panel is 1.7 mm at this size, and the
+  # measured gap is 1.9 mm. A tighter bar cannot be met at this font size --
+  # the run needs 0.15 of the panel and would clip the corner if pushed further
+  # up the line.
+  min(seg_dist(c(DIAG_AT, DIAG_AT + 0.012), c(DIAG_AT + 0.15, DIAG_AT + 0.162))) > 0.025,
+  # and the bottom strip the quadrant note occupies
+  !any(fx > 0.13 & fx < 0.51 & fy < 0.10),
+  # and the top-left block the colour key sits in -- generous, because the whole
+  # upper-left quadrant is empty for a reason: a pathway there would be one the
+  # normal gland strips and Myc restores, and there is none
+  !any(fx < 0.40 & fy > 0.60))
+
+# The fill is the horizontal axis. Symmetric about zero so equal ink is equal
+# magnitude on both sides -- the asymmetric form of heat_fill() exists for
+# lopsided data and this is only mildly lopsided (-0.41 / +0.56).
+CLIM <- c(-1, 1) * max(abs(d$c_tn))
 
 p <- ggplot2::ggplot(d, ggplot2::aes(c_tn, c_tp)) +
-  # the diagonal's label goes to the empty lower-left run of the line, and the
-  # quadrant note to the corner beneath it; both regions are checked below.
-  two_timeline_base(LIM, diag_at = 0.13,
-                    quadrant = "below the line = lost under Myc as well",
-                    quadrant_at = c(0.50, 0.02), quadrant_hjust = 0.5) +
-  # the Myc-specific term, drawn: from where development alone would have put the
-  # arm, down to where it actually is. Only for the named arms -- 143 arrows is a
-  # hedgehog, and the 93% figure belongs in the legend.
-  ggplot2::geom_segment(data = w, inherit.aes = FALSE,
-                        ggplot2::aes(x = c_tn, xend = c_tn, y = c_tn, yend = c_tp),
-                        arrow = ggplot2::arrow(length = ggplot2::unit(1, "mm"),
-                                               type = "closed"),
-                        linewidth = 0.22, colour = "grey55") +
-  ggplot2::geom_point(ggplot2::aes(colour = class), size = 1.15, stroke = 0,
-                      alpha = 0.9) +
-  ggplot2::geom_point(data = w, ggplot2::aes(colour = class), size = 1.9,
-                      stroke = 0) +
+  two_timeline_base(LIM, diag_at = DIAG_AT,
+                    quadrant = "below the line = lost under MYC",
+                    quadrant_at = c(0.50, 0.02), quadrant_hjust = 1) +
+  # Outlined circles, not solid ones: zero on the manuscript ramp is #FAFAFA, so
+  # a filled point at the compartment median would vanish into the page.
+  ggplot2::geom_point(ggplot2::aes(fill = c_tn), shape = 21, size = 1.35,
+                      colour = "grey45", stroke = 0.12) +
+  ggplot2::geom_point(data = w, ggplot2::aes(fill = c_tn), shape = 21,
+                      size = 2.1, colour = "grey20", stroke = 0.3) +
   ggrepel::geom_text_repel(data = w, ggplot2::aes(label = lab),
-                           colour = w$lab_col,
+                           colour = "grey15",
                            size = 1.65, seed = 4, max.overlaps = Inf,
                            min.segment.length = 0, segment.size = 0.2,
                            segment.colour = "grey60", box.padding = 0.32,
                            point.padding = 0.18) +
-  ggplot2::scale_colour_manual(
-    values = c("respiratory chain" = unname(pole_cols[["down"]]),
-               "catabolic arms"    = unname(pole_cols[["up"]]),
-               "other"             = unname(pole_cols[["other"]])),
-    breaks = c("respiratory chain", "catabolic arms"), name = NULL) +
-  ggplot2::labs(x = "wild-type 6>12W  (set-average log2FC)",
-                y = "Myc+ 6>12W") +
-  ggplot2::guides(colour = ggplot2::guide_legend(
-    override.aes = list(size = 1.8, alpha = 1))) +
+  heat_fill(CLIM, name = "6>12W_wt", breaks = c(-0.4, 0, 0.4)) +
+  ggplot2::labs(x = "wild-type 6>12W  (set average log2FC)",
+                y = "Myc+ 6>12W  (set average log2FC)") +
+  ggplot2::guides(fill = ggplot2::guide_colourbar(
+    barwidth = ggplot2::unit(16, "mm"), barheight = ggplot2::unit(2, "mm"),
+    ticks.colour = "grey30", frame.colour = "grey30",
+    frame.linewidth = 0.2, title.position = "top", title.hjust = 0)) +
   theme_panel(base_size = 6) +
-  # Key inside, top left: nothing gains under Myc while losing in development, so
-  # the wedge above the diagonal on the left is provably empty.
+  # THE BAR IS HORIZONTAL AND INSIDE, TOP LEFT (author, 2026-08-09): laid the same
+  # way as the axis it repeats, so the eye reads the two as one scale. The quadrant
+  # it sits in is the empty one -- x below zero with y above it means a pathway the
+  # normal gland strips and Myc restores, and no pathway does that -- which the
+  # assertion below states as a fact about the data rather than a hope.
   ggplot2::theme(
     legend.position        = "inside",
-    legend.position.inside = c(0.01, 0.99),
+    legend.position.inside = c(0.01, 0.98),
     legend.justification   = c(0, 1),
+    legend.direction       = "horizontal",
     legend.background      = ggplot2::element_blank(),
+    # theme_classic sets axis.text to rel(0.8) of base_size, so the key's own
+    # numbers have to be set to 4.8 explicitly or they print LARGER than the axis
+    # they repeat -- which is backwards for a key.
+    legend.title           = ggplot2::element_text(size = 5.2,
+                               margin = ggplot2::margin(b = 0.5, unit = "mm")),
+    legend.text            = ggplot2::element_text(size = 4.8),
     legend.margin          = ggplot2::margin(0, 0, 0, 0),
-    legend.key.size        = ggplot2::unit(2.4, "mm"),
-    legend.spacing.y       = ggplot2::unit(0.3, "mm"),
     plot.margin            = ggplot2::margin(1.5, 2.5, 1, 1.5, "mm"))
 
 # =============================================================================
@@ -204,14 +227,14 @@ LEGEND <- panel_legend(
   what = paste0(
     "Every mitochondrial pathway on both timelines at once: the change across ",
     "the wild-type window on the horizontal axis, the change across the same ",
-    "window in the Myc+ gland on the vertical. The dashed diagonal is what the ",
-    "pathway would have done under development alone, so the arrow from it down ",
-    "to a point is the Myc-specific part of the loss."),
+    "window in the Myc+ gland on the vertical, and the same wild-type change ",
+    "again as the fill. The dashed diagonal is what the pathway would have done ",
+    "under development alone, so the vertical distance below it is the ",
+    "Myc-specific part of the loss."),
   detail = c(
     sprintf("n = 6 per group; %d MitoPathways (the synthetic mtDNA-encoded pathway excluded, as in Figs. 1E, 1F and 2F). Set-average raw (unshrunken) log2 fold changes on `6>12W_wt` and `6>12W_myc`.",
             nrow(d)),
-    sprintf("THE ARROW IS THE INTERACTION, EXACTLY. Script 40's ruler satisfies (Myc+ change) = (wild-type change) + (interaction) to the last bit, asserted in the script, so the vertical drop from the diagonal is not an approximation of the Myc-specific term -- it is that term.",
-            NULL),
+    "THE DROP FROM THE LINE IS THE INTERACTION, EXACTLY. Script 40's ruler satisfies (Myc+ change) = (wild-type change) + (interaction) to the last bit, asserted in the script, so the vertical distance from the diagonal is not an approximation of the Myc-specific term -- it is that term.",
     sprintf("THE RESPIRATORY ARM IS THE ONLY THING IN THE LOWER-LEFT QUADRANT: %s; %s; %s; %s. Development takes about a quarter of a log2 out of the chain and Myc takes a further sixth.",
             arm("CIV subunits"), arm("CI subunits"), arm("CIII subunits"),
             arm("CV subunits")),
@@ -236,8 +259,8 @@ LEGEND <- panel_legend(
     "BATCH = TIMEPOINT, and here it bites BOTH axes: the 6W and 12W cohorts were extracted as two batches, so each coordinate is DESCRIBED, not claimed. What is batch-CLEAN is the VERTICAL DISTANCE from the diagonal -- that is the interaction, and genotype is balanced within each batch. The panel should be read down from the line rather than along the axes.",
     "No per-pathway significance is drawn and none exists for these contrasts in the saved object; script 40 carries adjusted p-values for the genotype contrasts only. The arm-level empirical nulls (script 43, 2000 expression-matched sets) exist for the wild-type axis only and are quoted in fig2_wt_mito_contraction.R's legend.",
     "MitoCarta sets are membership-loose and several named arms are small (glycine cleavage 4 genes, the carnitine shuttle 5). A large move on a four-gene set is one gene, not a module.",
-    "The two poles of the manuscript diverging ramp are spent here as CATEGORICAL colours -- espresso for the respiratory arm, mint for the catabolic one -- as Figs. 1G and 1H spend them. Neither is a sample colour.",
-    "\"Respiratory chain\" and \"catabolic arms\" are rosters named in this script from the sentence, not a saved classification; every other pathway is drawn in grey and none is hidden."),
+    "THE FILL IS THE HORIZONTAL AXIS -- the same wild-type log2 fold change, on the manuscript diverging ramp with white pinned to zero. It is redundant by construction and carries no second variable: it is there so the plane sorts by what development did without a roster deciding it. Read magnitude off the axes; the ramp is symmetric so equal ink is equal magnitude on both sides.",
+    "The twelve named arms are a roster written in this script from the sentence, not a saved classification. They decide what is LABELLED and nothing else -- every one of the 143 pathways is drawn, on the same ramp, and none is hidden."),
   source = c(
     "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler: c_tn / c_tp / c_int (content) and p_tn / p_tp / p_int (mitoPPS priority) for 144 MitoPathways",
     "The grammar: two_timeline_base() in figures/panels/_panel_common.R, shared with Figs. 2G (alt), 2H+I (alt) and S2D (alt)"))
@@ -262,7 +285,9 @@ if (FALSE) {
   L2 <- c(-1, 1) * max(abs(c(d2$c_tn, d2$c_tp))) * 1.04
   ggplot2::ggplot(d2, ggplot2::aes(c_tn, c_tp)) +
     two_timeline_base(L2) +
-    ggplot2::geom_point(ggplot2::aes(colour = class), size = 1.2, stroke = 0) +
+    ggplot2::geom_point(ggplot2::aes(fill = c_tn), shape = 21, size = 1.35,
+                        colour = "grey45", stroke = 0.12) +
+    heat_fill(c(-1, 1) * max(abs(d2$c_tn))) +
     ggrepel::geom_text_repel(data = w2, ggplot2::aes(label = lab), size = 1.8,
                              seed = 4, max.overlaps = Inf) +
     theme_panel(base_size = 6)

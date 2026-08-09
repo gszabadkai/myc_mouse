@@ -324,10 +324,15 @@ two_timeline_base <- function(lim, diag_label = "development alone",
     out <- c(out, list(ggplot2::annotate(
       "text", x = at(diag_at), y = at(diag_at), label = diag_label,
       angle = 45, hjust = 0, vjust = -0.5, size = 1.65, colour = "grey45")))
+  # `quadrant_hjust` was declared and then ignored here (hjust was hard-wired to
+  # 1), so a caller asking for a centred note silently got a right-aligned one.
+  # Both existing callers therefore pass 1 explicitly, which is what they render
+  # today; nothing moves as a result of the fix.
   if (!is.null(quadrant))
     out <- c(out, list(ggplot2::annotate(
       "text", x = at(quadrant_at[1]), y = at(quadrant_at[2]), label = quadrant,
-      hjust = 1, vjust = 0, size = 1.65, colour = "grey35", fontface = "italic")))
+      hjust = quadrant_hjust, vjust = 0, size = 1.65, colour = "grey35",
+      fontface = "italic")))
   c(out, list(
     ggplot2::scale_x_continuous(labels = lab_signed),
     ggplot2::scale_y_continuous(labels = lab_signed),
