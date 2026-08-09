@@ -190,7 +190,7 @@ p_bot <- ggplot2::ggplot(r143, ggplot2::aes(x = p_m6)) +
   ggplot2::scale_x_continuous(labels = lab_signed, limits = XLIM,
                               expand = ggplot2::expansion(mult = c(0, 0))) +
   ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.16, 0.06))) +
-  ggplot2::labs(x = "Myc priority effect at 6W, per MitoPathway (mitoPPS)", y = NULL) +
+  ggplot2::labs(x = "Myc mitoPPS effect at 6W, per MitoPathway", y = NULL) +
   theme_panel(base_size = 6) +
   ggplot2::theme(
     axis.text.y  = ggplot2::element_blank(),
@@ -221,13 +221,13 @@ LEGEND <- panel_legend(
   slot = "Fig. 1F",
   what = paste0(
     "Myc reprioritises the mitochondrial compartment. TOP: the Myc genotype ",
-    "effect on mitoPPS priority for the thirteen MitoPathways named in the text, ",
+    "effect on mitoPPS for the thirteen MitoPathways named in the text, ",
     "ranked, with the twelve-week effect joined to the six-week one so the fade ",
     "reads in the same panel. BOTTOM: the same effect across all 143 ",
     "nuclear-encoded MitoPathways -- the distribution the thirteen are drawn from, ",
     "and the counterpart of Fig. 1E's lower strip on the other ruler."),
   detail = c(
-    "mitoPPS (Monzel et al. 2025) is a pairwise-ratio score: every pathway is normalised against the rest of the mitochondrial compartment, so the quantity is RELATIVE priority and a uniform change in mitochondrial content cancels. The contrast is Myc+ minus wild type within one age, which is the clean axis (genotype is balanced within each extraction batch). n = 6 animals per group.",
+    "mitoPPS (Monzel et al. 2025) is a pairwise-ratio score: every pathway is normalised against the rest of the mitochondrial compartment, so the quantity is a RELATIVE share of the compartment's resources and a uniform change in mitochondrial content cancels. The contrast is Myc+ minus wild type within one age, which is the clean axis (genotype is balanced within each extraction batch). n = 6 animals per group.",
     "Filled points are padj < 0.05 at six weeks, open points are not; padj is script 08's within-contrast Benjamini-Hochberg adjustment across all 144 pathways. Row labels carry the number of genes in the pathway.",
     sprintf("Of the 144 pathways, %d clear padj < 0.05 at six weeks. Among the thirteen drawn: %s.",
             n_sig, paste(gsub(" \\(\\d+\\)$", "", as.character(d$label[d$sig == "yes"])),
@@ -241,7 +241,7 @@ LEGEND <- panel_legend(
     row_line("Fission"), row_line("Apoptosis"),
     sprintf("BOTTOM: one point per MitoPathway coloured by sign, over a kernel density; the dashed line is the median (%+.4f) and the solid line is zero. %.1f%% of the 143 are above zero. Set against Fig. 1E's lower strip, where 95.1%% are above zero on the content ruler, this is the two-mechanism sentence in two pictures: Myc raises almost the whole compartment and reorders it at the same time.",
             med_143, pct_up_143),
-    sprintf("The compartment-wide spread narrows with age as everything else does: the 6W priority effects have SD %.3f and the 12W effects %.3f, and the regression of one on the other has slope 0.644 with R2 0.789 (Fig. 1G).",
+    sprintf("The compartment-wide spread narrows with age as everything else does: the 6W mitoPPS effects have SD %.3f and the 12W effects %.3f, and the regression of one on the other has slope 0.644 with R2 0.789 (Fig. 1G).",
             rs$sd[rs$ruler == "priority" & rs$metric == "m6"],
             rs$sd[rs$ruler == "priority" & rs$metric == "m12"])),
   bounds = c(
@@ -250,7 +250,7 @@ LEGEND <- panel_legend(
     "MitoCarta sets are membership-loose and several rows are small: glycine cleavage and serine are four genes each, mitophagy 14, fission 15. On a four-gene set a large effect is one or two genes and not a module, which is why n is printed on the panel. Resolve gene by gene before making any mechanistic claim from a small row.",
     "The 144 MitoPathways NEST inside one another -- OXPHOS subunits is contained in OXPHOS, fission and mitophagy in dynamics and surveillance -- so neither the thirteen rows nor the 143 points are independent, and the Benjamini-Hochberg adjustment across them is anticonservative in an unknown direction. Read the pattern.",
     "This is a genotype contrast at each age and both are clean. The 6W-to-12W connector is a comparison BETWEEN two clean contrasts, not a temporal contrast, so it is not exposed to batch = timepoint. The temporal mitoPPS contrasts, which are, are not drawn.",
-    "Descriptive and exploratory at n = 6 per group. The compartment-wide claim (a two-sided priority distribution over a one-sided content distribution) is the statement; no single row is a result."),
+    "Descriptive and exploratory at n = 6 per group. The compartment-wide claim (a two-sided mitoPPS distribution over a one-sided content distribution) is the statement; no single row is a result."),
   source = c(
     "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler, $ruler_summary",
     "results/mitopps_scores.rds (scripts/08_mitoPPS_analysis.R) -- $mitopps_pairwise, read for the identity assertion only",

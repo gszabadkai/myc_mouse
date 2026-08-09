@@ -115,9 +115,14 @@ stopifnot(identical(as.character(ax$sample), colnames(E)),
 # =============================================================================
 # the five quantities
 # =============================================================================
-# "OXPHOS mitoPPS" is the author's name for this axis (2026-08-09) and replaces
-# "OXPHOS priority" wherever it is drawn. `priority` stays as the word for the
-# RULER in prose, where it is the counterpart of `content`.
+# "OXPHOS mitoPPS" is the author's name for this axis (2026-08-09). The rename is
+# now project-wide across figures/panels/: the quantity is called mitoPPS
+# wherever it is drawn OR named in a legend block, including "the mitoPPS ruler"
+# where the text used to say "the priority ruler". `priority` survives only as
+# the English word for the PHENOMENON -- reprioritisation, a pathway losing
+# priority -- because renaming that would make the sentence untrue. Column names
+# in the saved objects (`ruler == "priority"`, `$comparator_priority`) are DATA
+# and are untouched.
 ratio <- as.numeric(E["Bbc3", ] - E["Bcl2l1", ])
 CH <- list(
   "OXPHOS mitoPPS" = ax$oxphos_ppd,

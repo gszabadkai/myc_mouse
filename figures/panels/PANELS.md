@@ -1341,11 +1341,29 @@ record for the two transcripts agrees (`Foxo3` −0.486, p 0.0074; `Bbc3` −0.5
 and 2 of the 26 mechanism genes, neither clearing genome-wide BH, which is why pre-specification is
 what licenses them). The `Foxo3` agreement is asserted.
 
-**Naming.** `OXPHOS priority` → **`OXPHOS mitoPPS`** wherever it is drawn, and
-`fig2_oxphos_puma_coupling.R`'s axis follows ("mitoPPS score, per animal", generic because its
-facets are OXPHOS and redox). `priority` survives only as the word for the **ruler** in prose,
-where it is the counterpart of `content` — so Figs. 1F and 2F, which draw the pathway-level ruler
-rather than this per-animal score, are untouched.
+### Naming: `priority` → `mitoPPS`, project-wide in `figures/panels/` (2026-08-09)
+
+The author's call, "for clarity". **The quantity is called `mitoPPS` wherever it is drawn or named
+in a legend block** — including "the mitoPPS ruler" where the text said "the priority ruler".
+Drawn labels changed: Fig. 1F's x axis (`Myc mitoPPS effect at 6W, per MitoPathway`), Fig. 2F's y
+axis (`mitoPPS, 6>12W_wt`), Fig. 2I's x axis (`mitoPPS score, per animal` — generic, because its
+facets are OXPHOS and redox), and Fig. 2H+I (alt)'s facet and x axis (`OXPHOS mitoPPS`).
+
+**Three things keep the old word, and each for a reason:**
+
+1. **Data.** `ruler == "priority"`, `$comparator_priority`, `comp$priority` are column values and
+   object fields in the saved `.rds` files. Renaming them would break the lookups silently. Not
+   touched, in any script.
+2. **The phenomenon.** "Myc *reprioritises* the compartment", "a pathway can be *demoted*" — these
+   describe what happens, not what is measured, and renaming them would make the sentences untrue.
+3. **The definition, reworded instead.** Fig. 1F's legend said mitoPPS "is RELATIVE priority",
+   which becomes circular once the score is called mitoPPS; it now reads *"a RELATIVE share of the
+   compartment's resources"*, the project's own gloss.
+
+**Not swept: `figures/*.R`**, the superseded exploratory layer (fig01–fig05, figure1/figure2,
+figS1–figS8). Those scripts bake titles and subtitles into the plot — the idiom `theme_panel()`
+forbids for new panels — so their captions use "priority" as running prose, and they interleave it
+with the same data selectors. They are not the paper. Say so and they get the same pass.
 
 **Fig. S2D (alt) — done.** Two changes.
 

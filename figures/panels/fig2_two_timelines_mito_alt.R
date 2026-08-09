@@ -51,7 +51,7 @@
 #
 # ONE RULER, DELIBERATELY. The content ruler is the one the sentence's "logFC"
 # names. Drawing both rulers AND both timelines in one 89 mm panel is what made
-# the first version unreadable; the priority ruler gives the same picture and is
+# the first version unreadable; the mitoPPS ruler gives the same picture and is
 # quoted in the legend (OXPHOS subunits -0.109 -> -0.153, compartment median
 # +0.003 -> -0.023), and the sandbox redraws the panel on it with one constant.
 #
@@ -86,7 +86,7 @@ d <- r[!r$is_mtdna, ]
 stopifnot(nrow(d) == 143L)
 
 # THE DEVICE, PROVED: a vertical drop from the diagonal IS the interaction.
-# Exact to floating point -- the priority ruler is bit-identical and the content
+# Exact to floating point -- the mitoPPS ruler is bit-identical and the content
 # ruler differs by 1.2e-16, which is one representable step, not an approximation.
 stopifnot(max(abs(d$c_tn + d$c_int - d$c_tp)) < 1e-12,
           max(abs(d$p_tn + d$p_int - d$p_tp)) < 1e-12)
@@ -250,7 +250,7 @@ LEGEND <- panel_legend(
             arm("Carnitine shuttle", "the carnitine shuttle"),
             arm("Glycine cleavage system", "glycine cleavage"),
             arm("Amino acid metabolism", "amino acid metabolism")),
-    sprintf("THE PRIORITY RULER GIVES THE SAME PICTURE and is not drawn, to keep the labels legible: OXPHOS subunits %+.3f to %+.3f, compartment median %+.3f to %+.3f, and the same additive identity holds. fig2_wt_mito_contraction.R is the panel that draws both rulers; this one draws both timelines.",
+    sprintf("THE mitoPPS RULER GIVES THE SAME PICTURE and is not drawn, to keep the labels legible: OXPHOS subunits %+.3f to %+.3f, compartment median %+.3f to %+.3f, and the same additive identity holds. fig2_wt_mito_contraction.R is the panel that draws both rulers; this one draws both timelines.",
             g("OXPHOS subunits", "p_tn"), g("OXPHOS subunits", "p_tp"),
             stats::median(d$p_tn), stats::median(d$p_tp)),
     sprintf("For scale, the Myc genotype effect at six weeks on the same arm is %+.3f -- the chain is something Myc BUILDS at six weeks and both timelines then take apart.",
@@ -262,7 +262,7 @@ LEGEND <- panel_legend(
     "THE FILL IS THE HORIZONTAL AXIS -- the same wild-type log2 fold change, on the manuscript diverging ramp with white pinned to zero. It is redundant by construction and carries no second variable: it is there so the plane sorts by what development did without a roster deciding it. Read magnitude off the axes; the ramp is symmetric so equal ink is equal magnitude on both sides.",
     "The twelve named arms are a roster written in this script from the sentence, not a saved classification. They decide what is LABELLED and nothing else -- every one of the 143 pathways is drawn, on the same ramp, and none is hidden."),
   source = c(
-    "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler: c_tn / c_tp / c_int (content) and p_tn / p_tp / p_int (mitoPPS priority) for 144 MitoPathways",
+    "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler: c_tn / c_tp / c_int (content) and p_tn / p_tp / p_int (mitoPPS) for 144 MitoPathways",
     "The grammar: two_timeline_base() in figures/panels/_panel_common.R, shared with Figs. 2G (alt), 2H+I (alt) and S2D (alt)"))
 
 save_panel_p(p, "fig2_two_timelines_mito_alt", height = 76)

@@ -165,7 +165,7 @@ amb  <- as.data.frame(ss$ambient)
 LEGEND <- panel_legend(
   slot = "Fig. 2I",
   what = paste0(
-    "One point per animal: its mitoPPS priority score on the horizontal axis -- ",
+    "One point per animal: its mitoPPS score on the horizontal axis -- ",
     "OXPHOS subunits on the left, redox on the right -- against its ",
     "PUMA:Bcl-xL log2 ratio, standardised. A line is fitted within each ",
     "genotype; the statistic the text quotes is the difference between the two ",

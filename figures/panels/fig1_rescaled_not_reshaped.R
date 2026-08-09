@@ -253,7 +253,7 @@ LEGEND <- panel_legend(
             stats::median(r2_nul), max(r2_nul), r2_obs, p_r2),
     sprintf("The SLOPE is not the extreme statistic and should not be quoted as though it were: %d of the 500 shuffles reach 0.552 or more (p = %.2f). A random collection of genes of the same size and expression can halve an effect. What it cannot do is halve it coherently, which is the R2.",
             sum(sl_nul >= reg_row$slope), p_sl),
-    "On the content-blind priority ruler the same regression gives slope 0.644 and R2 0.789, and within the OXPHOS tier R2 0.945 -- drawn in Fig. 1F as the connector on every row, which is what the sentence's back-reference points at."),
+    "On the content-blind mitoPPS ruler the same regression gives slope 0.644 and R2 0.789, and within the OXPHOS tier R2 0.945 -- drawn in Fig. 1F as the connector on every row, which is what the sentence's back-reference points at."),
   bounds = c(
     sprintf("BOTH facets are WINDOWED for display and the points outside are not drawn: +/-%.1f log2 on the left, which leaves out %d of the %s genes, and an upper bound of %+.2f on the right, which leaves out %d of the 143 pathways (Glycine metabolism at %+.2f and the four-gene Glycine cleavage system at %+.2f). Every fitted line and every number on the panel is computed on the COMPLETE set.",
             GLIM, n_out_g, format(nrow(gsub_), big.mark = ","), PHI, n_out_p,

@@ -13,7 +13,7 @@
 # wild-type gland does between six and twelve. If the two programmes were the
 # same programme, or opposites, the cloud would have a slope.
 #
-#   mitochondrial       143 MitoPathways on the mitoPPS priority ruler, which is
+#   mitochondrial       143 MitoPathways on the mitoPPS ruler, which is
 #                       the ruler the word "reallocation" refers to (Fig. 1F).
 #                       r = -0.02.
 #   whole transcriptome 15,191 genes on the DESeq2 log2 fold change. r = +0.23,
@@ -254,12 +254,12 @@ LEGEND <- panel_legend(
   what = paste0(
     "What the wild-type gland does between six and twelve weeks, against what ",
     "Myc does at six weeks, at two scales: one point per mitochondrial pathway ",
-    "on the mitoPPS priority ruler (left) and one point per expressed gene on ",
+    "on the mitoPPS ruler (left) and one point per expressed gene on ",
     "the DESeq2 log2 fold change (right). The solid line is the observed ",
     "relationship; the dashed line is what remains once the two contrasts stop ",
     "sharing a baseline."),
   detail = c(
-    sprintf("MITOCHONDRIAL: %d MitoPathways (the synthetic mtDNA-encoded pathway excluded, as in Figs. 1E, 1F and 2F). Correlation on the priority ruler %+.3f, and on the content ruler %+.3f -- both negligible.",
+    sprintf("MITOCHONDRIAL: %d MitoPathways (the synthetic mtDNA-encoded pathway excluded, as in Figs. 1E, 1F and 2F). Correlation on the mitoPPS ruler %+.3f, and on the content ruler %+.3f -- both negligible.",
             nrow(r143), mito_r_prio, mito_r_cont),
     sprintf("WHOLE TRANSCRIPTOME: %s genes with baseMean >= 20. The observed correlation is %+.3f, and it is a property of the design rather than of the biology.",
             format(nrow(g), big.mark = ","), gene_r),
@@ -273,9 +273,9 @@ LEGEND <- panel_legend(
     sprintf("Splitting halves the baseline's sample size, which adds independent noise to both axes and pulls the correlation toward zero; the standard deviations grow by %.0f%% and %.0f%%, and undoing that inflation gives %+.3f rather than %+.3f. The conclusion does not depend on which of the two is used.",
             100 * (mean(split_tab$infl_a) - 1), 100 * (mean(split_tab$infl_b) - 1),
             r_split_dis, r_split),
-    sprintf("THE ARTEFACT PUSHES THE WRONG WAY FOR THE MITOCHONDRIAL PANEL TOO, which makes that negative conservative: the priority contrasts share the same wild-type baseline, so the sharing forces a POSITIVE correlation, and what is observed is %+.3f.",
+    sprintf("THE ARTEFACT PUSHES THE WRONG WAY FOR THE MITOCHONDRIAL PANEL TOO, which makes that negative conservative: the mitoPPS contrasts share the same wild-type baseline, so the sharing forces a POSITIVE correlation, and what is observed is %+.3f.",
             mito_r_prio),
-    sprintf("Script 40 reports the UNCENTRED cosine of these same two vectors, and the script asserts the recomputation matches it exactly (%+.4f content, %+.4f priority). On the content ruler cosine and correlation disagree (%+.3f against %+.3f) because both content vectors have a large positive mean and the cosine picks up that shared offset. The sentence's word is CORRELATION, so the correlation is what is drawn.",
+    sprintf("Script 40 reports the UNCENTRED cosine of these same two vectors, and the script asserts the recomputation matches it exactly (%+.4f content, %+.4f mitoPPS). On the content ruler cosine and correlation disagree (%+.3f against %+.3f) because both content vectors have a large positive mean and the cosine picks up that shared offset. The sentence's word is CORRELATION, so the correlation is what is drawn.",
             geo_all$c_cos_wt_myc, geo_all$p_cos_wt_myc, geo_all$c_cos_wt_myc,
             mito_r_cont)),
   bounds = c(

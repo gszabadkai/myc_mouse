@@ -18,7 +18,7 @@
 #           nuclear-encoded MitoPathways, so the reader can see that almost the
 #           whole compartment moves and not a favoured corner of it.
 #
-# Fig. 1F is the SAME 143 pathways on the content-blind priority ruler. The pair
+# Fig. 1F is the SAME 143 pathways on the content-blind mitoPPS ruler. The pair
 # is the two-mechanism sentence: a one-sided distribution here, a two-sided one
 # there. That is why the tier colour key lives on 1F and this panel stays neutral.
 #
@@ -273,7 +273,7 @@ LEGEND <- panel_legend(
     "transcriptome contributed by five mitochondrial arms, one point per animal. ",
     "BOTTOM: the Myc genotype effect at six weeks on each of the 143 ",
     "nuclear-encoded MitoPathways, as a distribution -- the same 143 pathways ",
-    "Fig. 1F ranks on the content-blind priority ruler."),
+    "Fig. 1F ranks on the content-blind mitoPPS ruler."),
   detail = c(
     "TOP: n = 6 animals per group, n = 24 per arm; every animal is drawn. Boxes are median and quartiles, whiskers 1.5x the interquartile range. Groups run genotype-major (both wild-type boxes, then both Myc+ boxes), so the single bracket spans the contrast it labels. The x axis is blank because the colour key carries the group names.",
     "The bracket is the genotype MAIN effect from script 32's own model, lm(log2 share ~ timepoint + myc_status), reproduced here and asserted equal to results/mito_content_proxies.rds$share_stats to 1e-8. Red marks p < 0.05. Per arm, overall and split by age:",

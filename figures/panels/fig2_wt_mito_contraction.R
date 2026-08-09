@@ -51,7 +51,7 @@
 #
 # THE mtDNA-ENCODED OXPHOS SUBUNITS ARE EXCLUDED, exactly as Figs. 1E and 1F
 # exclude them and as script 40 does (`is_mtdna`). They are the largest single
-# movement here (+0.63 content, +0.53 priority) and they are the one quantity in
+# movement here (+0.63 content, +0.53 mitoPPS) and they are the one quantity in
 # this project that cannot be read on a temporal axis -- see the legend block.
 #
 # BATCH = TIMEPOINT (CLAUDE.md): the 6W and 12W cohorts were extracted as two
@@ -99,7 +99,7 @@ arm <- as.data.frame(ss$defs$arms)
 # a data.frame row lookup returns a named vector and sprintf prints the name too.
 r$n <- as.integer(unname(r$n_genes))
 r$c <- as.numeric(unname(r$c_tn))       # content, wild-type 6->12W
-r$p <- as.numeric(unname(r$p_tn))       # priority, wild-type 6->12W
+r$p <- as.numeric(unname(r$p_tn))       # mitoPPS, wild-type 6->12W
 stopifnot(all(c("pathway", "tier", "is_mtdna") %in% names(r)), nrow(r) == 144L)
 
 # --- guard: a stale results object must fail here, not at review --------------
@@ -128,7 +128,7 @@ stopifnot(nrow(chk) >= 7L,
           max(abs(chk$c_wt_time - chk$c_ruler)) < 1e-6,
           max(abs(cpr$prio_wt_time - cpr$p_ruler)) < 1e-6)
 
-# (2) the priority ruler IS script 08's, so its per-pathway test can be attached.
+# (2) the mitoPPS ruler IS script 08's, so its per-pathway test can be attached.
 # `Temporal_Myc-` is the wild-type 6->12W contrast in script 08's naming.
 mpp <- as.data.frame(mp$mitopps_pairwise)
 mpp <- mpp[mpp$contrast == "Temporal_Myc-", c("pathway", "diff", "p_value", "padj")]
@@ -198,7 +198,7 @@ stopifnot(nrow(outside) == 2L, all(outside$n <= 6L),
 # nowhere local to put them and stacked them on each other twice.
 #
 # THREE LANES, each in a region the assertions below prove is EMPTY of data:
-#   upper left   nothing gains priority while losing content     -> the knot
+#   upper left   nothing rises in mitoPPS while losing content     -> the knot
 #   bottom band  nothing sits below -0.135 right of -0.10        -> the complexes
 #   right band   past +0.285 content, nothing sits near zero     -> the catabolic
 #
@@ -259,7 +259,7 @@ p <- ggplot2::ggplot(drawn, ggplot2::aes(c, p)) +
   # LABELS ARE STEERED, NOT LEFT TO REPEL. Four of the eleven sit inside the dense
   # knot at the origin, where repel has nowhere local to put them and drops the
   # label on its neighbours. The plane has two provably empty regions -- upper
-  # left (nothing gains priority while losing content) and the far right -- so the
+  # left (nothing rises in mitoPPS while losing content) and the far right -- so the
   # knot's labels are constrained into the upper left and the catabolic three
   # upward, each with a leader. Same principle as Fig. S1C's lanes: place them
   # where the data cannot be, rather than nudging until it looks right.
@@ -279,7 +279,7 @@ p <- ggplot2::ggplot(drawn, ggplot2::aes(c, p)) +
   ggplot2::scale_y_continuous(limits = YR, labels = lab_signed,
                               expand = ggplot2::expansion(mult = 0)) +
   ggplot2::labs(x = "content, 6>12W_wt  (set-average log2FC)",
-                y = "priority, 6>12W_wt  (mitoPPS)") +
+                y = "mitoPPS, 6>12W_wt") +
   theme_panel(base_size = 6) +
   ggplot2::theme(plot.margin = ggplot2::margin(1.5, 2.5, 1, 1.5, "mm"))
 
@@ -297,7 +297,7 @@ ordinal <- function(x) {
   paste0(n, suf)
 }
 line <- function(pw, label = pw)
-  sprintf("%s %+.3f content (%s percentile of the compartment) and %+.3f priority (%s)",
+  sprintf("%s %+.3f content (%s percentile of the compartment) and %+.3f mitoPPS (%s)",
           label, val(pw, "c"), ordinal(pct(pw, "c")),
           val(pw, "p"), ordinal(pct(pw, "p")))
 null_of <- function(a) wtn$percentile[wtn$arm == a]
@@ -311,7 +311,7 @@ LEGEND <- panel_legend(
   what = paste0(
     "Every mitochondrial pathway over the wild-type 6 to 12 week window, on two ",
     "rulers at once. Horizontal, content: the set-average raw log2 fold change, ",
-    "what the compartment has. Vertical, priority: the mitoPPS pairwise-ratio ",
+    "what the compartment has. Vertical, mitoPPS: the pairwise-ratio ",
     "score, which is blind to content and reads how the compartment divides its ",
     "budget. Fill repeats the horizontal axis on the manuscript diverging scale. ",
     "The pathways the text names are drawn larger and labelled, with their gene ",
@@ -351,24 +351,24 @@ LEGEND <- panel_legend(
             pair_of("PROLIF_* pooled")$observed_diff, 1 / ss$defs$n_set_draws),
     sprintf("\"ACROSS ALL COMPLEXES\" HAS ONE EXCEPTION AND IT IS INFORMATIVE: %s. Complex II is the only respiratory complex with no mtDNA-encoded subunit -- it is not in the proton circuit and it is also a TCA enzyme -- and it is the only one that does not fall. But the set is FOUR genes, and MitoCarta sets are membership-loose, so this is a direction to note and not a mechanism to claim.",
             line("CII subunits")),
-    sprintf("EXCLUDED, AND IT IS THE LARGEST MOVEMENT IN THE COMPARTMENT: the 13 mtDNA-encoded OXPHOS subunits rise %+.3f on content and %+.3f on priority. They are dropped by the same rule Figs. 1E and 1F use. The reason is not tidiness: the mtDNA-encoded read fraction is confounded three ways in these data -- real content, the proliferation denominator, and dissociation leak -- and it is the one quantity that is time-associated rather than genotype-associated, so a temporal contrast is exactly where it cannot be read. The nuclear-encoded arm falling while the mtDNA arm rises is a mitonuclear discordance if it is real; on this axis it is not adjudicable.",
+    sprintf("EXCLUDED, AND IT IS THE LARGEST MOVEMENT IN THE COMPARTMENT: the 13 mtDNA-encoded OXPHOS subunits rise %+.3f on content and %+.3f on mitoPPS. They are dropped by the same rule Figs. 1E and 1F use. The reason is not tidiness: the mtDNA-encoded read fraction is confounded three ways in these data -- real content, the proliferation denominator, and dissociation leak -- and it is the one quantity that is time-associated rather than genotype-associated, so a temporal contrast is exactly where it cannot be read. The nuclear-encoded arm falling while the mtDNA arm rises is a mitonuclear discordance if it is real; on this axis it is not adjudicable.",
             as.numeric(unname(mt$c_tn)), as.numeric(unname(mt$p_tn)))),
   bounds = c(
     "BATCH = TIMEPOINT. The 6W and 12W cohorts were extracted as two separate batches, so every value on this panel is DESCRIBED, not claimed. Two things mitigate it and neither removes it: the withdrawal is SPECIFIC within the compartment (the assembly factors of the same complexes, in the same libraries on the same batches, sit at the origin), and it appears on a content-blind ratio ruler as well as on the content one.",
     "NO PATHWAY ON THIS PANEL IS INDIVIDUALLY SIGNIFICANT after correction, on either ruler. The claim is a pattern -- a quadrant, and a distance between two points that share their complexes -- supported by arm-level nulls, and it should be written that way.",
     "There is no per-pathway test on the CONTENT ruler for this contrast in the saved objects. One could be computed as a one-sample t-test over member-gene fold changes, but that null ignores inter-gene correlation and would be anti-conservative for exactly the coherently-regulated sets this panel is about; it is deliberately not done.",
-    "mitoPPS is RELATIVE BY CONSTRUCTION: a pathway can be demoted while its absolute expression rises. On this panel both rulers point the same way for the respiratory arm, so no such reading is needed -- but a priority value must never be reported as a fall in expression.",
+    "mitoPPS is RELATIVE BY CONSTRUCTION: a pathway can be demoted while its absolute expression rises. On this panel both rulers point the same way for the respiratory arm, so no such reading is needed -- but a mitoPPS value must never be reported as a fall in expression.",
     "MitoCarta sets are membership-loose and several labelled pathways are small (CII subunits 4 genes, CIII subunits 9). A large effect on a four-gene set is one gene, not a module, which is why the gene count is on the face of the panel.",
     "The fill repeats the horizontal axis; it is not a second variable. White is pinned to zero and the two arms of the ramp are scaled independently, so equal ink does not mean equal magnitude across the sign change -- the x axis carries the magnitude and is the key.",
     "Within-compartment percentiles are a RANK AMONG MITOPATHWAYS, not a significance statement.",
-    sprintf("WINDOWED FOR DISPLAY, as Fig. 1G windows its facets: %d pathways sit below the drawn priority range and are not shown (%s). Every number in this legend is computed on the complete %d. What falls outside is also the membership-loose caveat made visible -- both are sets of five genes or fewer, and every pathway at the periphery of this cloud is a set of three to six genes, where a set mean's noise scales as one over the square root of n.",
+    sprintf("WINDOWED FOR DISPLAY, as Fig. 1G windows its facets: %d pathways sit below the drawn mitoPPS range and are not shown (%s). Every number in this legend is computed on the complete %d. What falls outside is also the membership-loose caveat made visible -- both are sets of five genes or fewer, and every pathway at the periphery of this cloud is a set of three to six genes, where a set mean's noise scales as one over the square root of n.",
             nrow(outside), paste(sprintf("%s %+.3f, %d genes", outside$pathway,
                                          outside$p, outside$n), collapse = "; "),
             nrow(r143))),
   source = c(
-    "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler, content (c_tn) and priority (p_tn) on the wild-type temporal contrast for 144 MitoPathways",
+    "results/background_vs_myc.rds (scripts/40_background_vs_myc_decomposition.R) -- $ruler, content (c_tn) and mitoPPS (p_tn) on the wild-type temporal contrast for 144 MitoPathways",
     "results/substrate_specificity_tradeoff.rds (scripts/43_substrate_specificity_and_tradeoff.R) -- $comparator, $comparator_priority, $wt_null and $paired_null for the arm-level values and their expression-matched nulls; $defs$arms is the arm-to-pathway map the identity check uses",
-    "results/mitopps_scores.rds (scripts/08_mitoPPS_analysis.R) -- $mitopps_pairwise, contrast `Temporal_Myc-`, the per-pathway test on the priority ruler; its `diff` is asserted identical to the ruler's p_tn",
+    "results/mitopps_scores.rds (scripts/08_mitoPPS_analysis.R) -- $mitopps_pairwise, contrast `Temporal_Myc-`, the per-pathway test on the mitoPPS ruler; its `diff` is asserted identical to the ruler's p_tn",
     "mitoPPS: Monzel et al. 2025, external/mitotyping/; pairwise-ratio scores on linear-scale DESeq2 normalised counts"))
 
 save_panel_p(p, "fig2_wt_mito_contraction", height = 70)
@@ -404,7 +404,7 @@ if (FALSE) {
   r143[order(-r143$c), c("pathway", "tier", "n", "c", "p")] |> head(10) |>
     print(row.names = FALSE, digits = 3)
 
-  ## the 23 pathways at unadjusted p < 0.05 on the priority ruler -- none survives
+  ## the 23 pathways at unadjusted p < 0.05 on the mitoPPS ruler -- none survives
   r143[r143$p_prio < 0.05,
        c("pathway", "tier", "n", "c", "p", "p_prio", "padj_prio")] |>
     (\(x) x[order(x$p), ])() |> print(row.names = FALSE, digits = 3)

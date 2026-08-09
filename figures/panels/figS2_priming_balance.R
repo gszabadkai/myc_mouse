@@ -24,7 +24,7 @@
 #
 # "OVERALL PRIMING" IS A BALANCE, so the composite is quoted in the legend on both
 # rulers of Fig. 2F: across the window the pro arm moves +0.025 and the anti arm
-# +0.045 on content, +0.054 and +0.046 on priority. The two arms move TOGETHER,
+# +0.045 on content, +0.054 and +0.046 on mitoPPS. The two arms move TOGETHER,
 # so the difference -- which is what priming means -- is -0.020 and +0.008. For
 # comparison the Myc genotype effect at six weeks moves them APART (+0.156 pro,
 # -0.024 anti). The balance is something Myc changes and the window does not.
