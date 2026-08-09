@@ -133,7 +133,10 @@ p <- ggplot2::ggplot(long, ggplot2::aes(a, y)) +
   ggplot2::facet_wrap(~ facet, nrow = 1, scales = "free_x") +
   ggplot2::scale_x_continuous(labels = function(x) sprintf("%.1f", x)) +
   ggplot2::scale_y_continuous(labels = lab_signed) +
-  ggplot2::labs(x = "mitoPPS priority score, per animal",
+  # "mitoPPS", not "priority score" -- the author's naming, 2026-08-09, so this
+  # axis and Fig. 2H+I (alt)'s call the same quantity the same thing. The label
+  # stays generic because the facets are OXPHOS and redox.
+  ggplot2::labs(x = "mitoPPS score, per animal",
                 y = "PUMA:Bcl-xL  (log2 ratio, z)") +
   ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1,
                                                override.aes = list(size = 1.7))) +

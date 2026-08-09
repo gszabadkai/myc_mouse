@@ -1271,6 +1271,82 @@ Second pass, two more:
 and compared; the leader is structural, not a seed accident, so the approved layout (`seed = 6`)
 stands.
 
+**Fig. 2H+I (alt) — rebuilt.** The author's verdict on the per-animal heatmap: *"the heatmap does
+not work, the individual data are too much variable"*. Right about the data, and the display was
+the problem — at n = 6 the reader had to average six noisy tiles by eye in four places at once.
+
+**Part A left — the chain as distributions, in Fig. 1E's idiom** (box, every animal, brackets).
+Three facets in **the order the chain runs** — OXPHOS mitoPPS, `Foxo3`, PUMA:Bcl-xL — not the order
+they were listed in, so the panel reads the way the mechanism does. Each facet carries **the two
+within-genotype temporal contrasts**, which is the whole argument in six brackets:
+
+| | wild type 6>12W | Myc+ 6>12W |
+|---|---|---|
+| OXPHOS mitoPPS | −0.11, p 0.108 | −0.15, **p 0.027** |
+| `Foxo3` | +0.46, **p 0.0044** | −0.00, p 0.982 |
+| PUMA:Bcl-xL | +0.17, p 0.517 | −0.50, **p 0.019** |
+
+The respiratory arm falls on **both** timelines; `Foxo3` rises **only** in the wild-type gland; the
+priming ratio collapses **only** under Myc. Significant brackets in the declared significance ink,
+as in 2G (alt).
+
+**One instrument across the panel, and it is checked.** Neither the mitoPPS axis nor the ratio has
+a DESeq2 test, so all six brackets are OLS on the drawn values (Fig. 1E's `fit_simple` idiom) —
+drawing a Wald p on the gene facet and a t on the other two would put two instruments on one panel.
+Where a record exists it agrees: `Foxo3` +0.473 padj 0.0078 / −0.013 padj 0.977, `Bbc3` +0.062 padj
+0.881 / −0.479 padj 0.016, `Bcl2l1` n.s. on both. Same signs, same side of 0.05 — **asserted**.
+
+**Part A right — the two members of the ratio as group medians** (2 × 4, the manuscript ramp, value
+printed in each cell). `Bbc3` tracks the ratio (+0.7 → −0.8 under Myc, flat in the wild type);
+`Bcl2l1` follows neither timeline. The reversal is all numerator.
+*Two layout facts worth keeping:* written-out column labels ("12W_myc" rotated under a 6 mm column)
+cost **10 mm of height**, and patchwork then pads the boxplots' blank x axis to match — that gap
+between the two halves was the first version's. The columns instead carry a **strip of the same
+sample colours**, keyed by the one legend under part A; `colour` is free because the tiles use
+`fill`, so it needs no second scale. And `coord_fixed()` is required, or the two rows stretch to
+whatever height the panel beside them needs and a 6 × 20 mm tile stops reading as a heat map.
+
+**Part B — one line, two numbers.** The WT fit is gone, the Myc+ fit is dashed and carries its R²
+(0.35), the y-axis title sits closer to the axis, and part B's duplicate group key is dropped (part
+A names the four groups directly above, in the same palette).
+
+**The interaction p is printed beside the R²** (author, 2026-08-09), and **the ink says whose
+number it is**: the R² in the Myc+ colour, because it belongs to the dashed fit; `interaction
+p = 0.0052` in neutral ink, because it belongs to both genotypes and is what the text quotes.
+This was needed — the wild-type animals trend the **opposite way just as strongly** (R² 0.33,
+p 0.052), so with one line drawn and one number, a viewer reads a Myc-specific correlation where
+the result is a genotype-by-slope interaction.
+
+**Asked and answered: is `Foxo3` 12W_wt vs 12W_myc significant? No — and the reason is the
+result.** On the drawn values −0.89 z, **p = 0.092**; DESeq2 −0.242 log2, p = 0.059, **padj = 0.53**.
+The 6W genotype contrast is its **mirror**: +0.92 z (p = 0.076), DESeq2 +0.243 (p = 0.057).
+Myc raises `Foxo3` at six weeks and lowers it at twelve by almost exactly the same amount; neither
+half clears 0.05 alone, and that is precisely why the **interaction** is the strongest term
+(−0.486, **p = 0.0074**, rank 1 of the 26 mechanism genes). Labelling either genotype contrast
+would print a failed test next to the panel's actual claim. Not drawn.
+
+**Added: one interaction p per facet** (author, 2026-08-09) — the batch-clean quantity, and the
+difference the two lower brackets already draw. Drawn as a **second-tier bracket from 1.5 to 3.5**,
+i.e. from the midpoint of one lower bracket to the midpoint of the other, because that is what a
+difference of differences is:
+
+| | wild type 6>12W | Myc+ 6>12W | difference |
+|---|---|---|---|
+| OXPHOS mitoPPS | p 0.108 | **p 0.027** | p 0.615 |
+| `Foxo3` | **p 0.0044** | p 0.982 | **p 0.013** |
+| PUMA:Bcl-xL | p 0.517 | **p 0.019** | **p 0.042** |
+
+Same instrument as the six below it, so the three numbers in a facet are comparable; DESeq2's
+record for the two transcripts agrees (`Foxo3` −0.486, p 0.0074; `Bbc3` −0.541, p 0.0081 — ranks 1
+and 2 of the 26 mechanism genes, neither clearing genome-wide BH, which is why pre-specification is
+what licenses them). The `Foxo3` agreement is asserted.
+
+**Naming.** `OXPHOS priority` → **`OXPHOS mitoPPS`** wherever it is drawn, and
+`fig2_oxphos_puma_coupling.R`'s axis follows ("mitoPPS score, per animal", generic because its
+facets are OXPHOS and redox). `priority` survives only as the word for the **ruler** in prose,
+where it is the counterpart of `content` — so Figs. 1F and 2F, which draw the pathway-level ruler
+rather than this per-animal score, are untouched.
+
 **One shared bug fixed on the way:** `two_timeline_base()` declared `quadrant_hjust` and then
 hard-wired `hjust = 1`, so a caller asking for a centred note silently got a right-aligned one.
 Both existing callers now pass 1 explicitly, which is what they already render — **nothing moved**.
