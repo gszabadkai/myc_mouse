@@ -1234,6 +1234,43 @@ The four alternatives were reviewed together and each got a list. Recorded here 
    of `base_size`, so a legend text size copied from `base_size` prints **larger than the axis it
    repeats**; the key's numbers are set to 4.8 explicitly.
 
+**Fig. 2G (alt) — done.** Four changes, all made.
+
+1. **`below the line = lost under MYC` moved to the bottom right** (`quadrant_at = c(0.99, 0.02)`),
+   away from the labels.
+2. **`development alone` moved to the bottom of the line** (`diag_at = 0.15`). `Bmf` at +1.02 sets
+   the limits, so the seventeen other transcripts occupy the middle third and **the outer thirds
+   are genuinely empty** — asserted (`!any(fx < 0.36)`), which is what makes both moves safe.
+3. **Continuous fill on the Myc timeline** (the vertical axis, which is the axis the sentence is
+   about), `heat_fill` symmetric ±0.925.
+   *This forced the significance encoding to move from the SHAPE to the RING* — an open shape has
+   no fill, and only four of eighteen transcripts are significant, so the old `21`/`1` pair would
+   have left the ramp on four points. Now every point is `shape = 21` and the ring is dark for
+   `padj < 0.05` under Myc, pale for n.s.
+4. **Both axes read `(log2FC)`** (the x axis said "raw log2FC"; "raw (unshrunken)" stays in the
+   legend block, where the shrinkage rule belongs).
+
+Second pass, two more:
+
+5. **The bar is vertical**, laid the same way as the y axis it repeats — the mirror of 2F (alt),
+   whose fill is the x axis and whose bar is horizontal. The **wide** key (the rings, with its long
+   `padj` label) takes the top row where there is room; the **narrow** bar hangs below it down the
+   empty left edge.
+6. **Significant gene names print in the declared significance ink** (`sig_cols[["sig"]]`,
+   `#E41A1C`) — `Bmf`, `Bax`, `Bbc3`, `Htra2`, exactly the four with `padj < 0.05` on the Myc
+   timeline. Passed as a per-row constant in the data's own order, not as an aesthetic, so the
+   panel does not grow a third key.
+   *This widened `sig_cols`' declared scope*, which said it applied **only** to bracket labels. The
+   rule behind it is unchanged and still binds — where the geometry carries the effect size,
+   significance stays a footnote and never becomes a mark's fill. A per-gene scatter is the case
+   where the geometry *is* the effect size on both axes, so the ring and the red name are
+   annotation rather than the reading. Recorded at the declaration.
+
+**Not changed, and why:** the seven transcripts crowding the origin (`Cycs`, `Xiap`, `Casp3`,
+`Apaf1`, `Diablo`, `Bak1`, `Bcl2l1`) force one long `Apaf1` leader. Four repel seeds were rendered
+and compared; the leader is structural, not a seed accident, so the approved layout (`seed = 6`)
+stands.
+
 **One shared bug fixed on the way:** `two_timeline_base()` declared `quadrant_hjust` and then
 hard-wired `hjust = 1`, so a caller asking for a centred note silently got a right-aligned one.
 Both existing callers now pass 1 explicitly, which is what they already render — **nothing moved**.

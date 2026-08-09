@@ -81,33 +81,77 @@ stopifnot(identical(sens_sig, "Bbc3"),
 # the panel
 # =============================================================================
 LIM <- c(-1, 1) * max(abs(c(d$lfc_wt_time, d$lfc_myc_time))) * 1.08
+fx  <- (d$lfc_wt_time  - LIM[1]) / diff(LIM)
+fy  <- (d$lfc_myc_time - LIM[1]) / diff(LIM)
+
+# Where the three pieces of furniture go, checked in panel fractions rather than
+# eyeballed. Bmf sets the limits at +/-1.02, so the other seventeen transcripts
+# occupy the middle third and the outer thirds are genuinely empty: the diagonal's
+# label goes to the BOTTOM of the line and the quadrant note to the bottom RIGHT
+# (author, 2026-08-09), and the two keys keep the top left.
+stopifnot(
+  !any(fx < 0.36),                                  # the label's run and the keys
+  !any(fx > 0.60 & fy < 0.12))                      # the quadrant note's strip
+
+# The fill is the VERTICAL axis here -- what the Myc+ gland does -- because that
+# is the axis the sentence is about. Symmetric about zero, white pinned to zero.
+CLIM <- c(-1, 1) * max(abs(d$lfc_myc_time))
 
 p <- ggplot2::ggplot(d, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
-  two_timeline_base(LIM, diag_at = 0.62,
-                    quadrant = "below the line = lost under Myc as well",
-                    quadrant_at = c(0.50, 0.02), quadrant_hjust = 0.5) +
-  ggplot2::geom_point(ggplot2::aes(shape = sig), size = 1.7, stroke = 0.35,
-                      colour = "grey15", fill = "grey15") +
+  two_timeline_base(LIM, diag_at = 0.15,
+                    quadrant = "below the line = lost under MYC",
+                    quadrant_at = c(0.99, 0.02), quadrant_hjust = 1) +
+  # Significance moves from the SHAPE to the RING, so that every transcript can
+  # carry the ramp: an open shape has no fill, and with only four significant
+  # points the old encoding would have left the colour on four of eighteen.
+  ggplot2::geom_point(ggplot2::aes(fill = lfc_myc_time, colour = sig),
+                      shape = 21, size = 1.9, stroke = 0.45) +
+  # The gene NAME carries the significance too (author, 2026-08-09), in the
+  # declared significance ink. Passed as a per-row constant in the plot data's own
+  # order rather than as an aesthetic, so the panel does not grow a third key.
   ggrepel::geom_text_repel(ggplot2::aes(label = gene), size = 1.7,
-                           colour = "grey15", fontface = "italic", seed = 6,
+                           colour = ifelse(d$sig, unname(sig_cols[["sig"]]), "grey15"),
+                           fontface = "italic", seed = 6,
                            max.overlaps = Inf, min.segment.length = 0,
                            segment.size = 0.2, segment.colour = "grey60",
                            box.padding = 0.30, point.padding = 0.20) +
-  ggplot2::scale_shape_manual(values = c(`TRUE` = 21, `FALSE` = 1),
-                              breaks = c(TRUE, FALSE),
-                              labels = c("padj < 0.05 under Myc", "n.s."),
-                              name = NULL) +
-  ggplot2::labs(x = "wild-type 6>12W  (raw log2FC)", y = "Myc+ 6>12W") +
-  ggplot2::guides(shape = ggplot2::guide_legend(override.aes = list(size = 1.6))) +
+  heat_fill(CLIM, name = "6>12W_myc", breaks = c(-0.8, 0, 0.8)) +
+  ggplot2::scale_colour_manual(values = c(`TRUE` = "grey10", `FALSE` = "grey72"),
+                               breaks = c(TRUE, FALSE),
+                               labels = c("padj < 0.05 under Myc", "n.s."),
+                               name = NULL) +
+  ggplot2::labs(x = "wild-type 6>12W  (log2FC)", y = "Myc+ 6>12W  (log2FC)") +
+  # THE BAR IS VERTICAL (author, 2026-08-09), laid the same way as the y axis it
+  # repeats -- the mirror of Fig. 2F (alt), whose fill is the x axis and whose bar
+  # is horizontal. The WIDE key (the rings, with its long padj label) takes the top
+  # row where there is room; the NARROW bar hangs below it down the empty left
+  # edge.
+  ggplot2::guides(
+    colour = ggplot2::guide_legend(order = 1, direction = "horizontal",
+      override.aes = list(size = 1.7, fill = "grey92")),
+    fill = ggplot2::guide_colourbar(
+      direction = "vertical", order = 2,
+      barwidth = ggplot2::unit(2, "mm"), barheight = ggplot2::unit(15, "mm"),
+      ticks.colour = "grey30", frame.colour = "grey30", frame.linewidth = 0.2,
+      title.position = "top", title.hjust = 0)) +
   theme_panel(base_size = 6) +
-  # Key inside, top left: nothing rises under Myc while falling in development,
-  # so the wedge above the diagonal on the left cannot be occupied.
+  # Both keys inside, top left: nothing rises under Myc while falling in
+  # development, so the wedge above the diagonal on the left cannot be occupied --
+  # and here the whole left third is empty, asserted above.
   ggplot2::theme(
     legend.position        = "inside",
-    legend.position.inside = c(0.01, 0.99),
+    legend.position.inside = c(0.01, 0.98),
     legend.justification   = c(0, 1),
+    legend.box             = "vertical",
+    legend.box.just        = "left",
+    legend.box.spacing     = ggplot2::unit(0, "mm"),
     legend.background      = ggplot2::element_blank(),
-    legend.margin          = ggplot2::margin(0, 0, 0, 0),
+    # theme_classic puts axis.text at rel(0.8) of base_size; a key sized from
+    # base_size would print larger than the axis it repeats.
+    legend.title           = ggplot2::element_text(size = 5.2,
+                               margin = ggplot2::margin(b = 0.5, unit = "mm")),
+    legend.text            = ggplot2::element_text(size = 4.8),
+    legend.margin          = ggplot2::margin(0, 0, 0.5, 0, "mm"),
     legend.key.size        = ggplot2::unit(2.4, "mm"),
     legend.spacing.y       = ggplot2::unit(0.3, "mm"),
     plot.margin            = ggplot2::margin(1.5, 2.5, 1, 1.5, "mm"))

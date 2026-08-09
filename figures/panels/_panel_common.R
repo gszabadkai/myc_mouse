@@ -86,11 +86,17 @@ verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
 
 direction_cols <- c(up = "#D6604D", down = "#4393C3")
 
-# Ink for a bracket's p-value label on a per-group distribution panel. Declared
-# here because figures/fig01_mito_content.R:106 inlines it and this layer must not
-# grow a second copy of the same decision. It applies ONLY to bracket labels:
-# significance is never a fill or a point colour in this project -- effect size is
-# the geometry and the p-value is the footnote (Fig. 1B's rule).
+# Ink for TEXT that reports significance. Declared here because
+# figures/fig01_mito_content.R:106 inlines it and this layer must not grow a
+# second copy of the same decision. Two uses, both text:
+#   * a bracket's p-value label on a per-group distribution panel (the original);
+#   * a gene NAME on a per-gene scatter whose padj clears the threshold (author,
+#     2026-08-09, Fig. 2G (alt)).
+# The rule behind it is unchanged and still binds: on a panel where the geometry
+# carries the effect size, significance stays a footnote and never becomes the
+# fill or the area colour of a mark (Fig. 1B's rule). A per-gene scatter is the
+# case where the geometry IS the effect size on both axes, so a secondary mark on
+# the point -- there, the RING -- is annotation rather than the reading.
 sig_cols <- c(sig = "#E41A1C", ns = "grey45")
 
 # MitoPathway Level-1 tiers. KEYED TO THE NAMES THE DATA CARRY -- the seven values
