@@ -27,10 +27,16 @@
 #                            the axis on which PUMA is lost is the axis on which
 #                            p53's transcriptional output does nothing.
 #   other PUMA inducers      the ISR and the FOXO paralogues, also in the band
-#   the two that DO move     Bbc3 leaves the band (-0.48 at padj 0.016) and Foxo3
+#   moves (padj < 0.05)      Bbc3 leaves the band (-0.48 at padj 0.016) and Foxo3
 #                            leaves the DIAGONAL (+0.47 in development, -0.01
 #                            under Myc) -- two different ways of moving, and the
-#                            grammar shows both
+#                            grammar shows both. Each carries ITS OWN padj on the
+#                            page (author, 2026-08-09), for the timeline it
+#                            actually moves on: the wild-type one for Foxo3, the
+#                            Myc+ one for Bbc3, which is the axis its displacement
+#                            is drawn along. The class label carries the threshold
+#                            0.05 rather than 0.001, because the two values are
+#                            0.0078 and 0.016.
 #
 # WITHOUT THE TWO REFERENCE GENES THIS WOULD BE A BAND OF DOTS WITH NOTHING TO
 # CALIBRATE IT, which is the failure mode of every negative control drawn alone.
@@ -57,17 +63,22 @@ stopifnot(nrow(p53) == 9L, nrow(pin) == 12L, "Trp53" %in% p53$gene,
 
 COLS <- c("gene", "baseMean", "lfc_wt_time", "padj_wt_time",
           "lfc_myc_time", "padj_myc_time", "lfc_interaction")
+# The third class was called "the two that move"; it now carries the THRESHOLD it
+# means (author, 2026-08-09). Note 0.05 and not the 0.001 first suggested -- the
+# two are padj 0.0078 (Foxo3, wild-type timeline) and 0.016 (Bbc3, Myc timeline),
+# so 0.001 would be a claim neither of them supports.
+MOVES <- "moves (padj < 0.05)"
 d <- rbind(
   data.frame(p53[, COLS], class = "p53 arm", stringsAsFactors = FALSE),
   data.frame(pin[pin$gene != "Foxo3", COLS], class = "other PUMA inducers",
              stringsAsFactors = FALSE),
-  data.frame(pin[pin$gene == "Foxo3", COLS], class = "the two that move",
+  data.frame(pin[pin$gene == "Foxo3", COLS], class = MOVES,
              stringsAsFactors = FALSE),
-  data.frame(mac[mac$gene == "Bbc3", COLS], class = "the two that move",
+  data.frame(mac[mac$gene == "Bbc3", COLS], class = MOVES,
              stringsAsFactors = FALSE))
 d$class <- factor(d$class,
-                  levels = c("p53 arm", "other PUMA inducers", "the two that move"))
-stopifnot(nrow(d) == 9L + 11L + 2L, sum(d$class == "the two that move") == 2L)
+                  levels = c("p53 arm", "other PUMA inducers", MOVES))
+stopifnot(nrow(d) == 9L + 11L + 2L, sum(d$class == MOVES) == 2L)
 
 g <- function(x, col) d[[col]][d$gene == x]
 # The claim, asserted: nothing in the p53 arm moves on either timeline or in the
@@ -89,16 +100,34 @@ WIN <- 1.15
 out <- d[abs(d$lfc_wt_time) > WIN | abs(d$lfc_myc_time) > WIN, ]
 dd  <- d[!(d$gene %in% out$gene), ]
 stopifnot(nrow(out) <= 3L, all(out$baseMean < 200),
-          !any(out$class == "p53 arm"), !any(out$class == "the two that move"))
+          !any(out$class == "p53 arm"), !any(out$class == MOVES))
+
+# THE TWO MOVERS CARRY THEIR OWN NUMBER (author, 2026-08-09). Each is labelled
+# with the padj of the timeline it actually moves on -- the smaller of the two,
+# which for Foxo3 is the wild-type window and for Bbc3 the Myc+ one. The panel's
+# own geometry says which: Foxo3 is displaced along x, Bbc3 down y. Built as a
+# plotmath expression so the gene stays italic while the number does not, which
+# one text string with a single fontface cannot do. ON ONE LINE, not stacked:
+# `atop()` sets the two halves far enough apart that the two labels interleaved
+# and a reader could not tell which number belonged to which gene.
+mv <- dd[dd$class == MOVES, ]
+mv$padj_shown <- pmin(mv$padj_wt_time, mv$padj_myc_time)
+mv$on_wt      <- mv$padj_wt_time < mv$padj_myc_time
+stopifnot(nrow(mv) == 2L, all(mv$padj_shown < 0.05),
+          # the legend block names the two timelines; keep it from drifting
+          identical(mv$on_wt[mv$gene == "Foxo3"], TRUE),
+          identical(mv$on_wt[mv$gene == "Bbc3"], FALSE))
+mv$lab <- sprintf('italic("%s")~"  padj %s"', mv$gene,
+                  formatC(mv$padj_shown, format = "g", digits = 2))
 
 LIM <- c(-1, 1) * WIN
 p <- ggplot2::ggplot(dd, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
   two_timeline_base(LIM, diag_at = 0.72) +
   ggplot2::geom_point(ggplot2::aes(colour = class, size = class), stroke = 0) +
   ggrepel::geom_text_repel(
-    data = dd[dd$class == "the two that move", ],
-    ggplot2::aes(label = gene), size = 1.8, colour = "grey10",
-    fontface = "bold.italic", seed = 8, max.overlaps = Inf,
+    data = mv, ggplot2::aes(label = lab), parse = TRUE,
+    size = 1.8, colour = "grey10",
+    seed = 8, max.overlaps = Inf,
     min.segment.length = 0, segment.size = 0.2, segment.colour = "grey55",
     box.padding = 0.45, point.padding = 0.25) +
   ggrepel::geom_text_repel(
@@ -108,15 +137,15 @@ p <- ggplot2::ggplot(dd, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
     min.segment.length = 0, segment.size = 0.18, segment.colour = "grey70",
     box.padding = 0.30, point.padding = 0.16) +
   ggplot2::scale_colour_manual(
-    values = c("p53 arm"             = "grey20",
-               "other PUMA inducers" = unname(pole_cols[["other"]]),
-               "the two that move"   = unname(pole_cols[["down"]])),
+    values = stats::setNames(
+      c("grey20", unname(pole_cols[["other"]]), unname(pole_cols[["down"]])),
+      c("p53 arm", "other PUMA inducers", MOVES)),
     name = NULL) +
-  ggplot2::scale_size_manual(values = c("p53 arm" = 1.5,
-                                        "other PUMA inducers" = 1.2,
-                                        "the two that move" = 2.1),
-                             guide = "none") +
-  ggplot2::labs(x = "wild-type 6>12W  (raw log2FC)", y = "Myc+ 6>12W") +
+  ggplot2::scale_size_manual(
+    values = stats::setNames(c(1.5, 1.2, 2.1),
+                             c("p53 arm", "other PUMA inducers", MOVES)),
+    guide = "none") +
+  ggplot2::labs(x = "wild-type 6>12W  (log2FC)", y = "Myc+ 6>12W  (log2FC)") +
   ggplot2::guides(colour = ggplot2::guide_legend(
     override.aes = list(size = 1.7))) +
   theme_panel(base_size = 6) +

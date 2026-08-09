@@ -1347,6 +1347,25 @@ facets are OXPHOS and redox). `priority` survives only as the word for the **rul
 where it is the counterpart of `content` — so Figs. 1F and 2F, which draw the pathway-level ruler
 rather than this per-animal score, are untouched.
 
+**Fig. S2D (alt) — done.** Two changes.
+
+1. **The two movers carry their own padj on the page**, each for the timeline it actually moves on:
+   `Foxo3` **padj 0.0078** (wild-type window — its displacement is along x) and `Bbc3` **padj
+   0.016** (Myc+ window — its displacement is down y). Which timeline is asserted, so the legend
+   block cannot drift from the drawing. Built as a **plotmath expression on one line**
+   (`italic("Bbc3")~"padj 0.016"`) so the gene stays italic and the number does not — a single
+   `fontface` cannot do both. `atop()` was tried first and set the two halves so far apart that the
+   two labels interleaved and you could not tell which number belonged to which gene.
+2. **The class label carries the threshold**: `the two that move` → **`moves (padj < 0.05)`**.
+   Not `padj < 0.001` — the two values are **0.0078 and 0.016**, so 0.001 would be a claim neither
+   supports.
+3. **Both axes read `(log2FC)`** (the x axis said "raw log2FC").
+
+Note on the red convention: 2G (alt) marks significant genes with `sig_cols[["sig"]]` because it
+has to pick four out of eighteen. Here the movers are already **their own class with their own
+colour and the threshold in the key**, so the class colour *is* the significance mark and a second
+one would be redundant. Same rule, different instrument.
+
 **One shared bug fixed on the way:** `two_timeline_base()` declared `quadrant_hjust` and then
 hard-wired `hjust = 1`, so a caller asking for a centred note silently got a right-aligned one.
 Both existing callers now pass 1 explicitly, which is what they already render — **nothing moved**.
