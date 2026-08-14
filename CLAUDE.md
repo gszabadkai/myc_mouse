@@ -243,7 +243,16 @@ Git rules:
 - `docs/` — `myc_mouse_finalisation_plan.md`, `branch_manifest.md`, `gene_set_history.md`.
 - `results/` — intermediate `.rds` (gitignored, generated at runtime).
 - `outputs/` — figures/tables (gitignored, generated at runtime).
-- `functions/` — shared utilities (`generate_heatmap.R`).
+- `functions/` — shared utilities (`generate_heatmap.R`, `reconcile_gene_symbols.R`).
+- `figures/` — the exploratory figure layer (`fig01`-`fig05`, `figS1`-`figS8`, four assembled
+  `figure*.R` composites) plus **`figures/panels/`, the publication layer**: one script per
+  manuscript panel, `_panel_common.R` (declared scheme + helpers), `rebuild_panels.R`,
+  `panels_to_pdf.R`, and **`PANELS.md`, the manifest of record** for which slot each panel holds.
+- `paper/` — Quarto. **`analysis_record.qmd` is the record of the analysis as it stands**
+  (2026-08-14): the written Results verbatim, all 25 panels with their legend blocks, the
+  retracted corpus, the open questions. It re-runs no analysis and transcribes no number — it
+  sources each panel with `myc.fig.capture = TRUE` and renders `legend_md()`, so it cannot
+  drift from the panels. `archive/myc_mito.qmd` is the superseded July walkthrough.
 - `external/mitotyping/` — Monzel et al. 2025 mitoPPS reference code (reference only,
   not code to edit).
 

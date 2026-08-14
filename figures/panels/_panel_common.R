@@ -136,7 +136,7 @@ tier_labels <- c("Protein import, sorting and homeostasis" = "Protein import / h
 # for a methods key would spend them on something that is not a genotype.
 # NOT used in the paper figures -- the author's call (2026-07-30) is that the
 # fGSEA/GSVA routing is minor and belongs in the internal write-up. Kept here for
-# the paper/myc_mito.qmd version of the library panel.
+# the paper/archive/myc_mito.qmd version of the library panel.
 method_cols <- c("fgsea" = "#54278F", "both" = "#9E9AC8", "gsva" = "#DADAEB")
 
 # Mitochondrial definition of a gene set, three classes, as script 37 defines

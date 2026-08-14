@@ -1,9 +1,27 @@
 ---
 title: "Mitochondria integrate oncogenic and developmental signals to time Myc-driven mammary tumourigenesis"
-subtitle: "MMTV-Myc mammary timecourse -- exploratory synthesis and figure narrative"
+subtitle: "ARCHIVED -- the July 2026 exploratory walkthrough (superseded)"
 author: "Szabadkai lab"
 date: today
 ---
+
+::: {.callout-important}
+## ARCHIVED 2026-08-14 -- superseded by `paper/analysis_record.qmd`
+
+**What this is.** The July 2026 walkthrough of the **exploratory** figure layer,
+`figures/fig01`-`fig05` / `figS1`-`figS8` and the four assembled `figure*.R` composites. It
+predates the written Results, the 25-panel `figures/panels/` layer, and scripts 40-44.
+
+**What replaced it.** `paper/analysis_record.qmd` is the record of the analysis as it stands:
+the three written Results sections verbatim, all 25 manuscript panels with their legend
+blocks, the retracted corpus and the open questions.
+
+**Why it is kept rather than deleted.** Its prose on the global axis, the correlation ceiling
+and the mitochondrial-group survey is not reproduced anywhere else, and the record document
+cites it. Its **figure manifest and slot table below are OUT OF DATE** -- `figures/panels/
+PANELS.md` is the manifest of record. Nothing here should be quoted without checking it
+against the record document first.
+:::
 
 ::: {.callout-note}
 **Skeleton, not the finished document.** This is the container the reflective write-up
@@ -22,7 +40,7 @@ library(ggplot2)
 
 # Pin here() to the repo root: this .qmd lives under paper/, and a knitr render
 # starts the session there, so anchor explicitly (sourced panel scripts inherit it).
-here::i_am("paper/myc_mito.qmd")
+here::i_am("paper/archive/myc_mito.qmd")
 
 # Display panels inline without re-exporting their canonical PDFs to outputs/.
 options(myc.fig.nosave = TRUE)

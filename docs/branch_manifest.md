@@ -266,3 +266,22 @@ almost every downstream script.
    omitted, `archive_main_pipeline/` alone is **not sufficient to
    reconstruct main** — the `main` branch itself remains the source of
    truth.
+
+---
+
+## 7. File moves after this manifest was written
+
+This manifest is dated 2026-04-22 and its "consolidation ongoing" framing is superseded by
+`docs/myc_mouse_finalisation_plan.md` and `CLAUDE.md`. Renames made since are recorded here so
+that `git log --follow` has a written pointer, per the repo rule that nothing is renamed
+without an entry in this file.
+
+| date | from | to | why |
+|---|---|---|---|
+| 2026-07-30 | `figures/panels/fig1C_myc_teb_proliferation.R` | `figures/panels/fig1B_myc_teb_proliferation.R` | slot letters still in filenames; `fig1B_cell_state_composition.R` was deleted as redundant |
+| 2026-07-31 | `figures/panels/fig*<letter>_*.R` | `figures/panels/fig<figure>_<what>.R` | **slot letters left the filenames.** An S1A/S1B swap made every renumber a rename, a `git mv`, a stranded PDF and four string edits. Which slot a script holds is now the Built table in `figures/panels/PANELS.md` and nothing else |
+| **2026-08-14** | **`paper/myc_mito.qmd`** | **`paper/archive/myc_mito.qmd`** | **superseded by `paper/analysis_record.qmd`.** The archived document walks the *exploratory* `figures/fig01`-`fig05` layer and predates the written Results, the 25-panel layer and scripts 40-44. Kept, not deleted: its prose on the global axis and the correlation ceiling is not reproduced elsewhere, and the record document cites it. Its own figure manifest is out of date and says so in a banner |
+
+**Build artefacts are not moved with a `.qmd`.** `paper/myc_mito.html` and
+`paper/_freeze/myc_mito/` were deleted at the same time; both are gitignored and regenerable,
+and a stale freeze under the old path would silently short-circuit a later render.

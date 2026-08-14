@@ -14,6 +14,33 @@ Narrative source: Google Doc `MK_Myc_Paper`, tab **Gyorgy Writing**. Read in ful
 which (`Restoring OXPHOS by PGC-1a re-establishes the apoptotic trigger`) is a stub for the cell
 work. The slot map below is read off *that* text, not off the pre-writing commission.
 
+**Updated 2026-08-14: the narrative source is now the Google Doc `11.8.26_MK_Myc_Paper`, tab
+`CURRENT VERSION`** (working title *"Mitochondrial content sets an apoptotic threshold for
+Breast cancer transformation"*). The three bioinformatics sections are unchanged in substance
+from the 2026-08-09 rewording; the slot map below still holds.
+
+## The record document — `paper/analysis_record.qmd`
+
+**Added 2026-08-14, and it is the readable face of this file.** The manuscript text and figures
+are being cut to roughly half, so the full state was frozen first: the three written Results
+sections **verbatim**, all 25 panels drawn inline with their `panel_legend()` blocks rendered by
+this project's own `legend_md()`, the **retracted and null corpus** with the reason each result
+failed, the sentence-vs-data checklist, the open questions with the experiment that settles
+each, and a marked **recommendation** for what a halved paper keeps.
+
+- It **re-runs no analysis** and **transcribes no number** — it sources each panel script with
+  `myc.fig.capture = TRUE`, so the figure, its legend and its designed size all come from the
+  panel's own `save_panel_p()` call. A panel that changes changes the document.
+- It **asserts its own completeness**: all 25 slugs drawn exactly once, every `(alt)` slot
+  contiguous with the original it competes with, every drawn size equal to the registry entry.
+  A render that completes is a render that passed.
+- Render with `quarto render paper/analysis_record.qmd` (~5 min cold, `freeze: auto` after).
+  Output is one self-contained HTML, ~5 MB, for dropping on Drive beside the panel PDFs.
+
+**`paper/myc_mito.qmd` moved to `paper/archive/`** on the same day (see
+`docs/branch_manifest.md` §7). It walks the superseded `figures/fig01`–`fig05` exploratory
+layer and its own figure manifest is out of date; it carries a banner saying so.
+
 ## Convention
 
 - **Filenames do not carry the slot letter** (2026-07-31). A panel script is

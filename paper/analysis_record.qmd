@@ -1,0 +1,1983 @@
+---
+title: "Mitochondrial content sets an apoptotic threshold for breast cancer transformation"
+subtitle: "The bioinformatics behind Results 1-3, in full, before the reduction"
+author: "Szabadkai lab"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 2
+    number-sections: true
+    code-fold: true
+    embed-resources: true
+    theme: cosmo
+    fig-format: png
+    fig-dpi: 300
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+# Pin here() to the repo root. This .qmd lives under paper/ and a knitr render
+# starts the session there; paper/_quarto.yml sets execute-dir: project, but the
+# anchor is declared explicitly so a chunk run interactively behaves the same.
+library(here)
+here::i_am("paper/analysis_record.qmd")
+
+# The panel spine. Sourced here so this document can call legend_md() -- the
+# SAME renderer rebuild_panels.R uses to build legends.md -- rather than keeping
+# a second copy of the legend format.
+source(here::here("figures", "panels", "_panel_common.R"))
+
+PANEL_DIR <- here::here("figures", "panels")
+
+# --- the panel-embedding mechanism -------------------------------------------
+# THIS DOCUMENT RE-RUNS NO ANALYSIS. It sources figures/panels/*.R exactly as
+# rebuild_panels.R does -- one fresh environment per script, parented on the
+# global environment, so a panel object from one script cannot quietly satisfy
+# the next.
+#
+# myc.fig.capture = TRUE makes save_panel_p() record the panel's DESIGNED size
+# into the .myc_panel_sizes registry and write nothing (_panel_common.R:495-503).
+# `p` and `LEGEND` are still built. So one source() pass gives the figure, its
+# legend AND its size, and THE SIZE COMES FROM THE PANEL'S OWN save_panel_p()
+# CALL rather than from a number copied into this file that could drift.
+#
+# The cache matters for more than speed: knitr evaluates a chunk's !expr options
+# BEFORE the chunk body, so panel_w() triggers the source and the body then reads
+# the same environment instead of running the script twice.
+.panel_cache <- new.env(parent = emptyenv())
+
+panel_env <- function(slug) {
+  if (!is.null(.panel_cache[[slug]])) return(.panel_cache[[slug]])
+  f <- file.path(PANEL_DIR, paste0(slug, ".R"))
+  if (!file.exists(f)) stop("no panel script: ", slug, ".R", call. = FALSE)
+
+  old <- options(myc.fig.capture = TRUE)
+  on.exit(options(old), add = TRUE)          # inside a FUNCTION this is correct;
+                                             # at the top level of a sourced file
+                                             # it fires at once (panels_to_pdf.R)
+  env <- new.env(parent = globalenv())
+  source(f, local = env)
+
+  if (!exists("p", envir = env, inherits = FALSE))
+    stop(slug, " built no `p`", call. = FALSE)
+  if (!exists("LEGEND", envir = env, inherits = FALSE))
+    stop(slug, " carries no panel_legend() block", call. = FALSE)
+
+  reg <- get0(".myc_panel_sizes", envir = globalenv())
+  if (is.null(reg) || !exists(slug, envir = reg, inherits = FALSE))
+    stop(slug, " did not register a size -- does it call save_panel_p(p, \"",
+         slug, "\")?", call. = FALSE)
+  sz <- get(slug, envir = reg)
+  if (!identical(sz$units, "mm")) stop(slug, " reports size in ", sz$units)
+
+  assign("SIZE_MM", c(width = sz$width, height = sz$height), envir = env)
+  .panel_cache[[slug]] <- env
+  env
+}
+
+# Designed size in inches, for the fig-width / fig-height chunk options.
+panel_w <- function(slug) unname(panel_env(slug)$SIZE_MM[["width"]]  / 25.4)
+panel_h <- function(slug) unname(panel_env(slug)$SIZE_MM[["height"]] / 25.4)
+
+# The panel object itself.
+panel_p <- function(slug) panel_env(slug)$p
+
+# The legend block, rendered by the project's own legend_md() and wrapped in a
+# collapsible callout: the figure reads clean, the detail is one click away.
+# legend_md()'s first line is a `### <slot>  (`slug`)` heading; inside a callout
+# the heading IS the title, so it is demoted rather than duplicated.
+panel_legend_md <- function(slug) {
+  md <- legend_md(panel_env(slug)$LEGEND, slug = slug)
+  c("::::: {.callout-note collapse=\"true\"}",
+    paste0("## Legend block — ", sub("^### ", "", md[1])),
+    md[-1],
+    ":::::")
+}
+
+# The slot a panel declares, for the pairing assertions and the manifests.
+panel_slot <- function(slug) panel_env(slug)$LEGEND$slot
+
+# Every panel script on disk, in name order -- the same glob rebuild_panels.R
+# uses, so this document cannot silently omit a panel that exists.
+ALL_SLUGS <- sub("\\.R$", "",
+                 sort(list.files(PANEL_DIR, pattern = "^fig.*\\.R$")))
+
+# Which slugs each chapter draws. Declared here, checked at the foot of the
+# document: all 25 exactly once, and every "(alt)" beside its own original.
+DRAWN <- list()
+draw_here <- function(...) {
+  s <- c(...)
+  DRAWN[[length(DRAWN) + 1L]] <<- s
+  invisible(s)
+}
+```
+
+::: {.callout-important}
+## What this document is
+
+The bioinformatics of Results sections 1--3, **in full**, recorded on 2026-08-14 because the
+manuscript text and figures are about to be cut to roughly half.
+
+Most of what will be removed is not wrong. It is the evidence, the bounds and the negative
+controls that *license* the sentences that stay. Removing it from the paper is right;
+removing it from the project is not. This document is where it goes.
+
+**It re-runs no analysis.** Every figure below is produced by sourcing the panel script that
+the manuscript figure uses, and every number in every legend is computed by that script from
+`results/*.rds`. Nothing here is transcribed by hand, so this document cannot drift away from
+the panels it describes.
+:::
+
+# How to read this {#sec-how}
+
+## The layers
+
+```
+scripts/00-44          the numbered pipeline. Hand-run in Positron, never by a figure.
+   |                   DESeq2 (~ timepoint * myc_status), fGSEA, mitoPPS, GSVA,
+   |                   and the exploratory arc 32-44.
+   v
+results/*.rds          what those scripts saved. Gitignored, generated at runtime.
+   |
+   v
+figures/panels/*.R     one script per manuscript panel. Reads results/, computes its
+   |                   own statistics, ASSERTS them against the analysis of record,
+   |                   draws, and carries a panel_legend() block.
+   v
+this document          the panels in the order the Results cites them, each with its
+                       legend block, plus what the analysis rejected and what is open.
+```
+
+`figures/panels/PANELS.md` is the working manifest: the slot map, a signed-off entry per
+panel recording *why* it has the form it has, and the running list of sentences the data does
+not support. This document is the readable face of it.
+
+## Conventions
+
+- **The written text is quoted verbatim**, in blockquotes, from the Google Doc
+  `11.8.26_MK_Myc_Paper`, tab **CURRENT VERSION**, as read on **2026-08-14**. Paperpile
+  citation links are reduced to author--year; nothing else is altered, including the figure
+  callouts, because that mapping is part of what is being recorded.
+- **Panels are drawn at their designed physical size.** A panel is 89 mm wide because that is
+  one manuscript column, and the type is set for that size. Magnify with the browser's zoom.
+- **Legend blocks are collapsed by default.** They are long on purpose: `what` is the
+  sentence, `detail` carries n, units, the test and the thresholds, `bounds` carries the
+  caveat that must travel with the claim, and `source` names the object every number came
+  from.
+
+# The measurement, and four standing constraints {#sec-constraints}
+
+Bulk RNA-seq of **purified mammary epithelial cells** from MMTV-Myc transgenic mice and their
+wild-type littermates at **6 and 12 weeks** --- four groups (`6W_wt`, `12W_wt`, `6W_myc`,
+`12W_myc`), **six animals each, n = 24** --- analysed with DESeq2 on a
+`~ timepoint * myc_status` interaction design.
+
+Four facts about that design govern every reading below. Almost every bound in every legend
+block is one of them.
+
+### 1. Purification is by enzymatic dissociation, with no sorting step
+
+So any stromal, endothelial or immune signal is **contamination, not tissue composition**
+(3--12 % residual, which is what no sort predicts) and is modelled as a nuisance, never read
+as biology. And the warm digest is itself a stressor: the immediate-early signature it
+induces (van den Brink 2017) is a real axis in these samples, which is why prep-stress
+appears as a covariate wherever a per-sample quantity is interpreted.
+
+### 2. Batch = timepoint
+
+The 6W and 12W cohorts were extracted as **two separate batches**, so batch is perfectly
+confounded with age. Genotype is **balanced within each batch**, so the interaction design
+absorbs the batch effect into the timepoint main effect.
+
+**Consequences, and they are not symmetric.** Every genotype gap and every interaction is
+clean --- and so is any *difference between two temporal contrasts*, because the shared
+offset cancels. What is **not** separable is the pure between-timepoint reading on its own:
+the developmental claim is confounded with batch, and no QC metadata exists on disk
+(no dissociation batch, no viability, no RIN) with which to separate them. Where a temporal
+contrast is drawn it is **described**, not claimed; what is claimed is the difference between
+two of them.
+
+### 3. n = 6 per cell
+
+An interaction is the least powered thing this design can be asked for. The median `lfcSE` on
+an interaction term is **0.333** against **0.233** for a genotype contrast. Nothing in the
+death arm clears genome-wide BH correction, and the licence for testing `Bbc3` and `Foxo3` at
+all is that they were **pre-specified from the cell experiments**, not that they cleared a
+threshold.
+
+### 4. There is one dominant per-sample axis, and it is a correlation ceiling
+
+Score the 885 gene sets per animal and **PC1 is 76 % of the variance**, with effective
+dimensionality 1.7 of a possible 23. `cor(mito_oxphos, mean of all 884 other scores) = 0.968`.
+So an arbitrary pair of composites correlates at ~0.8 **by construction**, and a published
+coupling of 0.8 is what the window hands you rather than a finding (script 36).
+
+The axis is **genotype-independent (p = 0.49)** and **time-associated (p = 0.0003)**. That is
+why the genotype and interaction results survive it and several per-sample coupling results
+did not --- @sec-died.
+
+::: {.callout-warning}
+## The one inference rule that follows
+
+At n = 24, with a 0.8 ambient correlation, **these analyses rank; they do not confirm.** A
+residual correlation of ~0.29 arises under the null. Where this document quotes a coupling it
+is a lead with an experiment attached (@sec-open), not a result. The claims that *are*
+confirmatory are the contrasts: raw count shares, DESeq2 log2 fold changes, and Wald-ranked
+fGSEA. Those never touch the couplings.
+:::
+
+# Section 1 --- MYC drives early mammary tumourigenesis {#sec-s1}
+
+> ## MYC drives early mammary tumourigenesis by inducing OXPHOS and biosynthetic pathways
+>
+> To understand the MYC-driven changes in the transcriptome of mammary epithelial cells
+> (MECs) during breast cancer initiation, we isolated MECs from mammary fat pads of the
+> MMTV-Myc genetically engineered mouse model at two early timepoints of tumourigenesis, at 6
+> and 12 weeks of age. Mammary fat pads of the MMTV-Myc+/+ model, known to recapitulate the
+> heterogeneity and progression of the human disease (Grimm and Nordeen 1998; Stewart et al.
+> 1984; Jamerson et al. 2004; Andrechek et al. 2009; Broeker et al. 2023), showed hyperplastic
+> expansion of the developing ductal epithelial structures between these time points
+> (**Fig. 1A**). The wild-type (MMTV Myc-/-) mammary ductal system undergoes significant
+> developmental changes from 6 to 12 weeks. Estrogen-driven growth factor signaling promotes
+> terminal end bud (TEB) cell proliferation during puberty at 6 weeks. By 12 weeks, the mature,
+> adult ductal structure exhibits decreased estrogen receptor levels and reduced cell
+> proliferation. To investigate how MYC influences the developmental trajectory, we compared
+> the transcriptome of the purified MEC population using both longitudinal (6W versus 12W for
+> WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons
+> (**Fig. S1A**). This analysis used fGSEA ranking and GSVA scoring based on custom-curated
+> genesets (**Fig. S1B**), derived from previous single-cell RNA-seq datasets (see detailed
+> list in Methods). Consistent with earlier results, the overall distribution of primary
+> mammary cell states remained predominantly unaltered, including the basal-myoepithelial
+> (BMYO), luminal hormone-sensitive (LHS), and luminal alveolar secretory precursor (LASP)
+> states (Gray et al. 2025). Nevertheless, a distinct transition from TEB to ductal states was
+> observed at 12W, representing a clear divergence from the pubertal proliferative phenotype
+> (**Fig. 1B**) (Gray et al. 2023). Importantly, an endogenous MYC program contributed to the
+> pubertal TEB state in WT animals, promoting proliferation, evidenced by the reduction of the
+> canonical MYC, TEB and proliferation signatures in the adult stage (WT 6W → 12W). Transgenic
+> MYC activation amplified the TEB and proliferation state, suppressed the BMYO lineage, and
+> strongly promoted a lineage suppressed (LE) de-differentiation pattern of the luminal states
+> (Gray et al. 2023). This effect diminished in both the WT and Myc+ 6W → 12W trajectory,
+> suggesting a suppression of the endogenous MYC program.
+
+## The design, and the library {#sec-s1-design}
+
+**Fig. 1A is bench material** --- whole-mount and histology of the hyperplastic ductal
+expansion, assembled outside R. It now carries a second quantity, the Ki-67 : CC3 ratio,
+which is the phenotype the whole of @sec-s3 exists to explain.
+
+```{r}
+#| label: fig-s1a
+#| echo: false
+#| fig-width: !expr panel_w("figS1_design_contrasts")
+#| fig-height: !expr panel_h("figS1_design_contrasts")
+invisible(draw_here("figS1_design_contrasts"))
+print(panel_p("figS1_design_contrasts"))
+```
+
+```{r}
+#| label: leg-s1a
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_design_contrasts"), sep = "\n")
+```
+
+Four groups, six animals each. The schematic exists because **which contrast a number comes
+from decides what it can mean** here more than in most designs --- see the batch constraint in
+@sec-constraints.
+
+```{r}
+#| label: fig-s1b
+#| echo: false
+#| fig-width: !expr panel_w("figS1_geneset_library")
+#| fig-height: !expr panel_h("figS1_geneset_library")
+invisible(draw_here("figS1_geneset_library"))
+print(panel_p("figS1_geneset_library"))
+```
+
+```{r}
+#| label: leg-s1b
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_geneset_library"), sep = "\n")
+```
+
+::: {.callout-warning}
+## Three set counts are in play, and each panel uses a different one {#txt-counts}
+
+**986** sets in the library (this panel, and the number the text gives) --- **885** scored per
+sample by GSVA (Figs. 1C and S1C) --- **866** in the enrichment ranking (Fig. 1D: 816
+fGSEA-eligible library sets clearing the minSize 10 / maxSize 500 filter, plus 50 fresh
+Hallmark comparators). 986 is correct where it stands; the other two need naming where they
+are cited.
+:::
+
+The fill is the **mitochondrial definition** of each set in three classes, and it carries a
+number that matters for how @sec-s1-axis is read: the library is **40 % mitochondrial by
+label but 13 % once the construction lanes are set aside** --- 260 of the 393 mito-labelled
+sets are Gray `_MITO` / `_LE_MITO` transcription-factor lanes, which are MitoCarta subsets *by
+build*.
+
+## The developmental trajectory, and what the transgene does to it {#sec-s1-teb}
+
+```{r}
+#| label: fig-1b
+#| echo: false
+#| fig-width: !expr panel_w("fig1_myc_teb_proliferation")
+#| fig-height: !expr panel_h("fig1_myc_teb_proliferation")
+invisible(draw_here("fig1_myc_teb_proliferation"))
+print(panel_p("fig1_myc_teb_proliferation"))
+```
+
+```{r}
+#| label: leg-1b
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_myc_teb_proliferation"), sep = "\n")
+```
+
+::: {.callout-warning}
+## Four sentences in this paragraph need a word {#txt-teb}
+
+- **"no major changes in the overall composition"** --- in within-group SD the wild-type
+  6→12W shift is BMYO **+0.10**, LASP **−0.70**, LHS **−0.60**, TEB-ductal **−0.91**. BMYO is
+  flat; the two luminal states fall by two thirds of what the TEB axis does. All four are
+  non-significant at n = 6 (p 0.24--0.86), so the sentence survives --- but script 26's own
+  header says the change *is* luminal decline, not a BMYO expansion.
+- **"a clear TEB-ductal shift"** --- not supported by the sample-level test in wild type
+  (**p = 0.24**). What licenses "clear" is the matched-null ruler: TEB-vs-ductal (HS)
+  **−0.422, 0th percentile**. In Myc+ the shift *is* significant (**p = 0.001**).
+- **"suppressed the BMYO lineage in favor of differentiation to LHS"** --- the BMYO half
+  **holds** and deepens with age (−0.80 SD at 6W, −1.16 SD at 12W, p = 0.066). The LHS half is
+  a **reversal, not a main effect**: −0.63 SD at 6W, **+0.79 SD at 12W** (pooled p = 0.86,
+  interaction p = 0.097). True at 12 weeks, false at 6.
+- **"the transgene amplified the TEB effects"** --- resolved in the author's favour, but only
+  once split by age: pooled it is +0.63 SD, p = 0.14, and reads as a null; split it is
+  **+1.02 SD at 6 weeks** and **+0.23 SD at 12**. The effect exists where the phenotype is.
+
+**The de-differentiation reading is the stronger version of the sentence.** MYC raises every
+lineage-suppressed (LE) composite and lowers every differentiated (HE) composite, in all three
+lineages, at both ages (AP +1.51 / −0.82, BA +1.55 / −1.00, HS +1.31 / −0.85 SD at 6 weeks).
+**The HE numbers must appear in the text even though only the LE arm is drawn**, because the
+LE composites sit almost on the global common-mode axis (r 0.85--0.90) and the HE ones do not
+--- what a common-mode axis cannot produce is *opposite signs within a lineage*, so the
+opposition is what licenses the reading.
+:::
+
+::: {.callout-note collapse="true"}
+## Built, currently cited nowhere --- the MB-fork specificity control
+
+`figS1_mb_fork_specificity.R` held slot S1C, then S1D, and is now uncited: the written S1D is
+the MYC western blot. It is the specificity control that Fig. 1B's `Human BRCA-MYC` row needs
+--- MB1 and MB2 share a lower fork and diverge into two upper forks that are *both*
+biogenesis-high and proliferative, so the only feature distinguishing them is MYC. It keeps
+building and gets a letter back the day a sentence asks for one.
+
+```{r}
+#| label: fig-mbfork
+#| echo: false
+#| fig-width: !expr panel_w("figS1_mb_fork_specificity")
+#| fig-height: !expr panel_h("figS1_mb_fork_specificity")
+invisible(draw_here("figS1_mb_fork_specificity"))
+print(panel_p("figS1_mb_fork_specificity"))
+```
+
+```{r}
+#| label: leg-mbfork
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_mb_fork_specificity"), sep = "\n")
+```
+:::
+
+## The dominant axis {#sec-s1-axis}
+
+```{r}
+#| label: fig-1c
+#| echo: false
+#| fig-width: !expr panel_w("fig1_pathway_pca")
+#| fig-height: !expr panel_h("fig1_pathway_pca")
+invisible(draw_here("fig1_pathway_pca"))
+print(panel_p("fig1_pathway_pca"))
+```
+
+```{r}
+#| label: leg-1c
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_pathway_pca"), sep = "\n")
+```
+
+**The one thing that makes this panel readable: PC1 is a genotype axis, not a time axis.**
+`PC1 ~ timepoint * genotype` gives genotype **p = 0.0031**, timepoint p = 0.70, interaction
+p = 0.43. Since batch = timepoint, an age-separating axis would have been uninterpretable.
+
+```{r}
+#| label: fig-s1c
+#| echo: false
+#| fig-width: !expr panel_w("figS1_axis_loadings")
+#| fig-height: !expr panel_h("figS1_axis_loadings")
+invisible(draw_here("figS1_axis_loadings"))
+print(panel_p("figS1_axis_loadings"))
+```
+
+```{r}
+#| label: leg-s1c
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_axis_loadings"), sep = "\n")
+```
+
+::: {.callout-warning}
+## "aligned almost entirely with mitochondria related terms" is bounded three ways {#txt-axis}
+
+Supported at the top of the ranking: mito sets are 44 % of the library and **100 % of the top
+50**, median \|loading\| 0.90 against 0.61. But:
+
+1. **94 of the top 100 are build-tautological** `_MITO` lanes --- MitoCarta subsets by
+   construction, so a high loading is a property of how the set was made.
+2. **Non-mitochondrial growth programmes reach 0.98** --- the METABRIC biclusters, nucleotide
+   metabolism, pentose phosphate, the MYC and E2F regulons.
+3. **Redox, a mitochondrial set, loads 0.67**, in the bottom half --- and it is the one axis
+   MYC does not drive.
+
+Suggested wording: **mitochondria-led**, not "almost entirely mitochondrial". What the axis
+tracks is a coordinated MYC anabolic--proliferative--mitochondrial growth state.
+
+**And "revealing the leading role of mitochondrial remodeling" does not follow.** Loading is
+**covariation, not primacy**, and script 37 says so in its own saved verdict
+(`pathway_loading.rds$enrichment_verdict`). At n = 24 nothing on these panels can order cause;
+the primacy claim belongs to the perturbations.
+:::
+
+```{r}
+#| label: fig-1d
+#| echo: false
+#| fig-width: !expr panel_w("fig1_nes_ranking")
+#| fig-height: !expr panel_h("fig1_nes_ranking")
+invisible(draw_here("fig1_nes_ranking"))
+print(panel_p("fig1_nes_ranking"))
+```
+
+```{r}
+#| label: leg-1d
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_nes_ranking"), sep = "\n")
+```
+
+::: {.callout-warning}
+## The tier order is right at the top and inverted in the middle {#txt-tiers}
+
+OXPHOS **+2.42**, MYC signatures **+2.38** and mitochondrial biogenesis **+2.37** are a
+three-way tie at the top, exactly as written. But the sentence continues "followed by
+biosynthetic metabolic pathways, E2F and overall proliferation signaling", and in the data
+**E2F / cell cycle (+2.08) sits above biosynthetic metabolism (+1.84)**. One-word fix: swap
+them.
+
+Two more things the panel shows and the text does not use. The **curated-mitochondrial row
+tops the panel at +2.47**, above OXPHOS --- it is drawn as its own row in its own colour
+rather than deleted, because deleting it would flatter every row beneath it, and the rows to
+read as programmes start below it. And **apoptosis is the one row that changes sign** (+0.74
+at 6 weeks, −0.94 at 12, while every other row's median moves *up*). That is **not a result**:
+the row is bimodal with its median on zero, so five weak, non-significant sets crossing zero
+move it, and three of the five are non-apoptotic death modalities. The members that *are*
+significant do not move.
+:::
+
+## Two mechanisms: content, and reprioritisation {#sec-s1-two}
+
+> MYC-driven mitochondrial alterations manifested through two mechanisms. First, MYC drove a
+> quantitative expansion by systemically upregulating 94% of 143 nuclear-encoded mitochondrial
+> pathways, increasing the mitochondrial transcriptomic fraction by 21--27% (padj \<0.001),
+> demonstrating robust mitochondrial biogenesis (**Fig. 1E**). Second, MYC reorganized how
+> mitochondria prioritize its different pathways, measured using MitoPPS analysis (Monzel et
+> al. 2025) (**Fig. 1F**). At 6 weeks MYC significantly promoted protein import/homeostasis,
+> translation, OXPHOS subunits (all complexes), and biosynthetic pathways including glycine
+> cleavage, pyruvate, and serine metabolism. Conversely, it demoted dynamics and surveillance,
+> including fission, mitophagy, and apoptosis alongside calcium signalling.
+
+**Two rulers, and the pair is the claim.** Content is the set-average raw log2 fold change ---
+what the compartment *has*. mitoPPS (Monzel et al. 2025) is a pairwise ratio within the
+mitochondrial compartment, **blind to content** --- what the compartment *spends its budget
+on*. On content **95.1 %** of the 143 MitoPathways sit above zero; on mitoPPS **56.6 %**. The
+difference between those two numbers **is** "two mechanisms".
+
+```{r}
+#| label: fig-1e
+#| echo: false
+#| fig-width: !expr panel_w("fig1_mito_content")
+#| fig-height: !expr panel_h("fig1_mito_content")
+invisible(draw_here("fig1_mito_content"))
+print(panel_p("fig1_mito_content"))
+```
+
+```{r}
+#| label: leg-1e
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_mito_content"), sep = "\n")
+```
+
+::: {.callout-important}
+## This is the one solid new result in the mouse dataset
+
+Script 32 was written because **"biogenesis" had no content referent**: AP-abundance is
+dispersion, mitoPPS is content-blind by construction, and the total mitochondrial score had
+never been tested. It is now: **MYC raises mitochondrial content by 21--27 %, p = 0.0006
+adjusted** for prep-stress and contamination, and it is a **lower bound**, because MYC also
+amplifies total RNA per cell so a *share* understates it.
+:::
+
+::: {.callout-warning}
+## Three numbers in this sentence need fixing {#txt-content}
+
+- **"94 % of 143" mixes two numbers.** 94.4 % is the fraction above zero over **all 144** rows
+  of script 40's ruler (the synthetic mtDNA-encoded pathway included); **95.1 %** is the
+  fraction over the **143** that every regression, null and panel actually uses. Pick one and
+  say which.
+- **"21--27 %" is narrower than what the panel draws.** Those are the median per-gene rise
+  across the nuclear compartment (**+21.4 %**) and the mass markers (**+26.5 %**). The five
+  *set* arms drawn run **+20 % to +33 %**. Either widen the sentence or name the two
+  quantities the range comes from.
+- **"(padj \< 0.001)" is `BIOGENESIS_FULL`, p = 0.00049, and it is a POOLED genotype main
+  effect**, not a per-age one. Split by age at n = 6 per cell, four nuclear arms clear p \<
+  0.05 at **twelve** weeks and only biogenesis clears it at **six**. The effect *size* is the
+  same at both ages (every interaction p 0.35--0.81), so the pooled test is the right one ---
+  but the text should not imply a six-week significance the six-week data alone do not carry.
+:::
+
+```{r}
+#| label: fig-1f
+#| echo: false
+#| fig-width: !expr panel_w("fig1_reallocation_ranked")
+#| fig-height: !expr panel_h("fig1_reallocation_ranked")
+invisible(draw_here("fig1_reallocation_ranked"))
+print(panel_p("fig1_reallocation_ranked"))
+```
+
+```{r}
+#| label: leg-1f
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_reallocation_ranked"), sep = "\n")
+```
+
+::: {.callout-warning}
+## "MYC significantly promoted ... OXPHOS subunits (all complexes)" --- the word does not reach that far {#txt-oxphos-sig}
+
+Checked against script 08's own BH-adjusted p across all 144 pathways at 6W, of which 33 clear
+0.05:
+
+| in the sentence | mitoPPS at 6W | padj | verdict |
+|---|---|---|---|
+| translation | +0.117 | **0.042** | supported |
+| pyruvate | +0.328 | **0.042** | supported |
+| serine | +0.212 | **0.016** | supported |
+| protein import / homeostasis | +0.117 | 0.053 | marginal at tier level; SAM 0.016, chaperones 0.039 clear it |
+| glycine cleavage | +0.405 | 0.118 | **not significant** --- and it is the *largest* promotion on the list |
+| **OXPHOS subunits** | **+0.112** | **0.274** | **not significant** |
+| — CI / CII / CIII / CIV / CV | +0.055 / +0.021 / +0.160 / +0.017 / +0.165 | 0.37 / 0.54 / 0.16 / 0.86 / 0.15 | **not one complex is significant** |
+| dynamics & surveillance | −0.156 | **0.028** | supported |
+| fission | −0.202 | **0.016** | supported |
+| apoptosis | −0.247 | **0.043** | supported |
+| mitophagy | −0.182 | 0.084 | **not significant** |
+| calcium signalling | −0.075 | **0.026** | supported |
+
+No part of the OXPHOS arm is significant on this ruler, and **the one OXPHOS row that is, is
+`CIII assembly factors` at −0.141 (padj 0.022) --- demoted.**
+
+**Suggested repair, and it is a better sentence:** move OXPHOS out of the "significantly
+promoted" clause into its own --- *"the OXPHOS subunits moved in the same direction (+0.112)
+while their assembly factors did not (−0.028)"* --- because that split is exactly what
+returns, much larger, in the wild-type timeline of @sec-s3.
+
+Also worth knowing: glycine cleavage, pyruvate and serine are the *largest single* promotions
+(+0.41 / +0.33 / +0.21), larger than OXPHOS, which leads as a **tier** and not as a leaf. Do
+not let a later draft turn this into "OXPHOS leads".
+:::
+
+::: {.callout-note}
+## MitoCarta sets are membership-loose, and the panel prints n for that reason
+
+Several of the largest effects rest on four genes (glycine cleavage 4, serine 4). A big effect
+on a four-gene set is **one gene, not a module** --- `Mrpl12` at +116 % carries
+`MITOCARTA_TRANSCRIPTION`; `Atad3a` at +113 % carries `NUCLEOID`. No set-level mechanism claim
+should be made without resolving it gene by gene.
+:::
+
+# Section 2 --- the paradoxical de-dosing {#sec-s2}
+
+> ## A paradoxical reduction of MYC signalling is associated with the initial tumour cell expansion in the adult mammary gland
+>
+> While the MYC program remained unchanged and its relative ranking was preserved in the whole
+> transcriptome (***see Figs 1D, E***), the amplitude of the MYC induced changes significantly
+> declined during the 6W→12W puberty-adult transition. At 12 weeks the entire structure was
+> present at half amplitude and unchanged in shape both in the whole and mitochondrial
+> transcriptome (R2=0.51, 0.8, p\< 0.002, respectively; **Fig. 1G**) and a similar effect on
+> the mitopathway priority scores was observed (***see Fig. 1F***). Interestingly, this ranking
+> was not just maintained but enhanced at 12W in comparison with 6W: the normalized enrichment
+> score for the mitochondrial OXPHOS set and MYC integrative signatures increased substantially
+> (**Fig. 1H**). Thus, the adult MYC program represented the pubertal program operating at a
+> lower intensity, but higher priority across the whole transcriptome.
+
+## Rescaled, not reshaped {#sec-s2-rescale}
+
+```{r}
+#| label: fig-1g
+#| echo: false
+#| fig-width: !expr panel_w("fig1_rescaled_not_reshaped")
+#| fig-height: !expr panel_h("fig1_rescaled_not_reshaped")
+invisible(draw_here("fig1_rescaled_not_reshaped"))
+print(panel_p("fig1_rescaled_not_reshaped"))
+```
+
+```{r}
+#| label: leg-1g
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_rescaled_not_reshaped"), sep = "\n")
+```
+
+::: {.callout-important}
+## The distinction the sentence turns on: "half amplitude" is the SLOPE, "unchanged in shape" is the R². Only one of them beats its null.
+
+| | observed | null median | null max | draws ≥ observed | p |
+|---|---|---|---|---|---|
+| slope | 0.552 | 0.419 | --- | **64 of 500** | 0.13 |
+| **R²** | **0.801** | 0.298 | **0.719** | **0 of 500** | **\< 0.002** |
+
+A shuffled set of the same size and expression **can** halve an effect. What it cannot do is
+halve it *coherently*. **So the p belongs to the R², and the sentence should not attach a p to
+the slope.**
+:::
+
+The `R2=***` placeholders the draft carried are resolved, and two of them must not be crossed:
+
+| in the sentence | number | what it is |
+|---|---|---|
+| whole transcriptome, slope | **0.487** | through the origin, over the 2,648 genes MYC moves at 6W --- script 44's `global_rate_fitted` |
+| whole transcriptome, "overall R2" | **0.51** | over the same 2,648. Over **all 8,774** reported genes the slope barely moves (0.450) but R² falls to **0.381** --- regression dilution from six thousand genes MYC does not move |
+| mitochondrial, slope | **0.552** | intercept 0.0001, so a pure rescaling and not a shift; bootstrap 0.514--0.605 |
+| mitochondrial, "overall R2" | **0.801** | |
+| **"OXPHOS R2"** | **0.761** | the 19 OXPHOS pathways, **content** ruler, slope 0.525. **Not 0.945** --- that is the *mitoPPS* ruler, and mixing rulers inside one parenthesis would be wrong. The mitoPPS figures (slope 0.644, R² 0.789; OXPHOS 0.945) belong with the "see Fig. 1F" clause |
+| "p \<" | **0.002** | empirical, 0 of 500 expression-matched shuffles reach R² 0.801 |
+
+::: {.callout-warning}
+## "Whole transcriptome" needs one word {#txt-whole}
+
+The panel's left facet is labelled *MYC-responsive genes (2,648)*, because that is the set the
+rate of record is fitted on. If the sentence keeps "whole transcriptome" it should quote
+**0.450 / 0.381**; if it quotes **0.487 / 0.51** it should say "the genes MYC moves". Either
+is fine. They must not be crossed.
+:::
+
+```{r}
+#| label: fig-1h
+#| echo: false
+#| fig-width: !expr panel_w("fig1_nes_preserved_sharpened")
+#| fig-height: !expr panel_h("fig1_nes_preserved_sharpened")
+invisible(draw_here("fig1_nes_preserved_sharpened"))
+print(panel_p("fig1_nes_preserved_sharpened"))
+```
+
+```{r}
+#| label: leg-1h
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_nes_preserved_sharpened"), sep = "\n")
+```
+
+::: {.callout-warning}
+## "Not just maintained but enhanced" does not survive, for two independent reasons {#txt-enhanced}
+
+**"Maintained" is strongly true and is the panel's real result** --- Spearman **0.933** over
+866 sets while the effect size halves. Better still: the 92 sets that cross sign between the
+ages are **84 % mammary-development and TF-target sets**; set them aside and Spearman over the
+remaining 774 rises to **0.967**. *What holds its order is the metabolic, mitochondrial and
+MYC core; what reshuffles is lineage identity.*
+
+**"Enhanced" does not.**
+
+1. **The rise is not specific.** Every point is above the line, not just the named ones ---
+   **81 % of all 866 sets rise** (median +0.312), and **93 % of the 403 already enriched at
+   six weeks**. As families the two named rise by the *median* amount: OXPHOS **+0.308, the
+   49th percentile**; MYC signatures **+0.386, the 60th**. The individual sets quoted in
+   earlier drafts are the best members of their families, not typical of them.
+2. **A global NES rise is what a weaker ranking mechanically produces.** fGSEA normalises each
+   enrichment score against a permutation null built from *that same ranked list*. The
+   twelve-week Wald list is much flatter --- **SD 1.221 vs 1.744, 9.5 % of genes past
+   \|stat\| = 2 vs 22.5 %** --- so random sets reach smaller enrichment scores, the normaliser
+   shrinks, and the same relative enrichment scores a higher NES. **No claim of increased MYC
+   activity can rest on this panel.**
+
+**What is true, and is a better sentence:** NES is enrichment *relative to the rest of the
+transcriptome*, so these programmes **hold their position at the top of the ranking while the
+amplitude halves**. That is a statement about **position, not magnitude** --- which is exactly
+what the author's own closing sentence ("lower intensity, but higher priority") already says.
+It sits beside Fig. 1G rather than against it.
+:::
+
+## The mechanism: dose {#sec-s2-dose}
+
+> Mechanistically, this attenuation was driven by a \~50% reduction in MYC protein levels at
+> 12W compared to 6W (**Fig. S1D**). This decline occurred despite stable transcript levels;
+> the *Myc* transcript level gap remained constant between 6W\_myc and 12W\_myc contrasts and
+> the proximal MYC/MAX/MXD network (**Fig. S1E, F**). The MYC protein halving predicted the
+> overall 0.55-fold transcriptomic rescaling (***see Fig. 1G***). However, MYC dosage reduction
+> acts non-linearly due to differential promoter affinity: high-affinity targets are less
+> sensitive to protein fluctuations than low-affinity sites (Lorenzin et al. 2016).
+> Consistently, the core MYC signature retained 74--77% of its pubertal effect size, whereas
+> lower-affinity mitochondrial biosynthetic and OXPHOS arms declined to 50--58%.
+
+**Fig. S1D is the western blot --- bench material, and it is what closed this question.**
+Before it, "why does the MYC effect halve" had four live hypotheses: (H1) the programme simply
+decays; (H2) a background programme antagonises it; (H3) reduced *effective* MYC at constant
+message; (H4) compositional dilution. Extensive negative scans are on the record --- **every
+E-box binder is flat**, and a 111-gene nuclear-receptor / corepressor / DREAM scan gives
+**zero significant interactions** --- so H2's selective form fails. The blot settles it on H3:
+protein −50 %, and the transcriptomic rate of record is **×0.55**.
+
+```{r}
+#| label: fig-s1e
+#| echo: false
+#| fig-width: !expr panel_w("figS1_myc_transcript_stable")
+#| fig-height: !expr panel_h("figS1_myc_transcript_stable")
+invisible(draw_here("figS1_myc_transcript_stable"))
+print(panel_p("figS1_myc_transcript_stable"))
+```
+
+```{r}
+#| label: leg-s1e
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_myc_transcript_stable"), sep = "\n")
+```
+
+**The control the blot needs.** If the message had fallen too, the attenuation would need no
+further explanation and the dose argument would collapse into "the transgene was silenced". It
+does not fall: the genotype gap is **+1.68 → +1.82 log2** and the Myc+ gland does not decline
+across the window (**−0.10, padj 0.76**). Measured as retention, `Myc` is the **most retained
+gene in the transcriptome** --- 1.085, the 99.99th percentile of 8,774.
+
+::: {.callout-warning}
+## "the expression gap remained constant between 6W_myc and 12W_myc" --- say which gap {#txt-gap}
+
+A gap is between **genotypes**, not between ages. Both readings happen to be true and the
+panel draws both (genotype gap +1.68 → +1.82; no decline within Myc+, −0.10 at padj 0.76), but
+the sentence should say which it means.
+:::
+
+```{r}
+#| label: fig-s1f
+#| echo: false
+#| fig-width: !expr panel_w("figS1_myc_network")
+#| fig-height: !expr panel_h("figS1_myc_network")
+invisible(draw_here("figS1_myc_network"))
+print(panel_p("figS1_myc_network"))
+```
+
+```{r}
+#| label: leg-s1f
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS1_myc_network"), sep = "\n")
+```
+
+**A clean negative, and the most obvious alternative to dose.** MYC cannot bind an E-box
+without MAX and competes for the same sites with the MXD/MNT family, so a fall in MAX or a
+rise in the repressors would attenuate its output at constant MYC. Neither happens: nothing
+clears significance at either age, and no interaction is below **padj 0.83**.
+
+::: {.callout-note}
+## The error-bar equality is worth more than the negative
+
+The standard errors of the two ages agree to within **0.024 log2 across all ten genes**,
+median ratio 1.01. That is the objection every attenuation result in this paper has to survive
+--- *twelve weeks is not the noisier cohort* --- and it is asserted in the panel script rather
+than assumed.
+:::
+
+## The paradox this sets up {#sec-s2-paradox}
+
+> These results raised the question of how MYC-driven hyperplasia is established at 12W in the
+> adult mammary gland when the oncogenic program exhibits attenuated amplitude and the driver's
+> transcriptional output is halved? This paradoxical observation suggested that early
+> tumourigenesis may not depend on the absolute intensity of the MYC program, but rather on the
+> balance between different MYC-induced programmes, i.e. proliferation and cell death. Indeed,
+> as shown in **Fig. 1A**, the ratio of the Ki-67 and CC3 positive cells increased significantly
+> at 12W as compared to 6W, mainly due to a reduction of the number of cells undergoing
+> apoptosis, suggesting that reduced apoptotic sensitivity with maintained proliferation
+> signalling underlies early stages of MYC-driven tumourigenesis following the puberty-adult
+> transition.
+
+::: {.callout-note}
+## Two things the section decided not to draw, and both were right
+
+**The DE counts.** 1,967 → 135 genes at FDR 5 %, 2,777 → 239 at 10 % --- while the median
+\|LFC\| of the survivors *rises*, 0.678 → 0.869. Drawn, that would flatter a −93 % that is
+really a −45 %. It is threshold arithmetic, and belongs in a trailing italic sentence.
+(For the record: the `interaction` contrast has **0** genes at either threshold.)
+
+**The interaction standard-error point** (0.333 vs 0.233) --- same reason. It is the power
+statement of @sec-constraints, and the place it earns its keep is beside the `Foxo3` / `Bbc3`
+interaction in @sec-s3, not here.
+:::
+
+::: {.callout-important}
+## Dose vs competence --- the spine that carries into Section 3
+
+The MMTV-Myc timeline measures **MYC DOSE**: protein halves, output per unit MYC is unchanged,
+and that single fact explains most of the negative results in this corpus. The MYC-ER model of
+@sec-s3 measures something else --- **COMPETENCE**: 80 % less death at *equal* dose, in animals
+with no prior MYC exposure, so the change is **developmental, not selection**.
+
+The molecular hinge is that MYC builds a death-ready mitochondrion at **both** ages (`Htra2`
++1.49 padj 2.6e-8, `Bax` up, `Bcl-xL` down) and loses the **trigger**: `Bax`:`Bcl-xL` retains
+**0.55**, the global rate, while `PUMA`:`Bcl-xL` retains **−0.09**. The non-linearity is
+Lorenzin's affinity-ordered occupancy --- core 0.75 \> global 0.55 \> mito 0.5 \>\> PUMA
+−0.09 --- which is why "the programme fades" does not, on its own, explain the death arm.
+:::
+
+# Section 3 --- OXPHOS repression, and the loss of the trigger {#sec-s3}
+
+> ## OXPHOS repression in the developing mammary gland is coupled to tumourigenesis via the loss of the apoptotic trigger PUMA
+>
+> To evaluate the proliferative effects and apoptotic sensitivity of MYC at constant dosage of
+> the transgene at different stages of mammary gland development, we crossed R26-LSL-CAG-MYCERT2
+> mice with MMTV-Cre mice to generate a model with mammary-specific switchable MYC (MYCERT2)
+> (**Fig. 2A**) (Kreuzaler et al. 2019; Bywater et al. 2020; Kreuzaler et al. 2023). We
+> administered tamoxifen (tam) or vehicle for 48 hours to 6W and 12W old MYCERT2+/- mice and
+> evaluated proliferation and apoptotic rates using IHC (**Fig. 2B, C**). Importantly, the
+> apoptotic response robustly induced by MYC at 6W was almost completely lost in the 12W group,
+> whereas MYC-mediated proliferation remained at approximately 70% in the adult mammary gland,
+> resulting in a markedly elevated proliferation-to-apoptosis ratio. Crucially, these
+> alterations were not a consequence of decreased MYC expression at 12W (**Fig. S2A**).
+> Furthermore, on the longer term (13 days follow up), MYC triggered substantial MEC expansion
+> exclusively when activated in the 12W adult mammary gland (**Fig. 2D**). E-cadherin staining
+> revealed significant ductal expansion and early hyperplasia in 12W old mice but not at 6W,
+> demonstrating that the adult gland provides a permissive temporal window for initial tumour
+> growth.
+
+**Figs. 2A--2D and S2A are bench material.** They are also the reason the rest of this chapter
+matters: they establish that the change between six and twelve weeks is a change in
+**competence at constant dose**, which the MMTV-Myc transcriptome --- a *dose* experiment ---
+cannot show on its own. Everything below asks what in the wild-type gland could account for it.
+
+## The grammar four of these panels share: two timelines {#sec-s3-grammar}
+
+The reworded text puts **both timelines side by side in every claim**, so four of the
+alternatives below use one plane:
+
+- **x = `6>12W_wt`** --- what the normal gland does between six and twelve weeks
+- **y = `6>12W_myc`** --- what the Myc+ gland does over the same window
+- **the identity line `y = x` = *development alone***
+
+**The vertical drop from that diagonal IS the interaction, exactly.** Script 40's ruler
+satisfies `c_tp = c_tn + c_int` to floating point (1.2e-16 on content, bit-identical on
+mitoPPS, asserted in every panel that uses the plane). So a point below the line has lost more
+than development explains, and the distance is the genotype × time term itself --- not an
+approximation of it.
+
+`coord_equal()` is not cosmetic here: both axes are the same quantity in the same units, so
+equal scaling is honest *and* it pins the diagonal at exactly 45°.
+
+::: {.callout-warning}
+## And this is where the batch confound bites hardest
+
+**Both axes of this plane are batch-confounded** (batch = timepoint, @sec-constraints). What
+is batch-clean is the **distance from the diagonal**, because the shared 6W→12W offset
+cancels in the difference. Read the plane as *"how far below the line"*, never as *"how far
+along the x axis"*.
+:::
+
+The device is declared once as `two_timeline_base()` in `figures/panels/_panel_common.R`, so
+the four panels cannot drift apart.
+
+## Fig. 2E --- the substrate: TEB lost, proliferation not {#sec-s3-2e}
+
+> Further analysis of the transcriptomic basis underlying the tumour expansion in the adult
+> gland identified a striking metabolic shift in the WT mitochondrial transcriptome and a
+> complex interaction between the WT and MYC-transformed developmental trajectories determining
+> the cell death outcome. First, the 6\>12W\_wt comparison showed that while the TEB signature
+> was lost as expected in the puberty-adult transition, the overall proliferation signalling
+> remained relatively stable (**Fig. 2E**), enabling MYC driven proliferation
+> (***see Fig. 2B-D***).
+
+```{r}
+#| label: fig-2e
+#| echo: false
+#| fig-width: !expr panel_w("fig2_wt_teb_proliferation")
+#| fig-height: !expr panel_h("fig2_wt_teb_proliferation")
+invisible(draw_here("fig2_wt_teb_proliferation"))
+print(panel_p("fig2_wt_teb_proliferation"))
+```
+
+```{r}
+#| label: leg-2e
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_wt_teb_proliferation"), sep = "\n")
+```
+
+**This is the negative limb that keeps Fig. 2F honest.** Had proliferation collapsed here, the
+respiratory withdrawal would be its shadow rather than a finding.
+
+::: {.callout-warning}
+## "relatively stable" is right, and it needs one qualifier {#txt-prolif}
+
+On the enrichment ruler it is as clean as it gets: **not one of the 14 curated proliferation
+sets is significant** on `6>12W_wt`, and the family median (−0.89) sits inside the ±1 band an
+unmoved set occupies --- against the TEB programmes' **−1.58 with 29 of 38 significant**.
+
+But on the gene-level ruler, pooled `PROLIF_*` (731 genes) moves **−0.047 log2, the 1.3rd
+percentile of its own expression-matched null, p = 0.013**. It is *small, not immobile* ---
+script 43's own phrase. Suggested: keep "relatively stable" and make it quantitative ---
+**the TEB arm moves 8.9 times as far**.
+
+**A second observation the text should use.** The generic proliferation regulons agree with
+the curated sets and the *lineage-context lanes of the same transcription factors do not*:
+`TFT_E2F1_DOROTHEA` −1.18 and `TFT_E2F1_CHIPATLAS` +0.86 are both n.s., while the Gray `_LE`
+lanes fall hard (FOXM1_HS_LE −2.10, TFDP1_HS_LE −2.08, MYBL2_HS_LE −2.04, E2F1_HS_LE −1.72,
+all padj \< 1e−3). Those are lineage-identity lanes, not cell-cycle sets. **What the normal
+gland withdraws from is lineage and morphogenesis; the cell cycle itself does not move.**
+:::
+
+## Fig. 2F --- the respiratory withdrawal {#sec-s3-2f}
+
+> Second, the normal gland development showed a specific mitochondrial transcriptomic decline
+> pattern. All OXPHOS subunit logFC and MitoPPS dropped significantly, while the overall
+> mitochondrial transcriptome abundance remained relatively stable. Similar reduction of the
+> OXPHOS complexes were observed at the protein level (*see* ***Fig. S1D***) At the same time,
+> the maturing gland upregulated amino-acid and lipid catabolism. Specifically, fatty-acid
+> oxidation, the carnitine shuttle and glycine cleavage all increased, shifting metabolism to
+> feed electrons into a repressed respiratory chain, likely underlying a catabolic, highly
+> reductive state (**Fig. 2F**). Importantly, the WT temporal program operated independently of
+> the MYC-driven changes (**Fig. S2B**). While OXPHOS subunits were downregulated in the MYC
+> 6→12W timeline in accordance with the reduced Myc effect, the normal maturation of the
+> mammary gland added a further reduction in OXPHOS in the WT 6→12W timeline, suggesting a
+> critical role for MYC-driven oncogenesis.
+
+::: {.callout-warning}
+## Two candidates for this slot --- not yet chosen (2026-08-09)
+
+|  | **original** `fig2_wt_mito_contraction` | **alternative** `fig2_two_timelines_mito_alt` |
+|---|---|---|
+| **what it draws** | all 143 MitoPathways on the **content × mitoPPS plane**, one timeline (`6>12W_wt`) | all 143 on the **two-timeline plane**, one ruler (content) |
+| **what it shows that the other cannot** | the **two rulers agree** (Spearman 0.82) --- a content fall alone could be normalisation, a content-blind ratio fall alone could be a reshuffle inside a growing compartment | the Myc-specific **extra** loss: OXPHOS ends deepest because the two terms **add** (−0.255 in development, −0.150 more from MYC, −0.405 under MYC) |
+| **what it costs** | says nothing about the Myc timeline, which is half the sentence | drops the second ruler, so "logFC **and** MitoPPS" has to move to the legend |
+
+**They are not variants of one picture.** Each drops what the other keeps. Drawing both rulers
+*and* both timelines at 89 mm is what made the first attempt unreadable.
+:::
+
+### Fig. 2F --- original
+
+```{r}
+#| label: fig-2f
+#| echo: false
+#| fig-width: !expr panel_w("fig2_wt_mito_contraction")
+#| fig-height: !expr panel_h("fig2_wt_mito_contraction")
+invisible(draw_here("fig2_wt_mito_contraction"))
+print(panel_p("fig2_wt_mito_contraction"))
+```
+
+```{r}
+#| label: leg-2f
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_wt_mito_contraction"), sep = "\n")
+```
+
+### Fig. 2F (alt) --- the two timelines
+
+```{r}
+#| label: fig-2f-alt
+#| echo: false
+#| fig-width: !expr panel_w("fig2_two_timelines_mito_alt")
+#| fig-height: !expr panel_h("fig2_two_timelines_mito_alt")
+invisible(draw_here("fig2_two_timelines_mito_alt"))
+print(panel_p("fig2_two_timelines_mito_alt"))
+```
+
+```{r}
+#| label: leg-2f-alt
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_two_timelines_mito_alt"), sep = "\n")
+```
+
+::: {.callout-important}
+## The statistic that belongs in this sentence is the PAIRED null, not either arm's own
+
+"The respiratory chain falls **while** biogenesis does not" is a *comparative* claim, and
+script 43 tests it by redrawing both sets together and testing the difference:
+
+- **OXPHOS subunits − mitoribosome = −0.230, percentile 0.05, p = 0.0005**
+- OXPHOS subunits − nucleotide metabolism = −0.255, p = 0.0085
+- OXPHOS subunits − pooled proliferation = −0.208, p \< 0.0005
+
+**Per pathway, nothing survives BH on either ruler --- 0 of 143** (smallest adjusted p 0.12 on
+mitoPPS). So the text must not attach a p-value to any single MitoPathway. What the per-pathway
+level *does* show is **coherence**: 23 pathways clear an unadjusted 0.05 against 7.2 expected,
+binomial **p = 8e−7** --- the compartment moves together and no single pathway carries it.
+:::
+
+::: {.callout-warning}
+## Four wording items in this paragraph {#txt-2f}
+
+- **"across all complexes" has one exception.** CI, CIII, CIV and CV subunits all fall on both
+  rulers; **CII subunits rise** (+0.088 content, +0.026 mitoPPS). Complex II is the only
+  respiratory complex with no mtDNA-encoded subunit and the only one outside the proton
+  circuit --- but the set is **four genes**, so it is a direction to note, not a mechanism.
+  One-word fix: *"across the four complexes that carry mtDNA-encoded subunits"*.
+- **The missing clause is the background.** The median MitoPathway **gains** content over this
+  window (+0.041, 72 % above zero), so the respiratory arm falls *against a rising
+  compartment*. That is what licenses the verb "withdraw", and it is one clause.
+- **The assembly-factor control deserves a half-sentence**, not just the panel: the assembly
+  factors of the same complexes sit at **+0.001 / −0.002**, percentile 50.2 of the matched
+  null. *The gland withdraws the stoichiometry of the chain, not the machinery that builds it.*
+- **The mtDNA arm is not on the panel and the text should not quote it either.** It is the
+  largest movement in the compartment (+0.633 content, +0.525 mitoPPS) and it is the one
+  quantity that is time-associated rather than genotype-associated --- so a temporal contrast
+  is exactly where it cannot be read. See @sec-died.
+:::
+
+## Fig. S2B --- and the independence claim needed a control {#sec-s3-s2b}
+
+```{r}
+#| label: fig-s2b
+#| echo: false
+#| fig-width: !expr panel_w("figS2_reallocation_independence")
+#| fig-height: !expr panel_h("figS2_reallocation_independence")
+invisible(draw_here("figS2_reallocation_independence"))
+print(panel_p("figS2_reallocation_independence"))
+```
+
+```{r}
+#| label: leg-s2b
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS2_reallocation_independence"), sep = "\n")
+```
+
+**The sentence is right on both scopes --- but only after a control.** On the 143 MitoPathways
+the correlation is **−0.022** (mitoPPS) and −0.038 (content). On 15,191 genes the raw
+correlation is **+0.228**, and that number is a property of the design, not of the biology:
+`myc_6W` = 6W_myc − 6W_wt and `6>12W_wt` = 12W_wt − 6W_wt share the **same six wild-type
+animals** in the subtraction.
+
+| | value |
+|---|---|
+| observed | **+0.228** |
+| predicted from the standard errors (Cov = Var(6W_wt) = SE²/2) | **+0.198** |
+| **measured, split baseline** --- MYC effect against one half of the six WT animals, temporal effect against the other | **−0.025** |
+
+The split-baseline control is **exhaustive, not sampled** --- all `choose(6,3) = 20`
+assignments --- so the panel has no RNG in it.
+
+::: {.callout-important}
+## One bound that must not be dropped
+
+This is **not** the statement that the Myc+ gland's own temporal change is independent of the
+wild-type one. That regression (Myc+time ~ WTtime) has slope **0.749** --- much of the Myc+
+gland's drift *is* the wild-type drift. Different pairs of vectors; they must never be run
+together in one sentence.
+
+And **never flip the axes**: the shared-vector regression gives 0.749 / −0.172 one way and
+0.559 / +0.118 the other. It is not symmetric.
+:::
+
+## Fig. S2C --- the WT death substrate does not move {#sec-s3-s2c}
+
+> Next, we asked whether these interactions between the WT and MYC driven trajectories could
+> contribute to the time-dependent decline in apoptotic sensitivity. While the transcriptomic
+> basis of the  overall apoptotic priming remained stable throughout the WT timeline
+> (**Fig. S2C**), we detected a selective loss of a single trigger gene in the MYC 6 →12W
+> timeline.
+
+```{r}
+#| label: fig-s2c
+#| echo: false
+#| fig-width: !expr panel_w("figS2_priming_balance")
+#| fig-height: !expr panel_h("figS2_priming_balance")
+invisible(draw_here("figS2_priming_balance"))
+print(panel_p("figS2_priming_balance"))
+```
+
+```{r}
+#| label: leg-s2c
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS2_priming_balance"), sep = "\n")
+```
+
+**"Overall priming" is a balance, and both arms move together, so the balance does not move.**
+Across the window the pro arm shifts **+0.025** and the anti arm **+0.045** on content
+(difference **−0.020**); on the content-blind mitoPPS ruler, +0.054 against +0.046 (difference
++0.008). For contrast, **MYC moves the two arms apart**: +0.156 pro against −0.024 anti at six
+weeks, a difference of **+0.180** --- an order of magnitude larger, and in the opposite
+geometry. *The balance is something MYC changes and development does not.*
+
+**One of 37 moves, and it moves the wrong way for a loss of priming:** `Bnip3` **+0.63, padj
+0.021** --- a pro-apoptotic gene going *up*.
+
+::: {.callout-note}
+## A negative at n = 6 needs a power control, and this one has it
+
+On the same transcripts, in the same libraries, at the same n, the **genotype** contrast
+reaches padj \< 0.05 for **6 of 35** mapped genes, against **1** across the window. The
+measurement can see movement in these genes; there is none to see here.
+
+**And the bound that travels with it:** a negative on *transcripts* is not a negative on
+*priming*. Priming is a property of the protein complement and of how close the mitochondrion
+sits to the threshold. **BH3 profiling is the measurement**, and this panel is a reason to do
+it rather than a substitute for it (@sec-open).
+:::
+
+## Fig. 2G --- the ratios, and the one that reverses {#sec-s3-2g}
+
+> Specifically, most apoptotic priming ratios established by MYC at 6W remained stable since
+> both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling of
+> the MYC effect (**Fig. 2G**), but the PUMA (*Bbc3*)/BCL-XL ratio showed a striking reversal,
+> deviating significantly from the expected pattern. This reduction was highly specific to the
+> *Bbc3* transcript, as other BH3-only sensors did not show similar trends. Notably, *Bbc3*
+> mRNA levels remained constant in the WT gland but decreased significantly within the
+> 6\>12W\_myc context (-0.48, padj = 0.016), demonstrating a specific interaction between
+> genotype and timeline effects (interaction p \< 0.01).
+
+::: {.callout-warning}
+## Two candidates for this slot --- not yet chosen (2026-08-09)
+
+|  | **original** `fig2_priming_ratios` | **alternative** `fig2_death_two_timelines_alt` |
+|---|---|---|
+| **what it draws** | seven pro:Bcl-xL **ratios**, MYC effect at 6W against 12W, with the **global rescaling line** (slope 0.487) as the expected pattern | the death machinery **per gene** on the two-timeline plane |
+| **the claim it makes** | *the ratio deviates from the rescaling* --- and it refutes "it is just the global attenuation" **from inside the panel**, because every ratio shares the Bcl-xL denominator | *the numerator moves and the denominator does not* --- `Bbc3` +0.06 → −0.48 while `Bcl2l1` sits at the origin, so the reversal is **all numerator** |
+| **what it costs** | cannot show that `Bcl2l1` is flat, which is the cleanest form of "specific" | loses the rescaling line, so "in accordance with the global rescaling" has no drawn reference |
+| **a bonus only the alt has** | --- | `Bmf` (+1.02 → +0.84, significant on both) sits **on** the diagonal: the one death gene the window itself moves, and the panel's own negative control |
+
+Different claims, not different drawings of one claim.
+:::
+
+### Fig. 2G --- original
+
+```{r}
+#| label: fig-2g
+#| echo: false
+#| fig-width: !expr panel_w("fig2_priming_ratios")
+#| fig-height: !expr panel_h("fig2_priming_ratios")
+invisible(draw_here("fig2_priming_ratios"))
+print(panel_p("fig2_priming_ratios"))
+```
+
+```{r}
+#| label: leg-2g
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_priming_ratios"), sep = "\n")
+```
+
+| ratio | 6W | 12W | retention | |
+|---|---|---|---|---|
+| `Bax` | +0.901 | +0.495 | **0.55** | on the line |
+| `Bid` | +0.946 | +0.396 | 0.42 | on the line |
+| `Bak1` | +0.688 | +0.185 | 0.27 | a little under it |
+| **`Bbc3`** | **+0.674** | **−0.061** | **−0.09** | **crosses zero** |
+
+### Fig. 2G (alt) --- the death machinery on the two timelines
+
+```{r}
+#| label: fig-2g-alt
+#| echo: false
+#| fig-width: !expr panel_w("fig2_death_two_timelines_alt")
+#| fig-height: !expr panel_h("fig2_death_two_timelines_alt")
+invisible(draw_here("fig2_death_two_timelines_alt"))
+print(panel_p("fig2_death_two_timelines_alt"))
+```
+
+```{r}
+#| label: leg-2g-alt
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_death_two_timelines_alt"), sep = "\n")
+```
+
+::: {.callout-warning}
+## "Significantly" needs its scope, and "specific" needs one word {#txt-2g}
+
+**Significance.** The PUMA:Bcl-xL **ratio** interaction is p = 0.037 raw, 0.017
+purity-adjusted --- but its **BH across the nine pairs is 0.33**, and against script 42's
+matched-pair null (random pro-like/anti-like pairs matched on expression, conditioned on a
+six-week effect at least as large) the **empirical p is 0.082**. It is a nominal result with a
+**pre-specified licence** --- PUMA was named in advance from the PGC1a cell experiments --- not
+a multiplicity-surviving one. The honest counterweight is that on the empirical null the most
+extreme pair is `Bmf` (p = 0.025), a ratio MYC never established (p6 = 0.40), which is exactly
+why the *conditional* null is the one to read.
+
+**Two numbers must not be interchanged.** The gene-level `Bbc3` interaction (**p = 0.0081**)
+is a different statistic from the *ratio* interaction (**p = 0.037**). The text's
+"(interaction p \< 0.01)" is the gene-level one and is correct as written --- but the
+**BH-adjusted value is 0.84**, and the text should say once that pre-specification is what
+licenses the test.
+
+**"Highly specific to the Bbc3 transcript" needs a qualifier.** `Bax` **also falls
+significantly under MYC** (−0.376, padj 0.008) --- it is an effector, not a sensor, so
+"specific" holds **among the BH3-only sensors** and the sentence should say so. And `Bmf`
+rises in **both** timelines, which belongs in the text as the contrast to `Bbc3`.
+:::
+
+## Figs. 2H and 2I --- Foxo3, and the coupling {#sec-s3-2hi}
+
+> Crucially, the expression of *Bbc3* closely mirrored that of *Foxo3* (**Fig. 2H**), its
+> recognized p53-independent activator, which yielded the lowest interaction p-value (0.0074)
+> among all biogenesis- or cell-death-related genes. Although *Foxo3* was upregulated in the
+> maturing WT gland (6\>12W\_wt padj \> 0.01), its expression was reduced along the 6\>12W\_myc
+> timeline. Meanwhile, no transcriptional alterations were detected among other established
+> upstream inducers of PUMA (**Fig. S2D**).
+
+> Altogether, the transcriptomic analysis unequivocally identified the apoptotic arm as the
+> primary driver of the shifting oncogenic balance in the adult gland. The analysis suggested
+> that apoptotic sensitivity declined substantially due to loss of PUMA (*Bbc3*) in 12W\_myc
+> mice. The decline could not be explained by the halving of MYC dosage, and was coupled to a
+> metabolic shift driven by the loss of OXPHOS subunits, coupled to the transcriptional
+> repression of *Foxo3*. Indeed, the interaction between MYC and OXPHOS subunit coupling to the
+> PUMA/Bcl-XL ratio is highly significant (p = 0.0052) (**Fig. 2I**), whereas no such link
+> exists for other redox and metabolic axes. These results led to the hypothesis that high
+> respiratory state is required for MYC-PUMA mediated mammary epithelial cell death, and the
+> reduction of respiratory capacity (OXPHOS subunits) in the adult gland is crucial for
+> MYC-induced oncogenesis.
+
+::: {.callout-warning}
+## Two candidates for these slots --- and the pairing is TWO-TO-ONE
+
+The alternative **merges Fig. 2H and Fig. 2I into a single panel**. Choosing it frees a slot.
+
+|  | **originals** `fig2_departure_from_dose` (2H) **+** `fig2_oxphos_puma_coupling` (2I) | **alternative** `fig2_puma_chain_alt` (2H+I) |
+|---|---|---|
+| **the framing of `Foxo3`** | the **8,774-gene** departure-from-dose scan: `Foxo3` z −2.53, **percentile 0.46**; `Bbc3` −2.49, 0.51; only **four genes lie between them** | **rank 1 and rank 2 of the 26** biogenesis/cell-death mechanism genes by interaction p (0.0074, 0.0081; gap to third `Pgs1` at 0.066) --- the framing the reworded text already uses |
+| **what it draws** | 2H a distribution with three genes marked; 2I one point per animal, mitoPPS against the ratio, a line per genotype | the chain as **three distributions in the order it runs** (OXPHOS mitoPPS → `Foxo3` → PUMA:Bcl-xL) with six within-genotype contrasts and three interactions, a 2 × 4 median heat map of the ratio's two members, and the coupling beneath |
+| **what it costs** | two slots, and 2H's percentile framing is a **rank statement, not a test** | loses the genome-wide context that makes `Foxo3`'s position striking |
+| **what only the alt shows** | --- | that the respiratory arm falls on **both** timelines, `Foxo3` rises **only** in WT, and the ratio collapses **only** under MYC --- the text's own sentence, in one picture |
+
+`Bcl2l11` is on the 2H original because the scan was **pre-registered with two genes** and
+**they split**: `Bbc3` at percentile 0.51, `Bcl2l11` in the ordinary middle at 91.6 with an
+interaction p of 0.86. Drawing only the half that worked would be the wrong panel.
+:::
+
+### Fig. 2H --- original
+
+```{r}
+#| label: fig-2h
+#| echo: false
+#| fig-width: !expr panel_w("fig2_departure_from_dose")
+#| fig-height: !expr panel_h("fig2_departure_from_dose")
+invisible(draw_here("fig2_departure_from_dose"))
+print(panel_p("fig2_departure_from_dose"))
+```
+
+```{r}
+#| label: leg-2h
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_departure_from_dose"), sep = "\n")
+```
+
+### Fig. 2I --- original
+
+```{r}
+#| label: fig-2i
+#| echo: false
+#| fig-width: !expr panel_w("fig2_oxphos_puma_coupling")
+#| fig-height: !expr panel_h("fig2_oxphos_puma_coupling")
+invisible(draw_here("fig2_oxphos_puma_coupling"))
+print(panel_p("fig2_oxphos_puma_coupling"))
+```
+
+```{r}
+#| label: leg-2i
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_oxphos_puma_coupling"), sep = "\n")
+```
+
+| axis | wild type | Myc+ | script 43's interaction |
+|---|---|---|---|
+| **OXPHOS subunits** | **−4.80** | **+4.35** | **+6.09, p = 0.0052** |
+| redox | −7.70 | −6.72 | +2.16, p = 0.72 |
+
+**Redox is the right control precisely because it is not a null axis.** Both genotypes couple
+to it, and strongly. What it does not do is couple *differently*. An axis nothing couples to
+would not have excluded the possibility that the PUMA ratio simply tracks mitochondrial scores
+in general.
+
+### Fig. 2H+I (alt) --- the chain, and the coupling beneath it
+
+```{r}
+#| label: fig-2hi-alt
+#| echo: false
+#| fig-width: !expr panel_w("fig2_puma_chain_alt")
+#| fig-height: !expr panel_h("fig2_puma_chain_alt")
+invisible(draw_here("fig2_puma_chain_alt"))
+print(panel_p("fig2_puma_chain_alt"))
+```
+
+```{r}
+#| label: leg-2hi-alt
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_puma_chain_alt"), sep = "\n")
+```
+
+| | wild type 6\>12W | Myc+ 6\>12W | difference (interaction) |
+|---|---|---|---|
+| OXPHOS mitoPPS | −0.11, p 0.108 | −0.15, **p 0.027** | p 0.615 |
+| `Foxo3` | +0.46, **p 0.0044** | −0.00, p 0.982 | **p 0.013** |
+| PUMA:Bcl-xL | +0.17, p 0.517 | −0.50, **p 0.019** | **p 0.042** |
+
+::: {.callout-important}
+## Asked and answered: is `Foxo3` 12W_wt vs 12W_myc significant? No --- and the reason IS the result
+
+Drawn values −0.89 z, **p = 0.092**; DESeq2 −0.242 log2, p = 0.059, **padj = 0.53**. The 6W
+genotype contrast is its **mirror**: +0.92 z (p = 0.076), DESeq2 +0.243 (p = 0.057).
+
+MYC raises `Foxo3` at six weeks and lowers it at twelve by almost exactly the same amount.
+**Neither half clears 0.05 alone, and that is precisely why the interaction is the strongest
+term in the roster** (−0.486, p = 0.0074, rank 1 of 26). Labelling either genotype contrast on
+a panel would print a failed test beside the claim. Neither is drawn.
+:::
+
+::: {.callout-important}
+## Fig. 2I is ONE HALF of an interaction, and drawing one line misleads
+
+The wild-type animals trend the **opposite way just as strongly**: R² 0.328, p 0.052, against
+Myc+ R² 0.354, p 0.041. The result is a **genotype-by-slope interaction**, not a Myc-specific
+correlation. That is why the alternative prints `interaction p = 0.0052` beside the R², in
+neutral ink, while the R² takes the Myc+ colour.
+
+**And read it as a lead.** The permutation null in the same object puts the interaction at the
+**91.7th percentile of 5,000 draws (empirical p = 0.083)**, and adding a timepoint term moves
+p from 0.0052 to **0.088**. It is the one axis-by-genotype interaction in the corpus that
+reaches nominal significance --- which is a statement about the corpus as much as about the
+axis.
+
+**Do not quote the raw correlations.** Pooled across genotypes the PUMA ratio correlates +0.04
+with the OXPHOS axis and −0.48 with redox --- the pooling artefact two opposite slopes produce.
+:::
+
+::: {.callout-warning}
+## Four wording items in the closing paragraphs {#txt-2hi}
+
+- **"whereas no such link exists for other redox and metabolic axes"** --- script 43's
+  trade-off analysis carries **exactly two axes**, OXPHOS subunits and redox. The sentence
+  should say *"for the redox axis"* unless a wider panel is run. What *is* broader is the
+  outcome side: two axes against five outcomes, and only this one reaches p \< 0.05.
+- **"6\>12W\_wt padj \> 0.01"** is a typo for **padj \< 0.01** --- `Foxo3` rises in the WT
+  window at **+0.473, padj 0.0078**.
+- **"unequivocally identified"** is stronger than the evidence. Nothing in the death arm
+  survives genome-wide multiplicity; the licence throughout is **pre-specification**. Suggested:
+  *"identified the apoptotic arm as the candidate driver"*.
+- **The arrow is not the obvious one, and nothing here establishes direction.** PUMA restrains
+  the mitochondrial pyruvate carrier (Kim, *Cancer Cell* 2019), so "PUMA falls, therefore
+  respiration falls" is backwards; respiration sits upstream (Dey & Moraes), and FOXO3 → BBC3
+  closes it into a **negative-feedback circuit** rather than a linear chain.
+:::
+
+::: {.callout-note}
+## `Foxo3` was NOT pre-specified --- it was found here, and that is the main caveat
+
+Forty-four genes sit below the 0.5th percentile of the departure scan with it, and they are
+mostly unrelated (`Adh7`, `Agpat2`, `Aldh3a2`, `Ccnjl`, `Cntnap2`, `Inhba`, `Wfdc2`,
+`Vtcn1`…). **Position alone is not evidence.** What makes `Foxo3` a lead rather than one of
+forty-four names is the **prior** --- FOXO3 is PUMA's canonical p53-independent activator, with
+direct ChIP evidence --- and the text should introduce it that way round.
+
+The two routes to the same departure are worth keeping distinct: `Foxo3` is a **failure to
+follow the normal developmental rise**; `Bbc3` is an **active loss**.
+:::
+
+## Fig. S2D --- the inputs that did not move {#sec-s3-s2d}
+
+::: {.callout-warning}
+## Two candidates for this slot --- and they draw DIFFERENT ROSTERS
+
+This is not a redraw of one control. It is a choice between two different negative controls.
+
+|  | **original** `figS2_puma_inducers` | **alternative** `figS2_p53_arm_alt` |
+|---|---|---|
+| **roster** | `exclusions$puma_inputs` --- 12 genes: p53 family (`Trp73`), E2F (`E2f1`), the integrated stress response (`Atf4`, `Ddit3`, `Trib3`, `Chac1`, `Eif2ak3`, `Nupr1`, `Sesn2`) and the FOXO family (`Foxo1`, `Foxo3`, `Foxo4`) | `exclusions$p53_axis` --- 9 genes: `Trp53`, `Mdm2`, `Cdkn1a`, `Cdkn2a`, `Trp53inp1`, `Zmat3`, `Eda2r`, `Phlda3`, `Ccng1` |
+| **the sentence it answers** | *"no changes among other established upstream inducers of PUMA"* --- literally the written sentence | *"the p53-**dependent** arm is not what moves PUMA"* --- which is what makes `Foxo3` the candidate |
+| **axes** | the MYC effect at each age, joined | the two-timeline plane, so `Bbc3` and `Foxo3` can be drawn **as the two that do move** |
+| **what only it shows** | that `Foxo1` and `Foxo4` do **not** do it, so `Foxo3` is not a family-wide effect | that `Bbc3` **leaves the band** and `Foxo3` **leaves the diagonal** --- two different ways of moving |
+
+The original's roster **contains `Foxo3`**, so the panel is a negative *with one exception*,
+and the exception is the preceding sentence. The alternative's roster excludes it by
+construction and draws it as a reference point instead.
+:::
+
+### Fig. S2D --- original
+
+```{r}
+#| label: fig-s2d
+#| echo: false
+#| fig-width: !expr panel_w("figS2_puma_inducers")
+#| fig-height: !expr panel_h("figS2_puma_inducers")
+invisible(draw_here("figS2_puma_inducers"))
+print(panel_p("figS2_puma_inducers"))
+```
+
+```{r}
+#| label: leg-s2d
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS2_puma_inducers"), sep = "\n")
+```
+
+### Fig. S2D (alt) --- the p53 arm on the two timelines
+
+```{r}
+#| label: fig-s2d-alt
+#| echo: false
+#| fig-width: !expr panel_w("figS2_p53_arm_alt")
+#| fig-height: !expr panel_h("figS2_p53_arm_alt")
+invisible(draw_here("figS2_p53_arm_alt"))
+print(panel_p("figS2_p53_arm_alt"))
+```
+
+```{r}
+#| label: leg-s2d-alt
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS2_p53_arm_alt"), sep = "\n")
+```
+
+::: {.callout-warning}
+## Two bounds, and one gene that must be named whichever panel is chosen {#txt-s2d}
+
+- **`Trp73` rises +2.14 across the wild-type window at padj 0.0039** --- on a mean expression
+  of **12 counts**, at the floor of what this design can measure, and on the batch-confounded
+  contrast. Not a MYC effect and not on either panel's axis, but it should be named so the
+  panel is not read as flatter than it is. (`Eda2r` −0.99 at padj 0.019 is the equivalent in
+  the p53-arm roster.)
+- **A transcript-level negative is not a pathway-level one.** The ISR and the p53 axis act
+  substantially through protein stability, phosphorylation and localisation --- ATF4 in
+  particular is translationally controlled and can be fully active with an unchanged message.
+  What this excludes is a **transcriptional** re-routing of PUMA's inputs, which is the
+  alternative the text raises, and no more than that.
+:::
+
+# What did not survive {#sec-died}
+
+This chapter is the reason the record exists. Roughly a year of analysis produced a large
+number of results that **do not appear in the manuscript**, and they are not absent because
+they were uninteresting --- they are absent because they were **tested and failed**. Several
+of them were in earlier drafts. Anyone re-reading this project will re-derive them unless the
+failures are written down with their reasons.
+
+They are grouped by **why** they failed, because the failure modes recur and the modes are
+more useful than the individual results.
+
+## Circular by construction {#sec-died-circular}
+
+::: {.callout-important}
+## The mito → death bridge correlated mitochondrial genes with mitochondrial genes
+
+`pro_comp` --- the pro-apoptotic composite that every death coupling in this corpus was built
+on --- **is a MitoCarta set**: `MITOCARTA_APOPTOSIS_PRO`, 25 genes, defined at `scripts/08`.
+So is the mitonuclear imbalance. "The mitochondrial state couples to death priming" therefore
+correlated **mito genes with mito genes**.
+
+**Every death coupling in the corpus is exposed to this.** It is the single most important
+thing on this page. The couplings were not weak; they were not measuring what they were said
+to measure.
+:::
+
+**And "MYC raises apoptotic priming" (genotype p = 0.037 / 0.038) is the mitochondrial CONTENT
+effect wearing a death label.** Against an expression-matched **MitoCarta** background,
+`APOPTOSIS_PRO` rises **+0.196 against a background of +0.364 (z = −2.42, p = 0.012)** --- i.e.
+*below average for a mitochondrial gene*. On the **404 non-mitochondrial** pro-death genes the
+effect does not reproduce at all (**−0.106, p = 0.078**, wrong sign). This independently
+reproduces script 23's mitoPPS de-prioritisation of apoptosis (−0.21, padj 0.022).
+
+**A related construction trap in the loading analysis.** The dominant-axis "top loaders" are
+**94 % `_MITO` lanes** --- MitoCarta subsets *by build* --- so their loading is a property of
+how the set was made. `MYC_LE_MITO` loads 0.993 at rank 6; `MYC_AP_HE` loads 0.013 at rank
+881. Same regulon, different construction. The axis is **mitochondria-led, not
+mitochondria-specific**, and loading is covariation, not primacy (@sec-s1-axis).
+
+## At the correlation ceiling --- or untestable {#sec-died-ceiling}
+
+**Script 25's per-sample death couplings fail an empirical null.** Couplings to `pro_comp`
+(bio_comp 0.83, MASC 0.78, imbalance 0.67) sit at the **54th--90th percentile** of couplings
+to all 884 library sets, permutation **p 0.10--0.50**. The null median coupling is **0.79**.
+At n = 12 within a timepoint, everything correlates with everything at 0.6--0.8.
+
+**Script 36 found where the ceiling comes from, and it is one axis.**
+`cor(mito_oxphos, mean of all 884 scores) = 0.968`; regress that common mode out and the
+ambient coupling drops **0.80 → 0.13**, which is the chance floor. Not low n (chance floor
+0.13), not curation (random pairs 0.54), not the genotype split (0.83 within `6W_pos` alone).
+
+::: {.callout-important}
+## The interpretability trap, and it re-ranked everything
+
+When an axis **is** the global factor, removing the global factor leaves noise. `mito_oxphos`
+has **r² = 0.94** with the global mean, so its global-adjusted coupling of −0.62 is
+**noise-on-noise, not antagonism**. A global-adjusted coupling may only be read where the
+residual fraction is **≥ ~0.10**.
+
+**Consequence: "OXPHOS is central" is not false --- it is UNTESTABLE.** There is no separable
+variance in which to test it. That is the cleanest possible statement of its failure, and it
+is a stronger sentence than "it did not replicate".
+:::
+
+Three results were re-ranked by that finding:
+
+- **`cholesterol/mevalonate → MB2 fork` is DEMOTED.** Its script-35 headline (+0.40 against a
+  partial ceiling of 0.13, 96th percentile, p = 0.043) was a **raw-ambient artefact**;
+  properly adjusted it is **+0.14**, "separable but weak".
+- **`biogenesis is a bystander` HOLDS, and harder than published** --- +0.11 against its own
+  ceiling of 0.22 (27th percentile); to the TEB axis −0.03, the 7th percentile, i.e. *below* an
+  arbitrary programme.
+- **`redox → MB2 fork` is the one robust testable lead** --- global-adjusted −0.63, same sign
+  across all three quantifiers, axis r² = 0.03, and MYC-independent. Redox is the control axis
+  precisely because MYC does not drive it (d = 0.08), which is why it has readable variance
+  left.
+
+**Of 96 partial-coupling tests, exactly 1 beats BH \< 0.05.** Nothing in the coupling layer is
+significant at n = 24.
+
+**And the MYC-vs-PGC1a contrast is untestable for the same reason** (script 38 PART D). PGC1a
+and MYC biogenesis are **not separable**: raw r = 0.93, both strongly MYC-induced (β +0.57 /
++0.75), and the global-adjusted −0.03 is the over-removal trap again (resid_frac 0.01 / 0.06).
+All biogenesis axes couple to priming identically. **That is the answer: it needs an
+ESRRA/PGC1a perturbation, not n = 24 bulk.**
+
+## The wrong null {#sec-died-nulls}
+
+::: {.callout-warning}
+## Four wrong nulls, and each one produced a published-looking number
+
+1. **`binom.test(..., p = 0.5)`** on the directional cell-death test. Under a **global
+   attenuation every MYC-induced gene has ΔLFC \> 0 by construction**, so 0.5 is not the null.
+   The correct comparator is the genome-wide supporting fraction.
+2. **`mu = 0`** for Gate 2's p = 0.023. Under the same global attenuation the null is not zero:
+   against a matched background, **z = −1.27, p = 0.21**.
+3. **Effective n.** Gate 2's 23 genes have a measured inter-gene correlation of 0.08, giving an
+   **effective n of 8.4, not 23**. A correlation-aware test of the same question (CAMERA) gives
+   **p = 0.298, FDR = 0.926**.
+4. **A raw ambient** as the null for a *partial* coupling. Script 35's Q4 claim is about the
+   partial, so the null has to be a **partial ceiling** --- and against it, "OXPHOS is central"
+   sits at the 68th percentile (p = 0.32), i.e. at chance.
+:::
+
+## A shared-baseline or shared-vector artefact {#sec-died-shared}
+
+**Issue #6's "34 % of the attenuation is wild-type convergence" is a shared-baseline
+artefact.** On the matched control --- the same three-mouse 6W wild-type baseline shared
+between the two contrasts, versus split --- the global term **collapses to chance**, with an
+artefact of **+0.24 ± 0.14 in 19 of 20 partitions**. Only the biosynthetic arms survive, and
+the divergent arms are untouched (artefact ~0).
+
+**The same mechanism, drawn constructively, is Fig. S2B** (@sec-s3-s2b): +0.228 raw, −0.025
+once the baseline is broken.
+
+::: {.callout-warning}
+## Three artefacts of this class, recorded so they are not re-derived
+
+- `cor(WTtime, ΔMyc-effect)` is **algebraically forced** --- script 40's `$artifact_ledger`
+  marks it "STRUCTURAL --- do not cite".
+- **Never flip the axes of the shared-vector regression**: 0.749 / −0.172 one way, 0.559 /
+  +0.118 the other. "Uniform offset" is exact only at slope 1.
+- **Cosine is not correlation.** On the content ruler the uncentred cosine is +0.210 and the
+  correlation is −0.038; both vectors have a large positive mean and the cosine picks up the
+  shared offset. The sentence's word is *correlation*.
+:::
+
+## Confounded beyond repair by this dataset {#sec-died-confounded}
+
+**`mt%` --- the mtDNA-encoded read fraction, 3.4--40 % across animals --- is three-way
+confounded** and the three cannot be separated here: real mitochondrial content × a
+proliferation denominator (r −0.61) × dissociation leak (r with the IEG signature +0.74).
+
+The consequences are structural, because two other quantities **are** mt%:
+
+| quantity | correlation with mt% |
+|---|---|
+| the mitonuclear imbalance | **−0.92** |
+| the mtDNA arm | **+0.95** |
+
+So their couplings to priming collapse on mt%-adjustment (+0.70 → +0.34; −0.71 → −0.20). **Only
+nuclear-OXPHOS ↔ priming is mt%-robust** (+0.46 → +0.48) --- which is why that is the coupling
+that reached Fig. 2I and the others did not.
+
+**And the sign kills the obvious alternative story:** mt% ↔ priming is *negative*, so
+prep-stress → death does not work.
+
+::: {.callout-important}
+## The mitonuclear imbalance has no supported contrast at all
+
+Time p = 0.31, genotype p = 0.52, interaction p = 0.92. Its death coupling fails a null. The
+bridge from it to death is **retracted as a mechanism**.
+
+**And the "direction test" that appeared to support it was circular and was withdrawn on
+2026-07-17.** That nuclear mitochondrial genes anticorrelate with mt% is *equally* what a real
+mitonuclear imbalance predicts and what a shared-denominator artefact predicts. It is evidence
+for neither. Do not resurrect it.
+:::
+
+**The pure developmental axis is confounded with batch** and no QC metadata exists to separate
+them (@sec-constraints). **Technical versus biological in the global axis is likewise not
+adjudicable** --- the axis is *mixed*: contamination cannot be biological, proliferation can.
+Script 37's technical correction uses **RNA-derived surrogates**, and they absorb **r² = 0.67
+of design-residual proliferation variance**, so the corrected lens removes real biology. That
+is why the design-only lens stays primary and the correction is a second lens, not the answer.
+
+## Fitted, saved, and never read {#sec-died-unread}
+
+::: {.callout-warning}
+## The priming interaction had been on disk all along
+
+`death_timing_substrate.rds$h1$state_tests` has carried **PRO interaction p = 0.177** and
+**priming interaction p = 0.263** since it was written. The narrative instead quoted **group
+means** --- "~3× more at 6W", +0.48 against +0.15 --- which is the same data with the test
+removed.
+
+**The lesson is procedural, not statistical.** An object that is fitted and saved but never
+read is worse than one that was never fitted, because its existence implies it was checked.
+:::
+
+**A related, still-live trap:** `results/death_timing_substrate.rds` **on disk is stale**.
+Script 23 as committed builds an 11-row `convergence` table; the saved object has 9, so Parts
+2b/5b have never been run. **Re-source script 23 before reading it.**
+
+## It doesn't transfer {#sec-died-transfer}
+
+Lesner et al. (bioRxiv 2026.07.13.738248) propose a hypoxia → MXI1/JUN route by which MYC
+suppresses mitochondrial biogenesis. Script 39 tested it in these contrasts:
+
+- **The hypoxia route does not transfer.** `HYPOXIA` is *lower* in Myc+, does not rise over the
+  window, `Hif1a` is low, `Mxi1` and `Tfam` are flat, `Jun` is not suppressed. It is
+  liver-specific.
+- **Nuclear OXPHOS does decline MYC-specifically** (interaction NES −2.21, padj 7e−11) but
+  **not hypoxia-linked** --- it is the general MYC-programme fade.
+- **MYC raises mitochondrial turnover machinery** (`DYNAMICS` +2.23, padj 1e−8) **but not
+  mitophagy specifically**: against a matched MitoCarta background, z −1.4 to −2.6. That is
+  the content effect again.
+
+**Net: the same MYC → mito-turnover relationship by a non-hypoxic route.** What Lesner
+validates is the **question**, not our contrast --- and usefully so, since their TCGA
+(flash-frozen) and mouse HCC data show the nuclear-up / mtDNA-down discordance is not a
+dissociation artefact.
+
+## Retracted claims from script 32 itself {#sec-died-s32}
+
+The content result survived its own audit; three claims around it did not. Recorded because
+they were written down before they were checked:
+
+- "commissioned but unbuilt" --- withdrawn.
+- the absolute-share form of the mitonuclear imbalance --- withdrawn.
+- **the depth confound --- withdrawn.** Shares and DESeq2 both cancel depth by construction;
+  the within-cohort correlation is ~0, and the pooled −0.47 is a **pooling artefact**. 12W is
+  **not** the degraded cohort.
+
+::: {.callout-note}
+## And one methodological fix that silently changed set-level numbers everywhere
+
+MitoCarta and GMT files carry **old gene symbols**; the expression matrix carries current ones.
+Renamed genes were silently dropped during **set aggregation** (ATP synthase: 7 of 24 subunits;
+OXPHOS ~12 %). Per-gene DESeq2 results were complete throughout, so nothing reverses --- the
+effect was a **conservative under-count**. Fixed by `functions/reconcile_gene_symbols.R` and
+wired into scripts 32/08/15/20/29/31 and the figure layer on 2026-07-24.
+
+**Any new set-based analysis must use the reconciler.**
+:::
+
+# Where the written sentences and the data disagree {#sec-disagree}
+
+The checklist to cut against. Every row was found while building the panel that draws it, and
+each links to the full argument above. **None of these is a result changing** --- they are
+words.
+
+| # | the sentence | what the data say | where |
+|---|---|---|---|
+| 1 | "no major changes in the overall composition" | true and non-significant, but the WT change is **luminal decline**, not BMYO expansion | @txt-teb |
+| 2 | "a clear TEB-ductal shift" | sample-level p = 0.24 in WT; "clear" rests on the matched-null ruler (0th percentile) | @txt-teb |
+| 3 | "suppressed BMYO in favor of differentiation to LHS" | BMYO holds; the LHS half is a **reversal**, true at 12W and false at 6W | @txt-teb |
+| 4 | "aligned almost entirely with mitochondria related terms" | **mitochondria-led**: 94 of the top 100 are build-tautological, non-mito growth programmes reach 0.98, redox loads 0.67 | @txt-axis |
+| 5 | "revealing the leading role of mitochondrial remodeling" | loading is **covariation, not primacy**; script 37 says so in its own saved verdict | @txt-axis |
+| 6 | "followed by biosynthetic metabolic pathways, E2F …" | **E2F (+2.08) sits above biosynthetic metabolism (+1.84)** --- swap them | @txt-tiers |
+| 7 | "94% of 143" | mixes the 144-row (94.4 %) and 143-row (95.1 %) fractions --- pick one | @txt-content |
+| 8 | "21--27%" | the *set* arms drawn run **+20 % to +33 %** --- widen it or name the two quantities | @txt-content |
+| 9 | "(padj \< 0.001)" | a **pooled** genotype main effect; only biogenesis clears 0.05 at six weeks alone | @txt-content |
+| 10 | "MYC significantly promoted … OXPHOS subunits (all complexes)" | **not significant** (padj 0.274), and not one complex clears 0.05. The only significant OXPHOS row is CIII assembly factors, **demoted** | @txt-oxphos-sig |
+| 11 | "R2=0.51, 0.8, p \< 0.002" | correct --- but the **p attaches to the R², not the slope**, and "whole transcriptome" must pick 0.450/0.381 or 0.487/0.51 | @txt-whole |
+| 12 | "not just maintained but enhanced" | **"enhanced" does not survive**: 81 % of all sets rise, the two named rise by the median amount, and a flatter ranking mechanically raises NES | @txt-enhanced |
+| 13 | "the expression gap remained constant between 6W_myc and 12W_myc" | a gap is between **genotypes**; both readings are true, say which | @txt-gap |
+| 14 | "the overall proliferation signalling remained relatively stable" | right, and worth quantifying: **the TEB arm moves 8.9× as far** | @txt-prolif |
+| 15 | "All OXPHOS subunit logFC and MitoPPS dropped significantly" | **0 of 143 pathways survive BH on either ruler.** The statistic that carries the claim is script 43's **paired null** (−0.230, p = 0.0005) | @txt-2f |
+| 16 | "across all complexes" | **CII rises** (+0.088) --- say "the four complexes that carry mtDNA-encoded subunits" | @txt-2f |
+| 17 | *(missing clause)* | the compartment **gains** content over the window (+0.041, 72 % up), which is what licenses "withdraw" | @txt-2f |
+| 18 | *(missing clause)* | the **assembly factors do not move** (+0.001 / −0.002, percentile 50.2) --- the gland withdraws the chain, not the machinery that builds it | @txt-2f |
+| 19 | "highly specific to the *Bbc3* transcript" | holds **among the BH3-only sensors**; `Bax` also falls significantly (−0.376, padj 0.008), and `Bmf` rises on both timelines | @txt-2g |
+| 20 | "(interaction p \< 0.01)" | correct (0.0081) --- but **BH is 0.84**, and the text should say once that **pre-specification** is the licence | @txt-2g |
+| 21 | "6\>12W_wt padj \> 0.01" | typo for **padj \< 0.01** (`Foxo3` +0.473, padj 0.0078) | @txt-2hi |
+| 22 | "no such link exists for other redox and metabolic axes" | script 43 carries **exactly two axes** --- say "for the redox axis" | @txt-2hi |
+| 23 | "unequivocally identified" | nothing in the death arm survives multiplicity; suggested: "identified … as the **candidate** driver" | @txt-2hi |
+| 24 | "no changes … among other established upstream inducers" | true, **with one exception, and the exception is `Foxo3` itself**, which is in the roster | @txt-s2d |
+| 25 | "~3K DEGs" | **2,777** at FDR 10 %, **1,967** at FDR 5 %; the interaction contrast has **0** at either | @sec-s2-paradox |
+| 26 | the 986 / 885 / 866 set counts | each panel uses a different one; 986 is right where it stands, the other two need naming | @txt-counts |
+
+# Open questions, and the experiment that settles each {#sec-open}
+
+Everything below is a question this dataset **cannot** answer, paired with the experiment that
+can. This is the list the reduction should protect, because a halved Results still has to hand
+the reader to the perturbations.
+
+::: {.callout-important}
+## The framing that makes this list useful
+
+A number that fails its null still nominates a **testable proposition**. The value of this
+analysis is that it **pre-specifies** what the perturbation experiments should measure --- and
+pre-specification, not circularity, is the strongest position available at n = 24. Present the
+competing readings side by side with the experiment that adjudicates each; the bioinformatics
+sets up the perturbations, it does not stand alone.
+:::
+
+| # | question | why this dataset cannot answer it | the experiment |
+|---|---|---|---|
+| 1 | **Is the transcript-level PUMA loss a loss of PRIMING?** | priming is a property of the protein complement and of how close the mitochondrion sits to the threshold; transcripts are its substrate, not its measurement | **BH3 profiling**, 6W vs 12W, ± MYC. Pre-specified readout: PUMA-peptide sensitivity |
+| 2 | **Is respiration upstream or downstream of PUMA?** | the two are not separable here --- PUMA restrains the mitochondrial pyruvate carrier (Kim 2019), so the naive arrow is backwards, and FOXO3 → BBC3 closes it into a feedback circuit | **ESRRA/PGC1a perturbation** against the MYC substrate. Script 38 PART D states explicitly that n = 24 bulk cannot do it |
+| 3 | **Is `Foxo3` causal, or one of forty-four?** | it was **found**, not pre-specified; 44 genes share its position and are mostly unrelated. The prior (canonical p53-independent PUMA activator, direct ChIP) is what makes it a lead | `Foxo3` knockdown / constitutive-active in the iMMEC system; does PUMA follow? |
+| 4 | **Does mitochondrial content actually fall, or only its transcripts?** | the mtDNA arm is the one quantity that is time- rather than genotype-associated, and mt% is three-way confounded (@sec-died-confounded) | **mtDNA qPCR** (and citrate synthase / TOM20 blot). Lesner et al. independently validate the discordance in flash-frozen TCGA and mouse HCC |
+| 5 | **Is the protective route priming or MITOPHAGY?** | script 39 finds MYC raises turnover machinery but **not mitophagy-specifically** (that is the content effect); the two predict the same transcriptome | NRF1 / DRP1 / FUNDC1 at protein level; mitophagy flux reporter |
+| 6 | **How much of the attenuation is compositional dilution?** | E2F and proliferation co-decline, and marker support exists (`Oxtr`, `Myh11`, `Trp63`) --- but bulk cannot separate a per-cell effect from a change in cell mixture | **deconvolution or single-cell** on the same window (deferred subproject, plan on disk) |
+| 7 | **Is the developmental (time) reading real, or batch?** | **batch = timepoint, perfectly.** No dissociation batch, viability or RIN metadata exists on disk | a cohort processed in one batch, or archived QC metadata if it can be recovered |
+| 8 | **Is the global axis technical or biological?** | it is **mixed** --- contamination cannot be biological, proliferation can --- and the RNA-derived correction absorbs r² = 0.67 of real proliferation variance | measured technical covariates (dissociation batch, viability, RIN), which do not exist for this cohort |
+
+::: {.callout-note}
+## Three negatives that travel with the death story and should not be lost
+
+They are negatives, and they are load-bearing:
+
+1. **The gland de-respires without de-proliferating** (−0.255 against −0.047, assembly factors
+   flat). The withdrawal is **morphogenetic** --- TEB lumen clearance --- not proliferative.
+   This *contradicts* the proliferation hypothesis and is the negative limb of the
+   PGC1a/Bcl-xL sign reversal, not a control.
+2. **There is no co-regulated OXPHOS/apoptosis module.** `CORE_MITO` is **depleted** 0.76× for
+   apoptotic genes; `MYC_MITO` is **enriched** 2.68× and holds `Bax`, `Casp9`, `Diablo`,
+   `Pmaip1`. The PGC1a regulon is flat while only its OXPHOS arm falls. The relationship is
+   **dependence, not co-transcription**.
+3. **PUMA is a solo.** It belongs to no module in any pre-registered question. What collapses
+   with it is **luminal lineage identity** (`MG_HS_GRAY` −2.79, padj 1.7e−17); what is retained
+   is the MYC programme. `Bcl2l11`, its co-pre-specified partner, sits at the 91.6th percentile
+   --- the pair splits.
+:::
+
+# Recommendation --- what a halved paper can afford {#sec-recommend}
+
+::: {.callout-warning}
+## This chapter is a RECOMMENDATION, not a record
+
+Everything above states what exists and what it supports. This chapter is a proposal, written
+so the reduction does not start from a blank page. Overrule it freely --- and note that the
+figure follows the text, so a claim the author cuts takes its panel with it.
+:::
+
+## The claim chain the closing conclusion actually needs
+
+The section ends on: *"high respiratory state is required for MYC-PUMA mediated mammary
+epithelial cell death, and the reduction of respiratory capacity (OXPHOS subunits) in the adult
+gland is crucial for MYC-induced oncogenesis."* Working backwards, that needs six links and no
+more:
+
+1. **MYC drives a mitochondrial programme in this tissue** --- otherwise the paper is not about
+   mitochondria. *Fig. 1D (ranking) + Fig. 1E (content).*
+2. **MYC reprioritises within the compartment**, which is also what introduces the mitoPPS
+   instrument that Section 3 depends on. *Fig. 1F.*
+3. **The MYC effect halves, and it is dose** --- needed because the closing paragraph says the
+   PUMA decline *cannot* be explained by it. *Fig. 1G + Fig. S1D (blot) + Fig. S1E.*
+4. **The adult gland is permissive at constant dose** --- the whole point. *Figs. 2A--2D, bench.*
+5. **The wild-type substrate changed: proliferation stable, OXPHOS withdrawn.** *Fig. 2E +
+   Fig. 2F.*
+6. **The trigger was lost, specifically, and it tracks respiration.** *Fig. 2G + Fig. 2H+I.*
+
+## The per-slot call on the four alternatives
+
+| slot | recommendation | why |
+|---|---|---|
+| **2F** | **the alternative** | the sentence *"the normal maturation added a further reduction in OXPHOS … suggesting a critical role for MYC-driven oncogenesis"* **is** the additive claim, and only the two-timeline plane draws it. The two-ruler agreement (Spearman 0.82) moves to the legend, where a robustness check belongs |
+| **2G** | **the original** | the global-rescaling line refutes *"it is just the dose"* **from inside the panel**, and that refutation is load-bearing in the closing paragraph. Its weakness --- that it cannot show `Bcl2l1` is flat --- is covered by the 2H+I alternative's heat map |
+| **2H + 2I** | **the alternative** | it **frees a slot** in a figure that is being halved; it uses the rank-1-of-26 framing the reworded text already uses, which is smaller and more meaningful than an 8,774-gene percentile; and it is the only panel that shows the three-part chain as one picture |
+| **S2D** | **text-first, not figure-first** | the original matches the sentence **as written** ("other established upstream inducers"). The alternative answers *"the p53-dependent arm does not move"*, which makes `Foxo3` the candidate but **is not currently a written sentence**. Decide the sentence, then the panel follows |
+
+**Choosing 2F(alt) + 2G(orig) + 2H+I(alt) is internally consistent**: the two-timeline plane
+appears once for the metabolic claim and once for the death claim, and 2G's rescaling line is
+the one panel on a different grammar --- which is right, because it is making a different kind
+of argument.
+
+## What that costs, panel by panel
+
+| panel | recommendation |
+|---|---|
+| **1B** lineage / TEB | **keep** --- it is the developmental frame the whole paper rests on |
+| **1C** pathway PCA | **to supplementary.** Its sentence is bounded three ways (@txt-axis) and the claim it is used for ("leading role") does not follow from a loading |
+| **1D** NES ranking | **keep** --- with the E2F / biosynthetic order swapped |
+| **1E** content | **keep** --- the one solid new result |
+| **1F** mitoPPS reallocation | **keep** --- and rewrite the sentence per @txt-oxphos-sig; it also introduces the instrument 2F needs |
+| **1G** rescaled not reshaped | **keep** --- it supplies the ×0.55 rate that 2G's expected line uses |
+| **1H** NES preserved | **cut, or demote to supplementary.** "Enhanced" does not survive (@txt-enhanced), and what *is* true ("position held while amplitude halves") is a sentence, not a panel |
+| **S1A** design | **keep** |
+| **S1B** library | **keep** --- Methods-adjacent but it is where the 986 comes from |
+| **S1C** axis loadings | **keep only if 1C stays**; they are one analysis |
+| **S1E / S1F** transcript / network | **keep S1E** (the blot's control); **S1F to this document** --- a clean negative on an alternative nobody has raised in print |
+| **2E** | **keep** |
+| **S2B** independence | **keep** --- it supports a written sentence, and its split-baseline control is the only defence against an obvious objection |
+| **S2C** WT priming balance | **keep** --- it is the negative that makes the Myc-specific loss specific |
+| **S2D** | see the table above |
+| *(uncited)* MB-fork specificity | **this document only**, unless the human-resemblance row of Fig. 1B is cited in the text |
+
+**Net: Figure 1 goes from A--H (8) to A--G (7 with 1H cut, or 6 if 1C also moves).
+Figure 2 goes from A--I (9) to A--H (8), of which four are bench.** Supplementary 1 loses one
+or two panels; Supplementary 2 keeps three.
+
+# Provenance {#sec-provenance}
+
+## The panels this document drew
+
+```{r}
+#| label: tbl-panels
+#| echo: false
+# slug_slot_order() returns the slugs already IN slot order (main figures, then
+# supplementary, then number, then letter), so build the table over its output
+# directly -- reordering the table by it afterwards inverts the permutation.
+legs <- stats::setNames(lapply(ALL_SLUGS, function(s) panel_env(s)$LEGEND), ALL_SLUGS)
+ord  <- slug_slot_order(ALL_SLUGS, legs)
+
+knitr::kable(
+  data.frame(
+    slot   = vapply(ord, panel_slot, character(1)),
+    script = paste0("figures/panels/", ord, ".R"),
+    size   = vapply(ord, function(s)
+               sprintf("%g x %g mm", panel_env(s)$SIZE_MM[["width"]],
+                                     panel_env(s)$SIZE_MM[["height"]]), character(1)),
+    stringsAsFactors = FALSE),
+  row.names = FALSE, col.names = c("slot", "script", "designed size"))
+```
+
+## The integrity checks {#sec-checks}
+
+The document asserts its own completeness rather than claiming it. **If any of these fail the
+render stops**, so a rendered document is a passed one.
+
+```{r}
+#| label: checks
+#| echo: true
+drawn <- unlist(DRAWN, use.names = FALSE)
+
+# 1. Every panel script on disk appears exactly once.
+stopifnot(!anyDuplicated(drawn), setequal(drawn, ALL_SLUGS))
+
+# 2. Every alternative is paired with the original(s) it competes with, and the
+#    pairing map matches what is actually on disk -- so a NEW alternative added
+#    to figures/panels/ cannot land in this document unnoticed.
+PAIRS <- list("Fig. 2F (alt)"   = "Fig. 2F",
+              "Fig. 2G (alt)"   = "Fig. 2G",
+              "Fig. 2H+I (alt)" = c("Fig. 2H", "Fig. 2I"),
+              "Fig. S2D (alt)"  = "Fig. S2D")
+slots <- vapply(ALL_SLUGS, panel_slot, character(1))
+stopifnot(setequal(grep("\\(alt\\)$", slots, value = TRUE), names(PAIRS)),
+          all(unlist(PAIRS) %in% slots))
+
+# 3. ... and each pair is CONTIGUOUS in draw order, i.e. drawn in one section.
+for (a in names(PAIRS)) {
+  grp <- names(slots)[slots %in% c(a, PAIRS[[a]])]
+  pos <- match(grp, drawn)
+  stopifnot(max(pos) - min(pos) + 1L == length(pos))
+}
+
+# 4. Every drawn size is the panel's own save_panel_p() size, not a copy.
+for (s in ALL_SLUGS)
+  stopifnot(isTRUE(all.equal(panel_w(s) * 25.4, unname(panel_env(s)$SIZE_MM[["width"]]))),
+            isTRUE(all.equal(panel_h(s) * 25.4, unname(panel_env(s)$SIZE_MM[["height"]]))))
+
+cat(sprintf("%d panels, %d alternatives, all paired and contiguous.\n",
+            length(ALL_SLUGS), length(PAIRS)))
+```
+
+## The analysis objects these panels read
+
+```{r}
+#| label: tbl-results
+#| echo: false
+rds <- list.files(here::here("results"), pattern = "\\.rds$", full.names = TRUE)
+info <- file.info(rds)
+o   <- order(info$mtime, decreasing = TRUE)
+knitr::kable(data.frame(object  = basename(rds)[o],
+                        size    = sprintf("%.1f MB", info$size[o] / 1024^2),
+                        written = format(info$mtime[o], "%Y-%m-%d %H:%M"),
+                        stringsAsFactors = FALSE),
+             row.names = FALSE)
+```
+
+::: {.callout-warning}
+## One freshness trap that is deliberately not guarded
+
+`results/mitopps_scores.rds` is timestamped **one minute older** than
+`results/gsva_scores.rds` although both came out of the same post-reconciliation re-run. The
+project's `require_fresher_than()` guard would therefore wrongly stop **Fig. 1F**. That panel
+is gated on `interaction_results.rds` instead, and asserts script 08's mitoPPS difference
+**exactly** (max difference 0) --- an identity check, which is the stronger guard.
+:::
+
+## The pipeline
+
+```{r}
+#| label: tbl-scripts
+#| echo: false
+sc <- sort(list.files(here::here("scripts"), pattern = "^[0-9]{2}_.*\\.R$"))
+knitr::kable(data.frame(script = sc), col.names = "scripts/")
+```
+
+**Scripts 00--12** are the trunk: load, DESeq2 (basic + interaction), QC, fGSEA, mitoPPS,
+GSVA, cell death. **13--31** are Block A --- the broad exploratory arc and the step-by-step
+revision (Issues #1--6), reviewed and tagged `block-a-reviewed`. **32--44** are the arc this
+document reports: content proxies (32), the mt-axis and the coupling null (33), the death-priming
+reassessment (34), the correlation ceiling (35), the coupling method of record (36), pathway
+loading (37), mitoPPS priming and PGC1a (38), the Lesner test (39), the background/MYC
+decomposition (40), MYC stability (41), the priming arm and TEB substrate (42), substrate
+specificity and the trade-off (43), and the collapse module (44).
+
+::: {.callout-note}
+## Option A --- who runs what
+
+Numbered analysis scripts under `scripts/` are **hand-run by the author in Positron**. The
+figure layer and this document read what they wrote and never re-run them. That separation is
+why a panel that needs a refreshed object **stops** rather than drawing a stale number.
+:::
+
+## Repository state
+
+```{r}
+#| label: git-state
+#| echo: false
+#| output: asis
+# system2() pastes the arguments into a shell string, so ANY argument containing
+# a space must be shQuote()d -- an unquoted --format=%h %ad splits and git exits
+# 128 with an "ambiguous argument" that never reaches the document.
+gi <- function(...) suppressWarnings(system2("git", c(...), stdout = TRUE, stderr = FALSE))
+cat("```\n")
+cat("branch  ", gi("rev-parse", "--abbrev-ref", "HEAD"), "\n", sep = "")
+cat("commit  ", gi("log", "-1", shQuote("--format=%h  %ad  %s"), "--date=short"), "\n", sep = "")
+cat("tags    ", paste(gi("tag"), collapse = ", "), "\n", sep = "")
+cat("```\n")
+```
+
+## Session
+
+```{r}
+#| label: session
+#| echo: false
+sessionInfo()
+```

@@ -174,7 +174,9 @@ LEGEND <- panel_legend(
     "Purification is by enzymatic dissociation only, with no sorting step, so residual stromal, endothelial and immune signal (3-12%) is contamination rather than tissue composition, and the warm digest itself induces an immediate-early signature."),
   source = c(
     "Design and contrasts: scripts/03_deseq_results_qc.R; contrast objects in results/interaction_results.rds",
-    "Batch = timepoint: CLAUDE.md, and paper/myc_mito.qmd @sec-overview"))
+    # No bare @-token here: this string is rendered as markdown by
+    # paper/analysis_record.qmd, and pandoc reads '@sec-x' as a cross-reference.
+    "Batch = timepoint: CLAUDE.md, and paper/analysis_record.qmd, 'The measurement, and four standing constraints'"))
 
 save_panel_p(p, "figS1_design_contrasts",
              width = fig_w[["single"]], height = 52)
