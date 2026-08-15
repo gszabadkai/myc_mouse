@@ -243,7 +243,11 @@ arm_ens <- c(
   list("PROLIF_* pooled" = ens_set(unique(unlist(gmt[prolif_sets])))))
 stopifnot(setequal(names(arm_ens), cmp$arm))
 
-arms <- cmp
+# AS A TIBBLE, deliberately. `ss$comparator` is a data.frame and dplyr::arrange
+# preserves that, so a later `print(n = )` would reach print.data.frame() and read
+# `n` as `na.print` -- R_CODING_INSTRUCTIONS.md rule 1, and it fails with a message
+# that does not name the cause.
+arms <- tibble::as_tibble(cmp)
 arms$c_cross <- vapply(arms$arm, function(a) set_mean(cr, arm_ens[[a]]), numeric(1))
 id_arm <- max(abs(arms$c_cross - (arms$c_myc_12W + arms$c_wt_time)), na.rm = TRUE)
 message(sprintf("PART B2 identity: max |c_cross - (c_myc_12W + c_wt_time)| = %.2e", id_arm))
@@ -492,22 +496,86 @@ level_stats |>
 # MAGNITUDE, the PER-ANIMAL SPREAD (bg$state_table carries group means only) and a
 # genotype test on a ruler with no compartment denominator in it -- NOT the
 # direction. This measures the overlap instead of leaving it to be assumed.
-share_agreement <- NULL
-sh <- tryCatch(as.data.frame(mc$shares), error = function(e) NULL)
-if (!is.null(sh) && all(c("panel", "sample", "share_nomt") %in% names(sh))) {
-  share_agreement <- dplyr::bind_rows(lapply(intersect(unique(sh$panel),
-                                                       names(level_ens)), function(g) {
-    a <- sh[sh$panel == g, ]; a <- a[match(samples, a$sample), ]
-    b <- levels_tbl[levels_tbl$group_set == g, ]; b <- b[match(samples, b$sample), ]
-    tibble::tibble(group_set = g,
-                   r_log2 = stats::cor(log2(a$share_nomt), log2(b$norm_sum)))
-  }))
-  if (nrow(share_agreement))
-    message(sprintf("PART G: levels vs script 32 shares -- median r = %.3f over %d matched panels",
-                    stats::median(share_agreement$r_log2), nrow(share_agreement)))
-} else {
-  message("PART G: no matching panel names in mito_content_proxies.rds$shares -- agreement check skipped")
-}
+#
+# TWO comparisons, because they answer different questions:
+#   r_own    -- the share computed HERE on the SAME genes. Isolates the ruler: any
+#               difference is the denominator and nothing else.
+#   r_s32 /  -- against script 32's published panel where the name maps. Anchors to
+#   geno_s32    the +21-27% content claim on its own membership route.
+#
+# Script 32 keys its panels on GMT SET names, not on MitoPathway tier names, so
+# the mapping is explicit. A first version relied on the two rosters happening to
+# share names and silently produced a zero-row table -- an empty agreement check
+# reads as agreement, which is the worst way for this to fail.
+mt_ens  <- level_ens[["mtDNA-encoded"]]
+den_raw <- colSums(cts[setdiff(rownames(cts), mt_ens), , drop = FALSE])
+share_own <- function(e) 100 * colSums(cts[e, , drop = FALSE]) / den_raw
+
+share_panel_of <- c(
+  "Protein import, sorting and homeostasis" = "MITOCARTA_PROTEIN_IMPORT_SORTING_AND_HOMEOSTASIS",
+  "Mitochondrial central dogma"             = "MITOCARTA_MITOCHONDRIAL_CENTRAL_DOGMA",
+  "OXPHOS"                                  = "MITOCARTA_OXPHOS_NU",
+  "Signaling"                               = "MITOCARTA_SIGNALING",
+  "Small molecule transport"                = "MITOCARTA_SMALL_MOLECULE_TRANSPORT",
+  "Mitochondrial dynamics and surveillance" = "MITOCARTA_MITOCHONDRIAL_DYNAMICS_AND_SURVEILLANCE",
+  "mtDNA-encoded"                           = "MITOCARTA_OXPHOS_MT")
+# the named arms carry their own GMT set name already
+share_panel_of <- c(share_panel_of,
+                    stats::setNames(arm_sets$set, arm_sets$arm))
+
+sh  <- as.data.frame(mc$shares)
+s32 <- as.data.frame(mc$share_stats)
+s32 <- s32[s32$denominator == "share_nomt", ]
+
+share_agreement <- dplyr::bind_rows(lapply(names(level_ens), function(g) {
+  b <- levels_tbl[levels_tbl$group_set == g, ]
+  b <- b[match(samples, b$sample), ]
+  own <- share_own(level_ens[[g]])[samples]
+  p32 <- unname(share_panel_of[g])
+  r32 <- NA_real_; g32 <- NA_real_
+  if (!is.na(p32) && p32 %in% sh$panel) {
+    a <- sh[sh$panel == p32, ]; a <- a[match(samples, a$sample), ]
+    r32 <- stats::cor(log2(a$share_nomt), log2(b$norm_sum))
+    k   <- s32$panel == p32
+    if (any(k)) g32 <- s32$geno_beta[which(k)[1]]
+  }
+  tibble::tibble(group_set = g, share_panel = p32,
+                 r_own = stats::cor(log2(own), log2(b$norm_sum)),
+                 r_s32 = r32,
+                 geno_beta_levels = level_stats$geno_beta[level_stats$group_set == g],
+                 geno_beta_s32 = g32)
+}))
+message(sprintf("PART G: levels vs the same-gene share -- median r = %.3f over %d sets; %d also matched to a script 32 panel",
+                stats::median(share_agreement$r_own, na.rm = TRUE), nrow(share_agreement),
+                sum(!is.na(share_agreement$r_s32))))
+# an empty or unmatched table would read as agreement, so require the anchor
+stopifnot(sum(!is.na(share_agreement$r_s32)) >= 8L)
+
+# THE LEVELS RULER GIVES A SYSTEMATICALLY LARGER GENOTYPE EFFECT than the share,
+# and that is the expected direction, not a discrepancy: the share's denominator
+# is the nuclear transcriptome, which ITSELF rises with Myc, so dividing by it
+# subtracts part of the effect being measured. Script 32 says as much -- its share
+# effect is explicitly a LOWER BOUND on content. This quantifies the gap.
+k <- !is.na(share_agreement$geno_beta_s32)
+beta_offset <- share_agreement$geno_beta_levels[k] - share_agreement$geno_beta_s32[k]
+share_summary <- tibble::tibble(
+  n_matched   = sum(k),
+  median_r_own = stats::median(share_agreement$r_own, na.rm = TRUE),
+  beta_r      = stats::cor(share_agreement$geno_beta_levels[k],
+                           share_agreement$geno_beta_s32[k]),
+  median_beta_offset = stats::median(beta_offset),
+  n_levels_larger    = sum(beta_offset > 0))
+message(sprintf("PART G: genotype beta, levels vs share -- r = %.3f, levels larger in %d of %d, median offset %+.3f",
+                share_summary$beta_r, share_summary$n_levels_larger,
+                share_summary$n_matched, share_summary$median_beta_offset))
+stopifnot(share_summary$beta_r > 0.9)
+
+# `r_own` IS NOT MEANINGFUL FOR THE NON-MITO ROSTERS. The share's denominator is
+# the whole nuclear transcriptome, so for PROLIF_* pooled and the TEB signature
+# the two rulers are measuring genuinely different things (PROLIF comes out at
+# r ~ 0). Their rows are kept for completeness and must not be read as a failure
+# of agreement.
+share_agreement |> print(n = nrow(share_agreement))
 
 # =============================================================================
 # PART H: WHY THE TWO RULERS DISAGREE
@@ -716,8 +784,16 @@ notes <- c(
   "MITOCARTA APOPTOSIS SETS ARE MITO-DEFINED (script 34), so any mito-versus-death",
   "  reading off these tables is mito-versus-mito and circular.",
   "SUMMED NORMALISED COUNTS AND % SHARES ARE CLOSE RELATIVES ($share_agreement gives",
-  "  the measured correlation). What is new in $levels is the absolute magnitude, the",
-  "  per-animal spread, and a genotype test with no compartment denominator in it.",
+  "  the measured correlation, r 0.47-0.99 on the same genes). What is new in $levels",
+  "  is the absolute magnitude, the per-animal spread, and a genotype test with no",
+  "  compartment denominator in it. `r_own` is NOT meaningful for the non-mito rosters",
+  "  (PROLIF_* pooled, TEB): the share's denominator is the whole nuclear transcriptome,",
+  "  so for those two the rulers measure different things and PROLIF lands at r ~ 0.",
+  "THE LEVELS RULER GIVES A LARGER GENOTYPE BETA THAN THE PUBLISHED SHARE, on every",
+  "  matched panel ($share_summary). That is the expected direction: the share divides",
+  "  by a denominator that itself rises with Myc, so it subtracts part of the effect.",
+  "  Script 32 already says its share effect is a LOWER BOUND on content; this puts a",
+  "  number on the gap and is a corroboration of the content claim, not a conflict.",
   "n = 6 per cell. This script RANKS; it does not confirm.")
 
 state_readings <- list(
@@ -737,6 +813,7 @@ state_readings <- list(
   levels             = levels_tbl,
   level_stats        = level_stats,
   share_agreement    = share_agreement,
+  share_summary      = share_summary,
   oxphos_genes       = oxphos_genes,
   weighting          = weighting,
   gradient           = gradient,
@@ -781,6 +858,7 @@ if (FALSE) {
   res$level_stats |>
     dplyr::select(group_set, n_genes, level_6W_wt, geno_beta, geno_padj, int_p) |>
     print(n = 20)
+  res$share_summary |> print()
   res$share_agreement |> print(n = 20)
 
   ## (6) Why the rulers disagree: weighting, gradient, and the null
