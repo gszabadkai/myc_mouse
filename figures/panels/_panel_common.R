@@ -78,8 +78,23 @@ contrast_levels <- c(contrast_geno, contrast_dev)
 # measure; the development contrasts take greys, because the trajectory is the
 # background against which the Myc effect is read. Deliberately NOT the WT blue
 # for 6>12W_wt -- that would put a sample colour on a contrast.
-contrast_cols <- c("myc_6W"    = "#D55E00", "myc_12W"   = "#E69F00",
-                   "6>12W_wt"  = "#BDBDBD", "6>12W_myc" = "#7B7B7B")
+contrast_cols <- c("myc_6W"        = "#D55E00", "myc_12W"   = "#E69F00",
+                   "6>12W_wt"      = "#BDBDBD", "6>12W_myc" = "#7B7B7B",
+                   "6W_wt>12W_myc" = "#1A1A1A")
+
+# THE DIAGONAL, added 2026-08-16 for script 45. `6W_wt>12W_myc` is the young
+# normal gland against the gland at initial tumour expansion -- the only reading
+# in the project that crosses BOTH factors at once. It is exactly the sum of a
+# development contrast and a genotype contrast (script 45 PART A asserts
+# cross == myc_12W + 6>12W_wt gene by gene), so it is neither, and it takes
+# neither vocabulary's ink: near-black, because on the panel that draws it the
+# diagonal is an ENDPOINT sitting at the head of two coloured segments, not a
+# third segment competing with them.
+#
+# DELIBERATELY NOT ADDED TO `contrast_levels`. Several panels build factors on
+# that vector and a fifth level would silently change their ordering; a panel
+# that wants the diagonal names it explicitly.
+contrast_net <- "6W_wt>12W_myc"
 
 verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
                    "rises"     = "#1B7837")
@@ -129,6 +144,20 @@ tier_labels <- c("Protein import, sorting and homeostasis" = "Protein import / h
                  "Signaling"                               = "Signaling",
                  "Small molecule transport"                = "SM transport",
                  "Mitochondrial dynamics and surveillance" = "Dynamics & surveillance")
+
+# Shorter still, for a FACET STRIP rather than an axis. figures/fig03_background_
+# vs_myc.R:56-58 inlined these for its seven-facet panel A; this is their second
+# use (the compartment-levels panel faceted the same way), so they get declared.
+# `tier_labels` is the axis form and is too long for a ~40 mm strip.
+tier_short <- c("Protein import, sorting and homeostasis" = "Protein import",
+                "Mitochondrial central dogma"             = "Central dogma",
+                "OXPHOS"                                  = "OXPHOS",
+                "Metabolism"                              = "Metabolism",
+                "Signaling"                               = "Signaling",
+                "Mitochondrial dynamics and surveillance" = "Dynamics",
+                "Small molecule transport"                = "SM transport")
+stopifnot(setequal(names(tier_short), names(tier_labels)),
+          setequal(names(tier_cols),  names(tier_labels)))
 
 # Gene-set quantification methods, as tagged in the library provenance table.
 # A single-hue purple ramp, deliberately NOT the genotype palette: across the
@@ -204,6 +233,37 @@ heat_fill <- function(limits, name = NULL, breaks = ggplot2::waiver()) {
 # fills than on positive ones.
 ink_on_fill <- function(x, limit) {
   ifelse(x < -0.45 * limit | x > 0.75 * limit, "white", "grey10")
+}
+
+# --- THE manuscript sequential fill -------------------------------------------
+# Added 2026-08-16, the project's first declared SEQUENTIAL ramp, for quantities
+# that have a low end and a high end but no meaningful zero -- expression level
+# being the case that forced it (the OXPHOS subunit heatmap encodes each gene's
+# absolute abundance as the WEIGHT beside its signed change).
+#
+# It must not borrow `ms_diverging`: a diverging ramp on an unsigned quantity
+# invents a midpoint the data does not have, and on a page where the same brown
+# and mint mean "down" and "up" it would read as sign. Single-hue slate, chosen
+# away from every categorical palette in this file -- not the genotype blue and
+# orange, not the tier hues, not the purple of `method_cols` -- so a reader never
+# has to ask whether a grey-blue cell is a group, a tier or a level.
+ms_sequential <- c(low = "#F2F4F6", mid = "#8FA3B0", high = "#243642")
+
+# `limits` is the observed range on the quantity's own scale (log10 counts, say);
+# values outside are squished rather than dropped, as heat_fill does.
+level_fill <- function(limits, name = NULL, breaks = ggplot2::waiver(),
+                       labels = ggplot2::waiver()) {
+  stopifnot(length(limits) == 2L, limits[1] < limits[2])
+  ggplot2::scale_fill_gradientn(
+    colours = unname(ms_sequential[c("low", "mid", "high")]),
+    limits  = limits, oob = scales::squish, name = name,
+    breaks  = breaks, labels = labels)
+}
+
+# Ink for text on the sequential ramp. One threshold, not two: the ramp is
+# monotone in darkness, so the switch is a single crossing.
+ink_on_level <- function(x, limits) {
+  ifelse(x > limits[1] + 0.62 * diff(limits), "white", "grey10")
 }
 
 # --- per-sample composites and the design contrasts --------------------------
