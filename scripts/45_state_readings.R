@@ -687,9 +687,18 @@ grad_stat <- function(e, v) {
   c(rho = stats::cor(log10(l[k]), y[k], method = "spearman"),
     gap = mean(y[k][q == 4]) - mean(y[k][q == 1]))
 }
+#
+# ALL FOUR CONTRASTS, not just the two. A first version nulled only the wild-type
+# window and the diagonal, on the reading that the gradient was a wild-type
+# phenomenon. The correlations say otherwise: the gradient is as strong in the Myc
+# effect at SIX WEEKS (+0.39) as in the wild-type window (+0.33), weak at twelve
+# weeks and absent in the Myc+ timeline. Nulling only two of the four would have
+# left the strongest one untested, so all four are nulled and reported.
 ox_expr <- ox_ens[ox_ens %in% expressed]
-gradient_null <- dplyr::bind_rows(lapply(c("wt_time", "cross"), function(k) {
-  v   <- if (k == "wt_time") tn else cr
+null_contrasts <- c(wt_time = "wt_time", cross = "cross",
+                    myc_6W = "myc_6W", myc_12W = "myc_12W")
+gradient_null <- dplyr::bind_rows(lapply(names(null_contrasts), function(k) {
+  v   <- switch(k, wt_time = tn, cross = cr, myc_6W = m6, myc_12W = m12)
   obs <- grad_stat(ox_expr, v)
   nul <- vapply(seq_len(NSET), function(i) {
     e <- draw_matched(ox_expr); e <- e[e %in% rownames(nrm)]

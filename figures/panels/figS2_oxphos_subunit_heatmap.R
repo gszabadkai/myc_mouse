@@ -46,8 +46,12 @@
 # WHERE THE GRADIENT COMES FROM, and a correction to an earlier reading of it: it
 # is present in the wild-type window (Spearman +0.33) AND in the Myc effect at six
 # weeks (+0.39), weak in the Myc effect at twelve weeks (+0.20) and absent in the
-# Myc+ timeline (+0.07). It is NOT a wild-type-only phenomenon, and only the
-# wild-type and diagonal versions have been nulled.
+# Myc+ timeline (+0.07). It is NOT a wild-type-only phenomenon -- the oncogene's
+# induction is itself expression-graded, preferentially amplifying the subunits
+# that are already abundant. Script 45's null covers all four (an earlier version
+# covered only two, which would have left the strongest one untested); the legend
+# reads the roster off the object rather than naming it, so it stays true either
+# way.
 #
 # Reads (read-only, no re-run):
 #   results/state_readings.rds  (script 45 PART H) -- $oxphos_genes (per gene: the
@@ -301,6 +305,13 @@ p    <- patchwork::wrap_plots(rows, pK, ncol = 1, heights = c(24, 1))
 # =============================================================================
 GR <- function(k, col) grd[[col]][grd$contrast == k]
 NU <- function(k, st, col) gnul[[col]][gnul$contrast == k & gnul$statistic == st]
+# Which contrasts script 45 actually nulled, read from the object rather than
+# assumed. The first version of PART H nulled two; it now nulls four, and this
+# legend must not claim more or fewer than the object in front of it holds.
+NULLED <- unique(gnul$contrast)
+stopifnot(length(NULLED) >= 2L, all(c("wt_time", "cross") %in% NULLED),
+          all(vapply(NULLED, NU, numeric(1), "spearman rho", "null_median") < 0),
+          all(vapply(NULLED, NU, numeric(1), "spearman rho", "percentile") > 90))
 q  <- gq[order(gq$median_level), ]
 top5 <- utils::head(g[order(-g$level_6W_wt), ], 5)
 bot5 <- utils::head(g[order(g$level_6W_wt), ], 5)
@@ -324,17 +335,24 @@ LEGEND <- panel_legend(
     sprintf("THE GRADIENT, WHICH IS WHAT THE LEFT AND RIGHT REGIONS SHOW TOGETHER: expression correlates with the diagonal fold change at Spearman %+.2f (Pearson %+.2f). By expression quartile the diagonal runs %s -- the lowest-expressed quarter of the respiratory chain FALLS over this window while the highest-expressed quarter rises.",
             GR("cross", "spearman"), GR("cross", "pearson"),
             paste(sprintf("%s %+.3f", q$quartile, q$cross), collapse = ", ")),
-    sprintf("AND IT IS NOT THE NOISE OF LOW-EXPRESSED GENES, which is the obvious alternative and the reason this needed a null. Against 2000 expression-matched random gene sets the observed gradient sits at the %.0fth percentile on the diagonal and the %.0fth on the wild-type window -- and the null MEDIAN has the opposite sign (%+.2f and %+.2f). Matched random genes show high expressers moving DOWN relative to low ones; the respiratory chain does the reverse. The quartile GAP is at the %.0fth and %.0fth percentile respectively.",
-            NU("cross", "spearman rho", "percentile"),
-            NU("wt_time", "spearman rho", "percentile"),
-            NU("cross", "spearman rho", "null_median"),
-            NU("wt_time", "spearman rho", "null_median"),
-            NU("cross", "Q4 - Q1 gap", "percentile"),
-            NU("wt_time", "Q4 - Q1 gap", "percentile")),
-    sprintf("WHERE THE GRADIENT SITS AMONG THE CONTRASTS: wild-type 6 to 12 weeks %+.2f and the Myc effect at six weeks %+.2f both carry it; the Myc effect at twelve weeks is weaker (%+.2f) and the Myc+ timeline is flat (%+.2f). It is therefore NOT a wild-type-only phenomenon, and only the wild-type and diagonal versions have been tested against the matched null.",
+    sprintf("AND IT IS NOT THE NOISE OF LOW-EXPRESSED GENES, which is the obvious alternative and the reason this needed a null. Against 2000 expression-matched random gene sets the observed gradient sits at %s -- and in every case the null MEDIAN has the OPPOSITE SIGN. Matched random genes show high expressers moving DOWN relative to low ones; the respiratory chain does the reverse. %s",
+            paste(sprintf("the %.0fth percentile on %s (null median %+.2f)",
+                          vapply(NULLED, NU, numeric(1), "spearman rho", "percentile"),
+                          NULLED,
+                          vapply(NULLED, NU, numeric(1), "spearman rho", "null_median")),
+                  collapse = ", "),
+            sprintf("The quartile GAP gives %s.",
+                    paste(sprintf("%s %.0fth", NULLED,
+                                  vapply(NULLED, NU, numeric(1), "Q4 - Q1 gap",
+                                         "percentile")), collapse = ", "))),
+    sprintf("WHERE THE GRADIENT SITS AMONG THE CONTRASTS: wild-type 6 to 12 weeks %+.2f and the Myc effect at six weeks %+.2f both carry it; the Myc effect at twelve weeks is weaker (%+.2f) and the Myc+ timeline is flat (%+.2f). It is therefore NOT a wild-type-only phenomenon: the oncogene's induction is itself expression-graded, preferentially amplifying the subunits that are already abundant. %s",
             GR("wt_time", "spearman"), GR("myc_6W", "spearman"),
-            GR("myc_12W", "spearman"), GR("myc_time", "spearman")),
-    sprintf("BY EXPRESSION QUARTILE ON THE WILD-TYPE WINDOW the fall is monotone -- %s -- while the Myc effect at twelve weeks is not (%s). The maturing gland withdraws disproportionately from the minor subunits and holds the high-abundance core; the oncogene's induction is roughly even across the expression range.",
+            GR("myc_12W", "spearman"), GR("myc_time", "spearman"),
+            if (all(c("wt_time", "cross", "myc_6W", "myc_12W") %in% NULLED))
+              "All four have been tested against the matched null."
+            else sprintf("Only %s have been tested against the matched null.",
+                         paste(NULLED, collapse = " and "))),
+    sprintf("BY EXPRESSION QUARTILE ON THE WILD-TYPE WINDOW the fall is monotone -- %s -- while the Myc effect at twelve weeks is not (%s). The maturing gland withdraws disproportionately from the minor subunits and holds the high-abundance core. Note that the quartile means for the Myc effect AT TWELVE WEEKS are roughly even; that is specific to twelve weeks and is NOT true of the Myc effect at six, which is graded as steeply as the wild-type window.",
             paste(sprintf("%s %+.3f", q$quartile, q$wt_time), collapse = ", "),
             paste(sprintf("%s %+.3f", q$quartile, q$myc_12W), collapse = ", ")),
     sprintf("THE FIVE HIGHEST-EXPRESSED SUBUNITS, which carry most of the summed ruler: %s. And the five lowest: %s.",
