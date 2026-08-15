@@ -33,10 +33,38 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   #1-6, scripts 26-31). **DONE and reviewed** (2026-07-12): synthesised in
   `docs/2026-07-12_BlockA_revision_synthesis_and_figure_plan.md`; the reviewed commit is
   tagged `block-a-reviewed` (4b82a82) and now lives on `analysis-exploratory` (00-31).
-- **Block B** — CURRENT: publication figures for the writeup, on the `paper-figures`
-  branch (off `block-a-reviewed`). Two main + supplementary figures, re-rendering the
-  Block A outputs (do not re-run 26-31). The figure-content partition awaits the author's
-  narrative; git finalisation is complete.
+- **Block B** — publication figures, on `paper-figures`. **FROZEN 2026-08-14** at tag
+  `block-b-full`: 25 panels, three circulation PDFs, and `paper/analysis_record.qmd`, the
+  record of the whole analysis before the cut.
+- **Block C** — CURRENT: the **halved paper**, on `paper-final` (off `block-b-full`).
+  Collaborators judged the three written Results sections too detailed; they are being cut
+  to roughly half, keeping the minimum chain to the closing conclusion, and the figures
+  reorganised to match. Before cutting, three **state readings** were added
+  (`scripts/45_state_readings.R`, 2026-08-16) because the corpus is built entirely out of
+  contrasts and the reduction needed the states:
+  - **The diagonal** (`6W_wt>12W_myc`) — never computed; `docs/myc_mouse_finalisation_plan.md
+    :379-382` had deferred it as "probably adds little", which is superseded. It needs **no new
+    model**: both designs are saturated over the same four groups, so gene-wise
+    `cross == myc_12W + 6>12W_wt == myc_6W + 6>12W_myc` to 1.7e-08. **The compartment is up
+    almost everywhere (96.5% of 143 MitoPathways, median +0.247) and the respiratory chain is
+    the one arm that gains least** — the only drawn arm whose diagonal NES misses BH<0.05
+    (2.73/3.28 at the two ages, 1.27 on the diagonal), and demoted on mitoPPS. **"Returns to
+    baseline" is relative to the COMPARTMENT, not the transcriptome**: vs 2000
+    expression-matched sets it still rises, 95.4th pct.
+  - **The absolute levels** — summed DESeq2-normalised counts per tier, four states, per
+    animal. Reproduces the content claim on a ruler with no denominator (betas agree with
+    script 32 at r=1.000 but are **larger on 11 of 11 panels**, median offset +0.048 — the
+    share divides by a denominator that itself rises with Myc, so script 32's "lower bound"
+    now has a number). 13 mtDNA genes carry ~21x the transcript of the 152 nuclear OXPHOS
+    genes with a **flat genotype bracket (p=0.75)**.
+  - **The two abundance rulers disagree on the load-bearing arm.** Same 87 OXPHOS subunits:
+    **+0.061 unweighted, +0.201 expression-weighted, +0.226 as a summed-count ratio.** The gap
+    IS the weighting. The gradient beats a matched null at the 100th pct (null median has the
+    OPPOSITE sign) — but the five lowest expressers are **tissue-restricted paralogs**
+    (Cox6a2/Cox7a1/Cox8b/Cox4i2/Cox6b2, ranks 83-87), so their fall may be less contamination
+    rather than less respiration: dropping them gives **+0.105**, which belongs beside +0.061.
+    The gradient is **not wild-type-only** — as strong in myc_6W (+0.39) as in 6>12W_wt (+0.33).
+  - **Rule that follows: a sentence quoting an OXPHOS abundance number must name its ruler.**
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
     content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
@@ -212,10 +240,12 @@ Branch model (updated 2026-07-12 after the Block A revision consolidation):
 - `new-analysis` — stable trunk (scripts 00-12). Unchanged.
 - `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
   the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
-- `paper-figures` — **Block B, CURRENT working branch** (created off `block-a-reviewed`).
-  Scripts 32-37 (mito content proxies; the mt-axis + coupling null; the death-priming
-  reassessment; the correlation ceiling; the linear coupling method of record; pathway
-  loading + technical resolution) and the **figure scripts 39+** land here.
+- `paper-figures` — **Block B, FROZEN 2026-08-14** at tag `block-b-full` (0cb07c2), pushed.
+  Scripts 32-44 and the 25-panel `figures/panels/` layer plus `paper/analysis_record.qmd`.
+  Do not add to it: it is the named "full version" the reduction is measured against.
+- `paper-final` — **Block C, CURRENT working branch** (created off `block-b-full`). The
+  halved paper. First work landed 2026-08-16: `scripts/45_state_readings.R` and the three
+  state-reading panels (see below). Not yet pushed.
 - `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
   `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
 - `main` — earlier pipeline, historical reference only.
@@ -228,7 +258,8 @@ Worktrees:
 Git rules:
 1. Do not check out `main` in this working folder. Use the `../myc_mouse_main`
    worktree or `git show main:<path>`. Switching among the `new-analysis`-derived
-   branches (`new-analysis`, `analysis-exploratory`, `paper-figures`) here is fine.
+   branches (`new-analysis`, `analysis-exploratory`, `paper-figures`, `paper-final`)
+   here is fine.
 2. Do not rename, move, or delete scripts without consulting `docs/branch_manifest.md`
    and confirming with the author. Prefer `git mv`.
 3. Read-only git ops (`git show`, `git diff`, `git log`, `git ls-tree`) are always
@@ -237,8 +268,9 @@ Git rules:
 
 ## Project structure
 
-- `scripts/` — numbered R pipeline (00-12), `archive_main_pipeline/`, and
-  `R_CODING_INSTRUCTIONS.md`.
+- `scripts/` — numbered R pipeline (00-45), `archive_main_pipeline/`, and
+  `R_CODING_INSTRUCTIONS.md`. **45 is the newest** (`45_state_readings.R`, the diagonal
+  contrast, the absolute levels, and the expression-weighting decomposition).
 - `data/` — inputs, plus the library snapshot in `data/genesets_from_library/`.
 - `docs/` — `myc_mouse_finalisation_plan.md`, `branch_manifest.md`, `gene_set_history.md`.
 - `results/` — intermediate `.rds` (gitignored, generated at runtime).
@@ -249,7 +281,7 @@ Git rules:
   manuscript panel, `_panel_common.R` (declared scheme + helpers), `rebuild_panels.R`,
   `panels_to_pdf.R`, and **`PANELS.md`, the manifest of record** for which slot each panel holds.
 - `paper/` — Quarto. **`analysis_record.qmd` is the record of the analysis as it stands**
-  (2026-08-14): the written Results verbatim, all 25 panels with their legend blocks, the
+  (2026-08-14, extended 2026-08-16): the written Results verbatim, every panel with its legend block, the
   retracted corpus, the open questions. It re-runs no analysis and transcribes no number — it
   sources each panel with `myc.fig.capture = TRUE` and renders `legend_md()`, so it cannot
   drift from the panels. `archive/myc_mito.qmd` is the superseded July walkthrough.

@@ -23,7 +23,7 @@ from the 2026-08-09 rewording; the slot map below still holds.
 
 **Added 2026-08-14, and it is the readable face of this file.** The manuscript text and figures
 are being cut to roughly half, so the full state was frozen first: the three written Results
-sections **verbatim**, all 25 panels drawn inline with their `panel_legend()` blocks rendered by
+sections **verbatim**, every panel drawn inline with its `panel_legend()` block rendered by
 this project's own `legend_md()`, the **retracted and null corpus** with the reason each result
 failed, the sentence-vs-data checklist, the open questions with the experiment that settles
 each, and a marked **recommendation** for what a halved paper keeps.
@@ -31,7 +31,8 @@ each, and a marked **recommendation** for what a halved paper keeps.
 - It **re-runs no analysis** and **transcribes no number** — it sources each panel script with
   `myc.fig.capture = TRUE`, so the figure, its legend and its designed size all come from the
   panel's own `save_panel_p()` call. A panel that changes changes the document.
-- It **asserts its own completeness**: all 25 slugs drawn exactly once, every `(alt)` slot
+- It **asserts its own completeness**: every slug the glob finds drawn exactly once (25 at the
+  freeze, 28 since the state readings), every `(alt)` slot
   contiguous with the original it competes with, every drawn size equal to the registry entry.
   A render that completes is a render that passed.
 - Render with `quarto render paper/analysis_record.qmd` (~5 min cold, `freeze: auto` after).
@@ -1779,6 +1780,64 @@ so **both need a home in a numbered script**, not only in the figure layer.
 `results/gsva_scores.rds` (12:36) although both came out of the same post-reconciliation re-run,
 so `require_fresher_than()` would wrongly stop **Fig. 1F**. Gate that panel on
 `interaction_results.rds` instead, and say why in the script.
+
+## The state readings (2026-08-16, branch `paper-final`) — three panels, no slot yet
+
+Three panels built ahead of the cut, from `scripts/45_state_readings.R`. They answer questions the
+corpus never asked, so **their sentences come after them, not before**: all three declare
+`slot = "not currently cited"`, the string `figS1_mb_fork_specificity.R` already carries. They are
+the first work on `paper-final`; `paper-figures` and the tag `block-b-full` are untouched.
+
+| slot | script | what it answers | inputs |
+|---|---|---|---|
+| *(none yet)* | `fig2_net_state_cross.R` | **The diagonal**: the young normal gland against the gland at initial tumour expansion (`6W_wt>12W_myc`), decomposed into the wild-type window plus the Myc effect at 12W, with the enrichment ruler on the same rows and the whole compartment below | `state_readings.rds` (`$arms`, `$arm_null`, `$ruler`, `$fgsea`, `$mitopps`, `$identity`) |
+| *(none yet)* | `fig1_compartment_levels.R` | **The absolute levels**: how much transcript each MitoCarta tier holds in DESeq2-normalised units, four states, every animal, one genotype bracket per facet | `state_readings.rds` (`$levels`, `$level_stats`, `$share_agreement`, `$share_summary`) |
+| *(none yet)* | `figS2_oxphos_subunit_heatmap.R` | **Why the two abundance rulers disagree**: the 87 nuclear OXPHOS subunits by complex, weight beside change, with both summary means drawn | `state_readings.rds` (`$oxphos_genes`, `$weighting`, `$gradient*`) |
+
+### Why the diagonal is free
+
+`~ group` and `~ timepoint * myc_status` are both **saturated** over the same four groups, so the
+diagonal is a re-reading of a fit that already exists: gene by gene
+`cross == myc_12W + 6>12W_wt == myc_6W + 6>12W_myc`, median deviation **1.7e-08** over 18,523 genes
+(2 genes over 0.01, where the MLE is unstable on a near-empty group). **That identity is what
+licenses drawing the rows as a head-to-tail sum** — the two segments are the decomposition, not a
+schematic of one. `docs/myc_mouse_finalisation_plan.md:379-382` had deferred this contrast as
+"probably adds little"; that judgement is superseded.
+
+### New in `_panel_common.R`
+
+- `contrast_net = "6W_wt>12W_myc"` and its near-black ink in `contrast_cols`. **Deliberately NOT
+  added to `contrast_levels`**, which several panels build factors on — a fifth level would
+  silently reorder them.
+- `tier_short`, the seven facet-strip shortenings `fig03_background_vs_myc.R:56-58` inlined.
+- `ms_sequential` + `level_fill()` + `ink_on_level()`, the project's first **sequential** ramp, for
+  quantities with no meaningful zero (expression level). It must not borrow `ms_diverging`: a
+  diverging ramp on an unsigned quantity invents a midpoint, and on these pages brown and mint
+  already mean down and up.
+
+### Sentences these panels put on the list
+
+- **"The respiratory chain returns to baseline" needs a ruler and a reference.** On the diagonal
+  the OXPHOS subunits are **+0.061** as an unweighted per-gene mean, **+0.201** expression-weighted
+  and **+0.226** as a summed-count ratio. And "baseline" is *relative to the mitochondrial
+  compartment*, not to the transcriptome: against 2000 expression-matched sets they still **rise**,
+  at the **95.4th percentile**. What survives is *"the respiratory chain is the arm that gains
+  least — the only one that does not clear its compartment"*, with every other arm at ≥99.6.
+- **The +0.061 headline is partly five tissue-restricted paralogs.** `Cox6a2`/`Cox7a1`/`Cox8b`
+  (heart, muscle), `Cox4i2` (lung), `Cox6b2` (testis) sit at expression ranks **83–87 of 87** and
+  fall hard. In a dissociated MEC prep their signal is plausibly residual non-epithelial tissue, so
+  their fall may be **less contamination rather than less respiration**. Dropping all five:
+  unweighted mean **+0.061 → +0.105**, gradient **+0.39 → +0.30**, weighted mean unchanged. They
+  inflate the discrepancy and do not create it — but quote **+0.105** beside **+0.061**.
+- **The expression gradient is not wild-type-only.** It is as strong in the Myc effect at 6W
+  (Spearman +0.39) as in the wild-type window (+0.33); `myc_12W` is weak (+0.20) and the Myc+
+  timeline flat (+0.07). **Only the wild-type and diagonal versions have been nulled.**
+- **The levels ruler corroborates the content claim and slightly enlarges it.** Genotype betas
+  agree with script 32's share model at **r = 1.000** and are larger on **11 of 11** matched panels
+  (median offset **+0.048**) — the expected direction, since the share divides by a denominator
+  that itself rises with Myc. It puts a number on script 32's own "lower bound".
+- **`figS1_design_contrasts.R:60-93` draws four arrows and no diagonal.** If the diagonal panel is
+  adopted, S1A needs a fifth. Flagged, not changed — that is a decision for the reduction.
 
 ## Not built here
 

@@ -107,7 +107,10 @@ ALL_SLUGS <- sub("\\.R$", "",
                  sort(list.files(PANEL_DIR, pattern = "^fig.*\\.R$")))
 
 # Which slugs each chapter draws. Declared here, checked at the foot of the
-# document: all 25 exactly once, and every "(alt)" beside its own original.
+# document: every script the glob finds, exactly once, and every "(alt)" beside
+# its own original. Deliberately NOT a hard-coded count -- the count moved from
+# 25 to 28 when the state-reading panels landed, and a literal here would have to
+# be edited every time rather than failing loudly if a panel went undrawn.
 DRAWN <- list()
 draw_here <- function(...) {
   s <- c(...)
@@ -1467,6 +1470,139 @@ cat(panel_legend_md("figS2_p53_arm_alt"), sep = "\n")
   What this excludes is a **transcriptional** re-routing of PUMA's inputs, which is the
   alternative the text raises, and no more than that.
 :::
+
+# The state readings, and where the two rulers disagree {#sec-states}
+
+::: {.callout-important}
+## Added after the freeze, on `paper-final`
+
+Everything above describes the corpus as it stood at tag `block-b-full`. This chapter is
+**newer**: three panels built on 2026-08-16, from `scripts/45_state_readings.R`, while
+deciding what the halved paper keeps. They have **no slot** — their sentences come after
+them, not before.
+:::
+
+The whole corpus is built out of **contrasts**: a genotype effect within an age, a temporal
+effect within a genotype, and their interaction. Three readings that are about **states** had
+never been made, and each turned out to bear on the reduction.
+
+## The diagonal — the contrast that was never computed {#sec-states-cross}
+
+`6W_wt` against `12W_myc`: the young normal gland against the gland at initial tumour
+expansion. Script 03 defines seven contrasts and **neither group contrast crosses genotype**;
+`git log --all -S` finds nothing. The one trace is a decision against it —
+`docs/myc_mouse_finalisation_plan.md:379-382` calls it "a composite state-to-state contrast …
+probably adds little; exploratory-only and a cut candidate". That judgement is superseded.
+
+**And it cost no new model.** `~ group` and `~ timepoint * myc_status` are both *saturated*
+over the same four groups, so the diagonal is a re-reading of a fit that already exists:
+gene by gene `cross == myc_12W + 6>12W_wt == myc_6W + 6>12W_myc`, median deviation
+**1.7 × 10⁻⁸** over 18,523 genes. That identity is what licenses drawing each row as a
+head-to-tail sum — the two segments *are* the decomposition.
+
+```{r}
+#| label: fig-netstate
+#| echo: false
+#| fig-width: !expr panel_w("fig2_net_state_cross")
+#| fig-height: !expr panel_h("fig2_net_state_cross")
+invisible(draw_here("fig2_net_state_cross"))
+print(panel_p("fig2_net_state_cross"))
+```
+
+```{r}
+#| label: leg-netstate
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig2_net_state_cross"), sep = "\n")
+```
+
+**The answer on both quantifiers the question asked about is the same.** The compartment of
+the 12W Myc+ gland is *larger* than the young normal gland's almost everywhere — 96.5 % of
+143 MitoPathways above zero, median +0.247 — and the respiratory chain is the exception:
+the lowest arm on the content ruler, and the only drawn arm whose diagonal enrichment misses
+BH < 0.05 (NES 2.73 and 3.28 at the two ages, **1.27** on the diagonal). A content-blind
+third ruler agrees: on mitoPPS the diagonal *demotes* the respiratory arm and promotes the
+biosynthetic ones.
+
+**But "returns to baseline" is relative to the compartment, not the transcriptome.** Against
+2,000 expression-matched sets the OXPHOS subunits still **rise**, at the 95.4th percentile.
+The sentence that survives is *"the respiratory chain is the arm that gains least — the only
+one that does not clear its compartment"*; every other arm sits at ≥ 99.6.
+
+## The absolute levels {#sec-states-levels}
+
+Abundance had only ever been read as a **% share** (script 32) or a **log fold change**
+(script 40). Both are ratios. Nothing had shown how *large* each compartment is, with the
+per-animal spread — `fig03_background_vs_myc.R` panel A facets by these same seven tiers but
+draws group means.
+
+```{r}
+#| label: fig-levels
+#| echo: false
+#| fig-width: !expr panel_w("fig1_compartment_levels")
+#| fig-height: !expr panel_h("fig1_compartment_levels")
+invisible(draw_here("fig1_compartment_levels"))
+print(panel_p("fig1_compartment_levels"))
+```
+
+```{r}
+#| label: leg-levels
+#| echo: false
+#| output: asis
+cat(panel_legend_md("fig1_compartment_levels"), sep = "\n")
+```
+
+Two things fall out. **The content claim reproduces on a ruler with no denominator in it** —
+every nuclear tier clears BH < 0.05, and the betas agree with script 32's share model at
+r = 1.000 while being *larger* on 11 of 11 matched panels (median offset +0.048). That is the
+expected direction, because the share divides by a denominator that itself rises with Myc,
+and it puts a number on script 32's own statement that its share effect is a **lower bound**.
+And **the magnitude gap has never been drawn**: thirteen mtDNA-encoded genes carry ~21× the
+transcript of the 152 nuclear OXPHOS genes, with a flat genotype bracket (p = 0.75) and the
+largest developmental change on the panel — the readable half and the confounded half of the
+same facet.
+
+## Where the two abundance rulers disagree {#sec-states-rulers}
+
+On the diagonal the same 87 nuclear OXPHOS subunits give **+0.061** unweighted, **+0.201**
+expression-weighted and **+0.226** as a summed-count ratio. The weighted mean landing between
+the other two is what shows the gap *is* the weighting. Where the weight sits is what the
+panel draws.
+
+```{r}
+#| label: fig-oxsub
+#| echo: false
+#| fig-width: !expr panel_w("figS2_oxphos_subunit_heatmap")
+#| fig-height: !expr panel_h("figS2_oxphos_subunit_heatmap")
+invisible(draw_here("figS2_oxphos_subunit_heatmap"))
+print(panel_p("figS2_oxphos_subunit_heatmap"))
+```
+
+```{r}
+#| label: leg-oxsub
+#| echo: false
+#| output: asis
+cat(panel_legend_md("figS2_oxphos_subunit_heatmap"), sep = "\n")
+```
+
+Two alternative explanations were tested rather than assumed.
+
+- **Noise in low-expressed genes.** The matched null settles it: the gradient sits at the
+  100th percentile of 2,000 expression-matched draws, and the null *median has the opposite
+  sign*. Matched random genes show high expressers moving **down** relative to low ones; the
+  respiratory chain does the reverse.
+- **Tissue-restricted paralogs**, and this one qualifies the headline. `Cox6a2` / `Cox7a1` /
+  `Cox8b` (heart, muscle), `Cox4i2` (lung) and `Cox6b2` (testis) sit at expression ranks
+  **83–87 of 87** and fall hard. In a dissociated MEC prep their signal is plausibly residual
+  non-epithelial tissue, so their fall may be **less contamination rather than less
+  respiration**. Dropping all five moves the unweighted mean **+0.061 → +0.105** and the
+  gradient +0.39 → +0.30, while the weighted mean does not move. They *inflate* the
+  discrepancy and do not create it — but +0.105 belongs beside +0.061.
+
+**One correction this chapter makes to itself:** the expression gradient is *not*
+wild-type-only. It is as strong in the Myc effect at 6W (Spearman +0.39) as in the wild-type
+window (+0.33); only `myc_12W` (+0.20) and the Myc+ timeline (+0.07) are weak, and **only the
+wild-type and diagonal versions have been nulled**.
 
 # What did not survive {#sec-died}
 
