@@ -611,13 +611,38 @@ the gland de-respires without de-proliferating.
 `results/fgsea_percategory.rds` (script 20, 866 sets), and it is the only one carrying the
 **`interaction`** ranking — the contrast that isolates the fade. Script 04 never computed it.
 
-**The worked example is `figures/panels/explainer_nes_sign.R`** (89 x 112 mm), built the same day.
-Simulated: 2,000 genes, a 120-gene target set, the twelve-week effect exactly 0.5x the six-week
-one and a static wild type, put through real `fgsea::fgsea()` three times — **+3.57, +3.58,
-−3.58**. Its bottom third is real data (Hallmark MYC targets V1 and the OXPHOS subunits on all
-four contrasts) so the toy can be checked against the thing it explains, and so the one way they
-differ is visible: for MYC targets the fade dominates (−2.17 against −1.38), for OXPHOS the two
-timelines are the same (−2.72 against −2.67) and the gland's own trajectory is the whole of it.
+**The worked example is `figures/panels/explainer_nes_sign.R`** (89 x 152 mm), built the same day,
+**revised the same day on the author's reading of the first version**: *"it explains the preserved
+gene ranking of the Myc effects at the different timepoints, but does not show the ranking in the
+6>12W_myc (nor the 6>12W WT)."* Correct, and the first version **could not have** — its simulation
+had a static wild type, so there was no `6>12W_wt` list to draw, and its three regions showed only
+the ranking that *is* preserved. The simulation now carries a wild-type trajectory, independent of
+the Myc effect and of set membership, and there are four regions:
+
+| | what it shows | why it has to exist |
+|---|---|---|
+| **A** | the Myc effect per gene at both ages, halved, no reordering | **ranks cannot show amplitude** — this is the only region about size |
+| **B** | gene rank in `myc_6W` against gene rank in each of the other three lists, all 2,000 genes | **the answer to the question**: each list's own gene order, on the page |
+| **C** | the running enrichment score of the same set in each of the four lists | what fGSEA computes from those four orders |
+| **D** | real NES for two named sets on the same four contrasts | so the toy can be checked against what it explains |
+
+Region B is the one that was missing: **rho +1.00 (a perfect diagonal), +0.02 (a cloud), −0.64 (an
+anti-diagonal)**. Follow the orange — the set sits at the **top** of `myc_6W` and `myc_12W`,
+**nowhere in particular** in `6>12W_wt`, and at the **bottom** of `6>12W_myc`. Four real
+`fgsea::fgsea()` calls give **+3.57, +3.58, +0.95 (ns, padj 0.56), −3.43**. Note the Myc+ timeline
+rho is **−0.64 and not −1**: it is the mirror *plus* development. The **interaction** is the exact
+mirror (rho −1 by construction, asserted).
+
+**Two drawing decisions worth keeping:** both axes in B run 1 → 2000 upward and rightward, because
+reversing y to put rank 1 at the top drew the *perfect agreement* facet as a "\", which reads as
+anti-correlation to anyone who has seen a scatter plot; the axis titles carry `(1 = top)` instead.
+And `6>12W_wt`'s **+0.95 is labelled `(ns)` on the page** — a reader who takes it for a weak
+positive has learned the wrong thing from the figure.
+
+Region D carries the one way the real data differs from the toy: for MYC targets the fade dominates
+(−2.17 against −1.38), for the OXPHOS subunits the two timelines are the same (−2.72 against −2.67)
+and the gland's own trajectory is the whole of it.
+
 **Its filename deliberately does not start with `fig`,** so it falls outside the `^fig.*\.R$` glob
 in `rebuild_panels.R:44` and `panels_to_pdf.R:65`: it takes no slot, does not enter the panel
 count, and needs no chapter in `paper/analysis_record.qmd`. It is the only simulated drawing in
