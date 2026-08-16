@@ -37,6 +37,14 @@ document proposes, and it is not a loss of rigour — because since scripts 21, 
 matched-random-set null is more defensible *and* more legible than an NES. Both properties moved
 the same way; only the panels did not.
 
+> **The ladder has a floor, and script 46 found it** (§4). For a *large* gene set, the absolute
+> level is not arm-specific: abundance summed over 87 genes tracks the global expression axis at
+> **r = 0.964**, leaving 7% separable variance. Rungs 0–1 are legible but they stop distinguishing
+> *this arm* from *everything*. So the optimum is usually **rung 2** — which is where most of the
+> paper already sits — and rungs 0–1 belong where the claim genuinely *is* about magnitude
+> (Fig. 1E's compartment share) rather than about one arm among others. **Move down one rung, not
+> two, and check separability before the last step.**
+
 ---
 
 ## 1. What each instrument is actually for
@@ -225,11 +233,46 @@ variance and give a different answer.
 
 | outcome | what to do |
 |---|---|
-| the interaction **reproduces** on absolute counts | draw absolute counts. Clearer axis **and** independent corroboration on a second quantifier — which is precisely what a marginal result needs |
-| it **does not reproduce** | keep mitoPPS, and **report the ruler-dependence in the bounds**. That is informative and must not be quietly dropped |
+| the interaction **reproduces** on absolute counts | draw absolute counts. Clearer axis **and** independent corroboration on a second quantifier |
+| it **does not reproduce** | keep mitoPPS, and **report the ruler-dependence in the bounds** |
 
-Either way the answer is reported. CLAUDE.md's standing rule applies: *a sentence quoting an OXPHOS
-abundance number must name its ruler.*
+---
+
+### The test was run. **It rejected this proposal.**
+
+`scripts/46_axis_ruler_test.R`, written 2026-08-17. It reproduces script 43 PART B's model exactly
+(max |Δβ| = 0, max |Δp| = 0 over 10 fits) and script 45's OXPHOS levels to 3.55e-15 **before**
+changing anything, then refits with only the axis swapped, over the same five outcomes with the same
+5,000 within-timepoint permutation null.
+
+| axis | ruler | β | p | p<sub>emp</sub> | ambient | **resid_frac** | verdict |
+|---|---|---|---|---|---|---|---|
+| `oxphos_ppd` | mitoPPS | **+0.779** | **0.0052** | 0.080 | 0.49 | **0.550** | reference |
+| `oxphos_lvl` | levels | +0.535 | 0.156 | 0.154 | 0.81 | **0.071** | **partial** |
+| `redox_ppd` | mitoPPS | +0.207 | 0.72 | 0.486 | 0.26 | 0.998 | fails |
+| `redox_lvl` | levels | +0.362 | 0.353 | 0.229 | 0.72 | 0.207 | fails |
+
+**The direction survives the ruler change; the specificity does not.** The two OXPHOS rulers
+correlate **r = +0.928**, so they are largely the same variable, and the interaction keeps its sign
+at about 69% of its size (+0.535 against +0.779). But **only 7.1% of the absolute level's variance is
+separable from the global expression factor** (r = **+0.964**), against **55.0%** for mitoPPS, and
+the ambient nearly doubles (0.49 → 0.81).
+
+**So on the absolute ruler the axis is "overall expression", not "the respiratory chain."** It could
+not have carried an arm-specific claim however the p had come out. **Keep mitoPPS** — and the reason
+is now *measured* rather than inherited from script 43.
+
+**Consequence for the text, and it is not cosmetic.** The transcriptomic claim is about respiratory
+**priority** (allocation), not respiratory **capacity**. The hypothesis sentence's "high respiratory
+state" is a statement about a *rate*, which no ruler here measures — that is the perturbation
+experiment's job, and the sentence should hand it over explicitly.
+
+**A by-product worth keeping:** `redox_ppd`'s resid_frac is **0.998** — it is almost perfectly
+orthogonal to the global factor, the cleanest axis in the corpus. That is *why* it is the right
+control, and it is a better reason than the one currently given.
+
+**The smaller change still stands:** the y axis is the z-scored PUMA:Bcl-xL ratio, and drawing the
+raw log2 ratio costs nothing and buys a unit the reader owns.
 
 **One smaller change to the same panel:** the y axis is currently the z-scored PUMA:Bcl-xL ratio.
 Drawing the **raw log2 ratio** costs nothing and buys a unit the reader owns.
@@ -294,8 +337,11 @@ difference of slopes, so the panel must never be drawn with a single fitted line
 
 **7. *"reduction of respiratory capacity (OXPHOS subunits)"***
 → **Capacity is not measured**; transcript is. And the rulers disagree on the load-bearing arm:
-the same 87 subunits give **+0.061 / +0.201 / +0.226** on the diagonal depending on weighting. Name
-the ruler, or say "respiratory-chain transcript".
+the same 87 subunits give **+0.061 / +0.201 / +0.226** on the diagonal depending on weighting.
+**Script 46 now makes this concrete rather than pedantic:** the only ruler on which the Fig. 2I
+coupling is arm-specific is mitoPPS, which is an *allocation* score. So the supported claim is a
+change in respiratory **priority**, and "capacity" — a rate — is what the PGC1a perturbation is for.
+Name the ruler, or say "respiratory-chain transcript".
 
 ---
 
@@ -305,7 +351,7 @@ the ruler, or say "respiratory-chain transcript".
 |---|---|---|---|
 | **log2 fold change** | 1E · 1F · 1G · 2F · 2G · 2H | **the spine — plus 2E's slot** | the field's native unit; carries a per-gene identity; the only ruler that can show a null geometrically |
 | **% share** | 1E | **1E, promoted to lead Beat 1** | the one physical, unit-bearing mitochondrial claim in the corpus |
-| **normalised counts** | none slotted | **Fig. 2I x axis** (pending §4); optionally one supplementary | rung 0; the only instrument that matches the words in the closing hypothesis |
+| **normalised counts** | none slotted | **optionally one supplementary** — *not* Fig. 2I: §4's test failed | rung 0. Legible, but for a large set it is not arm-specific (resid_frac 0.071), so it belongs only where the claim is about magnitude |
 | **fGSEA NES** | 1D · 1H · 2E | **1D only** | the unbiasedness claim is about method and needs making once |
 | **mitoPPS** | 1F · 2F · 2I | **1F only** (2I pending §4) | reallocation is 1F's subject; elsewhere it pays the teaching cost without the benefit |
 | **GSVA** | 1B · (1C via scores) | **zero as a named ruler** | superseded as the coupling instrument by the linear z-score (script 36 is the method of record). Fine for *"is this programme higher in Myc+"*; a liability for *"does this track that"* |
@@ -318,18 +364,19 @@ the two-timeline plane.
 
 ---
 
-## 7. What to run before committing
+## 7. What to run
 
-1. **The 2I ruler test** (§4). Small addition to `scripts/45_state_readings.R` or a new PART:
-   refit `ratio ~ genotype * axis + epithelial + immune` with `axis` = log2 summed normalised
-   OXPHOS-subunit counts per animal, plus the same 5,000-permutation null. Report both rulers
-   whichever way it comes out.
-2. **Nothing else.** Every other recommendation here is a slot decision or a wording change, and
+1. ~~The 2I ruler test~~ — **written and run: `scripts/46_axis_ruler_test.R`** (author to source it
+   in Positron; it writes `results/axis_ruler_test.rds`). Verified in a write-free harness,
+   20 s, every assertion passing. **Outcome: keep mitoPPS** (§4), with the reason now measured, and
+   the "respiratory capacity" wording corrected to "respiratory priority" throughout.
+2. **Nothing else.** Every remaining recommendation is a slot decision or a wording change, and
    needs no new computation.
 
 ## 8. The one-line version
 
-**Move every panel one rung down the normalisation ladder, keep exactly one fGSEA panel and one
-mitoPPS panel, put the two-timeline plane under Beat 2, and build the death section around the
-genome-wide dose-line scan rather than around the apoptotic set.** The defence has already moved
-from the normalisation to the null; the panels have not followed it.
+**Move every panel one rung down the normalisation ladder — but only one, and check separability
+before the last step — keep exactly one fGSEA panel and one mitoPPS panel, put the two-timeline
+plane under Beat 2, and build the death section around the genome-wide dose-line scan rather than
+around the apoptotic set.** The defence has already moved from the normalisation to the null; the
+panels have not followed it.
