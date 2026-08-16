@@ -553,6 +553,76 @@ has not placed.
 
 Size: 89 x 62 mm; key inside, bottom right.
 
+#### Why the timelines have negative NES, and why that is this same result (2026-08-16)
+
+The author's question: *if the ranking does not change between the Myc effect at 6W and at 12W,
+why does `scripts/04_fgsea_pathway_analysis.R` → `outputs/fgsea/` show strongly negative NES on
+`6>12W_wt` and `6>12W_myc`?* Answered read-only from `results/fgsea_percategory.rds`; the numbers
+are now computed inside this panel (`rho_int`, `rho_tl`) rather than written down.
+
+**1. fGSEA never compares two rankings.** It takes **one** ranked gene list and asks where a set
+sits in it, and there are **three** lists — `myc_6W`, `myc_12W`, and `6>12W_myc` (12W minus 6W
+*within* Myc+ animals). This panel is lists 1 against 2. List 3 is built from the **difference**
+between them, which is the part that was lost.
+
+**2. NES is scale-free, so it cannot see the fade where you would look for it.** Halve every
+effect and the order is unchanged and the null is rebuilt from the same list, so the score is
+unchanged. Measured: median |LFC| over the 1,967 Myc-DE genes **0.678 → 0.311 (ratio 0.46)** with
+median lfcSE **0.189 → 0.193** — the fade is in the numerator alone, not power — while median NES
+*rises*, **+1.768 → +2.008**. The fade must therefore surface in the contrasts that span the ages.
+
+**3. Rank stability forces the mirror image.** `interaction = myc_12W − myc_6W`, so a rank-stable
+effect at half amplitude makes the interaction a near-perfect negative copy of the Myc programme:
+**Spearman(myc_6W, interaction) = −0.878** (slope −0.718) and **Spearman(myc_6W, 6>12W_myc) =
+−0.838** over 866 sets. A rank-*unstable* fade would give a weak, incoherent timeline score. **The
+negative timeline is not evidence against stability — it is what stability produces.**
+
+**4. The compression is toward zero, not downward**, so the fade *lifts* the sets Myc represses.
+Over the 579 sets Myc induces the median `6>12W_myc` NES is **−1.80**; over the 287 it represses,
+**+1.03**. A fade gives a **sign flip relative to the Myc effect**, never a uniform decline.
+
+**5. The wild-type timeline is a different question and contains no Myc.**
+Spearman(myc_6W, `6>12W_wt`) = **−0.068** — and that near-zero is an average over two
+opposite-signed families (Myc-induced sets rho −0.314, Myc-repressed +0.345), both of which
+*fall*. Myc reversing would push them apart. Top negatives are `MG_STEM_GARCIASOLA` −3.05,
+`MG_ALV_C4` −3.05, `MG_TEB_VS_DUCTAL_HS_GRAY_UP` −2.76 — the gland maturing.
+
+**6. "Most pathways negative" describes the LIBRARY, not the transcriptome.** At gene level
+`6>12W_wt` is balanced — **47.6 %** of genes negative, median stat **+0.085**, still 50.9 % in the
+top expression quartile — yet **73.9 %** of NES are negative. 605 of 866 sets are TF-target and
+mammary-development lanes, exactly the coherent programmes that switch off with maturation. By
+category the wild-type timeline is **not** uniformly negative:
+
+| falls | | rises | |
+|---|---|---|---|
+| `06_tf_targets` | −1.46 (421) | `04_metabolism` | +0.88 (71) |
+| `03_mammary_development` | −1.27 (184) | `01_mitocarta` | **+0.81 (65)** |
+| `hallmark_msigdb` | −1.23 (50) | `07_biogenesis_discrimination` | +0.80 (16) |
+| `02_myc_signatures` | −1.21 (16) | `09_biogenesis_apoptosis` | +1.00 (8) |
+| `05_proliferation` | −0.89 (14) | | |
+
+**The mitochondrial compartment rises in the maturing wild-type gland; only the OXPHOS arm falls**
+(`OXPHOS_SUBUNITS` −2.67) — the substrate half of the closing claim, corroborated by
+`HALLMARK_E2F_TARGETS` at **+0.60 (ns)** in the wild-type timeline against −1.73 in the Myc+ one:
+the gland de-respires without de-proliferating.
+
+**Cite the newer object.** `outputs/fgsea/` is script 04's superseded **89-set** panel (median NES
+−1.22 Myc+ / −1.13 WT; Spearman between the two timelines +0.266). The object of record is
+`results/fgsea_percategory.rds` (script 20, 866 sets), and it is the only one carrying the
+**`interaction`** ranking — the contrast that isolates the fade. Script 04 never computed it.
+
+**The worked example is `figures/panels/explainer_nes_sign.R`** (89 x 112 mm), built the same day.
+Simulated: 2,000 genes, a 120-gene target set, the twelve-week effect exactly 0.5x the six-week
+one and a static wild type, put through real `fgsea::fgsea()` three times — **+3.57, +3.58,
+−3.58**. Its bottom third is real data (Hallmark MYC targets V1 and the OXPHOS subunits on all
+four contrasts) so the toy can be checked against the thing it explains, and so the one way they
+differ is visible: for MYC targets the fade dominates (−2.17 against −1.38), for OXPHOS the two
+timelines are the same (−2.72 against −2.67) and the gland's own trajectory is the whole of it.
+**Its filename deliberately does not start with `fig`,** so it falls outside the `^fig.*\.R$` glob
+in `rebuild_panels.R:44` and `panels_to_pdf.R:65`: it takes no slot, does not enter the panel
+count, and needs no chapter in `paper/analysis_record.qmd`. It is the only simulated drawing in
+this layer, and that is marked in its legend block.
+
 ### Fig. S1E, built 2026-08-04
 
 The control the western blot needs. If the message fell too, the attenuation would need no
@@ -1838,6 +1908,16 @@ schematic of one. `docs/myc_mouse_finalisation_plan.md:379-382` had deferred thi
   that itself rises with Myc. It puts a number on script 32's own "lower bound".
 - **`figS1_design_contrasts.R:60-93` draws four arrows and no diagonal.** If the diagonal panel is
   adopted, S1A needs a fifth. Flagged, not changed — that is a decision for the reduction.
+- **"The ranking did not change" is a ranking of GENE SETS and must say so.** Spearman **0.933**
+  is over 866 *sets*. The same quantity at gene level is **0.724** over the 1,967 genes Myc moves
+  at six weeks and **0.520** over all 18,523 reported. A reader not told which will read "ranking"
+  as genes, where the number does not carry the claim.
+- **A temporal NES and a genotype NES are not on the same ruler.** fGSEA normalises each score
+  against a permutation null built from *that same ranked list*, so the normaliser differs between
+  contrasts. `HALLMARK_MYC_TARGETS_V1` at **−2.17** on the Myc+ timeline and **+2.86** on the
+  six-week genotype contrast are **not comparable magnitudes** — only signs and within-contrast
+  orderings compare. Any sentence placing a timeline score beside a genotype score needs
+  rewording, and any sentence citing `outputs/fgsea/` should cite `fgsea_percategory.rds` instead.
 
 ## Not built here
 

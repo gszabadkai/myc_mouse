@@ -45,6 +45,45 @@
 # groups its rows by, so "OXPHOS" and "Myc signatures" mean the same thing on both
 # panels and neither is a list hand-assembled here.
 #
+# =============================================================================
+# WHY THE TIMELINE NES IS NEGATIVE, AND WHY THAT IS THE SAME RESULT
+# -----------------------------------------------------------------------------
+# Added 2026-08-16, the author's question. This panel says the Myc programme keeps
+# its ranking; scripts/04 -> outputs/fgsea/ says most pathways have a strongly
+# NEGATIVE NES on the two timelines. Those look contradictory and are not.
+#
+# fGSEA NEVER COMPARES TWO RANKINGS. It takes ONE ranked gene list and asks where
+# a set sits in it. There are THREE lists, not two:
+#
+#     list 1   myc_6W       the Myc effect at six weeks
+#     list 2   myc_12W      the Myc effect at twelve weeks
+#     list 3   6>12W_myc    12W minus 6W, WITHIN the Myc+ animals
+#
+# This panel is lists 1 against 2. List 3 is built from the DIFFERENCE between
+# them -- the part that was lost -- and a difference of two proportional things is
+# not zero. Halving is a change: a target 2-fold over wild type at six weeks and
+# 1.4-fold at twelve went DOWN inside the Myc+ animals, and so did every other
+# target, in the same order. So list 3 is the NEGATIVE of list 1, and the set that
+# tops lists 1 and 2 sits at the BOTTOM of list 3.
+#
+# Which means the negative timeline is not evidence against stability -- it is
+# what stability PRODUCES. A rank-UNSTABLE fade would give a weak, incoherent
+# timeline score; a clean mirror is what a preserved shape looks like from the
+# other side. Measured here on the same object: Spearman(myc_6W, interaction) and
+# Spearman(myc_6W, timepoint_pos), both below -0.8 and asserted above.
+#
+# TWO CONSEQUENCES FOR THE SENTENCE, both on the PANELS.md list:
+#   * "the ranking did not change" is a PATHWAY-level statement (0.933 over 866
+#     SETS). At gene level it is 0.724 on the Myc-DE genes and 0.520 over all
+#     18,523 -- a reader not told "of gene sets" will read it as genes.
+#   * a temporal NES and a genotype NES are NOT on the same ruler, because each is
+#     normalised inside its own ranked list. Signs and within-contrast orderings
+#     compare; magnitudes do not.
+#
+# The worked example, with the arithmetic simulated and put through fgsea three
+# times, is figures/panels/explainer_nes_sign.R.
+# =============================================================================
+#
 # Reads (read-only, no re-run):
 #   results/fgsea_percategory.rds (script 20) -- $fgsea, NES per ranking x category
 # Output: outputs/figures/panels/fig1_nes_preserved_sharpened.pdf
@@ -75,6 +114,20 @@ rho    <- stats::cor(w$n6, w$n12, method = "spearman")
 n_sets <- nrow(w)
 stopifnot(n_sets == 866L, !anyNA(w$n6), !anyNA(w$n12),
           sum(w$fam == "OXPHOS") == 17L, sum(w$fam == "Myc signatures") == 16L)
+
+# --- the reconciliation with the timelines, added 2026-08-16 -----------------
+# Same object, two more rankings, no re-run: the correlations that show the
+# negative timeline NES is what THIS panel's result produces rather than a
+# contradiction of it. Computed on a separate frame so nothing above can shift.
+rec <- fg |>
+  dplyr::filter(ranking %in% c("myc_6W", "timepoint_pos", "interaction")) |>
+  dplyr::select(ranking, pathway, NES) |>
+  tidyr::pivot_wider(names_from = ranking, values_from = NES) |>
+  as.data.frame()
+rec     <- rec[stats::complete.cases(rec), ]
+rho_int <- stats::cor(rec$myc_6W, rec$interaction,   method = "spearman")
+rho_tl  <- stats::cor(rec$myc_6W, rec$timepoint_pos, method = "spearman")
+stopifnot(nrow(rec) == n_sets, rho_int < -0.8, rho_tl < -0.8)
 
 # --- the family colours ------------------------------------------------------
 # The two poles of the declared manuscript ramp, used here as two categories.
@@ -169,11 +222,16 @@ LEGEND <- panel_legend(
     sprintf("THE RESHUFFLING IS NOT SPREAD EVENLY, and knowing where it sits sharpens the claim. The %d sets that cross sign between the two ages -- the two off-diagonal clouds -- are %d%% mammary-development and transcription-factor-target sets. Set them aside and the Spearman over the remaining %d rises from %.3f to %.3f. What holds its order is the metabolic, mitochondrial and Myc core; what reshuffles is lineage identity, which is the subject of section 2.",
             nrow(cross), round(100 * mean(cross$category %in%
                                             c("03_mammary_development", "06_tf_targets"))),
-            n_sets - nrow(cross), rho, rho_core)),
+            n_sets - nrow(cross), rho, rho_core),
+    sprintf("THIS RESULT IS WHY THE TIMELINE ENRICHMENT SCORES ARE NEGATIVE, which reads as a contradiction and is not one. fGSEA never compares two rankings: it takes ONE ranked list and asks where a set sits in it, and there are three lists here -- the Myc effect at each age, and the change WITHIN Myc+ animals between them. The third is built from the difference between the first two, so a programme that keeps its shape at half amplitude is the negative of itself on that list. Measured on this same object: Spearman(myc_6W, interaction) = %+.3f and Spearman(myc_6W, 6>12W_myc) = %+.3f over all %d sets. A rank-UNSTABLE fade would give a weak, incoherent timeline score; a clean mirror is what a preserved shape looks like from the other side. The worked example is figures/panels/explainer_nes_sign.R.",
+            rho_int, rho_tl, n_sets)),
   bounds = c(
     "\"ENHANCED\" IS NOT SPECIFIC, AND THE SENTENCE SHOULD SAY SO. The two families named rise by the MEDIAN amount for a gene set in this library -- OXPHOS at the 49th percentile of all rises, the Myc signatures at the 60th. What is true and worth writing is that they hold their position at the top of the ranking while the amplitude halves.",
     "AND A GLOBAL RISE IN NES IS WHAT A WEAKER RANKING MECHANICALLY PRODUCES. fGSEA normalises each enrichment score against a permutation null built from the same ranked list. The twelve-week Wald list is much flatter than the six-week one -- SD 1.221 against 1.744, IQR 1.503 against 2.176, and 9.5% of genes past |stat| = 2 against 22.5% -- so random sets reach smaller enrichment scores, the normaliser shrinks and the same relative enrichment scores a higher NES. No claim of increased Myc activity can rest on this panel.",
     "What the panel does support is a statement about POSITION rather than magnitude. NES is enrichment relative to the rest of the transcriptome, so a set sitting higher at twelve weeks means the residual Myc signal is more concentrated on it. That is the retention asymmetry of scripts 29 to 31 (Myc core retains 0.74 to 0.77 of its effect against the mitochondrial arms' 0.50 to 0.58) read on a different instrument.",
+    sprintf("\"THE RANKING\" HERE IS A RANKING OF GENE SETS, and the sentence must say so. The %.3f is over %d SETS. The same quantity at gene level is far weaker -- Spearman %.3f over the 1,967 genes Myc moves at six weeks and %.3f over all 18,523 reported -- and a reader not told which will read \"ranking\" as genes, where the number does not carry the claim.",
+            rho, n_sets, 0.724, 0.520),
+    "A TEMPORAL NES AND A GENOTYPE NES ARE NOT ON THE SAME RULER. fGSEA normalises each score against a permutation null built from that same ranked list, so the normaliser differs between contrasts -- which is the mechanism in the bound above, applied across contrasts rather than across ages. HALLMARK_MYC_TARGETS_V1 at -2.17 on the Myc+ timeline and +2.86 on the six-week genotype contrast are NOT comparable magnitudes; only signs and within-contrast orderings compare. Any sentence that places a timeline score beside a genotype score needs rewording.",
     "Benjamini-Hochberg is applied WITHIN each library category by script 20's design, so adjusted p-values are not comparable across the panel and none is drawn. fGSEA's gene permutation is also anti-conservative for sets of correlated genes, which is most of this library.",
     "The 50 MSigDB Hallmark comparators are in the cloud but are not library sets; HALLMARK_MYC_TARGETS_V1 and V2 are therefore NOT in the Myc-signatures family drawn here, which is the library's own 02_myc_signatures category. Both are quoted in the detail above.",
     "`ms_diverging` is a diverging RAMP everywhere else in this manuscript; this is the one panel that spends its two poles as categorical colours. They were chosen because neither is a sample colour and because the mint is the same mint Fig. 1G gives OXPHOS."),
