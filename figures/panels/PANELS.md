@@ -1944,6 +1944,45 @@ schematic of one. `docs/myc_mouse_finalisation_plan.md:379-382` had deferred thi
   orderings compare. Any sentence placing a timeline score beside a genotype score needs
   rewording, and any sentence citing `outputs/fgsea/` should cite `fgsea_percategory.rds` instead.
 
+### Sentences from the biogenesis-axis question (2026-08-17) — no panel
+
+Raised by the author during the cut: *is the developmental OXPHOS decline related to a
+down-regulation of PGC1a-induced biogenesis?* Answered in
+`docs/2026-08-17_developmental_oxphos_decline_and_the_biogenesis_axis.md`, computed in
+`scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R`. **No panel** — the phase is
+cutting, and the argument is defensive rather than a claim a figure must carry. The one-panel
+spec, if a reviewer ever demands it, is the within-regulon split (three bars or a dumbbell,
+~40 mm): the PGC1a regulon at the 74.9th percentile of its null, its 59 OXPHOS members at the
+0.05th, its other 241 at the 99.55th.
+
+- **Any sentence implying the developmental loss is a decline in PGC1a-driven biogenesis must
+  go.** The regulon does not move (+0.013, **74.9th percentile** of a matched null) while its
+  respiratory arm sits at the **0.05th** and its other 241 genes at the **99.55th**
+  (`collapse_module_ownership.rds$core_decomp`). An activity change acts on a regulon, not on a
+  functional subset of it. The axis factors are flat too (`Esrra` +0.23, `Nrf1` −0.25, `Gabpa`
+  +0.19, all ns), and **`Ppargc1a` is at baseMean 30 — effectively absent from purified MEC**.
+- **"The gland de-respires without de-proliferating" needs its scope word.** True *between the
+  ages* (−0.255 against −0.047, and that five-fold gap is the point). But *within* an age the
+  OXPHOS composite tracks the cell-cycle programme at **r = +0.887** (wild type) and **+0.842**
+  (Myc+). Keep the sentence; say "between six and twelve weeks".
+- **No TF may be named from a `_GRAY_` or `_MITO` lane in this contrast.** The `_MITO` lanes are
+  built from MitoCarta genes, so an OXPHOS-heavy overlap falls by construction; the `_GRAY_` lanes
+  report cell-state context (**adjusted R² 0.472 for context against 0.267 for TF identity**).
+  Inside `AP_LE`, `CHCHD3` (a MICOS structural protein) at −2.56 and `GTF3A` (general
+  transcription factor IIIA) at −2.53 both outrank `ESRRA` at −2.33.
+- **The FOXO3 rise may not be paired with Myc blocking it.** `Foxo3` rises in the wild type
+  (+0.473, padj **0.0078**) and does not in the Myc+ gland (−0.013, ns) — but the **interaction
+  padj = 1**. Two halves that differ in significance do not differ significantly; this is the same
+  trap already recorded for the Foxo3/PUMA pair.
+- **The PGC1a/NRF1 rescue must be described as an instrument, not a mimic.** Since the axis did
+  not cause the decline, the experiment tests the consequence of respiratory state, not the
+  developmental mechanism. What licenses it is measured, not rhetorical: the axis reaches **59 of
+  the 89 declining subunits (66%)**; the ERRα∩NRF1 intersection is **2.07× enriched for
+  respiratory subunits (p = 0.0052)**, so two interventions converging localise the effect to the
+  chain; and the **death effectors are not in the PGC1a regulon** (5 of 25, 0.76× expected — no
+  PUMA, no BAX, no caspase; they are in MYC's at 2.68×, p = 0.011), so a restored death phenotype
+  cannot be direct transcription of the machinery. Section 5 of the document has the wording.
+
 ## Not built here
 
 | slot | why |
