@@ -245,6 +245,45 @@ And within timepoint, against all 16,922 expressed genes, **`Sirt1` (3.8th perce
 > ns)"*. It is **not** *"Myc blocks the FOXO3 rise"*. Two halves that differ in significance do
 > not differ significantly -- the same trap already recorded for the Foxo3/PUMA pair.
 
+**H4 (added and tested 2026-08-18 on the author's challenge; DEMOTED) -- ERRb displacing ERRa at
+the shared response element.** `Esrrb` is **the single sharpest gene-level marker of the
+6-to-12-week transition in the whole 57-gene roster**: +1.578 log2, padj 0.0398, **99.6th
+expression-matched percentile**, rising in both genotypes (+2.271 in Myc+, padj 8.2e-4) and
+suppressed by Myc at six weeks (-1.038). **It was missing from the original ledger, and the reason
+is a gap in the reasoning rather than a decision: the ledger was built around what could have
+LOWERED the chain, and ERRb goes UP**, so it could only qualify as a repressor or competitor -- a
+model that was never considered.
+
+**The model is coherent, and reach does not disqualify it.** ERRa, ERRb and ERRg share the same
+response element, so a rising ERRb could displace ERRa from its own sites. Unlike FOXO3, which
+reaches none of the affected genes, ERRb would reach them all through the ERRE -- ERRa's regulon
+covers 49 of the 89 subunits that fell. On paper it is the best candidate among the risers.
+
+It fails on three tests, each of them one already applied to every other candidate:
+
+| test | result |
+|---|---|
+| **within-animal coupling to OXPHOS** | **+0.358 (64th pct) in wild type, -0.294 (31st) in Myc+** -- mid-range, and **opposite signs between genotypes**. A displacement model predicts a consistent negative. |
+| **the sibling control** | `Esrrg` also rises (+0.488, 87.8th pct) and couples to OXPHOS at **+0.745 (84th pct)** in wild type. ERRg is the canonically oxidative ERR; the family's other riser points the wrong way for a repression story. |
+| **per-animal distribution** | 12W wild types: **58, 85, 101, 312, 332, 696** -- a **12-fold spread within one group**, against `Esrra`'s 1.2-fold (223-277). The median shift is genuine (82 -> 207, matching the fitted 3.0x), so this is not two animals carrying it; but that dispersion is the profile of a variable minority signal, not a uniform programme change. |
+
+It also cannot be tested the way the other factors were: **there is no ESRRB target set in the
+library**, so its regulon has no direct read-out here. And it does not track the AP_LE carrier
+(+0.13 in wild type), the TEB signature (+0.25) or the basal composite (+0.09), so it is not simply
+another reading of a state already in hand.
+
+**What survives.** ERRb is a real and striking developmental change this project has never
+characterised, and it is Myc-suppressed at six weeks. It is **not** a supported cause of the
+respiratory decline. **The experiment that would settle it is sharper than anything the PGC1a arm
+offers: knock ERRb down in the twelve-week-like state, and the respiratory subunits should rise
+while the rest of the ERRa regulon does not move** -- the same split, run backwards. Worth first
+establishing whether the cell system expresses ERRb at all.
+
+> **The general lesson, worth keeping.** A rising factor can only be the cause of a falling
+> programme through a repression or competition model, and that class of hypothesis is easy to skip
+> when a ledger is organised by direction. **Screen risers as well as fallers**, then discriminate
+> with the within-animal coupling -- which is what demoted this one.
+
 ---
 
 ## 3A. The FOXO3 story, in full -- and whether it is the strongest hypothesis

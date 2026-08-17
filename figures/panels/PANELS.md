@@ -1977,6 +1977,14 @@ spec, if a reviewer ever demands it, is the within-regulon split (three bars or 
   (+0.473, padj **0.0078**) and does not in the Myc+ gland (−0.013, ns) — but the **interaction
   padj = 1**. Two halves that differ in significance do not differ significantly; this is the same
   trap already recorded for the Foxo3/PUMA pair.
+- **A rising factor may not be nominated as the cause of a falling programme without a repression
+  model AND the within-animal coupling.** Added 2026-08-18 after the author asked why `Esrrb` —
+  the roster's top riser, **+1.58, padj 0.040, 99.6th expression-matched percentile** — had not
+  been nominated. It is coherent as an ERRE competitor and, unlike FOXO3, its reach is fine. It
+  still fails: within animals it couples to OXPHOS at **+0.36 in wild type and −0.29 in Myc+**
+  (opposite signs); its sibling `Esrrg` also rises and couples **+0.75**; and its per-animal spread
+  inside one group is **12-fold** (58, 85, 101, 312, 332, 696) against `Esrra`'s 1.2-fold. Report
+  it as an uncharacterised developmental marker with a named knockdown test, never as a cause.
 - **The PGC1a/NRF1 rescue must be described as an instrument, not a mimic.** Since the axis did
   not cause the decline, the experiment tests the consequence of respiratory state, not the
   developmental mechanism. What licenses it is measured, not rhetorical: the axis reaches **59 of

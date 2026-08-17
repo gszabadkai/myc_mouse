@@ -44,7 +44,20 @@ ro$sig    <- !is.na(ro$wt_padj) & ro$wt_padj < 0.05
 AXIS <- c("Ppargc1a", "Ppargc1b", "Pprc1", "Esrra", "Nrf1", "Gabpa", "Tfam")
 ro$family <- ifelse(ro$sym %in% AXIS, "biogenesis axis",
                     ifelse(ro$clears, "clears the band", "other factors"))
-lab <- ro[ro$family != "other factors", ]
+# Esrrg is labelled without being recoloured. It clears neither the band nor the
+# axis definition (CORE_MITO is ERRa u NRF1 u GABP), but leaving it unnamed hides
+# the fact that the whole ERR FAMILY rises here -- and the family is the argument:
+# Esrrb is the roster's top riser and looks like a candidate repressor of the
+# chain until you notice its sibling Esrrg rises too and couples POSITIVELY to
+# OXPHOS. All three ERRs have to be findable for that reading to be available.
+EXTRA_LABEL <- c("Esrrg")
+# EVERY RINGED POINT GETS A NAME. A red ring on an anonymous point sitting beside
+# a labelled one is read as belonging to the label -- caught on the first render,
+# where Ncoa1's ring sat just under Foxo3's leader. So the labelled set is
+# axis + clears-the-band + EXTRA_LABEL + everything significant.
+lab <- ro[ro$family != "other factors" | ro$sym %in% EXTRA_LABEL | ro$sig, ]
+stopifnot(all(c("Esrra", "Esrrb", "Esrrg") %in% lab$sym),
+          all(ro$sym[ro$sig] %in% lab$sym))
 
 # ASSERTIONS -- the panel's two readings, so a re-run cannot soften them silently.
 stopifnot(
@@ -112,6 +125,9 @@ LEGEND <- panel_legend(
             get1("Foxo3", "wt_lfc"), get1("Foxo3", "wt_pct"), get1("Foxo3", "wt_padj"),
             get1("Sirt1", "wt_lfc"), get1("Sirt1", "wt_pct"), get1("Sirt1", "wt_padj"))),
   bounds = c(
+    sprintf("Esrrb is the roster's top riser (%+.2f, %.1f pct) and reads as a candidate ERRE competitor until three things are checked: within animals it couples to OXPHOS at +0.36 in wild type but -0.29 in Myc+ (opposite signs), its sibling Esrrg rises too (%+.2f, %.1f pct) and couples POSITIVELY at +0.75, and its per-animal spread inside one group is 12-fold against Esrra's 1.2-fold. A rising factor needs a repression model, and this one does not survive it.",
+            get1("Esrrb", "wt_lfc"), get1("Esrrb", "wt_pct"),
+            get1("Esrrg", "wt_lfc"), get1("Esrrg", "wt_pct")),
     "mRNA is not activity. FOXO3 in particular is controlled by nuclear exclusion, so a transcript change is concordant evidence at best -- which is why the target-set panel is drawn beside this one.",
     "BATCH = TIMEPOINT: the between-age contrast is confounded with cohort. The expression-matched null controls for abundance, not for batch.",
     "The band is the pre-set 5th-to-95th percentile bar; it is not a significance threshold and no multiplicity correction is applied across the 57 genes.",

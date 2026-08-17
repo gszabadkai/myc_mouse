@@ -209,7 +209,47 @@ moves and it does so in both genotypes with an adjusted p of
 The small p is precision at high expression, not a large effect. PRC has never been
 examined in this project; it is worth an antibody, not a mechanism.
 
-## Why the TF layer could not answer it {#sec-d4}
+### The ERR family, and a candidate that had to be tested {#sec-errb}
+
+`Esrrb` is the **highest riser in the whole roster** ---
+`r num(BA$roster$wt_lfc[BA$roster$sym == "Esrrb"], 2)` log2, padj
+`r num(BA$roster$wt_padj[BA$roster$sym == "Esrrb"], 3)`, the
+`r num(BA$roster$wt_pct[BA$roster$sym == "Esrrb"], 1)`th expression-matched percentile --- and it
+was missing from the first version of this ledger. The reason is worth stating: **the ledger was
+built around what could have *lowered* the chain, and ERRb goes up**, so it could only qualify
+through a repression or competition model, which was never considered.
+
+The model is coherent. ERRa, ERRb and ERRg share the same response element, so a rising ERRb could
+displace ERRa from its own sites --- and unlike FOXO3, **reach does not disqualify it**: through the
+ERRE it would touch every gene ERRa touches, which is 49 of the 89 that fell.
+
+It fails three tests, each already applied to the other candidates.
+
+| test | result |
+|---|---|
+| within-animal coupling to OXPHOS | **+0.36 in wild type, −0.29 in Myc+** --- mid-range, and opposite signs. Displacement predicts a consistent negative. |
+| the sibling control | `Esrrg` rises too (`r num(BA$roster$wt_lfc[BA$roster$sym == "Esrrg"], 2)`, `r num(BA$roster$wt_pct[BA$roster$sym == "Esrrg"], 1)`th pct) and couples **+0.75** to OXPHOS. The oxidative ERR points the wrong way for a repression story. |
+| per-animal distribution | 12W wild types: **58, 85, 101, 312, 332, 696** --- 12-fold spread inside one group, against `Esrra`'s 1.2-fold. The median shift is real (82 → 207); the dispersion is a minority-signal profile, not a programme. |
+
+There is also **no ESRRB target set in the library**, so its regulon has no direct read-out here,
+and it tracks none of the state composites (AP_LE +0.13, TEB +0.25, basal +0.09 in wild type).
+
+**What survives is a good experiment rather than a conclusion.** ERRb is a real, uncharacterised
+developmental change that Myc suppresses at six weeks, and the test is sharper than anything the
+PGC1a arm offers: **knock ERRb down in the twelve-week-like state and the respiratory subunits
+should rise while the rest of the ERRa regulon stays put** --- the same split, run backwards. Worth
+first checking whether the cell system expresses ERRb at all.
+
+::: {.callout-note}
+## The general lesson
+
+A **rising** factor can only cause a **falling** programme through repression or competition, and
+that whole class is easy to skip when a candidate list is organised by direction. Screen the risers
+as well as the fallers, then discriminate with the within-animal coupling --- which is what demoted
+this one, and what demoted PRC.
+:::
+
+# Why the TF layer could not answer it {#sec-d4}
 
 ```{r}
 #| label: fig-d3
@@ -379,6 +419,10 @@ Three properties make the axis the right instrument, and all three are measured:
 6. **Is PRC worth a Western?** It is the only PGC-1 family coactivator this tissue
    expresses. It does not clear its own null, so it is not a result --- but if asked
    "which coactivator does the gland use", we currently cannot answer.
+7. **Is ERRb worth following?** It is the sharpest developmental marker in the roster
+   and the project has never looked at it. It is not a supported cause of the
+   respiratory decline, but the knockdown prediction (@sec-errb) is the most
+   specific one this analysis generates.
 
 # Scope, stated once {#sec-scope}
 
