@@ -43,10 +43,12 @@ lane 2c: 218 sets). A lane whose overlap is OXPHOS-heavy falls because OXPHOS fa
 **(ii) The `_GRAY_<context>` lanes report a cell state, not a factor.** Over the 352 Gray lanes
 in this contrast, **adjusted R2 = 0.472 for context and 0.267 for TF identity**. Within `AP_LE`
 the 87 mito lanes span an IQR of **0.50 NES**; the spread between context medians is **3.34**.
-The demonstration: inside `AP_LE` the most negative "TFs" are `TCF15` -2.74, `SNAPC5` -2.71,
-`THAP3` -2.66, `HMGN3` -2.59, `ARNT` -2.59, **`CHCHD3` -2.56 (a MICOS structural protein, not a
-transcription factor)**, `GTF3A` -2.53 (general transcription factor IIIA) -- all *below* `ESRRA`
-at -2.33. A layer in which a MICOS subunit outranks ERRa is not ranking transcription factors.
+The demonstration: inside `AP_LE`, ranked by NES over 87 lanes, `ESRRA` comes **21st** and `GABPA`
+**25th**. Above them: `TCF15` -2.74, `SNAPC5` -2.71, `THAP3` -2.66, `HMGN3` -2.59, `ARNT` -2.59,
+**`CHCHD3` -2.56 (rank 6 -- a MICOS structural protein, not a transcription factor)**, `POU5F1B`,
+`NR2C2`, **`GTF3A` -2.53 (rank 9 -- general transcription factor IIIA)**, `ZNF232`, `ZKSCAN8`,
+`ZNF706`. **A layer in which a MICOS subunit and a general transcription factor both outrank ERRa
+is not ranking transcription factors.**
 
 **The ambient nobody applied.** Median NES over all 421 TF lanes in this contrast is **-1.461**;
 the whole layer is negative-going. Script 24 puts the PGC1a-axis lane median at **-1.144**
@@ -56,9 +58,17 @@ own layer the biogenesis axis is not preferentially down at all.
 **The reading rule that follows** (fixed in `47` before the numbers were read): a `_MITO` lane is
 never TF activity; a Gray lane is readable only if it departs from its own context median by more
 than that context's IQR, in the same direction as its departure from ambient; a non-Gray lane
-carries no context confound and is readable if it departs from ambient by more than the layer
-IQR (0.941). The rule passes **0 of 218** mito lanes, 34 of 134 Gray lanes and 19 of 69
-context-free lanes **[47]**.
+carries no context confound and is readable if it departs from ambient by more than the layer IQR
+(0.941). It passes **0 of 218 mito lanes**, 34 of 134 Gray lanes (25%) and 19 of 69 context-free
+lanes (28%) -- it discriminates rather than waving everything through.
+
+**One caveat the rule surfaces, and it should be stated rather than buried.** `TFT_ESRRA_GRAY_AP_LE`
+(-2.32) *does* clear its own context median by 0.54, so ERRa's alveolar-progenitor programme is a
+genuine within-context outlier. It is still not evidence of an ERRa activity change: that programme
+is precisely where the ERRa-mito overlap was detected in the first place (47 mito genes,
+p = 1.1e-22, the promotion that created `ESRRA_MITO`), so it fails the *content* filter even while
+passing the *context* one. Both filters have to pass, and the generic ERRa regulon -- which fails
+neither -- goes **up** (+1.19).
 
 ---
 
@@ -76,10 +86,30 @@ context-free lanes **[47]**.
 
 **A change in a factor's activity acts on its regulon; it cannot act on a functional subset of
 it.** The regulon does not move. Its respiratory arm falls at the 0.05th percentile while its
-other 241 members rise at the 99.6th. Script 47 PART B generalises this to seven regulons
-(`CORE_MITO`, `ESRRA_MITO`, `NRF1_MITO`, `GABPA_MITO`, `E2F1_MITO`, `MYC_MITO`,
-`DEVELOPMENTAL_MITO`); if they all split the same way, the split belongs to the OXPHOS genes and
-to no factor **[47]**.
+other 241 members rise at the 99.6th.
+
+**Script 47 PART B generalises it to seven regulons, and the four that contain the respiratory
+chain all split the same way:**
+
+| regulon | n OXPHOS | n rest | **pct OXPHOS** | **pct rest** | pct whole | verdict |
+|---|---|---|---|---|---|---|
+| `CORE_MITO` | 59 | 241 | **0.0** | **99.2** | 73.4 | arm-selective |
+| `ESRRA_MITO` | 49 | 128 | **0.4** | **97.6** | 54.5 | arm-selective |
+| `NRF1_MITO` | 19 | 62 | **1.0** | **84.8** | 40.8 | arm-selective |
+| `GABPA_MITO` | 10 | 71 | **4.1** | **79.4** | 59.2 | arm-selective |
+| `MYC_MITO` | 9 | 109 | 24.3 | 91.0 | 87.6 | inconclusive |
+| `DEVELOPMENTAL_MITO` | 9 | 84 | 30.8 | 97.6 | **96.0** | **moves as a unit (UP)** |
+| `E2F1_MITO` | 2 | 42 | -- | 80.6 | 74.2 | not testable |
+
+**Read it as four of four, not four of seven.** The three that fail the split are exactly the
+three with almost no respiratory content -- `E2F1_MITO` holds 2 OXPHOS subunits (below the
+3-gene floor, so the test cannot run at all), `MYC_MITO` and `DEVELOPMENTAL_MITO` hold 9 each.
+A regulon cannot show an arm-selective split in an arm it barely contains.
+
+**One regulon does move as a unit, and it is the ER one:** `DEVELOPMENTAL_MITO` sits at the
+**96.0th percentile** of its null as a whole -- the ER-reachable mitochondrial genes *rise* in the
+maturing gland. That is the shape an axis change makes, and it is the shape the PGC1a axis does
+not make.
 
 `paper/analysis_record.qmd:1906` already carries the sentence -- *"The PGC1a regulon is flat
 while only its OXPHOS arm falls"* -- it has simply never been used to answer this question.
@@ -102,15 +132,38 @@ where available:
 And every catabolic arm **rises**: fatty-acid oxidation **+1.885**, amino acid **+1.835**,
 autophagy +1.651, pyruvate +1.632, carbohydrate +1.581, BCAA +1.537, dynamics/surveillance +1.435.
 
-On the content ruler the split is sharper still: OXPHOS subunits **-0.255 at the 0.00 percentile**,
-OXPHOS assembly factors **+0.0007 at the 50.25 percentile** -- dead centre of its own null
-(`collapse_module_ownership.rds$wt_content`).
+**On the content ruler with a matched null, by arm class** (script 47 PART A, all 95 arms):
+
+| class | n arms | median content | **median null pct** |
+|---|---|---|---|
+| **chain_structural** | 13 | **-0.159** | **1.75** |
+| chain_assembly | 3 | +0.0024 | **53.2** |
+| organelle_build | 17 | +0.036 | 67.8 |
+| metabolic | 25 | +0.089 | 75.6 |
+| other | 35 | +0.046 | 78.0 |
+| *chain_mtDNA (confounded, see below)* | 2 | +0.633 | 100 |
+
+**The structural chain sits at the 1.75th percentile as a class; the assembly factors that build
+those same complexes sit at the 53rd.** Individually: `CIV_SUBUNITS` **-0.411 (pct 0.5)** is the
+most negative arm in the compartment, then OXPHOS subunits -0.255 (pct 0.0), CI -0.253 (0.05),
+CIII -0.251 (2.9), CV -0.216 (1.75). Against `OXPHOS_ASSEMBLY_FACTORS` +0.0007 (**pct 50.9**),
+`CI_ASSEMBLY` +0.0024 (53.2), `CIV_ASSEMBLY` +0.018 (55.2).
+
+**Two details worth keeping.** `COMPLEX_II` **does not fall** (+0.021, pct 57.5) -- succinate
+dehydrogenase is the one respiratory complex that neither pumps protons nor contains an
+mtDNA-encoded subunit, and it is also a TCA enzyme. And `ELECTRON_CARRIERS` **rises** (+0.155,
+pct 94.6). The withdrawal is from the *proton-pumping, mtDNA-containing* complexes specifically.
+
+**Honest qualification.** The build arms do not follow the chain down, but two of them are low
+rather than central: chaperones **pct 9.5** and protein import **pct 8.65**, with the mitoribosome
+at **pct 26.0** and the central dogma at **86**. So the accurate sentence is *"the assembly
+factors do not move at all and the build arms do not follow"*, not *"nothing else moves"*.
 
 **A biogenesis-axis withdrawal predicts subunits AND assembly AND mitoribosome AND import moving
-together.** Only the structural subunits move. The corpus already separates the two programmes --
-OXPHOS ~188 genes that *run* respiration against biogenesis ~249 genes that *build* the organelle,
-17 shared (`docs/2026-07-19_oxphos_axis_biology_and_mtdna_priming.md`, section 3) -- and it is the
-"run" half that falls.
+together.** They do not. The corpus already separates the two programmes -- OXPHOS ~188 genes that
+*run* respiration against biogenesis ~249 genes that *build* the organelle, 17 shared
+(`docs/2026-07-19_oxphos_axis_biology_and_mtdna_priming.md`, section 3) -- and it is the "run" half
+that falls, with the assembly factors as the sharp internal control.
 
 *(Reported, and nothing rests on it: the 13 mtDNA-encoded subunits go the other way in the
 wild-type timeline, `mt-Co2` +1.68 padj 0.039, `mt-Atp6` +1.76 padj 0.036. That is the axis
@@ -133,8 +186,18 @@ CLAUDE.md flags as time-associated and three-way confounded.)*
 Two facts the paper needs. **`Ppargc1a` sits at baseMean 30 -- effectively absent from purified
 MEC.** And the only PGC-1 family member expressed at a real level is **PRC (`Pprc1`), 70x higher,
 and it is the only one that moves** -- -0.471 (padj 1.9e-4) in the wild type, -0.585 (padj 1.1e-6)
-in the Myc+ gland, interaction padj 1. A genotype-independent developmental decline of the
-growth-coupled coactivator. **`Pprc1` appears nowhere else in the corpus.**
+in the Myc+ gland, interaction padj 1. **`Pprc1` appears nowhere else in the corpus.**
+
+> **But it does not clear its own null, and that matters.** Against expression-matched genes PRC's
+> wild-type fall sits at the **7.1st percentile** -- inside the [5, 95] bar fixed before the test.
+> Its tiny padj is **precision, not effect size**: a gene at baseMean 2102 is measured well enough
+> for a modest fold change to clear FDR. So PRC is a *lead worth an antibody*, not a result, and
+> the same test disposes of the other candidate fallers: `Mybl2` 5.6th percentile, `Nrip1` 9.2nd,
+> `Ppard` 9.2nd. **Nothing in the roster clears the bar on the down side.**
+>
+> What does clear it, all on the up side: **`Foxo3` 95.7th** (padj 0.0078), **`Sirt1` 97.9th**
+> (0.019), `Srebf1` 98.1st, `Elf5` 98.3rd, `Esrrb` 99.6th. The developmental signal in this roster
+> is a *gain* of the quiescence arm, not a loss of the biogenesis arm.
 
 ### 2.4 The generic regulons of the same factors go UP
 
@@ -159,18 +222,23 @@ median +1.27 against -1.46 ambient). Content ruler, script 44 `le_content`:
 -0.255 -- and `MG_HEVSLE_AP_GRAY_DN` -0.294 (pct 0.0), still **-0.238 (pct 0.00) with every
 MitoCarta gene removed**, so the carrier state falls independently of its mitochondrial content.
 
-**H2 (runner-up) -- a coactivator-supply change: PRC, not PGC1a.** The one version of "the
-biogenesis axis changed" the data leave standing, because it changes coactivator *supply* on the
+**H2 (demoted after 47) -- a coactivator-supply change: PRC, not PGC1a.** This was the one version
+of "the biogenesis axis changed" that looked survivable: PRC changes coactivator *supply* on the
 NRF1/GABP respiratory promoters without changing factor abundance or regulon-wide output.
-**Already half-falsified:** within timepoint, `Pprc1`'s per-sample coupling to the OXPHOS
-composite is ambient. If it acts, it acts as a switch, not a rheostat **[47]**.
+**It does not survive its own null.** PRC's fall is at the **7.1st expression-matched percentile**
+(inside the pre-set bar) and its within-timepoint coupling to the OXPHOS composite is ambient.
+Keep it as **a lead for an antibody, not a mechanism** -- and keep it mainly because PRC, not
+PGC1a, is what this tissue actually expresses.
 
-**H3 -- the reciprocal arm: FOXO3/SIRT1 quiescence.** `TFT_FOXO3_CHUNG` **+1.43** (p 0.059,
-padj 0.10) is **the single highest of all 69 context-free TF lanes**, with `TFT_FOXO1_CHUNG`
--0.63 as the specificity control. `Foxo3` **+0.473 (padj 0.0078)**, `Sirt1` +0.560 (padj 0.019),
-`Bnip3` +0.635 (padj 0.021); autophagy +1.651; dynamics and surveillance +1.435. Within
-timepoint, `Sirt1` and `Bnip3` are among the strongest *inverse* correlates of the OXPHOS
-composite in the whole transcriptome **[47]**.
+**H3 (promoted after 47) -- the reciprocal arm: FOXO3/SIRT1 quiescence.** This is now the
+strongest positive signal in the analysis, and it is the only one that clears every bar set for it.
+`TFT_FOXO3_CHUNG` **+1.43** is **the single highest of all 69 context-free TF lanes** and is
+readable under the lane rule, with `TFT_FOXO1_CHUNG` -0.63 as the specificity control.
+`Foxo3` **+0.473, padj 0.0078, 95.7th expression-matched percentile**; `Sirt1` +0.560, padj 0.019,
+**97.9th**; `Bnip3` +0.635, padj 0.021, 93.0th. Autophagy +1.651; dynamics and surveillance +1.435.
+And within timepoint, against all 16,922 expressed genes, **`Sirt1` (3.8th percentile) and `Bnip3`
+(5.7th) are among the strongest inverse correlates of the OXPHOS composite in the transcriptome**
+**[47]**.
 
 > **The caveat that must travel with H3, every time.** The `Foxo3` **interaction padj = 1**. The
 > supported statement is *"the wild type rises (padj 0.0078) and the Myc+ gland does not (-0.013,
@@ -181,23 +249,35 @@ composite in the whole transcriptome **[47]**.
 
 ## 4. The tension H1 has to carry honestly
 
-Within a timepoint the OXPHOS composite tracks the cell-cycle programme at **r = +0.887 in the
-wild type and +0.842 in the Myc+ gland** (87-gene composite, timepoint means removed, so no
-cohort contrast remains). Yet *between* the ages OXPHOS falls **-0.255 against proliferation's
--0.047** -- five times more.
+Within a timepoint the OXPHOS composite tracks the cell-cycle programme at **r = +0.887** in the
+wild type and +0.842 in the Myc+ gland (87-gene composite, timepoint means removed, so no cohort
+contrast remains). Yet *between* the ages OXPHOS falls **-0.255 against proliferation's -0.047** --
+five times more.
 
-Both are true, and together they say something neither says alone: the decline is **not
-proportional growth withdrawal** and **not an axis-wide biogenesis change**. It is a state switch,
-and a state switch is not a dial. This protects the record's load-bearing negative
-(*"the gland de-respires without de-proliferating"*, `analysis_record.qmd:1901`), which stays true
-on the between-age ruler and now gains its within-age companion.
+> **The set-level r must not be quoted on its own, and this is the corpus's oldest trap.** In the
+> same 12 samples the OXPHOS composite correlates with `CORE_MITO` at **0.980** and with the
+> **mitoribosome at 0.967** -- both *higher* than with proliferation. Everything correlates with
+> everything; a set-level 0.89 is what the window hands you. **Only the gene-level percentile
+> against all 16,922 expressed genes is readable**, and there the ordering is informative:
+> `Tfdp1` **99.8th**, `Mterf4` 99.5th, `Gata3` 95.5th, `Mybl2` **94.2nd**, `Foxm1` 88.1st at the
+> top; `Sirt1` **3.8th** and `Bnip3` **5.7th** at the bottom; and the biogenesis factors in the
+> middle (`Gabpa` 79th, `Tfam` 65th, `Nrf1` 45th, `Pprc1` 44th, `Esrra` 43rd). **The growth
+> machinery and the quiescence arm are the two poles; the biogenesis axis is not at either.**
 
-**The limit that stops H1 being a result.** Carrier and cargo correlate at **r = 0.93**
-(`collapse_module_ownership.rds$le_within`, 12 wild-type samples, mito genes removed from the
-carrier). Script 44's adjustment takes the OXPHOS time-beta from -0.459 to -0.151 -- but at that
-collinearity the adjusted beta is **a bound on how much of the decline could be carried, not an
-estimate of how much is**. Bulk cannot separate them. **Sorted AP/HS/BA or single-cell is the
-design that settles it**, and that is the honest answer to a reviewer who asks.
+Taken together the two rulers say something neither says alone: the decline is **not proportional
+growth withdrawal** and **not an axis-wide biogenesis change**. It is a state switch, and a state
+switch is not a dial. This protects the record's load-bearing negative (*"the gland de-respires
+without de-proliferating"*, `analysis_record.qmd:1901`), which stays true on the between-age ruler
+and now has its within-age companion -- stated as the percentile, not the raw r.
+
+**The limit that stops H1 being a result.** Carrier and cargo correlate at **r = 0.930** with every
+mitochondrial gene stripped from the carrier (12 wild-type samples), giving a **variance inflation
+factor of 7.4**. Script 44's adjustment takes the OXPHOS time-beta from -0.459 to -0.151 -- but at
+that collinearity the adjusted beta is **a bound on how much of the decline could be carried, not
+an estimate of how much is**. The specificity control behaves as it should (`AP_HE` non-mito
+**-0.129**, i.e. no association), and the TEB composite is a looser carrier (**+0.608**), which is
+the more honest anchor of the two. Bulk cannot separate carrier from cargo. **Sorted AP/HS/BA or
+single-cell is the design that settles it**, and that is the answer to a reviewer who asks.
 
 ---
 
@@ -255,14 +335,22 @@ things" from the reviewer's objection into the design's specificity control.
 | regulon | pro-apoptotic overlap | expected | fold | p_enrich | genes |
 |---|---|---|---|---|---|
 | `CORE_MITO` | 5 of 25 | 6.58 | **0.76** | 0.83 | Aifm1, Aifm2, **Cycs**, Endog, Ifi27 |
+| `ESRRA_MITO` | 4 | 3.88 | 1.03 | 0.56 | Aifm2, **Cycs**, Endog, Ifi27 |
+| `NRF1_MITO` | 1 | 1.78 | **0.56** | 0.85 | Aifm1 |
 | `MYC_MITO` | 7 of 25 | 2.61 | **2.68** | **0.011** | Aifm3, **Bax**, Casp8, Casp9, Diablo, **Pmaip1**, Sphk2 |
 
-**The PGC1a regulon is if anything depleted for the death effectors -- no PUMA, no BAX, no
-caspase.** So if PGC1a overexpression restores PUMA-dependent death, it is not doing it by
-directly transcribing the machinery; it has to run through the respiratory state, which is the
-claim under test. Had the effectors been inside the regulon, the experiment would have been
-circular. **They are inside MYC's regulon instead** -- which is the paper's own result
-(`analysis_record.qmd`, "no co-regulated OXPHOS/apoptosis module").
+**The PGC1a regulon sits at or below the base rate and contains no BCL-2 family member, no BAX and
+no caspase** -- the four or five genes it does hold are the release/effector-adjacent set
+(Aifm1/2, Endog, Ifi27) plus cytochrome c. So if PGC1a overexpression restores PUMA-dependent
+death, it is not doing it by directly transcribing the machinery; it has to run through the
+respiratory state, which is the claim under test. Had the effectors been inside the regulon, the
+experiment would have been circular. **They are inside MYC's regulon instead** -- which is the
+paper's own result (`analysis_record.qmd`, "no co-regulated OXPHOS/apoptosis module").
+
+*(State the fold honestly: `CORE_MITO` at 0.76 and `NRF1_MITO` at 0.56 are below expectation but
+neither is significantly depleted -- with 25 pro-apoptotic genes in the MitoCarta universe the
+test has no power to prove depletion. The claim that carries is the **specific absence of PUMA,
+BAX and the caspases**, which is a membership fact and needs no p-value.)*
 
 The single exception is worth a sentence rather than a footnote: the one death gene PGC1a
 reaches is **cytochrome c**, which is simultaneously a respiratory carrier -- the paper's
@@ -333,7 +421,11 @@ Naming the overshoot before the experiment is what keeps the claim intact after 
    -- reword. The regulon sits at the 74.9th percentile of its null while its OXPHOS arm sits at
    the 0.05th.
 2. *"The gland de-respires without de-proliferating"* -- true **between the ages** (-0.255 against
-   -0.047); within an age the two covary at **r = 0.89**. Keep the sentence, add the scope word.
+   -0.047, and the five-fold gap is the point). Add the scope word. Within an age the two do
+   covary, but **do not quote the raw r (0.89)**: in the same samples OXPHOS correlates with
+   `CORE_MITO` at 0.98 and the mitoribosome at 0.97, so a set-level 0.89 is the ceiling, not a
+   finding. If the within-age point is needed, quote the **gene-level percentile** -- `Tfdp1`
+   99.8th, `Mybl2` 94.2nd at the top, `Sirt1` 3.8th, `Bnip3` 5.7th at the bottom.
 3. Any sentence attributing the decline to a **named mitochondrial TF read off a `_GRAY_` or
    `_MITO` lane** -- those lanes report cell-state context and gene content. A MICOS subunit and a
    general transcription factor outrank ERRa in the same context.
@@ -354,9 +446,12 @@ Naming the overshoot before the experiment is what keeps the claim intact after 
   are, the rescue is circular and the interpretation changes.
 - **The question bulk cannot answer:** whether the state or the respiration carries the
   developmental decline (r = 0.93). Sorted AP/HS/BA or single-cell.
-- **The open runner-up:** PRC (`Pprc1`), the only PGC-1 family coactivator expressed in MEC, down
-  in both genotypes. Never examined in this project; the obvious comparator arm if the PGC1a
-  result raises the question of which coactivator the gland actually uses.
+- **The open lead, at its true weight:** PRC (`Pprc1`) is the only PGC-1 family coactivator
+  expressed in MEC (baseMean 2102 against PGC1a's 30) and falls in both genotypes (padj 1.9e-4) --
+  but it does **not** clear its expression-matched null (7.1st percentile) and its per-sample
+  coupling is ambient. It is a reason to check a protein, not a mechanism to test. Its real weight
+  in the paper is the *expression* fact: if a reviewer asks which coactivator this tissue uses,
+  the answer is not PGC1a.
 
 ---
 

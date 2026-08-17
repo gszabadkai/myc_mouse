@@ -1962,9 +1962,12 @@ spec, if a reviewer ever demands it, is the within-regulon split (three bars or 
   functional subset of it. The axis factors are flat too (`Esrra` +0.23, `Nrf1` −0.25, `Gabpa`
   +0.19, all ns), and **`Ppargc1a` is at baseMean 30 — effectively absent from purified MEC**.
 - **"The gland de-respires without de-proliferating" needs its scope word.** True *between the
-  ages* (−0.255 against −0.047, and that five-fold gap is the point). But *within* an age the
-  OXPHOS composite tracks the cell-cycle programme at **r = +0.887** (wild type) and **+0.842**
-  (Myc+). Keep the sentence; say "between six and twelve weeks".
+  ages* (−0.255 against −0.047, and that five-fold gap is the point) — say "between six and twelve
+  weeks". Within an age the two do covary, but **the raw r is not quotable**: OXPHOS ↔ cell cycle
+  is +0.887 while OXPHOS ↔ `CORE_MITO` is **+0.980** and ↔ mitoribosome **+0.967** in the same
+  12 samples, so 0.89 is the ceiling, not a finding. The readable version is the gene-level
+  percentile against all 16,922 expressed genes: `Tfdp1` **99.8th**, `Mybl2` 94.2nd at the top;
+  `Sirt1` **3.8th**, `Bnip3` 5.7th at the bottom.
 - **No TF may be named from a `_GRAY_` or `_MITO` lane in this contrast.** The `_MITO` lanes are
   built from MitoCarta genes, so an OXPHOS-heavy overlap falls by construction; the `_GRAY_` lanes
   report cell-state context (**adjusted R² 0.472 for context against 0.267 for TF identity**).
