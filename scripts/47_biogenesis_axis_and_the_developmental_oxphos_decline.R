@@ -765,6 +765,144 @@ rescue <- list(reach = reach, convergence = convergence,
                calibration = calibration, overshoot = overshoot)
 
 # =============================================================================
+# PART I: THE FOXO3 ARM -- the one readable TF signal, tested rather than told
+# -----------------------------------------------------------------------------
+# PART C leaves exactly one sub-layer in which a TF statement is possible, and
+# FOXO3 is at the top of it. That makes it the strongest READABLE signal in this
+# contrast, which is not the same as the strongest hypothesis. Four tests decide
+# which it is, and they are the same tests PART H applies to PGC1a:
+#
+#   I1 CONTENT   -- is the lane's rise an OXPHOS artifact? (it is a rise, so the
+#                   artifact would have to be a rising mito arm)
+#   I2 REACH     -- does FOXO3 reach the genes that fell? A factor with no reach
+#                   over the affected genes cannot be the proximal cause, however
+#                   clean its own signal is. This is the test that decides
+#                   "driver" against "marker", and it is the same one that
+#                   disqualified the PGC1a axis as the cause.
+#   I3 TARGETS   -- does the programme move gene by gene, and WHICH arm of it?
+#                   FOXO3 has an arrest arm, an atrophy/turnover arm and an
+#                   apoptotic arm, and they do not have to move together.
+#   I4 SEPARABLE -- is the FOXO3 axis distinguishable from the carrier state and
+#                   from OXPHOS itself, or is it another reading of the same
+#                   variable? Percentile against all expressed genes, since at
+#                   n = 12 a raw rho is the ceiling (scripts 33/35).
+#
+# The apoptotic arm matters beyond this script: FOXO3 is the PUMA regulator, so
+# "the adult gland raises FOXO3 and arms PUMA" is the story this section is most
+# likely to be read as supporting. I3 tests it explicitly rather than leaving it
+# to be assumed.
+# =============================================================================
+message("47 PART I: the FOXO3 arm")
+
+FOXO_SETS <- c("TFT_FOXO3_CHUNG", "TFT_FOXO1_CHUNG", "TFT_FOXO4_CHUNG")
+stopifnot(all(FOXO_SETS %in% names(gmt)))
+
+# --- I1 + I2: content and reach, on the same footing as PART H's reach table ---
+foxo_reach <- purrr::map_dfr(FOXO_SETS, function(s) {
+  m <- gmt[[s]]
+  tibble::tibble(
+    set = s, n_genes = length(m),
+    n_mitocarta = length(intersect(m, mito_universe)),
+    mito_members = paste(sort(intersect(m, mito_universe)), collapse = ", "),
+    covers_ox = length(intersect(m, ox_syms)),
+    n_ox_total = length(ox_syms),
+    frac_of_declining = length(intersect(m, ox_syms)) / length(ox_syms))
+})
+
+# --- I3: the lane across all five rankings, and gene by gene ------------------
+foxo_lanes <- fgc$fgsea |>
+  dplyr::filter(pathway %in% FOXO_SETS) |>
+  dplyr::select(pathway, ranking, NES, pval, padj_within_category, size) |>
+  dplyr::arrange(pathway, ranking)
+
+# The three arms of the FOXO3 programme, named BEFORE the values are read, so
+# "which arm moved" is a result and not a description of whatever moved.
+FOXO_ARMS <- tibble::tribble(
+  ~arm,                  ~gene,
+  "arrest",              "Cdkn1a",   "arrest",   "Cdkn1b",  "arrest", "Gadd45a",
+  "arrest",              "Ccng2",    "arrest",   "Rbl2",
+  "atrophy_turnover",    "Fbxo32",   "atrophy_turnover", "Bnip3",
+  "atrophy_turnover",    "Bnip3l",   "atrophy_turnover", "Pink1",
+  "atrophy_turnover",    "Gabarapl1","atrophy_turnover", "Sirt1",
+  "antioxidant",         "Sod2",     "antioxidant", "Cat",  "antioxidant", "Prdx3",
+  "antioxidant",         "Txnip",    "antioxidant", "Sesn1",
+  "apoptotic",           "Bcl2l11",  "apoptotic", "Bbc3",   "apoptotic", "Fasl",
+  "apoptotic",           "Tnfsf10")
+
+foxo_targets <- purrr::pmap_dfr(FOXO_ARMS, function(arm, gene) {
+  e <- ens_of(gene)
+  tibble::tibble(
+    arm = arm, sym = gene,
+    in_chung_set = gene %in% gmt[["TFT_FOXO3_CHUNG"]],
+    baseMean   = if (is.na(e)) NA_real_ else as.numeric(bm[e]),
+    wt_lfc     = if (is.na(e)) NA_real_ else as.numeric(tn[e]),
+    wt_padj    = padj_of("timepoint_neg_raw", e),
+    wt_pct     = gene_pct(e, tn),
+    mycpos_lfc = if (is.na(e)) NA_real_ else as.numeric(tpz[e]),
+    myc6_lfc   = if (is.na(e)) NA_real_ else as.numeric(m6[e]),
+    int_padj   = padj_of("interaction_raw", e))
+}) |> dplyr::arrange(arm, dplyr::desc(wt_lfc))
+
+foxo_arm_summary <- foxo_targets |>
+  dplyr::group_by(arm) |>
+  dplyr::summarise(n = dplyr::n(),
+                   n_padj05 = sum(wt_padj < 0.05, na.rm = TRUE),
+                   median_wt_lfc = stats::median(wt_lfc, na.rm = TRUE),
+                   .groups = "drop") |>
+  dplyr::arrange(dplyr::desc(median_wt_lfc))
+
+# --- I4: separability, on the non-mito part of the programme ------------------
+# The 6 MitoCarta members are stripped first, or the coupling to a mitochondrial
+# composite would be partly self-correlation.
+foxo_separability <- purrr::map_dfr(c("neg", "pos"), function(gt) {
+  idx <- which(sm$myc_status == gt)
+  tpv <- droplevels(sm$tp[idx])
+  M <- L[, idx, drop = FALSE]
+  M <- M[rowMeans(nc[, idx, drop = FALSE]) >= 10, , drop = FALSE]
+  R <- M
+  for (lv in levels(tpv)) {
+    k <- which(tpv == lv); R[, k] <- M[, k, drop = FALSE] - rowMeans(M[, k, drop = FALSE])
+  }
+  Z <- zrow(R); Z <- Z[is.finite(rowSums(Z)), , drop = FALSE]
+  cmp <- function(syms) {
+    e <- intersect(ens_set(syms), rownames(Z))
+    if (length(e) < 5) return(NULL)
+    colMeans(Z[e, , drop = FALSE])
+  }
+  f3 <- cmp(setdiff(gmt[["TFT_FOXO3_CHUNG"]], mito_universe))
+  ox <- cmp(gmt[["MITOCARTA_OXPHOS_SUBUNITS"]])
+  ap <- cmp(setdiff(gmt[["MG_HEVSLE_AP_GRAY_DN"]], mito_universe))
+  allr <- as.numeric(stats::cor(t(Z), ox))
+  r_f3 <- stats::cor(f3, ox)
+  tibble::tibble(genotype = gt,
+                 n_foxo3_nonmito = length(intersect(
+                   ens_set(setdiff(gmt[["TFT_FOXO3_CHUNG"]], mito_universe)), rownames(Z))),
+                 r_foxo3_oxphos = r_f3,
+                 pct_vs_all_genes = 100 * mean(allr < r_f3, na.rm = TRUE),
+                 r_foxo3_carrier = stats::cor(f3, ap))
+})
+
+foxo_verdict <- tibble::tibble(
+  claim = c(
+    "FOXO3 is the strongest READABLE TF signal in the wild-type timeline",
+    "The rise is an OXPHOS-content artifact",
+    "FOXO3 is the DRIVER of the OXPHOS decline",
+    "The rise is the arrest arm",
+    "The adult wild-type gland arms PUMA through FOXO3",
+    "Myc BLOCKS the developmental FOXO3 rise",
+    "Myc suppresses the FOXO3 programme"),
+  verdict = c(
+    "YES -- top of the 69 context-free lanes, passes the lane rule",
+    "NO -- zero OXPHOS subunits in the set",
+    "NO -- reach is 0 of 89 declining subunits (CORE_MITO reaches 59)",
+    "NO -- see foxo_arm_summary; the atrophy/turnover arm carries it",
+    "NO -- Bbc3 is flat in the wild-type timeline",
+    "NO -- the programme rises in BOTH genotypes; interaction is ns",
+    "YES -- significant at both ages, with FOXO1 null as the control"),
+  read_from = c("tf_contextfree", "foxo_reach", "foxo_reach",
+                "foxo_arm_summary", "foxo_targets", "foxo_lanes", "foxo_lanes"))
+
+# =============================================================================
 # SAVE
 # =============================================================================
 notes <- c(
@@ -821,6 +959,12 @@ out <- list(
   couplings_meta    = couplings_meta,
   carrier           = carrier,
   verdict           = verdict,
+  foxo_reach        = foxo_reach,
+  foxo_lanes        = foxo_lanes,
+  foxo_targets      = foxo_targets,
+  foxo_arm_summary  = foxo_arm_summary,
+  foxo_separability = foxo_separability,
+  foxo_verdict      = foxo_verdict,
   rescue            = rescue,
   defs = list(
     n_set_draws = NSET, n_bins = NBIN, min_arm_n = MIN_N,
@@ -966,6 +1110,40 @@ if (FALSE) {
   ## that these will rise; the claim then stays "raising respiratory capacity",
   ## not "reverting the developmental change".
   res$rescue$overshoot |> print()
+
+  ## PART I -- THE FOXO3 ARM. Read the verdict table first; every row names the
+  ## object it is read from, so nothing here has to be taken on trust.
+  res$foxo_verdict |> print()
+
+  ## I2 is the one that decides driver against marker. covers_ox = 0 means FOXO3
+  ## does not touch a single gene that fell, so it cannot be the proximal cause --
+  ## the same test that disqualified the PGC1a axis, applied consistently.
+  res$foxo_reach |> dplyr::select(set, n_genes, n_mitocarta, covers_ox,
+                                  frac_of_declining) |> print()
+  cat(res$foxo_reach$mito_members[res$foxo_reach$set == "TFT_FOXO3_CHUNG"], "\n")
+
+  ## I3 -- the lane across all five rankings. The developmental rise is in BOTH
+  ## genotypes and the interaction is ns; the Myc SUPPRESSION is significant at
+  ## both ages. FOXO1 should be null throughout (the specificity control).
+  res$foxo_lanes |> print(n = 15)
+
+  ## WARNING before quoting the two genotype rows as "it does not attenuate":
+  ## NES is scale-free and CANNOT see an amplitude fade (the four-list result,
+  ## PANELS.md under Fig. 1H). Equal NES at both ages is not equal effect size.
+
+  ## Which arm of the programme moved? Named before the values were read.
+  res$foxo_arm_summary |> print()
+  res$foxo_targets |> dplyr::select(arm, sym, wt_lfc, wt_padj, wt_pct, mycpos_lfc) |>
+    print(n = 25)
+
+  ## The story this section is most likely to be misread as supporting, tested:
+  ## Bbc3 in the wild-type timeline. Flat means the adult gland does NOT arm PUMA.
+  res$foxo_targets |> dplyr::filter(sym == "Bbc3") |> print()
+
+  ## I4 -- separability. pct_vs_all_genes is the number: mid-range means the
+  ## FOXO3 axis is not a standout inverse of OXPHOS, and r_foxo3_carrier says it
+  ## is not separable from the cell state either.
+  res$foxo_separability |> print()
 
   cat(res$notes, sep = "\n")
 }

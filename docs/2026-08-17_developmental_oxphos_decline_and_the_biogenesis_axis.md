@@ -247,6 +247,115 @@ And within timepoint, against all 16,922 expressed genes, **`Sirt1` (3.8th perce
 
 ---
 
+## 3A. The FOXO3 story, in full -- and whether it is the strongest hypothesis
+
+**Short answer: FOXO3 is the strongest readable SIGNAL in this contrast, and it is not the
+strongest hypothesis for the OXPHOS decline. The distinction is the whole of the section.**
+
+### Why it is the strongest readable signal
+
+Every other candidate in the TF layer dies on one of two filters. FOXO3 passes both.
+
+- **Content.** `TFT_FOXO3_CHUNG` is 39 genes and **contains no OXPHOS subunit at all** (0 of 89).
+  Its six MitoCarta members are `Bcl2l11`, `Bnip3l`, `Cat`, `Pink1`, `Prdx3`, `Sod2` -- antioxidant,
+  mitophagy and apoptosis, not the respiratory chain. So its rise cannot be mitochondrial content.
+- **Context.** It is a Chung lane, not a Gray lane, so it carries no cell-state context and cannot
+  be the artifact that destroys the mammary-context layer. It is **the single highest of all 69
+  context-free lanes** at **+1.43** (p 0.059, padj 0.10).
+- **Gene level agrees, against an expression-matched null:** `Foxo3` +0.473 (padj 0.0078,
+  **95.7th pct**), `Sirt1` +0.560 (0.019, **97.9th**), `Bnip3` +0.635 (0.021, 93.0th).
+  `FOXO1` is null in every contrast (-0.63 in the wild-type timeline) -- the specificity control.
+
+### The lane across all four contrasts, which reframes it
+
+| ranking | NES | padj |
+|---|---|---|
+| `myc_6W` | **-1.76** | **0.0030** |
+| `myc_12W` | **-1.80** | **0.0031** |
+| `6>12W_wt` | **+1.43** | 0.103 |
+| `6>12W_myc` | **+1.71** | **0.0061** |
+| interaction | +1.09 | 0.37 |
+
+Two readings, and the second is the one worth keeping:
+
+1. **The programme rises with age in BOTH genotypes** (+1.43 wild type, +1.71 Myc+), and the
+   interaction is not significant. So **"Myc blocks the developmental FOXO3 rise" is false.**
+2. **Myc suppresses the programme at both ages, by about the same amount** (-1.76, -1.80), with
+   FOXO1 null throughout. That is a clean, stable genotype effect on the PUMA regulator's
+   programme -- and it is a genotype contrast, which this design measures well.
+
+> **Do not read the two genotype rows as "the FOXO3 programme does not attenuate".** NES is
+> scale-free and cannot see an amplitude change -- that is the four-list result recorded under
+> Fig. 1H. Equal NES at both ages is not equal effect size.
+
+### Which arm of the programme moves -- named before the values were read
+
+FOXO3 has an arrest arm, an atrophy/turnover arm, an antioxidant arm and an apoptotic arm. They do
+not have to move together, and here they do not:
+
+| arm | moves? | evidence |
+|---|---|---|
+| **atrophy / turnover** | **yes** | `Fbxo32` **+1.156 (padj 5.4e-10)**, `Bnip3` +0.635 (0.021), `Sirt1` +0.560 (0.019), `Pink1` +0.370 |
+| antioxidant | marginal | `Cat` +0.384 (0.068); `Sod2`, `Prdx3`, `Txnip`, `Sesn1` flat |
+| cell-cycle arrest | **no** | `Cdkn1a` -0.213, `Cdkn1b` +0.028, `Gadd45a` -0.034, `Ccng2` -0.097, all ns |
+| **apoptotic** | **no** | `Bcl2l11` +0.255 (ns), **`Bbc3` +0.062 (padj 0.881)** |
+
+Leading edge, 15 of 38: `Fbxo32, Fasl, Sirt1, Cat, Pink1, Bnip3l, Rbl2, Cited2, Bcl2l11, Pik3ca,
+Abcb1a, Klf4, Ar, Hbp1, Dusp5` -- broad enough that this is not one gene carrying a small set.
+
+**The consequence for the death story: `Bbc3` is FLAT in the wild-type timeline.** The attractive
+sentence -- *the adult gland raises FOXO3, which arms PUMA* -- **is not supported**. PUMA falls in
+the *Myc+* timeline (-0.479, padj 0.016), which is a different claim, and the interaction is ns
+(padj 0.844).
+
+### Why it is not the driver: reach
+
+The same test that disqualified the PGC1a axis as the *cause* disqualifies FOXO3, and it has to be
+applied consistently or it is not a test:
+
+| regulon | reaches, of the 89 declining subunits |
+|---|---|
+| `CORE_MITO` (ERRa/NRF1/GABP) | **59** |
+| `ESRRA_MITO` | 49 |
+| **`TFT_FOXO3_CHUNG`** | **0** |
+
+**A factor that touches none of the affected genes cannot be their proximal transcriptional
+cause**, however clean its own signal is. Whatever lowered the respiratory subunits, FOXO3 did not
+do it directly.
+
+### And it is not separable from the state
+
+Within timepoint, on the non-mitochondrial part of the programme (the 6 MitoCarta members stripped
+first, or the coupling would be partly self-correlation):
+
+| | vs OXPHOS composite | percentile among all genes | vs the AP_LE carrier |
+|---|---|---|---|
+| wild type | -0.691 | **11.5th** | -0.533 |
+| Myc+ | -0.521 | 15.2nd | -0.697 |
+
+A mid-range percentile, and an anti-correlation with the carrier state as strong as the one with
+OXPHOS. **FOXO3 is not an independent axis; it is another reading of the adult state.**
+
+### The verdict
+
+**FOXO3 is the cleanest TF-level READOUT of the state in which respiration is lower.** It
+corroborates H1 rather than competing with it: the state hypothesis predicts exactly this -- a
+quiescence/turnover programme up, respiration down, no direct regulatory link between them.
+
+What FOXO3 genuinely adds to the paper is **not** a mechanism for the OXPHOS decline. It is:
+
+1. **A stable, Myc-suppressed programme on the PUMA regulator** (padj 0.003 at both ages, FOXO1
+   null). That is a genotype result, which this design measures well, and it sits directly beside
+   the death story.
+2. **The one place a TF statement is possible at all in this dataset**, which is worth saying in
+   the methods rather than leaving a reader to wonder why no factor is named.
+3. **A named perturbation target** for the cell system: if the adult state's turnover arm is what
+   accompanies low respiration, FOXO3 is how you test that -- not by asking whether it lowers
+   OXPHOS transcripts, which it cannot, but by asking whether it changes death competence at fixed
+   respiratory state.
+
+---
+
 ## 4. The tension H1 has to carry honestly
 
 Within a timepoint the OXPHOS composite tracks the cell-cycle programme at **r = +0.887** in the

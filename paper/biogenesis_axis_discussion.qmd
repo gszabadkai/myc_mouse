@@ -1,0 +1,419 @@
+---
+title: "Is the developmental OXPHOS decline a PGC1a change?"
+subtitle: "Six panels for the collaborator discussion, and what they license in the experimental part"
+author: "Szabadkai lab"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    toc-expand: 2
+    number-sections: true
+    code-fold: true
+    embed-resources: true
+    theme: cosmo
+    fig-format: png
+    fig-dpi: 300
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(here)
+here::i_am("paper/biogenesis_axis_discussion.qmd")
+source(here::here("figures", "panels", "_panel_common.R"))
+
+PANEL_DIR <- here::here("figures", "panels")
+
+# The panel-embedding mechanism is analysis_record.qmd's, unchanged, so the two
+# documents cannot drift apart in how they render a panel. The ONLY difference is
+# the glob: this document collects `^biogax.*\.R$` -- the discussion panels, which
+# hold no manuscript slot and are deliberately outside rebuild_panels.R and
+# panels_to_pdf.R.
+.panel_cache <- new.env(parent = emptyenv())
+
+panel_env <- function(slug) {
+  if (!is.null(.panel_cache[[slug]])) return(.panel_cache[[slug]])
+  f <- file.path(PANEL_DIR, paste0(slug, ".R"))
+  if (!file.exists(f)) stop("no panel script: ", slug, ".R", call. = FALSE)
+  old <- options(myc.fig.capture = TRUE)
+  on.exit(options(old), add = TRUE)
+  env <- new.env(parent = globalenv())
+  source(f, local = env)
+  if (!exists("p", envir = env, inherits = FALSE))
+    stop(slug, " built no `p`", call. = FALSE)
+  if (!exists("LEGEND", envir = env, inherits = FALSE))
+    stop(slug, " carries no panel_legend() block", call. = FALSE)
+  reg <- get0(".myc_panel_sizes", envir = globalenv())
+  if (is.null(reg) || !exists(slug, envir = reg, inherits = FALSE))
+    stop(slug, " did not register a size", call. = FALSE)
+  sz <- get(slug, envir = reg)
+  assign("SIZE_MM", c(width = sz$width, height = sz$height), envir = env)
+  .panel_cache[[slug]] <- env
+  env
+}
+panel_w <- function(slug) unname(panel_env(slug)$SIZE_MM[["width"]]  / 25.4)
+panel_h <- function(slug) unname(panel_env(slug)$SIZE_MM[["height"]] / 25.4)
+panel_p <- function(slug) panel_env(slug)$p
+panel_legend_md <- function(slug) {
+  md <- legend_md(panel_env(slug)$LEGEND, slug = slug)
+  c("::::: {.callout-note collapse=\"true\"}",
+    paste0("## Legend block --- ", sub("^### ", "", md[1])),
+    md[-1], ":::::")
+}
+
+ALL_SLUGS <- sub("\\.R$", "", sort(list.files(PANEL_DIR, pattern = "^biogax.*\\.R$")))
+DRAWN <- character(0)
+draw_here <- function(s) { DRAWN <<- c(DRAWN, s); invisible(s) }
+
+# Numbers quoted in the prose are READ FROM THE OBJECT, never transcribed.
+BA <- readRDS(here::here("results", "biogenesis_axis_developmental.rds"))
+if (is.null(BA$foxo_reach))
+  stop("results/biogenesis_axis_developmental.rds predates PART I. Re-source ",
+       "scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R ",
+       "in Positron, then render again.", call. = FALSE)
+num <- function(x, d = 2) formatC(x, format = "f", digits = d)
+sp  <- as.data.frame(BA$split)
+core <- function(part, col) sp[[col]][sp$regulon == "CORE_MITO" & sp$part == part]
+```
+
+::: {.callout-important}
+## What this document is
+
+A question raised repeatedly across Block A and never closed, now closed, with the
+six panels that close it. **It is a discussion document, not a manuscript section.**
+None of these panels holds a figure slot; they sit outside `rebuild_panels.R` and
+`panels_to_pdf.R` and do not appear in `paper/analysis_record.qmd`. Nothing here
+re-runs an analysis --- each panel is sourced from `figures/panels/` and renders its
+own legend block, so this document cannot drift from the scripts.
+
+Full write-up with every number and its source:
+`docs/2026-08-17_developmental_oxphos_decline_and_the_biogenesis_axis.md`.
+Analysis: `scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R`.
+:::
+
+# The question, and why it stayed open
+
+The Results describe what changes in the gland between six and twelve weeks. That
+description then carries the anti-apoptotic window: respiration falls, the PUMA
+trigger is lost. The paper models the fall experimentally with **PGC-1a and NRF1**.
+
+So a reviewer will ask, and we should ask first: **is the developmental change a
+PGC1a-axis change at all?**
+
+The prior says it should not be. The 6-to-12-week loss is OXPHOS-specific rather
+than a general loss of mitochondrial content, and PGC-1a governs far more of the
+mitochondrion than the respiratory chain. If the axis had turned down, much more
+than the chain should have gone with it.
+
+**The question stayed open for a whole analysis block because the two instruments
+that look like they should answer it are both broken for this contrast**, and
+nobody had measured how badly. The TF-target sets built by intersecting a factor's
+programme with MitoCarta fall whenever OXPHOS falls --- by construction. And the
+mammary-context TF sets report which cell state the gland is in, not which factor
+is active. Panel D3 is that failure, measured.
+
+# The answer
+
+## The regulon splits in two directions {#sec-d1}
+
+```{r}
+#| label: fig-d1
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_regulon_split"))
+#| fig-height: !expr panel_h("biogax_regulon_split")
+panel_p("biogax_regulon_split")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_regulon_split"), sep = "\n")
+```
+
+**A change in a transcription factor's activity acts on its regulon. It cannot act
+on a functional subset of the regulon.** Inside the ERRa/NRF1/GABP regulon the
+`r core("n OXPHOS subunits", "n_genes")` respiratory subunits fall to the
+**`r num(core("n OXPHOS subunits", "wt_null_pct"), 1)`th percentile** of a matched
+null while the other `r core("rest", "n_genes")` members rise to the
+**`r num(core("rest", "wt_null_pct"), 1)`th**, and the regulon taken whole does not
+move (`r num(core("all", "wt_null_pct"), 1)`th).
+
+All four regulons that actually contain the respiratory chain split the same way.
+The three that do not split hold between two and nine subunits, so the test cannot
+run --- read it as four of four. And the panel shows the test can detect an axis
+change when there is one: the ER-associated mitochondrial regulon moves as a unit,
+at the `r num(sp$wt_null_pct[sp$regulon == "DEVELOPMENTAL_MITO" & sp$part == "all"], 1)`th
+percentile, upward.
+
+## The gland withdraws from the chain, not from the organelle {#sec-d2}
+
+```{r}
+#| label: fig-d2
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_arm_map"))
+#| fig-height: !expr panel_h("biogax_arm_map")
+panel_p("biogax_arm_map")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_arm_map"), sep = "\n")
+```
+
+A withdrawal of mitochondrial biogenesis predicts that the subunits, the factors
+that assemble them, the mitochondrial ribosome and the import channels all move
+together --- they are one programme. **The structural subunits sit at the 1.75th
+percentile as a class; the assembly factors that build those same complexes sit at
+the 53rd.** Meanwhile every catabolic arm rises.
+
+Two details are worth arguing over. **Complex II does not fall** --- the one
+respiratory complex that neither pumps protons nor carries an mtDNA-encoded
+subunit, and also a TCA enzyme. And **complex IV leads the withdrawal**. If the
+withdrawal is specifically from proton-pumping capacity rather than from
+"mitochondria", that is a sharper claim than the one currently in the text and it
+is worth deciding whether to make it.
+
+## The factors themselves do not move {#sec-d3}
+
+```{r}
+#| label: fig-d4
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_factor_roster"))
+#| fig-height: !expr panel_h("biogax_factor_roster")
+panel_p("biogax_factor_roster")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_factor_roster"), sep = "\n")
+```
+
+Two facts here bear directly on the experimental part.
+
+**PGC-1a is not expressed in these cells.** `Ppargc1a` sits at baseMean
+`r num(BA$roster$baseMean[BA$roster$sym == "Ppargc1a"], 0)`, against PRC's
+`r num(BA$roster$baseMean[BA$roster$sym == "Pprc1"], 0)`. Whatever coactivator the
+mammary epithelium uses, it is not PGC-1a. That does not stop PGC-1a being a good
+instrument --- if anything it makes the gain-of-function cleaner --- but it means the
+transgene level is not a calibration, and it is a question a reviewer may raise.
+
+**PRC is a lead and not a result.** `Pprc1` is the only PGC-1 family member that
+moves and it does so in both genotypes with an adjusted p of
+`r formatC(BA$roster$wt_padj[BA$roster$sym == "Pprc1"], format = "e", digits = 1)`
+--- but against genes of its own abundance it sits at the
+`r num(BA$roster$wt_pct[BA$roster$sym == "Pprc1"], 1)`th percentile, inside the band.
+The small p is precision at high expression, not a large effect. PRC has never been
+examined in this project; it is worth an antibody, not a mechanism.
+
+## Why the TF layer could not answer it {#sec-d4}
+
+```{r}
+#| label: fig-d3
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_tf_context"))
+#| fig-height: !expr panel_h("biogax_tf_context")
+panel_p("biogax_tf_context")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_tf_context"), sep = "\n")
+```
+
+Context explains `r num(100 * BA$tf_layer$adj_r2_context, 0)` per cent of the
+variance in lane score and the identity of the transcription factor
+`r num(100 * BA$tf_layer$adj_r2_tf, 0)` per cent. Inside one context, a MICOS
+structural protein and general transcription factor IIIA both outrank ERRa. **A
+layer in which CHCHD3 beats ERRa cannot be used to nominate ERRa** --- or to
+exonerate it, which is why the argument above rests on the regulon split and the
+arm map instead.
+
+# Is FOXO3 the strongest hypothesis? {#sec-foxo3}
+
+```{r}
+#| label: fig-d5
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_foxo3"))
+#| fig-height: !expr panel_h("biogax_foxo3")
+panel_p("biogax_foxo3")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_foxo3"), sep = "\n")
+```
+
+**FOXO3 is the strongest readable SIGNAL. It is not the strongest hypothesis for
+the OXPHOS decline, and the distinction is worth holding onto.**
+
+What makes it the strongest signal is that it survives both filters that destroy
+everything else in the TF layer. Its target set contains **no OXPHOS subunit at
+all**, so its rise cannot be mitochondrial content; and it carries no Gray context,
+so it cannot be the cell-state artifact. It is the top of the 69 context-free lanes.
+Gene level agrees: `Foxo3` at the
+`r num(BA$roster$wt_pct[BA$roster$sym == "Foxo3"], 1)`th expression-matched
+percentile, `Sirt1` at the
+`r num(BA$roster$wt_pct[BA$roster$sym == "Sirt1"], 1)`th, both significant.
+
+What stops it being the driver is the same test that disqualified the PGC1a axis as
+the cause, applied consistently: **reach**. FOXO3's regulon contains
+**`r BA$foxo_reach$covers_ox[BA$foxo_reach$set == "TFT_FOXO3_CHUNG"]` of the 89
+subunits that fell**, against 59 for the ERRa/NRF1/GABP regulon. A factor that
+touches none of the affected genes cannot be their proximal cause, however clean
+its own signal is. **FOXO3 is the readable marker of the adult state in which
+respiration is lower --- which corroborates the state hypothesis rather than
+competing with it.**
+
+Three further readings the panel forecloses, each of which is a story someone will
+otherwise tell:
+
+1. **"Myc blocks the developmental FOXO3 rise."** No --- the programme rises with
+   age in *both* genotypes and the interaction is not significant. What Myc does is
+   suppress it by a constant offset at both ages, which is a clean genotype effect
+   and the part worth keeping.
+2. **"The adult gland arms PUMA through FOXO3."** No --- `Bbc3` is flat in the
+   wild-type timeline. PUMA falls in the *Myc+* timeline, which is a different
+   statement.
+3. **"The gland becomes quiescent, hence less respiration."** Only the atrophy and
+   turnover arm of the programme moves; the cell-cycle-arrest arm does not move at
+   all. Whatever this is, it is not a simple arrest programme.
+
+::: {.callout-warning}
+## Two things not to say about this panel
+
+`Foxo3`'s **interaction adjusted p is 1**. The supported sentence is "the wild type
+rises, the Myc+ gland does not" --- never "Myc blocks it". Two halves that differ in
+significance do not differ significantly, which is the trap already recorded for
+the Foxo3/PUMA pair.
+
+And the two genotype rows must not be read as "the FOXO3 programme does not
+attenuate". **NES is scale-free and cannot see an amplitude change**; equal NES at
+both ages is not equal effect size.
+:::
+
+# What licenses the PGC1a/NRF1 rescue {#sec-rescue}
+
+```{r}
+#| label: fig-d6
+#| echo: false
+#| fig-width: !expr panel_w(draw_here("biogax_rescue_licence"))
+#| fig-height: !expr panel_h("biogax_rescue_licence")
+panel_p("biogax_rescue_licence")
+```
+
+```{r}
+#| output: asis
+#| echo: false
+cat(panel_legend_md("biogax_rescue_licence"), sep = "\n")
+```
+
+If the axis did not cause the decline, the experiment needs its justification
+stated. The strongest form is not that PGC-1a is a plausible mechanism --- it is not
+the mechanism --- but that **the mouse cannot answer the question and the
+intervention can.**
+
+In the gland, respiratory expression is inseparable from the epithelial state that
+carries it: carrier and cargo correlate at
+**r = `r num(BA$carrier$cor_ox_apLE_nonmito, 2)`** with every mitochondrial gene
+stripped from the carrier, a variance inflation factor of
+`r num(BA$carrier$vif_apLE_nonmito, 1)`. No observational contrast in this animal
+separates "respiration fell" from "the state that respires became rarer". An
+intervention that moves respiration while cell state is held fixed is the only
+instrument that breaks that. **The limitation is the licence.**
+
+Three properties make the axis the right instrument, and all three are measured:
+
+- **Reach.** It did not lower these genes but it reaches
+  `r BA$rescue$reach$covers_ox[BA$rescue$reach$regulon == "CORE_MITO"]` of the 89
+  that fell.
+- **Convergence.** ERRa and NRF1 regulons share only
+  `r BA$rescue$convergence_test$n_shared` genes and half of that overlap is
+  respiratory subunits ---
+  `r num(BA$rescue$convergence_test$fold, 2)`-fold over their union,
+  p = `r num(BA$rescue$convergence_test$p_enrich, 4)`. Two interventions whose reach
+  barely overlaps, giving one phenotype, localise the effect to what they share.
+  **Using both factors is a control, not a redundancy.**
+- **Non-circularity.** The death effectors are not in the axis: five of the 25
+  pro-apoptotic MitoCarta genes, below expectation, with **no PUMA, no BAX, no
+  caspase**. They are in MYC's regulon at 2.7-fold. So a restored death phenotype
+  cannot be direct transcription of the machinery --- it has to run through the
+  respiratory state, which is the claim under test.
+
+::: {.callout-tip}
+## The sentence for the paper
+
+> Because respiratory gene expression in the gland is inseparable from the
+> epithelial state that carries it, the developmental data cannot establish whether
+> respiration itself is the operative variable. We therefore raised it directly.
+> PGC-1a and NRF1 were chosen not to reproduce the developmental mechanism --- which
+> is not an axis-activity change --- but because their regulons reach two thirds of
+> the subunits that declined while excluding the apoptotic effectors, so a restored
+> death phenotype cannot be direct transcription of the death machinery.
+:::
+
+# Decisions this puts to the group
+
+1. **Does the Results text change?** Any sentence implying the developmental loss
+   is a decline in PGC1a-driven biogenesis has to go. The replacement is stronger,
+   not weaker: the axis is unchanged and only its respiratory arm falls.
+2. **Do we make the sharper claim?** Complex II does not fall and the electron
+   carriers rise. "The gland withdraws from proton-pumping capacity" is more
+   specific than "from respiration" --- and more falsifiable.
+3. **How is the rescue described?** As an instrument, with the reach and
+   convergence numbers, or as a mimic. The first survives review; the second
+   invites the objection this document exists to pre-empt.
+4. **Do we pre-specify the overshoot in writing?** The developmental change was
+   arm-selective and the rescue will not be: assembly factors, mitoribosome and
+   central dogma never fell yet are 29 to 35 per cent inside the regulon. Naming
+   that before the experiment keeps the claim to "raising respiratory capacity
+   restores death competence".
+5. **Is the carrier question worth an experiment?** Separating cell state from
+   respiration needs sorted AP/HS/BA or single-cell. It is the one question bulk
+   cannot answer, and it is the question a hostile reviewer will find.
+6. **Is PRC worth a Western?** It is the only PGC-1 family coactivator this tissue
+   expresses. It does not clear its own null, so it is not a result --- but if asked
+   "which coactivator does the gland use", we currently cannot answer.
+
+# Scope, stated once {#sec-scope}
+
+```{r}
+#| output: asis
+#| echo: false
+cat(BA$notes[grepl("^(SCOPE|What|and PART E|MAGNITUDE)", BA$notes)], sep = "\n")
+```
+
+**BATCH = TIMEPOINT.** Every between-age number here is confounded with cohort.
+What survives that is the arm-selectivity --- a shared batch effect cannot move one
+arm of a regulon to the floor and the rest to the ceiling --- and the within-timepoint
+couplings, which remove the timepoint means entirely. What does not survive is the
+*magnitude* of the developmental decline. n = 24, twelve per genotype: this is
+ranking plus a set of negatives, not confirmatory inference.
+
+One correction that belongs in the open: **the within-age coupling between
+respiration and the cell cycle (r = 0.89) must not be quoted on its own.** In the
+same twelve samples the OXPHOS composite correlates with the whole PGC1a regulon at
+0.98 and with the mitochondrial ribosome at 0.97. Everything correlates with
+everything at this n; only the gene-level percentile against all expressed genes is
+readable.
+
+```{r}
+#| label: completeness
+#| echo: false
+#| output: asis
+
+missing <- setdiff(ALL_SLUGS, DRAWN)
+extra   <- setdiff(DRAWN, ALL_SLUGS)
+dup     <- DRAWN[duplicated(DRAWN)]
+if (length(missing) || length(extra) || length(dup))
+  stop("panel bookkeeping: missing [", paste(missing, collapse = ", "),
+       "] extra [", paste(extra, collapse = ", "),
+       "] duplicated [", paste(dup, collapse = ", "), "]")
+cat(sprintf("\n*%d discussion panels, each drawn once. Analysis run %s.*\n",
+            length(ALL_SLUGS), as.character(BA$analysis_date)))
+```
