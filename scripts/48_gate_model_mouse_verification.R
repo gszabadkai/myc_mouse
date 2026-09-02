@@ -100,11 +100,14 @@
 #
 # Reads : results/dds_int_run.rds, results/combined_df_annotated.rds,
 #         results/mitopps_scores.rds            (script 08),
-#         results/priming_arm_teb.rds           (script 42, POSITIVE CONTROL),
-#         results/substrate_specificity_tradeoff.rds (script 43, POSITIVE CONTROL),
 #         data/genesets_from_library/mammary_mito_myc_metab_v1_mouse.gmt,
 #         functions/reconcile_gene_symbols.R (MANDATORY -- vintage-aware membership)
 # Writes: results/gate_model_verification.rds
+#
+# SELF-CONTAINED: those three .rds are the only state it needs, so a cold R session
+# is the right way to run it. The positive control is REFITTED here from dds +
+# mitopps_scores rather than read back from script 42's or 43's saved object -- that
+# is the point of it, since reading the answer would not test the load block.
 #
 # RUNTIME: about two minutes. PART B runs 5000 within-timepoint permutations for
 # each of 8 axes; PART E fits ~17k gene-wise models by a single lm.fit.
