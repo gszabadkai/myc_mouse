@@ -26,7 +26,7 @@ Read this file first, then the two docs named under "What happened this session"
 | pushed | **no** -- `paper-final` has no upstream and does not exist on the remote. All 17 commits are local only. |
 | panels | 28 `figures/panels/fig*.R` + 6 `biogax_*.R` discussion panels (deliberately outside both runners and the 28-count) |
 | circulation PDFs | 12 / 8 / 4 pages |
-| scripts | 00-48. **48 is new and UNRUN by the author** -- but dry-run twice in scratchpad, positive control passing, and the doc is reconciled against it (2026-09-02, second pass). |
+| scripts | 00-48. **48 RUN by the author 2026-09-02**, positive control passing, reproducing the scratchpad run bit-for-bit. `results/gate_model_verification.rds` exists. It has since gained a two-endpoint `model_form` (below) and needs one ~2-minute re-run to carry it. |
 | working tree | clean apart from the nine untracked-by-rule items |
 
 **Untracked and staying that way:** the six `.txt` session exports at the repo root,
@@ -48,15 +48,11 @@ figures to match; the cut text has not yet arrived.
 
 ## 2. Do this first
 
-1. **Run script 48 in Positron.** `source(here::here("scripts", "48_gate_model_mouse_verification.R"))`.
-   It stops on a positive control before computing anything new: it must print
-   `+6.089 (ref +6.089), p 0.00523 (ref 0.00523)`. If that fails the load block has
-   drifted and nothing downstream is readable. Runtime ~2 minutes. Writes
-   `results/gate_model_verification.rds`. Then work through its `if (FALSE)` sandbox --
-   it is ordered as the three questions the human arm needs answered, not as the parts.
-   **This is now confirmation, not discovery:** every number in
-   `docs/2026-09-02_myc_oxphos_priming_gate_model.md` has been reconciled against a
-   scratchpad run of the script as it currently stands (section 3, "the reconciliation").
+1. **Re-source script 48 once** (~2 min). It has not changed in any way that could move a
+   number -- `model_form` now loops over both co-primary endpoints instead of `PUMA` alone,
+   and every `PUMA` row is identical to your run. The re-run only makes the saved object
+   carry the `BUFFER` rows that section 3's crossover finding rests on. Verified in the
+   scratchpad; the positive control still prints `+6.089 / 0.00523`.
 2. **Then the cut**, if the text is ready. See section 6.
 
 ---
@@ -131,6 +127,16 @@ provenance section requires; the script now stores all five (`separability$r_myc
 Script 44's percentiles cited in section 3.3 were checked against
 `results/collapse_module_ownership.rds` and are exact (`Bbc3` 0.51, `Bcl2l11` 91.6).
 
+**And the author's run then contradicted a third statement, the one that mattered most.**
+Section 3.2 claimed the model collapses to a pure gate. That is true of `Bbc3:Bcl2l1` and
+**false of `Mcl1:Bcl2l1`** -- the endpoint this same document promotes to co-primary. The
+guardian balance has a real, covariate-surviving negative wild-type slope, so it crosses
+over at `M*` = +0.545 instead of switching on at zero. `model_form` now fits both endpoints
+so the object cannot hide it again, section 3.2 carries both tables, and the human
+pre-specification (4.3) now says to retain the `X` main effect for `BUFFER`. The crossover
+reaches p < 0.05 only on the genotype estimator -- transcript p 0.20, signature p 0.18, same
+sign and consistent `M*` -- so read it as power, not as contradiction.
+
 ### Three corrections to the human plan
 
 `docs/2026-08-27_human_validation_plan.md` sections 7.1, 7.2 and 7.3 are superseded:
@@ -183,11 +189,14 @@ coming back.
    0.05, so neither may be labelled on a panel -- only their difference.
 4. **Screen risers as well as fallers.** `Esrrb` was missing from the first ledger. The
    within-animal coupling was the discriminating test both times.
-5. **NEW (2026-09-02): "respiration is protective without MYC" is false.** The -4.80
-   wild-type slope on record has no covariates. Adjusted for epithelial and immune content
-   the wild-type slope is **-0.01 (p 0.95)** while Myc+ is **+0.87 (p 0.0019)**. It is a
-   **gate**, not a crossover. The interaction itself is unharmed and gets stronger on
-   adjustment.
+5. **NEW (2026-09-02): "respiration is protective without MYC" is false ON THE TRIGGER, and
+   the qualifier is load-bearing.** For `Bbc3:Bcl2l1` the -4.80 wild-type slope on record has
+   no covariates; adjusted for epithelial and immune content it is **-0.01 (p 0.95)** while
+   Myc+ is **+0.87 (p 0.0019)** -- a **gate**, not a crossover, and the interaction gets
+   stronger on adjustment. **But the guardian balance `Mcl1:Bcl2l1` behaves the other way:**
+   its wild-type slope is genuinely negative and survives adjustment (`bX` **-0.541,
+   p 0.0040**; dropping `X` costs R2 0.828 -> 0.724), so it is a real crossover at
+   `M*` = **+0.545**. Never state the collapse without naming the endpoint.
 
 ---
 
@@ -210,7 +219,7 @@ Retiring a panel is three steps, all of them required:
 - Per-slot choice between each original panel and its alternative: **2F, 2G, 2H+2I, S2D**.
 - `MYC` against `Myc` on the 2F/2G quadrant notes -- unresolved.
 - A fifth arrow in `figS1_design_contrasts.R:60-93` if the diagonal panel is adopted.
-- Script 48 unrun **by the author**; its numbers reconciled against a scratchpad run.
+- Script 48 run and reconciled. One cheap re-run outstanding, for the two-endpoint `model_form`.
 - Whether the gate model earns a panel. It currently has none, deliberately -- it is a
   response-to-reviewers and human-arm asset, and the 28-panel count is unchanged.
 - 17 unpushed commits. No push authorised.

@@ -55,7 +55,7 @@ T_i  =  b0  +  bM * M_i  +  bX * X_i  +  bMX * (M_i x X_i)  +  g' C_i  +  e_i   
 | parameter | prediction | meaning |
 |---|---|---|
 | `bMX` | **> 0** | the whole claim: respiration primes **in proportion to MYC** |
-| `bX`  | **= 0** at `M = 0` | respiration alone does not prime; it is not an independent input |
+| `bX`  | **= 0** at `M = 0`, **on `T`** | respiration alone does not prime; it is not an independent input. **Holds for the trigger, not for the guardian balance `B`** -- see section 3.2 |
 | `bM`  | > 0 | MYC raises the trigger -- canonical, not the test |
 
 If `bX = 0` holds, (1) collapses to a **one-parameter gate**
@@ -179,17 +179,42 @@ The respiratory term takes the whole interaction; mitochondrial translation cont
 nothing once respiration is in the model. Report the head-to-head with the marginal row --
 without it, "OXPHOS-specific" is not supported at n = 24.
 
-### 3.2 The model is a pure gate: `bX = 0`
+### 3.2 The collapse to a pure gate holds for the trigger -- and **not** for the guardian balance
 
-| MYC estimator | R2 additive | R2 interaction | R2 gate-only (drop `X`) | p interaction vs additive | **p for dropping `X`** |
-|---|---|---|---|---|---|
-| genotype | 0.643 | 0.807 | **0.807** | 0.0010 | **0.973** |
-| MYC transcript | 0.627 | 0.760 | 0.677 | 0.0055 | 0.022 |
-| MYC signature | 0.637 | 0.663 | 0.630 | 0.249 | 0.198 |
+Endpoint `T` = `Bbc3:Bcl2l1`:
+
+| MYC estimator | `bX` | p for `bX` | R2 additive | R2 interaction | R2 gate-only (drop `X`) | **p for dropping `X`** | `M*` |
+|---|---|---|---|---|---|---|---|
+| genotype | **-0.006** | 0.973 | 0.643 | 0.807 | **0.807** | **0.973** | +0.007 |
+| MYC transcript | +0.372 | 0.022 | 0.627 | 0.760 | 0.677 | 0.022 | -1.08 |
+| MYC signature | +0.273 | 0.198 | 0.637 | 0.663 | 0.630 | 0.198 | -1.97 |
 
 With the experimentally-set MYC dose, **dropping the OXPHOS main effect costs exactly
 nothing** (identical R2, p = 0.973). Equation (1) collapses to (1'). The trigger is a
 **product**: no MYC, no effect of respiration.
+
+Endpoint `B` = `Mcl1:Bcl2l1`, the co-primary promoted in section 4.3 -- **and here the
+collapse is rejected**:
+
+| MYC estimator | `bX` | p for `bX` | R2 additive | R2 interaction | R2 gate-only (drop `X`) | **p for dropping `X`** | `M*` |
+|---|---|---|---|---|---|---|---|
+| genotype | **-0.541** | **0.0040** | 0.607 | 0.828 | **0.724** | **0.0040** | **+0.545** |
+| MYC transcript | -0.160 | 0.200 | 0.641 | 0.843 | 0.828 | 0.200 | +0.377 |
+| MYC signature | -0.282 | 0.184 | 0.531 | 0.663 | 0.628 | 0.184 | +0.915 |
+
+**The guardian balance is a genuine crossover, not a gate.** In the MYC-null gland the
+`MCL1:BCL-XL` ratio *falls* as respiration rises (`slope_wt` -0.512, covariate-adjusted;
+`Mcl1` itself at -1.00 against a flat `Bcl2l1`), and MYC reverses the sign. `M*` = **+0.545**
+lands between the two genotypes rather than at either of them -- the only place in this
+analysis where equation (2) returns a number that is both positive and inside the observed
+range. Two honest limits on it: the crossover reaches p < 0.05 only on the **genotype**
+estimator (transcript p 0.20, signature p 0.18 -- same sign, consistent `M*`, so this reads
+as power rather than contradiction), and `M*` is a ratio of two estimated coefficients at
+n = 24, so treat it as a location, not as an interval.
+
+**Consequence for the human model.** Fit (1) with the `X` main effect retained for `B` and
+report the collapse test rather than assuming it. The one-parameter form (1') is licensed
+for `T` alone.
 
 **Correction to the record.** The internal note carried "within the wild-type animals the
 OXPHOS -> PUMA:BCL-XL slope is -4.80, R2 0.328, p 0.052" -- i.e. a genuine crossover, with
@@ -263,7 +288,9 @@ And the endpoint menu, full model and within-timepoint (the cross-sectional regi
 4. **`Mcl1:Bcl2l1` is the most robust endpoint in the whole analysis** (+0.994, p 0.00014;
    within-timepoint +0.351, p 0.00058; permutation 99.4th percentile, p 0.0056). As MYC-driven
    respiration rises, **BCL-XL is withdrawn while MCL1 is retained** -- a switch of guardian
-   dependence, visible in normal epithelium, before any tumour exists.
+   dependence, visible in normal epithelium, before any tumour exists. It is also the one
+   endpoint with a **two-sided** shape: section 3.2 shows the wild-type slope is genuinely
+   negative, so `B` crosses over at `M*` = +0.545 rather than switching on at zero.
 
 **This does not overturn the manuscript's PUMA claim.** That claim is about a *different*
 statistic: the departure of `Bbc3` from the x0.55 dose line between 6W and 12W (script 44;
@@ -337,6 +364,8 @@ Pre-specify **two co-primaries**, in this order:
 - `BUFFER = log2(MCL1) - log2(BCL2L1)` -- the guardian switch. Strongest and most robust in
   the mouse, survives the cross-sectional restriction, and carries a drug-shaped prediction
   (MCL1 dependence: S63845 / AMG-176; DepMap MCL1 Chronos; BH3 profiling with MS1 against HRK).
+  **Fit it with the `X` main effect retained** (section 3.2): unlike `PRIME`, this endpoint
+  does not collapse to the one-parameter gate, and `M*` is the quantity to report for it.
 - `PRIME = log2(BBC3) - log2(BCL2L1)` -- unchanged, the cross-species continuity endpoint.
 
 and add two **decomposition endpoints** that are mandatory whenever `PRIME` is positive,

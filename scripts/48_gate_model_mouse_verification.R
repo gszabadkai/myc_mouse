@@ -360,14 +360,19 @@ gate_estimators <- dplyr::bind_rows(lapply(c("ox_rel", "ox_ppd", "ox_lvl"), func
 # =============================================================================
 message("48 PART D: model form")
 
-model_form <- dplyr::bind_rows(lapply(c("geno", "mRNA", "msig"), function(mn) {
+# BOTH co-primary endpoints: the collapse to (1') is a property of the ENDPOINT,
+# not of the model. PUMA drops its X main effect for free; BUFFER does not, and a
+# single row would have hidden that.
+model_form <- dplyr::bind_rows(lapply(c("PUMA", "BUFFER"), function(ep)
+                dplyr::bind_rows(lapply(c("geno", "mRNA", "msig"), function(mn) {
   mv <- if (mn == "geno") ifelse(sm$myc == "pos", 1, 0) else M[[mn]]
-  d  <- data.frame(y = Z(Y$PUMA), m = mv, a = Z(X$ox_rel), epi = epi, imm = imm)
+  d  <- data.frame(y = Z(Y[[ep]]), m = mv, a = Z(X$ox_rel), epi = epi, imm = imm)
   m_add  <- stats::lm(y ~ m + a + epi + imm, d)
   m_full <- stats::lm(y ~ m * a + epi + imm, d)
   m_gate <- stats::lm(y ~ m + I(m * a) + epi + imm, d)
   s <- summary(m_full)$coefficients
-  tibble::tibble(estimator = mn,
+  tibble::tibble(endpoint = ep, estimator = mn,
+                 bX = s["a", 1], p_bX = s["a", 4],
                  r2_additive = summary(m_add)$r.squared,
                  r2_interaction = summary(m_full)$r.squared,
                  r2_gate_only = summary(m_gate)$r.squared,
@@ -375,7 +380,7 @@ model_form <- dplyr::bind_rows(lapply(c("geno", "mRNA", "msig"), function(mn) {
                  p_interaction_vs_additive = stats::anova(m_add, m_full)$`Pr(>F)`[2],
                  p_drop_X_main = stats::anova(m_gate, m_full)$`Pr(>F)`[2],
                  crossover_Mstar = -s["a", 1] / s[ixof(s), 1])
-}))
+}))))
 
 simple_slopes <- dplyr::bind_rows(lapply(c("ox_rel", "ox_ppd"), function(an)
   dplyr::bind_rows(lapply(c("none", "epi + imm"), function(cv) {
@@ -541,7 +546,9 @@ stopifnot(
   # the two halves of the pre-specified ratio must both have been fitted alone,
   # or PART E cannot answer the question it exists for
   all(c("Bbc3", "Bcl2l1") %in% calib$gene[!is.na(calib$beta)]),
-  nrow(power_transfer) == 3L)
+  nrow(power_transfer) == 3L,
+  # both co-primaries must be present, or the gate-collapse claim is unscoped
+  all(c("PUMA", "BUFFER") %in% model_form$endpoint))
 
 NOTES <- c(
   "MODEL: T = b0 + bM*M + bX*X + bMX*(M x X) + covariates, T a BH3-sensor:guardian",
