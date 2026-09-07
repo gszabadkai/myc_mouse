@@ -1,7 +1,7 @@
 ---
 date: 2026-09-07
 tags: [project/myc_mouse, experimental-cohorts, fat-pad-timeline, oxphos, ordered-trend, confound]
-status: CLOSED -- T1 FAIL, T3 VOID, and the adjustment fails its own negative control; the reversal question stays OPEN and this cohort cannot close it
+status: CLOSED -- author-run 2026-09-07, all 33 quoted numbers reconciled against results/fatpad_tumour_limb_trend.rds. T1 FAIL, T3 VOID, adjustment fails its own negative control; the reversal question stays OPEN and this cohort cannot close it
 relates-to:
   - scripts/49_fatpad_tumour_limb_oxphos_trend.R  (writes results/fatpad_tumour_limb_trend.rds)
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md  (the different, earlier estimand)
@@ -12,7 +12,8 @@ relates-to:
 # Does relative OXPHOS share rise again as tumours establish? Not measurably — and the test could not be made admissible
 
 A between-group **ordered trend** across `12WK_POS` < `SMALL_TUMOUR` < `LARGE_TUMOUR`
-(n = 20), pre-specified in full before the fit. This is a **different estimand** from the
+(n = 20), pre-specified in full before the fit. Author-run 2026-09-07; every number below
+is read from `results/fatpad_tumour_limb_trend.rds` and was checked back against it. This is a **different estimand** from the
 pre-check's within-tumour correlation, which stays closed and is not reopened.
 
 **Headline: the primary endpoint does not rise (T1 FAIL), and the hard admissibility
