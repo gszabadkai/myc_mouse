@@ -1,7 +1,7 @@
 ---
 date: 2026-09-02
 tags: [project/myc_mouse, project/human_validation, model, apoptotic-priming, oxphos, myc, bbc3, bcl2l11, mcl1, bcl2l1]
-status: proposed model + mouse verification (scratchpad dry run; reconcile against the author's own run of script 48)
+status: proposed model + mouse verification, AUTHOR-RUN 2026-09-07; all 47 quoted numbers reconciled against results/gate_model_verification.rds
 supersedes-in-part: docs/2026-08-27_human_validation_plan.md sections 7.1, 7.2, 7.3
 relates-to:
   - scripts/48_gate_model_mouse_verification.R  (writes results/gate_model_verification.rds)
@@ -27,10 +27,11 @@ cohort that has no genotype, no timepoints and no perturbation.
 
 **Scope, stated once.** n = 24; batch = timepoint; every model below is a correlation among
 24 mice. This is measurement design and ranking, not confirmatory inference. The causal
-claims in the manuscript belong to the perturbations. Numbers below come from a verified
-scratchpad run of `scripts/48_gate_model_mouse_verification.R`; the script carries a
-positive control that reproduces script 43 PART B to five decimal places
-(`+6.089`, `p = 0.00523`), and every number should be re-read from the author's own run.
+claims in the manuscript belong to the perturbations. Every number below is read from
+`results/gate_model_verification.rds` as written by the author's own run of
+`scripts/48_gate_model_mouse_verification.R` (2026-09-07); the script carries a positive
+control that reproduces script 43 PART B to five decimal places (`+6.089`, `p = 0.00523`),
+and all 47 quoted values were checked back against the object after that run.
 
 ---
 

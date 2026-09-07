@@ -26,7 +26,7 @@ Read this file first, then the two docs named under "What happened this session"
 | pushed | **yes, 2026-09-03** -- `paper-final` is on `origin` at `e348dd8`, tracking set, 0 ahead / 0 behind. First push of this branch; no PR opened, since Block C is not finished. |
 | panels | 28 `figures/panels/fig*.R` + 6 `biogax_*.R` discussion panels (deliberately outside both runners and the 28-count) |
 | circulation PDFs | 12 / 8 / 4 pages |
-| scripts | 00-48. **48 RUN by the author 2026-09-02**, positive control passing, reproducing the scratchpad run bit-for-bit. `results/gate_model_verification.rds` exists. It has since gained a two-endpoint `model_form` (below) and needs one ~2-minute re-run to carry it. |
+| scripts | 00-48. **48 run by the author 2026-09-02 and re-run 2026-09-07** after the two-endpoint `model_form` was added. Script and saved object are in step; all 47 numbers quoted in the gate-model doc reconcile against `results/gate_model_verification.rds`, 0 mismatches. |
 | working tree | clean apart from the nine untracked-by-rule items |
 
 **Untracked and staying that way:** the six `.txt` session exports at the repo root,
@@ -36,8 +36,7 @@ Read this file first, then the two docs named under "What happened this session"
 
 **New this session, committed and pushed:**
 
-- `scripts/48_gate_model_mouse_verification.R` -- author-run 2026-09-02; the committed
-  version is **one re-source ahead** of the saved object (two-endpoint `model_form`).
+- `scripts/48_gate_model_mouse_verification.R` -- author-run; script and saved object in step.
 - `docs/2026-09-02_myc_oxphos_priming_gate_model.md`
 - `docs/handoff.md` (this file)
 
@@ -52,12 +51,9 @@ figures to match; the cut text has not yet arrived.
 
 ## 2. Do this first
 
-1. **Re-source script 48 once** (~2 min). It has not changed in any way that could move a
-   number -- `model_form` now loops over both co-primary endpoints instead of `PUMA` alone,
-   and every `PUMA` row is identical to your run. The re-run only makes the saved object
-   carry the `BUFFER` rows that section 3's crossover finding rests on. Verified in the
-   scratchpad; the positive control still prints `+6.089 / 0.00523`.
-2. **Then the cut**, if the text is ready. See section 6.
+1. **The cut**, if the text is ready. See section 6. Nothing else is outstanding on the
+   mouse side: script 48 is run, its object is in step with the script, and the gate-model
+   doc is fully reconciled against it.
 
 ---
 
@@ -223,7 +219,7 @@ Retiring a panel is three steps, all of them required:
 - Per-slot choice between each original panel and its alternative: **2F, 2G, 2H+2I, S2D**.
 - `MYC` against `Myc` on the 2F/2G quadrant notes -- unresolved.
 - A fifth arrow in `figS1_design_contrasts.R:60-93` if the diagonal panel is adopted.
-- Script 48 run and reconciled. One cheap re-run outstanding, for the two-endpoint `model_form`.
+- ~~Script 48~~ done: run, re-run, reconciled (47/47) 2026-09-07.
 - Whether the gate model earns a panel. It currently has none, deliberately -- it is a
   response-to-reviewers and human-arm asset, and the 28-panel count is unchanged.
 - Nothing unpushed. `paper-final` is on `origin`; further pushes still need a word.
