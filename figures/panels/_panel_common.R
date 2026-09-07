@@ -101,6 +101,19 @@ verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
 
 direction_cols <- c(up = "#D6604D", down = "#4393C3")
 
+# The fat-pad progression groups (experimental-cohorts branch, script 49). An
+# ORDERED series, so it takes a sequential ramp rather than the categorical
+# genotype palette -- the reader's job on those panels is to see an order, not to
+# tell four groups apart. Values extend `ms_sequential`'s mid and high with one
+# interpolated step, so it is the same ramp rather than a second scheme; the
+# near-white `low` is unusable for points and is not used. The 6W groups are never
+# drawn on the limb panels and deliberately have no colour here.
+fatpad_group_cols <- c("12WK_POS"     = "#8FA3B0",
+                       "SMALL_TUMOUR" = "#54707F",
+                       "LARGE_TUMOUR" = "#243642")
+fatpad_group_labs <- c("12WK_POS" = "12 weeks", "SMALL_TUMOUR" = "small tumour",
+                       "LARGE_TUMOUR" = "large tumour")
+
 # Ink for TEXT that reports significance. Declared here because
 # figures/fig01_mito_content.R:106 inlines it and this layer must not grow a
 # second copy of the same decision. Two uses, both text:

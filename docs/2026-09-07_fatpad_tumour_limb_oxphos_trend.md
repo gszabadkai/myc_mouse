@@ -275,6 +275,18 @@ adipose markers absorb **76%** of `ox_nuc_mtrib` and **7%** of `ox_rel`. That is
 structural point measured a second way — the construction built to isolate reprioritisation
 is ten times more adipose-determined than the compartment share it was meant to sharpen.
 
+### The panel for collaborators
+
+`figures/panels/fatpad_confound.R` -> `outputs/figures/panels/fatpad_confound.pdf`
+(183 x 66 mm, three parts). It is a **discussion panel**: the `fatpad_` prefix keeps it
+outside `rebuild_panels.R` and `panels_to_pdf.R`, which glob `^fig.*\.R$`, so the manuscript
+count stays at 28 and it takes no slot. It draws the argument in the order it has to be made
+— (a) the endpoint tracks adipocyte content (rho +0.58, and +0.51 to +0.69 leaving any one
+animal out, so it is not the one adipose-depleted tumour); (b) the endpoint's two halves load
+on that content with opposite signs, so their difference is more adipose-loaded than either
+part; (c) adjusting the fat away also destroys the real proliferation increase. Its legend
+block carries the numbers and the bounds.
+
 ### The paragraph for the Discussion
 
 > The fat-pad progression series cannot test whether respiratory priority recovers as
