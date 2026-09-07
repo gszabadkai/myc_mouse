@@ -1,7 +1,7 @@
 ---
 date: 2026-09-07
 tags: [project/myc_mouse, experimental-cohorts, fat-pad-timeline, oxphos, ordered-trend, confound]
-status: settled -- T1 FAIL and T3 VOID; the reversal question stays OPEN and this cohort cannot close it
+status: CLOSED -- T1 FAIL, T3 VOID, and the adjustment fails its own negative control; the reversal question stays OPEN and this cohort cannot close it
 relates-to:
   - scripts/49_fatpad_tumour_limb_oxphos_trend.R  (writes results/fatpad_tumour_limb_trend.rds)
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md  (the different, earlier estimand)
@@ -214,6 +214,87 @@ Dropping them takes the 6W panel from +0.772 (p = 0.016) to **+0.646 (p = 0.071)
 n = 5 vs 3: direction and most of the magnitude survive, significance does not. The
 pre-check note now carries the caveat.
 
+## 7b. Addendum — the adjusted trend, and why it cannot be read
+
+Run to replace T3's four incompatible single-marker adjustments with one number and an
+interval. Pre-registered as returning **an interval, not a verdict**, with `Mki67` as a
+negative control to be read first.
+
+### D — the negative control, and it FAILS
+
+`Mki67` genuinely rises across this limb (tau **+0.313**, p 0.045 — the one endpoint that
+moves). After the joint adjustment on the four adipose markers:
+
+| endpoint | adjustment | tau | 95% boot | one-sided p | adj R2 |
+|---|---|---|---|---|---|
+| `Mki67` | none | **+0.313** | — | **0.045** | — |
+| `Mki67` | joint (4 markers) | **−0.096** | [−0.408, +0.411] | 0.715 | 0.148 |
+
+**The adjustment destroys a trend that is really there**, and it does so while explaining
+only 15% of `Mki67`'s total variance. The mechanism is not over-fitting in the usual sense:
+the four markers absorb little of the endpoint overall but absorb precisely the part that
+tracks group, because **adipose depletion and tumour progression are the same variable on
+this limb**. Removing the confound removes the progression.
+
+By the rule fixed before looking — *if adjustment kills a trend that is genuinely there,
+the adjustment is over-fitted at n = 20 and nothing else in PART G may be read* — **A, B
+and C below are recorded but carry no inferential weight.** They are reported because the
+pre-registration said to report them, not because they mean anything.
+
+### A — the four single-marker adjustments (recorded, not read)
+
+| adjustment | adjusted tau | 95% boot | predicted push | marker's own tau | loading on endpoint |
+|---|---|---|---|---|---|
+| `Adipoq` | −0.019 | [−0.403, +0.353] | −0.144 | −0.249 | +0.576 |
+| `Cidec` | −0.185 | [−0.571, +0.222] | −0.015 | −0.019 | +0.776 |
+| `Fabp4` | −0.198 | [−0.554, +0.255] | −0.088 | −0.134 | +0.659 |
+| `Plin1` | −0.211 | [−0.553, +0.202] | −0.060 | −0.083 | +0.723 |
+
+**The session brief's premise does not hold, and this is worth stating.** It anticipated
+that `Cidec` would flip the residual positive, reasoning from its higher loading (+0.776)
+on a trend "similar" to `Adipoq`'s. `Cidec`'s own trend is not similar: tau **−0.019**,
+essentially flat, so its predicted push is **−0.015**, not −0.19. **The four adjustments do
+not disagree in sign** — they run −0.019 to −0.211, all zero-or-negative. There are not four
+incompatible answers; there is one answer of varying size, and none of them is positive.
+
+### B and C — the joint adjustment, both rulers (recorded, not read)
+
+| endpoint | tau | 95% boot | one-sided p | adj R2 |
+|---|---|---|---|---|
+| `ox_nuc_mtrib` | −0.211 | **[−0.565, +0.167]** | 0.878 | **0.759** |
+| `ox_rel` | −0.198 | [−0.526, +0.233] | 0.868 | **0.074** |
+
+Both intervals span zero and are about 0.7 wide — **uninformative, not negative**. VIFs are
+**41.3 / 42.8 / 46.0 / 63.5**: the four markers are near-collinear, which is part of why the
+intervals are this wide. Leave-one-out on the joint primary estimate holds it between −0.324
+and −0.099, so nothing here is one animal either.
+
+The one line in this table that *is* informative is the **adj R2 contrast**: the four
+adipose markers absorb **76%** of `ox_nuc_mtrib` and **7%** of `ox_rel`. That is section 3's
+structural point measured a second way — the construction built to isolate reprioritisation
+is ten times more adipose-determined than the compartment share it was meant to sharpen.
+
+### The paragraph for the Discussion
+
+> The fat-pad progression series cannot test whether respiratory priority recovers as
+> tumours establish, and the reason is structural rather than a matter of power. The
+> endpoint that states the reprioritisation claim directly — nuclear OXPHOS subunits
+> relative to the mitoribosome — is built as a difference of two composites, and in
+> adipose-majority tissue those two halves load on the adipocyte fraction with opposite
+> signs (+0.14 and −0.24 against `Adipoq`). Their difference therefore adds rather than
+> cancels the tissue signal, leaving the endpoint more strongly determined by adipose
+> content (rho +0.58 to +0.78 across four markers; 76% of its variance) than either half
+> alone. Adjustment does not rescue it: on this limb adipose depletion and tumour
+> progression are the same variable, so covarying out the adipocyte fraction also removes a
+> proliferation increase that is certainly real (`Mki67` tau +0.313 before adjustment,
+> −0.096 after). The construction that isolates reprioritisation is the construction the
+> tissue gradient most contaminates. The question therefore requires material in which
+> tumour is not embedded in fat — sorted epithelium, single-cell or spatial data, or an
+> orthotopic model — and the whole-tissue timeline contributes instead the two readings that
+> need no respiratory score: the 6W genotype panel and the flat `BCL2L1` progression.
+
+**The fat-pad timeline is closed.**
+
 ## 8. Method notes
 
 - **Sets are script 08's authoritative splits**, rebuilt here from `Mouse.MitoCarta3.0.xls`
@@ -236,6 +317,9 @@ pre-check note now carries the caveat.
 - `splitstackshape::cSplit` emits 464 benign `'as.is' should be specified by the caller`
   warnings; suppressed at that one call so a real warning is not buried. Nothing numeric
   changes.
+- PART G residualises within the limb and the bootstrap **refits the adjustment inside each
+  resample**, so the interval carries the adjustment's own uncertainty rather than treating
+  residuals as fixed data. 5,000 resamples, all non-degenerate.
 - No FDR across endpoints, per repo standard: estimates with intervals are reported and the
   pattern carries it.
 - **Cross-cohort comparison is forbidden** and nothing here does it. These scores are

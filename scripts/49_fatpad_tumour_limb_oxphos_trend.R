@@ -54,6 +54,24 @@
 #   T5 OBSERVED  `Bcl2l1` trend direction against the `ox_nuc_mtrib` trend. No
 #                threshold: n = 20, and this is an observation.
 #
+# ADDENDUM (PART G) -- THE ADJUSTED TREND, WHICH CLOSES THIS DATASET. T3 voided T1
+# with a SINGLE-marker calculation: Adipoq's predicted push was -0.249 x 0.576 =
+# -0.144 against an observed -0.147, so the residual is about zero. But the residual's
+# SIGN depends on WHICH adipose marker carries the adjustment -- Cidec loads +0.776 on
+# the same endpoint against Adipoq's +0.576, and on a similar trend its push would flip
+# the residual positive. Four single-marker adjustments give four incompatible answers.
+# PART G replaces them with one number and an interval.
+#   NO PASS/FAIL. It returns an interval, not a verdict. The limb was declared
+#   uninterpretable and stays so unless the joint interval excludes zero, which is NOT
+#   expected: four collinear markers explain a large share of the endpoint at n = 20.
+#   A WIDE INTERVAL SPANNING ZERO IS UNINFORMATIVE and must not be presented otherwise.
+#   If the joint interval excludes zero POSITIVELY that is a suggestion requiring the
+#   orthotopic series, never support for the reversal. If the four single-marker
+#   adjustments DISAGREE IN SIGN, that disagreement IS the primary reported result.
+#   Mki67 is the NEGATIVE CONTROL and is read FIRST: proliferation genuinely rises on
+#   this limb, so if adjustment kills that too, the adjustment is removing signal rather
+#   than confound and nothing else in PART G may be read.
+#
 # WHAT THIS CANNOT ESTABLISH: nothing about 6W->12W (that belongs to the MEC
 # cohort); no within-tumour correlation (closed by the pre-check); no causation
 # (nothing is manipulated here); and NO CROSS-COHORT COMPARISON -- the branch's
@@ -383,6 +401,84 @@ six_week_qc <- list(
     dplyr::bind_rows(f(d, "all 5 vs 5"), f(d[d$k >= 11, ], "Krt8-low dropped")) })
 
 # =============================================================================
+# PART G: THE ADJUSTED TREND -- ONE NUMBER AND AN INTERVAL, NOT FOUR ANSWERS
+# -----------------------------------------------------------------------------
+# Residualise the endpoint on adipose markers within the limb, then re-test the
+# ordered trend on the residual. The bootstrap REFITS the adjustment inside each
+# resample, so the interval carries the adjustment's own uncertainty rather than
+# treating the residuals as fixed data. Read in the order D -> A -> B -> C.
+# =============================================================================
+message("49 PART G: adjusted trend")
+
+ADJ <- c("Adipoq", "Cidec", "Fabp4", "Plin1")
+AF  <- as.data.frame(lapply(Mk[ADJ], function(v) v[lk]))   # limb only, log2 scale
+
+adj_fit <- function(y, cols, rows = seq_along(y)) {
+  d <- cbind(data.frame(y = y[rows]), AF[rows, cols, drop = FALSE])
+  stats::lm(y ~ ., d)
+}
+adj_trend <- function(v, cols, label, endpoint) {
+  y  <- v[lk]
+  f0 <- adj_fit(y, cols)
+  r0 <- stats::resid(f0)
+  tt <- jt_test(r0, gl, "increasing")
+  bs <- vapply(seq_len(NBOOT), function(i) {
+    k <- sample.int(length(y), replace = TRUE)
+    if (length(unique(gi[k])) < 2L) return(NA_real_)
+    fit <- try(adj_fit(y, cols, k), silent = TRUE)
+    if (inherits(fit, "try-error") || anyNA(stats::coef(fit))) return(NA_real_)
+    stats::cor(stats::resid(fit), gi[k], method = "kendall")
+  }, 0)
+  tibble::tibble(endpoint = endpoint, adjustment = label,
+                 tau_adj = stats::cor(r0, gi, method = "kendall"),
+                 tau_lo = unname(stats::quantile(bs, 0.025, na.rm = TRUE)),
+                 tau_hi = unname(stats::quantile(bs, 0.975, na.rm = TRUE)),
+                 p_one_sided = tt$p_one_sided,
+                 adj_r2 = summary(f0)$adj.r.squared,
+                 n_boot_ok = sum(!is.na(bs)))
+}
+raw_tau <- function(v) stats::cor(v[lk], gi, method = "kendall")
+
+# --- D FIRST: the negative control. If proliferation's rise does not survive, the
+# adjustment is over-fitted at n = 20 and nothing below may be read. ------------
+adj_control <- dplyr::bind_rows(
+  tibble::tibble(endpoint = "Mki67", adjustment = "none", tau_adj = raw_tau(Mk$Mki67),
+                 tau_lo = NA_real_, tau_hi = NA_real_,
+                 p_one_sided = trend$p_one_sided[trend$endpoint == "Mki67"],
+                 adj_r2 = NA_real_, n_boot_ok = NA_integer_),
+  adj_trend(Mk$Mki67, ADJ, "joint (4 markers)", "Mki67"))
+
+# --- A: four single-marker adjustments, to show the spread --------------------
+adj_single <- dplyr::bind_rows(lapply(ADJ, function(m) {
+  out <- adj_trend(S$ox_nuc_mtrib, m, paste0("single: ", m), "ox_nuc_mtrib")
+  out$marker_tau     <- trend$tau[trend$endpoint == m]
+  out$marker_loading <- load_dir$rho_primary[load_dir$marker == m]
+  out$predicted_push <- out$marker_tau * out$marker_loading
+  out
+}))
+signs_disagree <- length(unique(sign(adj_single$tau_adj))) > 1L
+
+# --- B and C: the joint adjustment, both rulers -------------------------------
+adj_joint <- dplyr::bind_rows(
+  adj_trend(S$ox_nuc_mtrib, ADJ, "joint (4 markers)", "ox_nuc_mtrib"),
+  adj_trend(S$ox_rel,       ADJ, "joint (4 markers)", "ox_rel"))
+
+# collinearity: the interval is wide partly because of this, which is worth stating
+adj_vif <- tibble::tibble(marker = ADJ, vif = vapply(ADJ, function(m) {
+  o <- setdiff(ADJ, m)
+  1 / (1 - summary(stats::lm(stats::as.formula(paste(m, "~", paste(o, collapse = " + "))),
+                             AF))$r.squared) }, 0))
+
+# leave-one-out on the joint estimate, for completeness (R8 stays in)
+adj_loo <- vapply(seq_len(sum(lk)), function(i) {
+  y <- S$ox_nuc_mtrib[lk]
+  stats::cor(stats::resid(adj_fit(y, ADJ, setdiff(seq_along(y), i))), gi[-i],
+             method = "kendall") }, 0)
+adj_loo_range <- c(full = adj_joint$tau_adj[1], lo = min(adj_loo), hi = max(adj_loo))
+
+adjusted <- dplyr::bind_rows(adj_control, adj_single, adj_joint)
+
+# =============================================================================
 # PART F: THE VERDICT, ON THE RULES FIXED IN THE HEADER
 # =============================================================================
 message("49 PART F: verdict")
@@ -430,6 +526,10 @@ NOTES <- c(
   "  were already filtered to the MEC matrix.",
   "SCALE: z-composites on log2(counts + 1). mitoPPS is not run; it needs linear",
   "  counts and its own input object.",
+  "PART G returns an INTERVAL, not a verdict. Read Mki67 (the negative control)",
+  "  first: if adjustment kills a trend that is genuinely there, the adjustment is",
+  "  over-fitted at n = 20 and nothing else in PART G may be read. A wide interval",
+  "  spanning zero is UNINFORMATIVE, not negative.",
   "STANDING RULE: these scores are cohort-relative. They are never pooled, plotted",
   "  or differenced against the MEC cohort's or the orthotopic series'. Directions",
   "  and orderings travel; values never do.")
@@ -437,6 +537,9 @@ NOTES <- c(
 res <- list(set_sizes = set_sizes, trend = trend, group_summary = summ,
             load_direction = load_dir, loo = loo, loo_range = loo_range,
             six_week_qc = six_week_qc,
+            adjusted = adjusted, adj_single = adj_single, adj_joint = adj_joint,
+            adj_control = adj_control, adj_vif = adj_vif,
+            adj_loo_range = adj_loo_range, signs_disagree = signs_disagree,
             per_sample = per_sample,
             verdict = verdict,
             t1_pass = t1_pass, t2_agree = t2_agree, t3_opposes = t3_opposes,
@@ -499,6 +602,24 @@ if (FALSE) {
   ## tumours and Bcl2l1 tracks it, that is the human configuration appearing as a
   ## mouse trajectory. Observation, not test.
   subset(res$trend, endpoint %in% c("Bcl2l1", "Bbc3", "puma_bclxl", "buffer", "Myc"))
+
+  ## --- PART G, THE ADDENDUM THAT CLOSES THIS DATASET ----------------------
+  ## READ THE NEGATIVE CONTROL FIRST. Mki67 genuinely rises on this limb. If the
+  ## joint adjustment removes that too, the adjustment is eating signal at n = 20
+  ## and nothing else below is readable.
+  res$adj_control |> print()
+
+  ## A -- four single-marker adjustments. The SPREAD is the point: if they disagree
+  ## in sign, no single-marker adjustment is authoritative and that disagreement is
+  ## the result. `predicted_push` is marker_tau x marker_loading, i.e. T3's arithmetic.
+  res$adj_single |> print()
+  res$signs_disagree |> print()
+
+  ## B and C -- one number and an interval, both rulers. adj_r2 says how much of the
+  ## endpoint the four markers absorb; the VIFs say why the interval is wide.
+  res$adj_joint |> print()
+  res$adj_vif |> print()
+  res$adj_loo_range |> print()
 
   cat(res$notes, sep = "\n")
 }
