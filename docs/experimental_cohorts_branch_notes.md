@@ -6,6 +6,7 @@ relates-to:
   - data/fatpad_timeline/README.md
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md
   - docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md
+  - docs/2026-09-08_orthotopic_vector_series.md
   - docs/handoff.md
 ---
 
@@ -20,8 +21,8 @@ This branch **merges back into `paper-final`**. The orthotopic dataset produces 
 work, so this is a staging area, not a parallel line. Build accordingly, from the first
 commit:
 
-- **Numbered scripts continue `paper-final`'s sequence.** `49` is taken
-  (`49_fatpad_tumour_limb_oxphos_trend.R`); the next is `50`. No separate numbering scheme
+- **Numbered scripts continue `paper-final`'s sequence.** `49` and `50` are taken
+  (`49_fatpad_tumour_limb_oxphos_trend.R`, `50_orthotopic_vector_series_scoring.R`); next is `51`. No separate numbering scheme
   to reconcile at merge.
 - **Pinned data and provenance READMEs follow the existing conventions exactly**, since
   they arrive in `paper-final` unchanged: large matrices gitignored with a tracked
@@ -59,6 +60,15 @@ Written down now, before the second dataset arrives, because after the merge all
 scoring scripts sit in one repo and the temptation to put their scores on one axis will be
 immediate. `mitoPPS` carries the same prohibition for a second, independent reason already
 on record: its pairwise-ratio baseline is composition-dependent.
+
+**Corollary 4 — when the INTERVENTION moves the composition markers, a pooled loading can
+look material while the per-group loadings disagree.** In the orthotopic vector series
+`adipose` loads +0.62 on `ox_rel` across the 21, which trips the material threshold — but the
+per-arm values are +0.04 / −0.39 / +0.71, and over all 67 it falls to **+0.09**. The construct
+moves `ox_rel` by +0.915, so anything that also differs by arm correlates with it by
+construction. **Check the per-group breakdown before believing a pooled confound**, and
+remember that adjusting a group contrast for composites that themselves differ by group is
+over-adjustment unless a positive control says otherwise.
 
 **Corollary 3 — on this dataset, adjustment cannot separate confound from signal, and the
 negative control is how you find that out.** Script 49 PART G residualised the endpoint on
@@ -102,7 +112,7 @@ same sign and similar magnitude.
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
 | fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **CLOSED 2026-09-07.** FAIL for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID), and the adjustment that would have rescued it fails its own negative control | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, p = 0.016 -- but **+0.65, p = 0.071** once two epithelium-poor `6WK_POS` samples are dropped; cite with the caveat) and `Bcl2l1` flat across progression while `Myc` rises ~11x (unaffected) |
-| orthotopic Bcl-xL / PGC1a series | not yet | not started | expected main-panel work |
+| orthotopic vector series (EV/BclxL/Pgc1a, n = 21 of 67) | `data/orthotopic_series/` | **C1 HOLDS** (`Bcl2l1` +121.8 CPM, p 0.00029, survives adjustment with the positive control intact); **C2 holds as an observation**; **C3 UNINFORMATIVE** | the causal reading of the human `BCL2L1` result, and the in vivo MYC-ceiling observation |
 
 **Open, and now the branch's leading question:** does relative OXPHOS share rise again as
 tumours establish? The human arm requires a reversal somewhere. Script 49 could not test it
