@@ -21,9 +21,9 @@ Read this file first, then the two docs named under "What happened this session"
 | | |
 |---|---|
 | branch | `paper-final` (Block C, the halved paper), created off tag `block-b-full` |
-| HEAD | "The gate model: MYC x OXPHOS -> priming, written as an equation and tested in the mouse" |
-| commits ahead of `block-b-full` | **17** |
-| pushed | **no** -- `paper-final` has no upstream and does not exist on the remote. All 17 commits are local only. |
+| HEAD | `e348dd8` -- "The gate collapses for the trigger and not for the guardian -- I said it collapses" |
+| commits ahead of `block-b-full` | **19** |
+| pushed | **yes, 2026-09-03** -- `paper-final` is on `origin` at `e348dd8`, tracking set, 0 ahead / 0 behind. First push of this branch; no PR opened, since Block C is not finished. |
 | panels | 28 `figures/panels/fig*.R` + 6 `biogax_*.R` discussion panels (deliberately outside both runners and the 28-count) |
 | circulation PDFs | 12 / 8 / 4 pages |
 | scripts | 00-48. **48 RUN by the author 2026-09-02**, positive control passing, reproducing the scratchpad run bit-for-bit. `results/gate_model_verification.rds` exists. It has since gained a two-endpoint `model_form` (below) and needs one ~2-minute re-run to carry it. |
@@ -34,11 +34,15 @@ Read this file first, then the two docs named under "What happened this session"
 `docs/library_reference/2026-08-22_consensus_myc_double_hit_thread.md`,
 `docs/2026-08-27_human_validation_plan.md` (the parallel arm's spec).
 
-**New this session, committed** (unrun by the author, so read them as a proposal):
+**New this session, committed and pushed:**
 
-- `scripts/48_gate_model_mouse_verification.R`
+- `scripts/48_gate_model_mouse_verification.R` -- author-run 2026-09-02; the committed
+  version is **one re-source ahead** of the saved object (two-endpoint `model_form`).
 - `docs/2026-09-02_myc_oxphos_priming_gate_model.md`
 - `docs/handoff.md` (this file)
+
+**Not on the remote, by the untracked rule:** `docs/2026-08-27_human_validation_plan.md`.
+If the parallel human session expects to find its own spec on `origin`, it is not there.
 
 **THE TEXT CUT HAS STILL NOT HAPPENED.** It has been the pending main task for five
 sessions. Block C exists to halve three written Results sections and reorganise the
@@ -222,7 +226,9 @@ Retiring a panel is three steps, all of them required:
 - Script 48 run and reconciled. One cheap re-run outstanding, for the two-endpoint `model_form`.
 - Whether the gate model earns a panel. It currently has none, deliberately -- it is a
   response-to-reviewers and human-arm asset, and the 28-panel count is unchanged.
-- 17 unpushed commits. No push authorised.
+- Nothing unpushed. `paper-final` is on `origin`; further pushes still need a word.
+- The artifact watch on the gate-model page dropped (connection lost, 2026-09-07) and was
+  not restarted. The page itself is unaffected and still current at the URL in section 3.
 
 ---
 
