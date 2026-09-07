@@ -143,6 +143,28 @@ two-gene readings on the linear counts, so the FAIL verdict does not touch them.
    This is the mouse gate's sensor:guardian configuration reproducing in a second cohort,
    a different tissue preparation, and a different laboratory pipeline.
 
+   **CAVEAT ADDED 2026-09-07, from script 49's per-sample record.** `Adipoq` is matched
+   between the two 6W groups, and that was the argument that composition is not a competing
+   explanation. **It is not sufficient: `Krt8` and `Epcam` are not matched.** Two of the five
+   `6WK_POS` samples carry almost no epithelial signal -- `6WK_POS_R1` at `Krt8` 6.67 and
+   `6WK_POS_R2` at 8.85, i.e. **102-fold and 23-fold below that group's own median** -- and
+   `6WK_POS` is the only group in the dataset with a wide `Krt8` spread (6.85 log2, against
+   0.46-1.41 in every other group). At 6 weeks the ductal tree occupies only part of the fat
+   pad, so a sample can miss it; that is the likely origin. **Those two samples carry the
+   group's two highest PUMA:BCL-XL values**, so they push the effect in its claimed
+   direction. Recomputed without them:
+
+   | subset | n | delta median | delta mean | Wilcoxon p |
+   |---|---|---|---|---|
+   | all 5 vs 5 (as claimed) | 5 v 5 | +0.772 | +0.624 | **0.016** |
+   | `Krt8`-low dropped | 5 v 3 | **+0.646** | +0.482 | **0.071** |
+
+   **The direction survives and the magnitude falls only ~16%, but the significance does
+   not.** The honest statement is now: the configuration reproduces in the same direction in
+   whole tissue, at n = 5 vs 3 once epithelium-poor samples are excluded, with p = 0.071 --
+   supporting, not independently significant. Do not cite the p = 0.016 without the
+   epithelial caveat. Recorded in code at `results/fatpad_tumour_limb_trend.rds$six_week_qc`.
+
 2. **`Bcl2l1` is flat across the entire progression while `Myc` rises.** Medians 1,185.5 /
    1,001.2 / 948.4 / 986.1 / 1,010.9 against a `Myc` rise of ~11x from `6WK_NEG` to
    `LARGE_TUMOUR`; Kruskal p = 0.065 for `Bcl2l1`, p = 0.0054 for `Myc`. **This forecloses

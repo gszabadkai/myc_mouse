@@ -190,6 +190,30 @@ not depend on anything here; and this dataset's two score-free contributions (th
 genotype panel, `PUMA:BCL-XL` +0.77 log2 at Wilcoxon p = 0.016 with `Adipoq` matched; and
 `Bcl2l1` flat across the progression while `Myc` rises ~11x).
 
+## 7a. What the per-sample record surfaced about a different claim
+
+Not this script's estimand -- it excludes the 6W groups -- but the per-sample table made it
+visible and it bears on a claim the pre-check cleared, so it is recorded in
+`results/fatpad_tumour_limb_trend.rds$six_week_qc` rather than left in a transcript.
+
+`6WK_POS` is the only group in the dataset with a wide epithelial spread:
+
+| group | n | `Krt8` range (log2) | lowest `Epcam` |
+|---|---|---|---|
+| `6WK_NEG` | 5 | 1.06 | 12.07 |
+| **`6WK_POS`** | 5 | **6.85** | **5.68** |
+| `12WK_POS` | 5 | 0.91 | 12.56 |
+| `SMALL_TUMOUR` | 6 | 0.46 | 12.35 |
+| `LARGE_TUMOUR` | 9 | 1.41 | 12.43 |
+
+`6WK_POS_R1` (`Krt8` 6.67) and `6WK_POS_R2` (8.85) sit 102-fold and 23-fold below their own
+group's median. `Adipoq` is matched across the 6W groups -- which was the pre-check's
+argument that composition is not competing -- but **adipose matching is not composition
+matching**, and these two samples carry the group's two highest `PUMA:BCL-XL` values.
+Dropping them takes the 6W panel from +0.772 (p = 0.016) to **+0.646 (p = 0.071)** at
+n = 5 vs 3: direction and most of the magnitude survive, significance does not. The
+pre-check note now carries the caveat.
+
 ## 8. Method notes
 
 - **Sets are script 08's authoritative splits**, rebuilt here from `Mouse.MitoCarta3.0.xls`
@@ -209,6 +233,9 @@ genotype panel, `PUMA:BCL-XL` +0.77 log2 at Wilcoxon p = 0.016 with `Adipoq` mat
   decimal places (`ox_nuc_mtrib` z −0.8066, `ox_rel` −0.6664, `Mki67` +1.7185, `Adipoq`
   −1.3678, `ox_mt` −1.7185); the permutation p and the package's normal approximation differ
   only in the third decimal. `PMCMRplus` is not a dependency of the script.
+- `splitstackshape::cSplit` emits 464 benign `'as.is' should be specified by the caller`
+  warnings; suppressed at that one call so a real warning is not buried. Nothing numeric
+  changes.
 - No FDR across endpoints, per repo standard: estimates with intervals are reported and the
   pattern carries it.
 - **Cross-cohort comparison is forbidden** and nothing here does it. These scores are

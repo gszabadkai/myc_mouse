@@ -121,7 +121,10 @@ message("49 PART A: sets")
 
 s4  <- readxl::read_xls(here::here("data", "Mouse.MitoCarta3.0.xls"), sheet = 4)
 s4  <- na.omit(dplyr::select(s4, MitoPathway, Genes))
-g2p <- splitstackshape::cSplit(s4, "Genes", ",")
+# cSplit emits one "'as.is' should be specified by the caller" per column from its
+# internal type.convert -- 464 of them here, which buries any warning that matters.
+# Suppressed at this call only; nothing numeric changes.
+g2p <- suppressWarnings(splitstackshape::cSplit(s4, "Genes", ","))
 g2p <- tibble::column_to_rownames(g2p, "MitoPathway")
 g2p <- as.data.frame(t(g2p))
 g2p <- tidyr::pivot_longer(g2p, cols = colnames(g2p),
@@ -352,6 +355,33 @@ p <- ggplot2::ggplot(pd, ggplot2::aes(group, value)) +
 ggplot2::ggsave(here::here("outputs", "fatpad_limb", "49_per_sample_trends.pdf"),
                 p, width = 9, height = 5)
 
+# -----------------------------------------------------------------------------
+# 6W COMPOSITION QC -- not a claim of this script, which excludes the 6W groups.
+# The per-sample record surfaced it and it bears on a claim made ELSEWHERE (the
+# pre-check note's 6W genotype panel), so it is recorded here rather than left in a
+# session transcript. Two of five 6WK_POS samples carry almost no epithelial signal;
+# `Adipoq` is matched between the 6W groups but `Krt8`/`Epcam` are not, and adipose
+# matching is not composition matching.
+# -----------------------------------------------------------------------------
+krt8 <- Mk$Krt8; epc <- Mk$Epcam
+six_week_qc <- list(
+  krt8_spread = dplyr::bind_rows(lapply(ALLGRP, function(g) {
+    v <- krt8[grp == g]
+    tibble::tibble(group = g, n = length(v), krt8_min = min(v), krt8_max = max(v),
+                   krt8_range = diff(range(v)), epcam_min = min(epc[grp == g])) })),
+  depleted = colnames(L)[grp == "6WK_POS" & krt8 < 11],
+  panel = {
+    k6 <- grp %in% c("6WK_NEG", "6WK_POS")
+    d  <- data.frame(s = colnames(L)[k6], g = droplevels(grp[k6]),
+                     r = Ap$puma_bclxl[k6], k = krt8[k6])
+    f  <- function(dd, lab) tibble::tibble(
+      subset = lab, n_neg = sum(dd$g == "6WK_NEG"), n_pos = sum(dd$g == "6WK_POS"),
+      delta_median = stats::median(dd$r[dd$g == "6WK_POS"]) - stats::median(dd$r[dd$g == "6WK_NEG"]),
+      delta_mean   = mean(dd$r[dd$g == "6WK_POS"]) - mean(dd$r[dd$g == "6WK_NEG"]),
+      wilcox_p = suppressWarnings(stats::wilcox.test(dd$r[dd$g == "6WK_POS"],
+                                                     dd$r[dd$g == "6WK_NEG"])$p.value))
+    dplyr::bind_rows(f(d, "all 5 vs 5"), f(d[d$k >= 11, ], "Krt8-low dropped")) })
+
 # =============================================================================
 # PART F: THE VERDICT, ON THE RULES FIXED IN THE HEADER
 # =============================================================================
@@ -406,6 +436,7 @@ NOTES <- c(
 
 res <- list(set_sizes = set_sizes, trend = trend, group_summary = summ,
             load_direction = load_dir, loo = loo, loo_range = loo_range,
+            six_week_qc = six_week_qc,
             per_sample = per_sample,
             verdict = verdict,
             t1_pass = t1_pass, t2_agree = t2_agree, t3_opposes = t3_opposes,
@@ -457,6 +488,12 @@ if (FALSE) {
   ## The per-sample values. At n = 20 look at the points before the p-value:
   ## outputs/fatpad_limb/49_per_sample_trends.pdf
   res$per_sample |> print(n = 30)
+
+  ## NOT this script's claim, but recorded because the per-sample table surfaced it:
+  ## two of five 6WK_POS samples have almost no epithelium (Krt8 102x and 23x below
+  ## that group's own median), and they carry its two HIGHEST PUMA:BCL-XL values.
+  ## The pre-check's 6W panel needs the caveat -- direction survives, p does not.
+  res$six_week_qc |> print()
 
   ## T5 -- the guardian against the respiratory trend. If the share rises INTO
   ## tumours and Bcl2l1 tracks it, that is the human configuration appearing as a

@@ -85,7 +85,7 @@ same sign and similar magnitude.
 
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
-| fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **FAIL** for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID) | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, Wilcoxon p = 0.016, `Adipoq` matched) and `Bcl2l1` flat across progression while `Myc` rises ~11x |
+| fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **FAIL** for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID) | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, p = 0.016 -- but **+0.65, p = 0.071** once two epithelium-poor `6WK_POS` samples are dropped; cite with the caveat) and `Bcl2l1` flat across progression while `Myc` rises ~11x (unaffected) |
 | orthotopic Bcl-xL / PGC1a series | not yet | not started | expected main-panel work |
 
 **Open, and now the branch's leading question:** does relative OXPHOS share rise again as
