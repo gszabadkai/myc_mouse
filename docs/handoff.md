@@ -1,9 +1,12 @@
 ---
-date: 2026-09-02
+date: 2026-09-07
 tags: [project/myc_mouse, handoff, block-c, paper-final]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
-  - docs/2026-09-02_myc_oxphos_priming_gate_model.md   (this session's deliverable)
+  - docs/experimental_cohorts_branch_notes.md          (the CURRENT branch's rules and status)
+  - docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md (the fat-pad verdict, dataset now closed)
+  - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md
+  - docs/2026-09-02_myc_oxphos_priming_gate_model.md   (the gate model)
   - docs/2026-08-27_human_validation_plan.md            (the parallel arm; three of its sections are superseded)
   - figures/panels/PANELS.md                            (the manifest of record)
   - docs/2026-08-02_results_narrative_final_order_D.md   (the narrative the cut is measured against)
@@ -11,53 +14,128 @@ relates-to:
 
 # Handoff -- restart from here
 
-Read this file first, then the two docs named under "What happened this session" and
-"What was already done". Everything below is current as of 2026-09-02.
+Read this file first, then the docs named under "What happened this session" and "What was
+already done". Everything below is current as of 2026-09-07.
+
+**Two branches are live.** `paper-final` holds the manuscript and is where the text cut will
+happen; `experimental-cohorts` is the current checkout and stages the two datasets outside
+the MEC pipeline. Section 1 covers both.
 
 ---
 
 ## 1. State
 
+**Current checkout: `experimental-cohorts`** (created off `paper-final`, merges back into it).
+
 | | |
 |---|---|
-| branch | `paper-final` (Block C, the halved paper), created off tag `block-b-full` |
-| HEAD | `e348dd8` -- "The gate collapses for the trigger and not for the guardian -- I said it collapses" |
-| commits ahead of `block-b-full` | **19** |
-| pushed | **yes, 2026-09-03** -- `paper-final` is on `origin` at `e348dd8`, tracking set, 0 ahead / 0 behind. First push of this branch; no PR opened, since Block C is not finished. |
-| panels | 28 `figures/panels/fig*.R` + 6 `biogax_*.R` discussion panels (deliberately outside both runners and the 28-count) |
-| circulation PDFs | 12 / 8 / 4 pages |
-| scripts | 00-48. **48 run by the author 2026-09-02 and re-run 2026-09-07** after the two-endpoint `model_form` was added. Script and saved object are in step; all 47 numbers quoted in the gate-model doc reconcile against `results/gate_model_verification.rds`, 0 mismatches. |
-| working tree | clean apart from the nine untracked-by-rule items |
+| HEAD | `3bf29cc` -- "A panel for collaborators: why the fat-pad series cannot carry a respiratory claim" |
+| commits ahead of `paper-final` | **6** |
+| pushed | **no.** `experimental-cohorts` is local only. |
+| scripts | `49_fatpad_tumour_limb_oxphos_trend.R` -- author-run 2026-09-07, all 33 quoted numbers reconciled. Next number is **50**. |
+| data | `data/fatpad_timeline/` pinned (CSV gitignored, README tracked) |
+| panels | 28 manuscript panels UNCHANGED. `fatpad_confound.R` is a discussion panel outside both runners, like the six `biogax_*.R`. |
+| scratch | `sandbox/` exists and is gitignored; it never merges |
+
+**`paper-final`** (the manuscript branch, not currently checked out):
+
+| | |
+|---|---|
+| HEAD | `b691133` -- "Script 48 re-run: 47 numbers checked back against the object, none moved" |
+| ahead of `block-b-full` | 20, **all pushed**; `origin/paper-final` is 0 ahead / 0 behind |
+| scripts | 00-48, all run and reconciled. Nothing outstanding on the mouse side. |
 
 **Untracked and staying that way:** the six `.txt` session exports at the repo root,
 `docs/library_reference/gray_chea_mito_tf_shortlist.csv`,
 `docs/library_reference/2026-08-22_consensus_myc_double_hit_thread.md`,
-`docs/2026-08-27_human_validation_plan.md` (the parallel arm's spec).
+`docs/2026-08-27_human_validation_plan.md` (the parallel arm's spec -- note it is therefore
+**not on the remote**).
 
-**New this session, committed and pushed:**
-
-- `scripts/48_gate_model_mouse_verification.R` -- author-run; script and saved object in step.
-- `docs/2026-09-02_myc_oxphos_priming_gate_model.md`
-- `docs/handoff.md` (this file)
-
-**Not on the remote, by the untracked rule:** `docs/2026-08-27_human_validation_plan.md`.
-If the parallel human session expects to find its own spec on `origin`, it is not there.
-
-**THE TEXT CUT HAS STILL NOT HAPPENED.** It has been the pending main task for five
-sessions. Block C exists to halve three written Results sections and reorganise the
-figures to match; the cut text has not yet arrived.
+**THE TEXT CUT HAS STILL NOT HAPPENED.** It has been the pending main task for six
+sessions. Block C exists to halve three written Results sections and reorganise the figures
+to match; the cut text has not yet arrived. Nothing on `experimental-cohorts` blocks it or
+depends on it.
 
 ---
 
 ## 2. Do this first
 
-1. **The cut**, if the text is ready. See section 6. Nothing else is outstanding on the
-   mouse side: script 48 is run, its object is in step with the script, and the gate-model
-   doc is fully reconciled against it.
+1. **Decide which branch.** If the cut text is ready, `git checkout paper-final` and go to
+   section 6 -- that is the main line and it is blocked only on the text. If the next move is
+   the **orthotopic Bcl-xL / PGC1a series**, stay on `experimental-cohorts` and read
+   `docs/experimental_cohorts_branch_notes.md` first; it carries the standing rules and the
+   two hard-won corollaries that dataset must obey before anything is fitted.
+2. **Rebase before starting anything substantial** on this branch:
+   `git rebase paper-final`. `paper-final` is still moving and the branch must not diverge.
+3. **Nothing is outstanding on either dataset already done.** Scripts 48 and 49 are run,
+   their objects are in step with their scripts, and every number in their docs has been
+   checked back against the objects.
 
 ---
 
-## 3. What happened this session -- the gate model
+## 3. What happened this session -- the fat-pad timeline, closed
+
+**New branch `experimental-cohorts`**, off `paper-final`, for the two datasets outside the
+6W/12W purified-MEC pipeline: the orthotopic Bcl-xL / PGC1a series (not started) and the
+fat-pad progression timeline (now closed). It **merges back into `paper-final`** -- numbered
+scripts continue that sequence, data and READMEs follow the existing conventions, scratch
+lives in a gitignored `sandbox/` and never merges.
+
+**The fat-pad timeline is CLOSED. It cannot carry a respiratory claim, and the reason is
+structural rather than a matter of power.** Whole mammary fat pad, adipose-majority
+throughout (`Adipoq` 59,342 -> 26,415 on group medians), 30 samples, no 12W negative control.
+Three tests, all pre-registered, all failed in an informative way:
+
+1. **Pre-check** (scratch, `docs/2026-09-07_fatpad_timeline_oxphos_precheck.md`): can `ox_rel`
+   support a within-tumour correlation? **FAIL** -- +0.318 to +0.561 against the adipose
+   markers at n = 15. And the compartment-relative share made it **worse** than the absolute
+   level, because adipose loads more on the respiratory arm than on the rest of MitoCarta.
+2. **Script 49, the ordered trend** on the 12W-to-tumour limb (n = 20), the estimand the
+   pre-check never asked: **T1 FAIL** (`ox_nuc_mtrib` tau -0.147, one-sided p 0.800) and
+   **T3 VOID** -- the confound runs WITH the drift. The endpoint's two halves load on adipose
+   with **opposite signs** (+0.14 nuclear OXPHOS, -0.24 mitoribosome), so their difference
+   ADDS the tissue signal: +0.58 to +0.78 across four markers, **76% of its variance**
+   adipose-explained against **7%** for `ox_rel`. The construction built to isolate the
+   biology is the one the tissue gradient most contaminates.
+3. **Script 49 PART G, the adjustment**: the pre-registered **negative control fails**.
+   `Mki67` genuinely rises across the limb (tau +0.313, p 0.045) and goes to **-0.096
+   (p 0.715)** after covarying out four adipose markers, while those markers explain only 15%
+   of its variance. On this limb adipose depletion and tumour progression are the same
+   variable, so removing the confound removes the biology. There is no corrected version.
+
+**What the dataset still contributes**, neither needing a respiratory score: the **6W
+genotype panel** (`PUMA:BCL-XL` +0.77 log2, Wilcoxon p 0.016) and **`Bcl2l1` flat across the
+whole progression** while `Myc` rises ~11x, which forecloses "BCL-XL accumulates as tumours
+grow". **The 6W panel now carries a caveat** -- `Adipoq` is matched between the 6W groups but
+`Krt8`/`Epcam` are not; two of five `6WK_POS` samples have almost no epithelium (102-fold and
+23-fold below their own group median) and carry the group's two highest ratios. Dropping them:
+**+0.646, p 0.071** at n = 5 vs 3. Direction survives, significance does not. Do not cite the
+p = 0.016 without it.
+
+**Also flagged and NOT resolved:** `Myc` rises 7.5x (medians) from `6WK_POS` to `12WK_POS` in
+fat pad, against the MEC dataset's stable-dose premise. Three readings stay live; the premise
+is about purified MECs and must not be quietly generalised to tissue.
+
+**The panel for collaborators:** `figures/panels/fatpad_confound.R` ->
+`outputs/figures/panels/fatpad_confound.pdf` (183 x 66 mm). Three parts: the score tracks the
+fat; its two halves load with opposite signs so the difference amplifies; adjustment destroys
+a real trend. Discussion panel, `fatpad_` prefix, outside both runners -- **the 28-panel count
+is unchanged** and `PANELS.md` is untouched.
+
+**Two lessons written into the branch notes, and both are flagged for the human arm:**
+
+- **A loading is a property of a SUBSET, not of a ruler.** Compute the admissibility argument
+  on the exact subset the test runs on. `rho(ox_sub, Adipoq)` is +0.538 over all 30 samples
+  and **+0.144** within the limb, and the mitoribosome's loading flips sign between them.
+- **Any composition or purity adjustment must carry a POSITIVE CONTROL, read first.** Without
+  `Mki67`, PART G would have read as a clean null.
+
+A human cohort stratified by PAM50 / TP53 / purity is exactly where both bite. That session
+does not read this branch -- **tell it**.
+
+---
+
+## 3a. The session before -- the gate model
 
 **The ask:** a model of MYC, OXPHOS subunits and PUMA/BIM that can be tested in human
 tumours, verified in the mouse first.
@@ -106,36 +184,13 @@ chemosensitivity) are **human-only by construction**: this dataset has no tumour
    genotype gap: `Myc` transcript recovers **74%** of the genotype effect, MSigDB MYC
    signature **15%**, DoRothEA **16%**.
 
-### The reconciliation (2026-09-02, second pass)
+### Reconciled and settled
 
-Script 48 was re-run in the scratchpad with the save path redirected, so `results/` is
-untouched. The positive control passes and **every previously-reported number reproduces
-bit-for-bit**. Five numbers in the doc were not carried by the saved object, which its own
-provenance section requires; the script now stores all five (`separability$r_myc_dor`,
-`axis_cor`, `set_sizes$n_genes_tested`, `simple_slopes$r2_wt`/`r2_myc`, `gene_gate$bX_myc`
--- additive fields only, no existing computation touched). Three confirmed as written
-(16,819 genes tested; `mitorib_rel` <-> `ox_rel` = 0.755; the covariate-free wild-type
-`ox_ppd` fit R2 0.325, p 0.053). **Two were wrong and are corrected in the doc:**
-
-- the two MYC signatures do **not** both sit at 0.61 with `ox_rel` -- MSigDB 0.61,
-  DoRothEA **0.64** (the transcript is 0.33). This strengthens section 4.1 rather than
-  weakening it: the signature contains more of the axis, not less.
-- section 7's `Mcl1` simple slopes were **-0.93 / -0.26**, from a probe rather than the
-  script. The fitted values are **WT -1.00, Myc+ -0.20** (`gene_gate`, epi + imm adjusted).
-  The claim -- both negative, so the ratio rises because BCL-XL falls faster -- is unchanged.
-
-Script 44's percentiles cited in section 3.3 were checked against
-`results/collapse_module_ownership.rds` and are exact (`Bbc3` 0.51, `Bcl2l11` 91.6).
-
-**And the author's run then contradicted a third statement, the one that mattered most.**
-Section 3.2 claimed the model collapses to a pure gate. That is true of `Bbc3:Bcl2l1` and
-**false of `Mcl1:Bcl2l1`** -- the endpoint this same document promotes to co-primary. The
-guardian balance has a real, covariate-surviving negative wild-type slope, so it crosses
-over at `M*` = +0.545 instead of switching on at zero. `model_form` now fits both endpoints
-so the object cannot hide it again, section 3.2 carries both tables, and the human
-pre-specification (4.3) now says to retain the `X` main effect for `BUFFER`. The crossover
-reaches p < 0.05 only on the genotype estimator -- transcript p 0.20, signature p 0.18, same
-sign and consistent `M*` -- so read it as power, not as contradiction.
+Script 48 was author-run twice and all 47 numbers in its doc reconcile against
+`results/gate_model_verification.rds`. The one thing the author's run overturned:
+**the collapse to a pure gate holds for the trigger and NOT for the guardian balance** --
+`Mcl1:Bcl2l1` has `bX` -0.541 (p 0.0040) and crosses over at `M*` = +0.545. Section 5
+carries the scoped correction.
 
 ### Three corrections to the human plan
 
@@ -170,13 +225,18 @@ https://claude.ai/code/artifact/c0bd6218-c635-4e6c-bc7b-0e06c9679cd7
    panel should draw, and why Fig. 2I keeps mitoPPS.
 6. `figures/panels/PANELS.md` -- the manifest of record. Slot map at line 1792; "Where the
    panels and the written sentences disagree" at 1564; the no-panel sentence list at 1947.
-7. **New:** `docs/2026-09-02_myc_oxphos_priming_gate_model.md`.
+7. `docs/2026-09-02_myc_oxphos_priming_gate_model.md` -- the gate model and the three
+   corrections it forces on the human plan.
+8. **New, and read before touching `experimental-cohorts`:**
+   `docs/experimental_cohorts_branch_notes.md` (rules, corollaries, dataset status), then
+   `docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md` (sections 3, 7a, 7b and the
+   Discussion paragraph) and `docs/2026-09-07_fatpad_timeline_oxphos_precheck.md`.
 
 ---
 
 ## 5. Corrections that must not be re-introduced
 
-Five statements have been made in this project, tested, and found false. They keep
+Eight statements have been made in this project, tested, and found false. They keep
 coming back.
 
 1. **PRC does not clear its expression-matched null** (7.1st pct). `padj 1.9e-4` at
@@ -197,6 +257,18 @@ coming back.
    its wild-type slope is genuinely negative and survives adjustment (`bX` **-0.541,
    p 0.0040**; dropping `X` costs R2 0.828 -> 0.724), so it is a real crossover at
    `M*` = **+0.545**. Never state the collapse without naming the endpoint.
+6. **NEW (2026-09-07): a loading is a property of a SUBSET, not of a ruler.** An
+   admissibility or specificity argument must be computed on the exact subset the test runs
+   on. In fat pad, `rho(ox_sub, Adipoq)` is +0.538 over all 30 samples and **+0.144** within
+   the 20-sample limb, and the mitoribosome's loading flips sign between them. A
+   pre-registered argument built on the full-cohort numbers did not survive.
+7. **NEW (2026-09-07): a composition or purity adjustment must carry a positive control,
+   read FIRST.** `Mki67` rises across the fat-pad limb (tau +0.313, p 0.045) and goes to
+   -0.096 after adjusting on four adipose markers that explain only 15% of it. Without the
+   control that would have read as a clean null.
+8. **NEW (2026-09-07): matching one composition marker is not matching composition.** The 6W
+   fat-pad panel was cleared on `Adipoq` being matched; `Krt8` was not, and two of five
+   `6WK_POS` samples have essentially no epithelium.
 
 ---
 
@@ -216,15 +288,29 @@ Retiring a panel is three steps, all of them required:
 
 ## 7. Open items
 
+**On `paper-final`:**
+
+- **The text cut.** Blocked only on the text arriving. Everything else is done.
 - Per-slot choice between each original panel and its alternative: **2F, 2G, 2H+2I, S2D**.
 - `MYC` against `Myc` on the 2F/2G quadrant notes -- unresolved.
 - A fifth arrow in `figS1_design_contrasts.R:60-93` if the diagonal panel is adopted.
-- ~~Script 48~~ done: run, re-run, reconciled (47/47) 2026-09-07.
-- Whether the gate model earns a panel. It currently has none, deliberately -- it is a
-  response-to-reviewers and human-arm asset, and the 28-panel count is unchanged.
-- Nothing unpushed. `paper-final` is on `origin`; further pushes still need a word.
-- The artifact watch on the gate-model page dropped (connection lost, 2026-09-07) and was
-  not restarted. The page itself is unaffected and still current at the URL in section 3.
+- Whether the gate model earns a panel. It has none, deliberately.
+
+**On `experimental-cohorts`:**
+
+- **The orthotopic Bcl-xL / PGC1a series -- not started.** It is expected to produce
+  main-panel work, and it is where the reversal question goes. Before anything is fitted it
+  needs its own composition check, computed on the exact subset the test will use, and any
+  adjustment must carry a positive control. Pin the data with a README first, following
+  `data/fatpad_timeline/README.md`.
+- The branch is **unpushed** and unmerged. Rebase on `paper-final` before the next
+  substantial piece of work.
+- `sandbox/precheck_fatpad_oxphos_confound.R` is scratch on disk, gitignored, and is deleted
+  before merge. Only its dated note survives.
+- The `Myc` 7.5x fat-pad discrepancy is open and needs per-epithelial-cell measurement to
+  settle. Do not import either dataset's `Myc` scale into the other.
+
+**Everywhere:** no push authorised beyond `paper-final`, which is current.
 
 ---
 
@@ -246,8 +332,16 @@ commit sweeping up the other's half-finished edits), shared `results/` and `outp
 (a silent read of a half-written `.rds`), and same-file edits (last write wins, no merge).
 Sequential is only necessary if the human arm needs to *change* mouse scripts or results.
 
-**Tell that session about section 3.** Three of its plan's measurement choices are now
-decided by mouse data, and two of the three were wrong.
+**Tell that session two things.** First, three of its plan's measurement choices are decided
+by mouse data (section 3a) and two of the three were wrong. Second, the two traps from
+section 3: a loading belongs to the SUBSET it was measured on, and any purity or composition
+adjustment needs a positive control read before the endpoint of interest. A cohort stratified
+by PAM50 / TP53 / purity is exactly where both bite, and that session does not read
+`experimental-cohorts`.
+
+Note also that `docs/2026-08-27_human_validation_plan.md` is untracked by rule, so it is
+**not on the remote** -- if that session expects to find its own spec on `origin`, it is not
+there.
 
 ---
 
