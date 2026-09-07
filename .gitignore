@@ -25,6 +25,7 @@ sandbox/
 
 # Large data files (available via shared Google Drive)
 data/fatpad_timeline/Normalised_DESseq_counts.csv
+data/orthotopic_series/salmon.merged.gene_counts.tsv
 data/FULL.DAT.csv
 data/FULL.DAT_copy.csv
 data/Human_MitoCarta3_0.xls
