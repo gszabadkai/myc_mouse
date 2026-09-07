@@ -5,6 +5,7 @@ status: live -- the working notes for the `experimental-cohorts` branch; update 
 relates-to:
   - data/fatpad_timeline/README.md
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md
+  - docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md
   - docs/handoff.md
 ---
 
@@ -19,8 +20,9 @@ This branch **merges back into `paper-final`**. The orthotopic dataset produces 
 work, so this is a staging area, not a parallel line. Build accordingly, from the first
 commit:
 
-- **Numbered scripts continue `paper-final`'s sequence.** The next one is `49`. No separate
-  numbering scheme to reconcile at merge.
+- **Numbered scripts continue `paper-final`'s sequence.** `49` is taken
+  (`49_fatpad_tumour_limb_oxphos_trend.R`); the next is `50`. No separate numbering scheme
+  to reconcile at merge.
 - **Pinned data and provenance READMEs follow the existing conventions exactly**, since
   they arrive in `paper-final` unchanged: large matrices gitignored with a tracked
   `README.md` beside them (`data/FULL.DAT.csv` is the model), MD5 and source path recorded,
@@ -58,19 +60,40 @@ scoring scripts sit in one repo and the temptation to put their scores on one ax
 immediate. `mitoPPS` carries the same prohibition for a second, independent reason already
 on record: its pairwise-ratio baseline is composition-dependent.
 
-**Corollary that has already bitten once.** A cohort-relative *construction* also carries
+**Corollary 2 — a loading is a property of a SUBSET, not of a ruler.** An admissibility
+argument ("the confound runs against my prediction, so a positive result is credible") must
+be computed on the **exact subset the test runs on**. Script 49 assumed loadings measured
+over all 30 samples and they did not transfer: `rho(ox_sub, Adipoq)` is +0.538 over all 30
+and **+0.144** within the 12W-to-tumour limb, and the mitoribosome's loading flips sign
+between the two. Compute the loading on the analysis subset before relying on its direction.
+
+**Corollary that has already bitten twice.** A cohort-relative *construction* also carries
 cohort-specific *behaviour*. The compartment-relative share `ox_rel` cancels a confound
 only where that confound loads equally on numerator and denominator; in fat pad it loads
 more on the respiratory arm than on the rest of MitoCarta, so the share **amplifies** it
 (`docs/2026-09-07_fatpad_timeline_oxphos_precheck.md` section 2). Re-check the ruler in
 each cohort; do not inherit its properties along with its recipe.
 
+The sharper case is `ox_nuc_mtrib` (script 49): its two halves load on adipose with
+**opposite signs** (+0.14 nuclear OXPHOS, −0.24 mitoribosome), so the difference **adds**
+their adipose components and the endpoint becomes the most confounded construction on the
+limb (+0.58 to +0.78 across four adipose markers) — worse than either half and worse than
+`ox_rel`. A difference of composites cancels a confound only when it loads on both with the
+same sign and similar magnitude.
+
 ## Dataset status
 
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
-| fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **FAIL** for respiratory-axis work, 2026-09-07 | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, Wilcoxon p = 0.016, `Adipoq` matched) and `Bcl2l1` flat across progression while `Myc` rises ~11x |
+| fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **FAIL** for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID) | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, Wilcoxon p = 0.016, `Adipoq` matched) and `Bcl2l1` flat across progression while `Myc` rises ~11x |
 | orthotopic Bcl-xL / PGC1a series | not yet | not started | expected main-panel work |
+
+**Open, and now the branch's leading question:** does relative OXPHOS share rise again as
+tumours establish? The human arm requires a reversal somewhere; script 49 could not test it
+here because the primary endpoint is adipose-confounded in the direction of the observed
+drift, and a null was pre-declared uninterpretable. It goes to the **orthotopic series**,
+where the tumour is not embedded in fat pad — subject to that dataset's own composition
+check first, computed on whatever subset the test will use.
 
 Open, carried from the pre-check and **not** resolved: `Myc` rises 7.5x (medians) between
 `6WK_POS` and `12WK_POS` in fat pad, against the MEC dataset's stable-dose premise. Three
