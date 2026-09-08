@@ -112,7 +112,7 @@ same sign and similar magnitude.
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
 | fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **CLOSED 2026-09-07.** FAIL for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID), and the adjustment that would have rescued it fails its own negative control | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, p = 0.016 -- but **+0.65, p = 0.071** once two epithelium-poor `6WK_POS` samples are dropped; cite with the caveat) and `Bcl2l1` flat across progression while `Myc` rises ~11x (unaffected) |
-| orthotopic vector series (EV/BclxL/Pgc1a, n = 21 of 67) | `data/orthotopic_series/` | **C1 HOLDS** (`Bcl2l1` +121.8 CPM, p 0.00029, survives adjustment with the positive control intact); **C2 holds as an observation**; **C3 UNINFORMATIVE** | the causal reading of the human `BCL2L1` result, and the in vivo MYC-ceiling observation |
+| orthotopic vector series (EV/BclxL/Pgc1a, n = 21 of 67) | `data/orthotopic_series/` | **C1 HOLDS** (`Bcl2l1` +121.8 CPM, p 0.00029, survives adjustment with the positive control intact) and is **SELECTIVE** -- `Mcl1` flat, `Bbc3` falls (script 51); **C2 holds as an observation but is NORMALISATION-DEPENDENT** -- p 0.0029 on CPM, **0.0385 on median-of-ratios**, quote the latter; **C3 UNINFORMATIVE**, for two measured reasons and neither is power | the causal reading of the human `BCL2L1` result, and the in vivo MYC-ceiling observation. **The directed-edge argument is BLOCKED** pending one fact -- see the specificity note section 3 |
 
 **Open, and now the branch's leading question:** does relative OXPHOS share rise again as
 tumours establish? The human arm requires a reversal somewhere. Script 49 could not test it
@@ -126,3 +126,32 @@ Open, carried from the pre-check and **not** resolved: `Myc` rises 7.5x (medians
 `6WK_POS` and `12WK_POS` in fat pad, against the MEC dataset's stable-dose premise. Three
 readings remain live; see the pre-check note section 4. Do not import either dataset's
 `Myc` scale into the other.
+
+---
+
+## Two corollaries from the orthotopic series (script 51, 2026-09-08)
+
+**1. The gate's pooled |rho| threshold has a blind spot in BOTH directions.**
+The 09-08 note's section 2 showed the first: **pooled-material with the
+per-group loadings disagreeing** -- `adipose` +0.621 pooled against
++0.036 / -0.393 / +0.714 by arm, because the intervention itself moves the
+composition markers. `ox_lvl` against proliferation shows the mirror: **pooled
+-0.323, below threshold, with EV / BclxL / Pgc1a at -0.643 / -0.679 / -0.964** --
+three arms agreeing strongly and the pooled value not clearing the bar.
+**Read the per-group breakdown before believing either verdict.** A pooled
+loading can be material where nothing is consistent, and immaterial where
+everything is.
+
+**2. The same lesson on the ENDPOINT rather than the covariate: a near-zero
+pooled correlation across designed arms can be two opposed components
+cancelling, not an absence.** In the vector series the `Bcl2l1`-vs-`ox_rel`
+pooled rho is -0.065, made of a between-arm +0.500 and a within-arm mean of
+-0.381; for `log2(Mcl1/Bcl2l1)` it is +0.064 from between-arm -0.500 and
+within-arm +0.524. EV and BclxL sit at the SAME point on the respiratory axis
+(`ox_rel` -0.292 against -0.291) with `Bcl2l1` 2.1 log2 apart -- a vertical
+displacement at constant `ox_rel`, which is the construct.
+**Decompose into between-arm and within-arm before reading a pooled rho as a
+null.** And the corollary of the corollary: **dropping an arm does not fix it.**
+On EV + Pgc1a alone the same rho is +0.657 with an interval excluding zero, but
+with two arms and a designed `ox_rel` gap that correlation IS the group
+contrast -- circular, and opposite in sign to the within-arm reading.

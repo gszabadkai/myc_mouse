@@ -12,6 +12,31 @@ relates-to:
 
 # The orthotopic vector series: one clean causal result, one observation, and one question this dataset cannot answer
 
+> **QUALIFIED AND CORRECTED 2026-09-08 by
+> `docs/2026-09-08_orthotopic_specificity_checks.md` (script 51).** No number in
+> this note changes and no verdict is reopened -- script 51 rebuilt this cohort
+> from source and reproduces the section 3 C1 table to 0.0238%. Four things it
+> adds, and the third and fourth must travel with any quotation from here:
+>
+> 1. **C1 is MORE SPECIFIC than this note could show.** `Mcl1` does not move
+>    (-0.020 [-0.154, +0.127]) and `Bbc3` FALLS (-0.727 [-1.299, -0.376]) while
+>    `Bcl2l1` rises. Among the anti-apoptotic members only `Bcl2l1` rises;
+>    `Bcl2l2` falls. C1 is a selective event, not a general anti-apoptotic
+>    response. (`Bik` rises, so the gap sentence is scoped to `Bbc3`.)
+> 2. **PGC1a is a BROAD BIOGENESIS intervention with a 2:1 OXPHOS tilt** --
+>    numerator +1.925, denominator +1.011 -- not an OXPHOS-selective one.
+> 3. **C2's section 4 `p = 0.0029` IS NORMALISATION-DEPENDENT.** On
+>    median-of-ratios the same contrast is **p = 0.0385**. The mechanism is
+>    measured: the Pgc1a arm carries **14.7% of its library in MitoCarta genes
+>    against 8.0% in EV**, which deflates every other gene's CPM in that arm.
+>    **Quote 0.0385, or quote both.**
+> 4. **C3's CONSTRUCTION was inconsistent with C1's.** C1's spec said BclxL is
+>    reported and never pooled; section 5 pooled it, so 7 of the 21 `Bcl2l1`
+>    values are set by an expression construct rather than by the tumour.
+>    **C3 stays UNINFORMATIVE** -- script 51 gives two independent reasons,
+>    neither of which is power -- but section 5's readings should be read with
+>    that correction in view.
+
 Author-run 2026-09-08; every number below is read from
 `results/orthotopic_vector_series.rds`. Scoring set **fixed before any number was computed**
 at the 21 vector-series samples (EV / BclxL / Pgc1a, 7 each). The p21 series is out of scope;
