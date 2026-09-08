@@ -4,7 +4,8 @@ tags: [project/myc_mouse, handoff, block-c, paper-final]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - docs/experimental_cohorts_branch_notes.md          (the CURRENT branch's rules and status)
-  - docs/2026-09-08_orthotopic_vector_series.md       (this session; C1 holds, C3 cannot answer)
+  - docs/2026-09-08_orthotopic_specificity_checks.md  (THIS session; script 51 -- C1 selective, C2 normalisation-dependent, C3 corrected)
+  - docs/2026-09-08_orthotopic_vector_series.md       (the session before; C1 holds, C3 cannot answer)
   - docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md (the fat-pad verdict, dataset closed)
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md
   - docs/2026-09-02_myc_oxphos_priming_gate_model.md   (the gate model)
@@ -30,10 +31,10 @@ the MEC pipeline. Section 1 covers both.
 
 | | |
 |---|---|
-| HEAD | `f67e2a7` -- "Orthotopic series: the causal result holds, and C3 cannot answer its question" |
-| commits ahead of `paper-final` | **9** |
-| pushed | **no.** `experimental-cohorts` is local only. |
-| scripts | `49` (fat-pad) and `50` (orthotopic) -- both author-run and reconciled, 33 numbers each, 0 mismatches. Next number is **51**. |
+| HEAD | `27635f0` -- "Script 51: C1 is selective, C2 is normalisation-dependent, and C3's construction was wrong" |
+| commits ahead of `paper-final` | **11** |
+| pushed | **YES, 2026-09-08.** `origin/experimental-cohorts` was created by this session's push and the branch now tracks it. 0 ahead / 0 behind. |
+| scripts | `49` (fat-pad), `50` (orthotopic) and `51` (specificity/normalisation) -- all author-run and reconciled; 51 reproduces its dry run in **16 of 16** non-date objects. Next number is **52**. |
 | data | `data/fatpad_timeline/` and `data/orthotopic_series/` pinned (matrix gitignored, README tracked) |
 | panels | 28 manuscript panels UNCHANGED. `fatpad_confound.R` is a discussion panel outside both runners, like the six `biogax_*.R`. |
 | scratch | `sandbox/` exists and is gitignored; it never merges |
@@ -61,6 +62,22 @@ depends on it.
 
 ## 2. Do this first
 
+0. **R3 IS BLOCKED ON ONE FACT AND IT IS YOURS.** Script 51 found the asymmetry
+   holds -- overexpressing Bcl-xL moves **no** respiratory ruler (`ox_lvl` +0.093,
+   `ox_rel` -0.023, `ox_mt` -0.246, all covering zero) while PGC1a moves `Bcl2l1`
+   2.9x. That licenses a **directed edge**. But it cannot be reconciled against the
+   standing experimental finding that Bcl-xL tumours have higher OXPHOS without
+   knowing **whether that finding was transcriptional or functional**:
+   - **functional** (respirometry, OCR, complex activity) -> no contradiction. The
+     sentence is *"Bcl-xL raises respiratory function without a detectable
+     transcriptional signature"* -- a discordance between measurement types, and
+     interesting;
+   - **transcriptional** -> two transcriptional measurements disagree and one has
+     to give. The asymmetry argument cannot be used until that is resolved.
+
+   **Do not write the directed-edge argument until this is settled.** Both readings
+   are spelled out in `docs/2026-09-08_orthotopic_specificity_checks.md` section 3.
+
 1. **The C3 decision, which is yours and is the only thing blocking this dataset.** The
    orthotopic series **cannot** test the abstract's *"mouse tumours resemble human tumours
    rather than the gland they arose from"* -- see section 3. If that sentence is currently
@@ -76,7 +93,74 @@ depends on it.
 
 ---
 
-## 3. What happened this session -- the orthotopic vector series
+## 3. What happened this session -- script 51, specificity and normalisation
+
+**Not a fourth claim.** C1 holds, C2 holds as an observation, C3 is uninformative,
+and none of those verdicts was reopened. Script 51 rebuilt the 21-sample cohort
+from source and **proved it against 50 before computing anything new** --
+median-CPM to 0.784%, 50's five C1 point estimates to 0.0238%, set sizes asserted
+at 87 / 880 / 13. Full note:
+`docs/2026-09-08_orthotopic_specificity_checks.md`. Figure:
+`outputs/orthotopic/51_arm_geometry.pdf`.
+
+**Gate 0, and the limitation that matters more than the length offset.** No
+transcript-level quantification exists anywhere -- and the delivery folder is a
+**results folder, not a pipeline tree**, so these files were never delivered
+rather than merely lost. The consequence is **Bcl-xS**: gene-level `Bcl2l1` pools
+two functionally opposite isoforms, C1 rests entirely on `Bcl2l1`, and nothing
+here separates *"PGC1a raises the guardian"* from *"PGC1a shifts splicing toward
+the short pro-apoptotic isoform"*. **A limitation on C1's INTERPRETATION, not its
+measurement**, and the one a referee finds first.
+
+**C1 got stronger and more specific.**
+
+- `Mcl1` does not move: **-0.020 [-0.154, +0.127]** against `Bcl2l1` +1.539.
+- `Bbc3` **falls**: -0.727 [-1.299, -0.376]. The gap widens on both limbs.
+- Among the anti-apoptotic members **only `Bcl2l1` rises** -- `Mcl1` flat,
+  `Bcl2l2` falls. **Not a general anti-apoptotic response.**
+- **But `Bik` rises** +0.765, so the gap sentence is scoped to `Bbc3` and not to
+  the sensitiser arm. That is in the note rather than omitted.
+- **PGC1a is a broad biogenesis intervention with a 2:1 OXPHOS tilt** (numerator
+  +1.925, denominator +1.011), not an OXPHOS-selective one. Describe it that way.
+
+**C2 is normalisation-dependent, and the mechanism is measured.** The
+80th-percentile `Myc` contrast against EV goes **0.0029 (CPM) to 0.0385
+(median-of-ratios)**. The Pgc1a arm carries **14.7% of its library in MitoCarta
+genes against 8.0% in EV** -- PGC1a nearly doubles the mitochondrial share, which
+deflates every other gene's CPM in that arm, `Myc` included. **C2 stands as an
+observation; quote 0.0385, or quote both.** The 09-08 note's 0.0029 must not
+travel alone.
+
+**C3 now has two independent reasons for being uninformative, and neither is
+power.**
+
+- **The arms cancel.** EV and BclxL sit at the *same* `ox_rel` (-0.292 against
+  -0.291) with `Bcl2l1` 2.1 log2 apart -- a vertical displacement at constant
+  respiration, which is the construct. Between-arm +0.500 against within-arm
+  -0.381 cancel to the pooled -0.065.
+- **Dropping the arm does not fix it.** C1's spec excluded BclxL from pooling and
+  C3's spec pooled it, so 7 of 21 `Bcl2l1` values are set by a construct. On
+  EV + Pgc1a alone the rho is **+0.657 excluding zero** -- but with two arms and a
+  designed `ox_rel` gap that correlation **IS the group contrast**, circular and
+  opposite in sign to the within-arm reading. Reported as a demonstration, not a
+  result.
+
+**R5 is uninformative and says so.** `Ppargc1a` spans only **1.51-fold** within
+the Pgc1a arm, so the flatness of `Bcl2l1` cannot discriminate a threshold from a
+dose-response. The rule was written in advance to say that rather than read the
+flatness.
+
+**One correction to the brief, made rather than applied silently.** It asked for
+50's PART F C3 fit "on median-of-ratios rather than CPM"; 50 **already ran on
+median-of-ratios**. Both are fitted; the endpoint carrying the sign flip is
+normalisation-stable (-1.442 against -1.431).
+
+**The 09-08 vector-series note gained a cross-reference banner with no number
+changed**, and the branch notes gained two corollaries -- see section 5.
+
+---
+
+## 3a. The session before -- the orthotopic vector series
 
 `scripts/50_orthotopic_vector_series_scoring.R`, author-run 2026-09-08, reproducing the dry
 run exactly; the note is `docs/2026-09-08_orthotopic_vector_series.md` and all 33 quoted
@@ -127,7 +211,7 @@ a transcript), and any pooling with the timeline or the human cohorts.
 
 ---
 
-## 3a. The session before -- the fat-pad timeline, closed
+## 3b. Two sessions ago -- the fat-pad timeline, closed
 
 **New branch `experimental-cohorts`**, off `paper-final`, for the two datasets outside the
 6W/12W purified-MEC pipeline: the orthotopic Bcl-xL / PGC1a series (not started) and the
@@ -189,7 +273,7 @@ does not read this branch -- **tell it**.
 
 ---
 
-## 3b. Two sessions ago -- the gate model
+## 3c. Three sessions ago -- the gate model
 
 **The ask:** a model of MYC, OXPHOS subunits and PUMA/BIM that can be tested in human
 tumours, verified in the mouse first.
@@ -292,6 +376,22 @@ https://claude.ai/code/artifact/c0bd6218-c635-4e6c-bc7b-0e06c9679cd7
 
 ## 5. Corrections that must not be re-introduced
 
+**Added 2026-09-08 from script 51, and both are in
+`docs/experimental_cohorts_branch_notes.md`:**
+
+- **The composition gate's pooled |rho| threshold has a blind spot in BOTH
+  directions.** Pooled-material with the per-group loadings disagreeing
+  (`adipose` +0.621 pooled against +0.036 / -0.393 / +0.714 by arm), and the
+  mirror -- `ox_lvl` against proliferation, **pooled -0.323 below threshold with
+  the three arms at -0.643 / -0.679 / -0.964**. **Read the per-group breakdown
+  before believing either verdict.**
+- **The same lesson on the endpoint: a near-zero pooled correlation across
+  designed arms can be two opposed components cancelling, not an absence.**
+  Decompose into between-arm and within-arm before reading a pooled rho as a
+  null -- and note that **dropping an arm does not fix it**, it makes the
+  remaining correlation the group contrast.
+
+
 Ten statements have been made in this project, tested, and found false. They keep
 coming back.
 
@@ -366,23 +466,38 @@ Retiring a panel is three steps, all of them required:
 - **THE C3 / ABSTRACT DECISION IS OPEN AND IS YOURS.** The orthotopic series cannot test
   *"mouse tumours resemble human tumours rather than the gland they arose from"*. Another
   source, or the sentence comes out. Nothing else in the paper depends on the answer.
+- **R3 IS BLOCKED ON ONE FACT AND IT IS YOURS** -- was the standing Bcl-xL/OXPHOS finding
+  **transcriptional or functional**? See section 2 item 0. The asymmetry holds and the
+  directed-edge argument is available on the transcriptome; whether it is a contradiction or
+  an interesting cross-measurement discordance depends entirely on that answer. **Do not
+  write the argument until it is settled.**
+- **C2's number changed and the old one must not travel alone.** Quote **p = 0.0385**
+  (median-of-ratios), or quote both. The 09-08 note's 0.0029 is CPM and the Pgc1a arm's
+  library is 14.7% MitoCarta against EV's 8.0%.
 - **Does the orthotopic result earn a panel?** C1 is the cleanest causal statement in the
-  branch and currently has none. C2 is explicitly a figure-and-observation and would need one
-  if it is used at all. Neither is built; the manuscript panel count is still 28.
+  branch and currently has none -- and script 51 made it **more** quotable, not less: `Mcl1`
+  flat, `Bbc3` falling, only `Bcl2l1` rising among the guardians. C2 is explicitly a
+  figure-and-observation and would need one if it is used at all. Neither is built; the
+  manuscript panel count is still 28.
+- **`Bcl2l1` cannot be resolved into Bcl-xL and Bcl-xS** and no file on disk can fix it. If
+  the isoform question matters to the paper, it needs new quantification from whoever ran the
+  pipeline -- the delivery folder never contained transcript-level output.
 - The orthotopic series is **done for the questions asked of it**. If the reversal question is
   still wanted, it needs a design where `ox_rel` varies **within** a common state -- not one
-  built to move it between arms.
-- The branch is **unpushed** and unmerged. Rebase on `paper-final` before the next
-  substantial piece of work.
+  built to move it between arms. Script 51 section 5 shows *why* from two directions.
+- The branch is **pushed** (`origin/experimental-cohorts`, created 2026-09-08) and still
+  unmerged. Rebase on `paper-final` before the next substantial piece of work.
 - `sandbox/precheck_fatpad_oxphos_confound.R` is scratch on disk, gitignored, and is deleted
   before merge. Only its dated note survives.
 - **CLAUDE.md's branch section is stale** -- it describes `new-analysis`/`analysis-exploratory`/
-  `paper-figures` and predates `paper-final`. Flagged twice now, deliberately not fixed.
+  `paper-figures` and predates `paper-final` and `experimental-cohorts`. Flagged three times
+  now, deliberately not fixed.
   Its workflow, coding, gene-set, mitoPPS/GSVA and data-trap sections all still hold.
 - The `Myc` 7.5x fat-pad discrepancy is open and needs per-epithelial-cell measurement to
   settle. Do not import either dataset's `Myc` scale into the other.
 
-**Everywhere:** no push authorised beyond `paper-final`, which is current.
+**Everywhere:** `paper-final` and `experimental-cohorts` are both current on the remote as of
+2026-09-08. Nothing is unpushed.
 
 ---
 
