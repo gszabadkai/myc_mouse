@@ -112,7 +112,7 @@ same sign and similar magnitude.
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
 | fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **CLOSED 2026-09-07.** FAIL for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID), and the adjustment that would have rescued it fails its own negative control | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, p = 0.016 -- but **+0.65, p = 0.071** once two epithelium-poor `6WK_POS` samples are dropped; cite with the caveat) and `Bcl2l1` flat across progression while `Myc` rises ~11x (unaffected) |
-| orthotopic series (67 samples; 21 vector + 28 CRISPR in scope from 2026-09-09) | `data/orthotopic_series/` | **PARTIALLY VOID 2026-09-09 -- SAMPLE IDENTITY.** The arm labelled `Pgc1a` is **PGC1a + Bcl-xL**, so its contrast against `EV` differs by two manipulations, and `Bcl2l1` in the 14 construct-carrying samples cannot be separated from construct transcript. **C1 and C3 fall.** **C2 is downgraded, not void** -- the `EV` contrast goes, the within-series `BclxL` contrast survives and becomes the key row of the four-arm dose series. R3 survives, demoted to a standalone negative control; the composition gate with its positive control, and R5, stand. Scripts 50 and 51 are a correct execution of a wrong premise and are deliberately unaltered. See `docs/2026-09-09_orthotopic_identity_correction.md` | pending script 52: the dose-of-escape reading across four PGC1a arms, and the construct-free `NTPgc1a` vs `NTEV` contrast |
+| orthotopic series (67 samples; 21 vector + 28 CRISPR in scope from 2026-09-09) | `data/orthotopic_series/` | **PARTIALLY VOID 2026-09-09 -- SAMPLE IDENTITY.** The arm labelled `Pgc1a` is **PGC1a + Bcl-xL**, so its contrast against `EV` differs by two manipulations, and `Bcl2l1` in the 14 construct-carrying samples cannot be separated from construct transcript. **C1 and C3 fall.** **C2 is downgraded, not void** -- the `EV` contrast goes, the within-series `BclxL` contrast survives and becomes the key row of the four-arm dose series. R3 survives, demoted to a standalone negative control; the composition gate with its positive control, and R5, stand. Scripts 50 and 51 are a correct execution of a wrong premise and are deliberately unaltered. See `docs/2026-09-09_orthotopic_identity_correction.md` | **script 52, 2026-09-10:** C1 is **CLOSED** (endogenous `Bcl2l1` null in the construct-free arm, -0.113 [-0.283, +0.174]); `Bbc3` falls **in dose-order with retained PGC1a across three backgrounds** (-0.731 / -0.345 / +0.044 at 302 / 129 / 0.17 CPM), which replaces the section 2 p53 account; the MYC cap appears **only** in the arm that kept the dose, normalisation-robust. See `docs/2026-09-10_orthotopic_escape_series.md` |
 
 **Open, and now the branch's leading question:** does relative OXPHOS share rise again as
 tumours establish? The human arm requires a reversal somewhere. Script 49 could not test it
@@ -128,6 +128,18 @@ Open, carried from the pre-check and **not** resolved: `Myc` rises 7.5x (medians
 `6WK_POS` and `12WK_POS` in fat pad, against the MEC dataset's stable-dose premise. Three
 readings remain live; see the pre-check note section 4. Do not import either dataset's
 `Myc` scale into the other.
+
+---
+
+## Corollary 7, from script 52 (2026-09-10)
+
+**A rule keyed to ONE ruler can pass while the cohort says otherwise.** R1 was pre-specified on
+`ox_lvl` and passes there — `NTPgc1a` vs `NTEV` gives +0.257 [-0.003, +0.773], spanning zero. In
+the same contrast `ox_rel` is **+0.176 [+0.039, +0.348]** and mitoPPS OXPHOS **+0.053
+[+0.030, +0.116]**, both excluding zero, with the denominator flat — a tilt rather than mass
+expansion. Pre-registration fixes the decision rule, which is its purpose, but **the
+pre-registered ruler is itself a choice**, and the others still have to be read. Report every
+ruler in the contrast the rule is about, not only the one the rule names.
 
 ---
 
