@@ -1,7 +1,7 @@
 ---
 date: 2026-09-08
 tags: [project/myc_mouse, experimental-cohorts, orthotopic, bcl2l1, pgc1a, myc-ceiling, reversal]
-status: partially void -- the `Pgc1a` arm is PGC1a + Bcl-xL (see 2026-09-09 correction); C1, C2 and everything resting on `Bcl2l1` in that arm are void; C3's verdict and the composition gate with its positive control stand
+status: partially void -- the `Pgc1a` arm is PGC1a + Bcl-xL (see 2026-09-09 correction); C1 and everything resting on `Bcl2l1` in that arm are void; C2's headline contrast against `EV` is void as two-factor; the within-series contrast against `BclxL` survives, downgraded, and is carried into the correction's four-arm dose reading; C3's verdict and the composition gate with its positive control stand
 relates-to:
   - scripts/50_orthotopic_vector_series_scoring.R  (writes results/orthotopic_vector_series.rds)
   - docs/2026-09-07_orthotopic_analysis_plan.md    (the spec; Gate 1 answered below)

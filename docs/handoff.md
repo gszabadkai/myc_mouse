@@ -67,8 +67,12 @@ depends on it.
    `docs/2026-09-09_orthotopic_identity_correction.md` before anything else.** The arm the
    count matrix labels `Pgc1a` is **PGC1a + Bcl-xL**. Its contrast against `EV` therefore
    differs by **two** manipulations, and `Bcl2l1` in the 14 construct-carrying samples cannot
-   be separated from construct transcript. **C1, C2 and C3 all fall.** Scripts 50 and 51 are a
-   correct execution of a wrong premise; the code is fine and is deliberately unaltered, and
+   be separated from construct transcript. **C1 and C3 fall.** C2 is **downgraded, not void**: its
+   headline contrast against `EV` goes, but `Pgc1a_BclxL` vs `BclxL` holds the construct constant
+   and survives (max -613, p 0.035; 80th percentile -802, p 0.012 CPM / 0.029 MOR) -- and that
+   contrast is the **key row of the correction's four-arm dose series**, not a casualty of it.
+   Scripts 50 and 51 are a correct execution of a wrong premise; the code is fine and is
+   deliberately unaltered, and
    the pre-correction state is tagged `orthotopic-pre-identity-correction`.
 
    **The R3 blocker that used to stand here was fabricated and is deleted.** There is no
