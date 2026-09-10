@@ -1,11 +1,12 @@
 ---
-date: 2026-09-08
+date: 2026-09-09
 tags: [project/myc_mouse, handoff, block-c, paper-final]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - docs/experimental_cohorts_branch_notes.md          (the CURRENT branch's rules and status)
-  - docs/2026-09-08_orthotopic_specificity_checks.md  (THIS session; script 51 -- C1 selective, C2 normalisation-dependent, C3 corrected)
-  - docs/2026-09-08_orthotopic_vector_series.md       (the session before; C1 holds, C3 cannot answer)
+  - docs/2026-09-09_orthotopic_identity_correction.md (READ FIRST -- voids the orthotopic conclusions)
+  - docs/2026-09-08_orthotopic_specificity_checks.md  (script 51 -- VOID, body preserved)
+  - docs/2026-09-08_orthotopic_vector_series.md       (script 50 -- VOID, body preserved)
   - docs/2026-09-07_fatpad_tumour_limb_oxphos_trend.md (the fat-pad verdict, dataset closed)
   - docs/2026-09-07_fatpad_timeline_oxphos_precheck.md
   - docs/2026-09-02_myc_oxphos_priming_gate_model.md   (the gate model)
@@ -34,7 +35,7 @@ the MEC pipeline. Section 1 covers both.
 | HEAD | `27635f0` -- "Script 51: C1 is selective, C2 is normalisation-dependent, and C3's construction was wrong" |
 | commits ahead of `paper-final` | **11** |
 | pushed | **YES, 2026-09-08.** `origin/experimental-cohorts` was created by this session's push and the branch now tracks it. 0 ahead / 0 behind. |
-| scripts | `49` (fat-pad), `50` (orthotopic) and `51` (specificity/normalisation) -- all author-run and reconciled; 51 reproduces its dry run in **16 of 16** non-date objects. Next number is **52**. |
+| scripts | `49` (fat-pad), `50` and `51` (orthotopic) -- all author-run and reconciled, but **50 and 51 rest on a wrong sample premise and their conclusions are void**. Code deliberately unaltered. Next number is **52**. |
 | data | `data/fatpad_timeline/` and `data/orthotopic_series/` pinned (matrix gitignored, README tracked) |
 | panels | 28 manuscript panels UNCHANGED. `fatpad_confound.R` is a discussion panel outside both runners, like the six `biogax_*.R`. |
 | scratch | `sandbox/` exists and is gitignored; it never merges |
@@ -62,38 +63,44 @@ depends on it.
 
 ## 2. Do this first
 
-0. **R3 IS BLOCKED ON ONE FACT AND IT IS YOURS.** Script 51 found the asymmetry
-   holds -- overexpressing Bcl-xL moves **no** respiratory ruler (`ox_lvl` +0.093,
-   `ox_rel` -0.023, `ox_mt` -0.246, all covering zero) while PGC1a moves `Bcl2l1`
-   2.9x. That licenses a **directed edge**. But it cannot be reconciled against the
-   standing experimental finding that Bcl-xL tumours have higher OXPHOS without
-   knowing **whether that finding was transcriptional or functional**:
-   - **functional** (respirometry, OCR, complex activity) -> no contradiction. The
-     sentence is *"Bcl-xL raises respiratory function without a detectable
-     transcriptional signature"* -- a discordance between measurement types, and
-     interesting;
-   - **transcriptional** -> two transcriptional measurements disagree and one has
-     to give. The asymmetry argument cannot be used until that is resolved.
+0. **THE ORTHOTOPIC CONCLUSIONS ARE VOID. Read
+   `docs/2026-09-09_orthotopic_identity_correction.md` before anything else.** The arm the
+   count matrix labels `Pgc1a` is **PGC1a + Bcl-xL**. Its contrast against `EV` therefore
+   differs by **two** manipulations, and `Bcl2l1` in the 14 construct-carrying samples cannot
+   be separated from construct transcript. **C1, C2 and C3 all fall.** Scripts 50 and 51 are a
+   correct execution of a wrong premise; the code is fine and is deliberately unaltered, and
+   the pre-correction state is tagged `orthotopic-pre-identity-correction`.
 
-   **Do not write the directed-edge argument until this is settled.** Both readings
-   are spelled out in `docs/2026-09-08_orthotopic_specificity_checks.md` section 3.
+   **The R3 blocker that used to stand here was fabricated and is deleted.** There is no
+   standing finding that Bcl-xL tumours have higher OXPHOS; it entered through
+   `docs/2026-09-08_script51_specificity_prompt.md:149-152` and was never in the data or the
+   manuscript, which has Bcl-xL as the **permissive** partner throughout. R3 survives, demoted
+   to a **standalone negative control**, transcript-level only.
 
-1. **The C3 decision, which is yours and is the only thing blocking this dataset.** The
-   orthotopic series **cannot** test the abstract's *"mouse tumours resemble human tumours
-   rather than the gland they arose from"* -- see section 3. If that sentence is currently
-   written as supported, it needs a different source or it comes out. **It must not be cited
-   to the orthotopic series.**
-2. **Then either branch.** If the cut text is ready, `git checkout paper-final` and go to
-   section 6 -- the main line is blocked only on the text. If more `experimental-cohorts`
-   work is wanted, read `docs/experimental_cohorts_branch_notes.md` first; it now carries
-   four corollaries, all earned.
-3. **Rebase before anything substantial:** `git rebase paper-final`.
-4. **Nothing else is outstanding.** Scripts 48, 49 and 50 are run, their objects are in step
-   with their scripts, and every number in their docs has been checked back against them.
+1. **Script 52 is the next session** and is not started here. It re-scores **all 35 vector +
+   CRISPR samples in one run**, contrasts **within series**, and reads the cohort as a
+   dose-of-escape series. The correction document section 4 carries the pull order; section 6.4
+   carries its spec.
+
+2. **The C3 decision is moot for now.** The orthotopic series was never going to settle the
+   abstract's *"mouse tumours resemble human tumours rather than the gland they arose from"*,
+   and with C3 void it certainly does not. **It must not be cited to this dataset.** It still
+   needs a different source or it comes out.
+
+3. **`docs/2026-09-09_reprioritisation_narrative_v3.md` needs your review.** Its Movement 3,
+   *"PGC1a induces PUMA independently of p53"*, may rest on the now-void C1. Tracked in this
+   session, contents unchanged.
+
+4. **Rebase before anything substantial:** `git rebase paper-final`. Do **not** merge to
+   `paper-final` until 52 is signed off.
 
 ---
 
 ## 3. What happened this session -- script 51, specificity and normalisation
+
+> **VOID as of 2026-09-09 (sample identity).** Everything in this section is preserved as the
+> record of what was concluded and why; the arm it calls `Pgc1a` is PGC1a + Bcl-xL. See
+> section 2 item 0.
 
 **Not a fourth claim.** C1 holds, C2 holds as an observation, C3 is uninformative,
 and none of those verdicts was reopened. Script 51 rebuilt the 21-sample cohort

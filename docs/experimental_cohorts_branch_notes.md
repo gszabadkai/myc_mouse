@@ -112,7 +112,7 @@ same sign and similar magnitude.
 | dataset | pinned | verdict | contributes |
 |---|---|---|---|
 | fat-pad timeline (Chandan, 30 samples) | `data/fatpad_timeline/` | **CLOSED 2026-09-07.** FAIL for respiratory-axis work, twice: within-tumour correlation (pre-check) and the 12W-to-tumour ordered trend (script 49, T1 FAIL / T3 VOID), and the adjustment that would have rescued it fails its own negative control | the 6W genotype panel (`PUMA:BCL-XL` +0.77 log2, p = 0.016 -- but **+0.65, p = 0.071** once two epithelium-poor `6WK_POS` samples are dropped; cite with the caveat) and `Bcl2l1` flat across progression while `Myc` rises ~11x (unaffected) |
-| orthotopic vector series (EV/BclxL/Pgc1a, n = 21 of 67) | `data/orthotopic_series/` | **C1 HOLDS** (`Bcl2l1` +121.8 CPM, p 0.00029, survives adjustment with the positive control intact) and is **SELECTIVE** -- `Mcl1` flat, `Bbc3` falls (script 51); **C2 holds as an observation but is NORMALISATION-DEPENDENT** -- p 0.0029 on CPM, **0.0385 on median-of-ratios**, quote the latter; **C3 UNINFORMATIVE**, for two measured reasons and neither is power | the causal reading of the human `BCL2L1` result, and the in vivo MYC-ceiling observation. **The directed-edge argument is BLOCKED** pending one fact -- see the specificity note section 3 |
+| orthotopic series (67 samples; 21 vector + 28 CRISPR in scope from 2026-09-09) | `data/orthotopic_series/` | **CONCLUSIONS VOID 2026-09-09 -- SAMPLE IDENTITY.** The arm labelled `Pgc1a` is **PGC1a + Bcl-xL**, so its contrast against `EV` differs by two manipulations, and `Bcl2l1` in the 14 construct-carrying samples cannot be separated from construct transcript. **C1, C2 and C3 all fall.** Scripts 50 and 51 are a correct execution of a wrong premise and are deliberately unaltered. R3 survives, demoted to a standalone negative control. See `docs/2026-09-09_orthotopic_identity_correction.md` | pending script 52: the dose-of-escape reading across four PGC1a arms, and the construct-free `NTPgc1a` vs `NTEV` contrast |
 
 **Open, and now the branch's leading question:** does relative OXPHOS share rise again as
 tumours establish? The human arm requires a reversal somewhere. Script 49 could not test it
@@ -120,12 +120,42 @@ in fat pad — the endpoint is adipose-determined (76% of its variance), a null 
 pre-declared uninterpretable, and adjustment removes the progression along with the
 confound. **It goes to the orthotopic series**, where the tumour is not embedded in fat pad
 — subject to that dataset's own composition check first, computed on the exact subset the
-test will use, and carrying a positive control through any adjustment.
+test will use, and carrying a positive control through any adjustment. **Note as of
+2026-09-09:** that plan stands, but the orthotopic arms are survivor populations (Corollary 5),
+so what they answer is which escape route was taken, not how respiration responds.
 
 Open, carried from the pre-check and **not** resolved: `Myc` rises 7.5x (medians) between
 `6WK_POS` and `12WK_POS` in fat pad, against the MEC dataset's stable-dose premise. Three
 readings remain live; see the pre-check note section 4. Do not import either dataset's
 `Myc` scale into the other.
+
+---
+
+## Two corollaries from the orthotopic identity error (2026-09-09)
+
+**Corollary 5 — every orthotopic arm is a SURVIVOR POPULATION.** PGC1a kills MYAZ cells, so a
+PGC1a-expressing line is selected before it is ever injected. Matched EV handling removes the
+protocol asymmetry but **not this one**. **Read the orthotopic transcriptome as a record of
+what survived, not as a response to a manipulation.** The dose each arm kept is set by how
+much of the death pathway it broke: transgene silenced, transgene lost (`KOPgc1a`,
+`Ppargc1a` 0.2 CPM), partial dose retained (`NTPgc1a`, 128.6), full dose under a downstream
+buffer (`Pgc1a_BclxL`, 301.6). A PGC1a "effect" measured here is an escape-route signature.
+
+**Corollary 6 — a construct arm is not identified by its LABEL.** The column header said
+`Pgc1a`; the arm is PGC1a + Bcl-xL. Nothing had to be discovered to catch this: **the
+manuscript's own Figure 5 legend named the arms correctly the whole time** (*EV EV, Bcl-xL EV,
+Bcl-xL Pgc1a*). **Reconcile sample labels against the manuscript's figure legends before
+pre-specifying anything.** A load control that reproduces a median-CPM table proves the matrix
+was read correctly; it proves nothing about what the samples are.
+
+**Scope change, recorded deliberately (2026-09-09).** The CRISPR series was out of scope in
+`docs/2026-09-07_orthotopic_analysis_plan.md`. **It returns.** `NTEV`/`NTPgc1a` carry the
+**only construct-free PGC1a contrast in the cohort** — the one place `Bcl2l1` means endogenous
+BCL-XL — and `KOEV`/`KOPgc1a` complete the escape series. Anything involving them re-scores
+**all 35 vector + CRISPR samples in one run**, because these scores are cohort-relative; the
+21-sample scoring behind scripts 50 and 51 stays untouched as the record, and **values from the
+two runs are never quoted beside each other**. Clean contrasts are **within series**: the
+CRISPR arms are clones and the vector arms a polyclonal pool.
 
 ---
 

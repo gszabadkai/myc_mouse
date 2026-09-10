@@ -1,7 +1,7 @@
 ---
 date: 2026-09-08
 tags: [project/myc_mouse, experimental-cohorts, orthotopic, bcl2l1, mcl1, bbc3, pgc1a, specificity, normalisation]
-status: settled -- C1 is STRONGER and more specific than script 50 could show; C2 weakens under median-of-ratios and the mechanism is measured; C3 stays UNINFORMATIVE and its construction is corrected
+status: VOID (sample identity, 2026-09-09) -- the `Pgc1a` arm is PGC1a + Bcl-xL. Body preserved as the record of what was concluded; see docs/2026-09-09_orthotopic_identity_correction.md
 relates-to:
   - scripts/51_orthotopic_specificity_checks.R  (writes results/orthotopic_specificity_checks.rds)
   - docs/2026-09-08_orthotopic_vector_series.md  (the result this qualifies and corrects)
@@ -11,6 +11,14 @@ relates-to:
 ---
 
 # Specificity, normalisation, and one correction: what script 50's three claims look like under a closer look
+
+> **VOID — SAMPLE IDENTITY CORRECTION, 2026-09-09.** The arm this note calls `Pgc1a` is
+> **PGC1a + Bcl-xL**, not PGC1a alone, so its contrast against `EV` differs by two
+> manipulations and every conclusion resting on `Bcl2l1` in that arm is void. The code is a
+> correct execution of a wrong premise and is deliberately unaltered. Read
+> `docs/2026-09-09_orthotopic_identity_correction.md` before this document. The body below is
+> preserved as written, as the record of what was concluded and why.
+
 
 Author-run 2026-09-08. Every number below is read from
 `results/orthotopic_specificity_checks.rds`, which **reproduces the pre-run dry
@@ -154,7 +162,7 @@ OXPHOS-selective one, and C1's manipulation should be described that way.
 
 ---
 
-## 3. R3 -- the asymmetry holds, and it needs one fact this note does not have
+## 3. R3 -- Bcl-xL does not move the respiratory transcriptome (blocker deleted 2026-09-09)
 
 BclxL vs EV, two-sided:
 
@@ -165,26 +173,25 @@ BclxL vs EV, two-sided:
 | `ox_mt` (mtDNA-encoded) | -0.246 [-0.547, +0.303] |
 
 **All three cover zero.** Overexpressing Bcl-xL does not move respiration
-transcriptionally, on any of the three rulers, while PGC1a moves `Bcl2l1` by
-2.9x. **The edge runs one way, and the directed-edge argument is available.**
+transcriptionally, on any of the three rulers.
 
-> **OPEN, AND IT NEEDS THE AUTHOR'S ANSWER BEFORE THIS IS WRITTEN ANYWHERE.**
-> There is a standing experimental finding that Bcl-xL overexpressing tumours
-> have higher OXPHOS. This note cannot reconcile it because it does not know
-> **whether that finding was transcriptional or functional**, and the two give
-> different statements:
+> **CORRECTION, 2026-09-09 — the blocker that stood here has been deleted.** It
+> asserted a "standing experimental finding that Bcl-xL overexpressing tumours
+> have higher OXPHOS" and forbade the argument until that was reconciled. **No
+> such finding exists.** It entered in the brief that commissioned this script,
+> `docs/2026-09-08_script51_specificity_prompt.md:149-152`, and was never in the
+> data or in the manuscript. The manuscript has Bcl-xL as the **permissive**
+> partner throughout — it rescues the Ndi1 growth defect and makes raised
+> respiration advantageous — and nowhere claims it raises respiration. R3 is
+> therefore consistent with the manuscript's own model and there is nothing to
+> reconcile. See `docs/2026-09-09_orthotopic_identity_correction.md` section 1.
 >
-> - **if it was FUNCTIONAL** (respirometry, OCR, complex activity), there is no
->   contradiction. A functional change with a flat transcriptome is a
->   post-transcriptional or activity-level effect, and the correct sentence is
->   *"Bcl-xL raises respiratory function without a detectable transcriptional
->   signature"*. That is a **discordance between measurement types**, and it is
->   interesting rather than contradictory;
-> - **if it was TRANSCRIPTIONAL**, this is a genuine disagreement between two
->   transcriptional measurements and one of them has to give. The asymmetry
->   argument cannot be used until it is resolved.
->
-> **The directed-edge argument must not be written until this is settled.**
+> **R3 is unblocked but DEMOTED.** The sentence above it — *"the edge runs one
+> way, and the directed-edge argument is available"* — is withdrawn: with C1 void
+> there is no forward edge for R3 to be the reverse of. R3 stands as a
+> **standalone negative control** (Bcl-xL does not move the respiratory
+> transcriptome), **transcript-level only**, while the manuscript's respiration
+> claims are functional.
 
 ---
 

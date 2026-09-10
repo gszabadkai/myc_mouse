@@ -1,7 +1,7 @@
 ---
 date: 2026-09-08
 tags: [project/myc_mouse, experimental-cohorts, orthotopic, bcl2l1, pgc1a, myc-ceiling, reversal]
-status: settled -- C1 holds and survives adjustment; C2 is an observation and holds; C3 is UNINFORMATIVE and the abstract sentence is left untested
+status: VOID (sample identity, 2026-09-09) -- the `Pgc1a` arm is PGC1a + Bcl-xL. Body preserved as the record of what was concluded; see docs/2026-09-09_orthotopic_identity_correction.md
 relates-to:
   - scripts/50_orthotopic_vector_series_scoring.R  (writes results/orthotopic_vector_series.rds)
   - docs/2026-09-07_orthotopic_analysis_plan.md    (the spec; Gate 1 answered below)
@@ -11,6 +11,14 @@ relates-to:
 ---
 
 # The orthotopic vector series: one clean causal result, one observation, and one question this dataset cannot answer
+
+> **VOID — SAMPLE IDENTITY CORRECTION, 2026-09-09.** The arm this note calls `Pgc1a` is
+> **PGC1a + Bcl-xL**, not PGC1a alone, so its contrast against `EV` differs by two
+> manipulations and every conclusion resting on `Bcl2l1` in that arm is void. The code is a
+> correct execution of a wrong premise and is deliberately unaltered. Read
+> `docs/2026-09-09_orthotopic_identity_correction.md` before this document. The body below is
+> preserved as written, as the record of what was concluded and why.
+
 
 > **QUALIFIED AND CORRECTED 2026-09-08 by
 > `docs/2026-09-08_orthotopic_specificity_checks.md` (script 51).** No number in

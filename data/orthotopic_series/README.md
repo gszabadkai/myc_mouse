@@ -16,23 +16,76 @@ dataset** that scripts 00-48 analyse, and nothing in this folder feeds them.
 
 ## Groups
 
-| group | n | series |
-|---|---|---|
-| `EV` | 7 | **vector series** (the scoring set) |
-| `BclxL` | 7 | **vector series** |
-| `Pgc1a` | 7 | **vector series** |
-| `NTEV` | 7 | p21 series — out of scope |
-| `NTPgc1a` | 7 | p21 series — out of scope |
-| `KOEV` | 7 | p21 series — out of scope |
-| `KOPgc1a` | 7 | p21 series — out of scope |
-| `MYAZ` | 6 | unidentified series — excluded |
-| `FaMY` | 6 | unidentified series — excluded |
-| `BoMY` | 6 | unidentified series — excluded |
+**CORRECTED 2026-09-09.** The arm the count matrix labels `Pgc1a` is **PGC1a + Bcl-xL**, not
+PGC1a alone. See `docs/2026-09-09_orthotopic_identity_correction.md`. It is written
+`Pgc1a_BclxL` throughout this file; the raw column headers in the TSV are unchanged and still
+say `Pgc1a`, so any script must map the label, not trust it.
 
-**The scoring set is the vector series alone, n = 21**, fixed before any number was computed
-(`docs/2026-09-07_orthotopic_analysis_plan.md` Gate 1 Q3). `ox_rel` is a relative score and
-GSVA is cohort-relative, so this choice sets every value; the wider set is a named sensitivity
-for the composition table only.
+| group | n | construct(s) | series |
+|---|---|---|---|
+| `EV` | 7 | empty vector | vector series |
+| `BclxL` | 7 | Bcl-xL + EV | vector series |
+| `Pgc1a_BclxL` | 7 | **Bcl-xL + PGC1a** | vector series |
+| `NTEV` | 7 | non-targeting CRISPR + EV | CRISPR series |
+| `NTPgc1a` | 7 | non-targeting CRISPR + **PGC1a alone** | CRISPR series |
+| `KOEV` | 7 | p19^ARF KO + EV | CRISPR series |
+| `KOPgc1a` | 7 | p19^ARF KO + PGC1a (transgene lost) | CRISPR series |
+| `MYAZ` | 6 | none recorded | unidentified series — excluded |
+| `FaMY` | 6 | none recorded | unidentified series — excluded |
+| `BoMY` | 6 | none recorded | unidentified series — excluded |
+
+### Derivation of the vector series
+
+MYAZ was transduced with **Bcl-xL**, and **then split**: one half received EV, the other
+PGC1a. Both were polyclonally selected. So `BclxL` and `Pgc1a_BclxL` are **the same starting
+pool**, and **BCL-XL protein is equal between them by western**.
+
+Two consequences, and they run in opposite directions:
+
+- `Pgc1a_BclxL` vs `BclxL` **is a valid PGC1a contrast for every gene except `Bcl2l1`
+  itself**, because the Bcl-xL background is shared and matched at the protein level.
+- **`Bcl2l1` in the 14 construct-carrying samples is not interpretable.** Gene-level counts
+  cannot separate construct from endogenous transcript in either arm, and equal protein means
+  the transcript difference is not differential construct expression.
+
+`EV` is the only construct-free arm of the three, so `Pgc1a_BclxL` vs `EV` differs by **two**
+manipulations, not one. Every conclusion in scripts 50 and 51 that read that contrast as
+"PGC1a alone" is void.
+
+### The CRISPR series carries the only construct-free PGC1a arm
+
+`NTEV` / `NTPgc1a` are a **non-targeting CRISPR clone** background, and `NTPgc1a` is a
+**surviving PGC1a-only arm** — `Ppargc1a` 128.6 CPM, with some increase in OXPHOS subunits by
+western. It is therefore the **only place in the cohort where `Bcl2l1` means endogenous
+BCL-XL**.
+
+`KOEV` / `KOPgc1a` are a **p19^ARF CRISPR clone**. `KOPgc1a` has **lost the transgene
+entirely** (`Ppargc1a` 0.2 CPM), which is itself informative: it belongs to the escape series
+rather than being a failed arm.
+
+Note the two series differ in derivation — the CRISPR arms are clones, the vector arms a
+polyclonal pool — so **clean contrasts are within series** (`NTPgc1a` vs `NTEV`,
+`Pgc1a_BclxL` vs `BclxL`). Cross-series contrasts carry a derivation difference and are
+descriptive only.
+
+### The correct labels existed the whole time
+
+The manuscript's **Figure 5 legend names these arms correctly** — *EV EV, Bcl-xL EV, Bcl-xL
+Pgc1a*. Nothing had to be discovered to avoid this error; the sample labels simply were never
+reconciled against the manuscript's own figure legends. That check is now a standing rule in
+`docs/experimental_cohorts_branch_notes.md`.
+
+### Scope
+
+The original plan (`docs/2026-09-07_orthotopic_analysis_plan.md`) put the CRISPR series out of
+scope. **That is reversed as of 2026-09-09, deliberately and with reason:** `NTEV`/`NTPgc1a`
+carry the only construct-free PGC1a contrast in the cohort, and `KOEV`/`KOPgc1a` complete the
+escape series. Both return.
+
+The 21-sample vector-series scoring behind scripts 50 and 51 stays on the record as it is.
+Anything involving the CRISPR arms re-scores **all 35 vector + CRISPR samples in one run**,
+because `ox_rel`, GSVA and mitoPPS are cohort-relative. **Never quote a value from one scoring
+run beside a value from the other.**
 
 ## Trap: the group tokens are inconsistent
 
@@ -57,7 +110,7 @@ the analysis plan itself.
 
 Three file-level facts put all three in a separate series, without inferring what they are:
 
-1. **Different animal-ID namespace.** All 21 vector and 28 p21 samples are `BRNS###-#x`;
+1. **Different animal-ID namespace.** All 21 vector and 28 CRISPR samples are `BRNS###-#x`;
    these are bare (`-410-6h`, `-473-3f`, `-434-4g`) or `BFGE###-#x`.
 2. **The originating analysis never crossed them.** The contrasts on disk are
    `BoMY_vs_FaMY`, `BoMY_vs_MYAZ`, `FaMY_vs_MYAZ` — and separately `BclxL_vs_EV`,
