@@ -151,6 +151,17 @@ overexpressing tumours have higher OXPHOS — flag in the note whether that
 finding was transcriptional or functional, because a functional-versus-transcript
 discordance is a different statement from an asymmetry.
 
+> **WITHDRAWN 2026-09-09 — THE FINDING NAMED IN THE PARAGRAPH ABOVE DOES NOT EXIST.**
+> "The standing experimental finding that Bcl-xL overexpressing tumours have higher
+> OXPHOS" originated **here**, in this brief, and was never in the data or in the
+> manuscript. The manuscript has Bcl-xL as the **permissive** partner throughout — it
+> rescues the Ndi1 growth defect and makes raised respiration advantageous — and nowhere
+> claims it raises respiration. Instructed to reconcile against it, script 51's note
+> faithfully wrote a blocker forbidding the R3 argument; that blocker is deleted (see
+> `docs/2026-09-08_orthotopic_specificity_checks.md` section 3) and R3 stands, demoted.
+> Recorded here rather than quietly removed, because a brief is worth more when it carries
+> its own errors. See `docs/2026-09-09_orthotopic_identity_correction.md` section 1.
+
 **R4 — C2 under median-of-ratios.** Survives → the ceiling is biology and C2
 stands as an observation. Attenuates materially → CPM deflation was carrying it
 and C2 weakens or comes out. State which before quoting the number anywhere.

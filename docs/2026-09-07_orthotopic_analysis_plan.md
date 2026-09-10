@@ -1,5 +1,15 @@
 # The orthotopic series — what it carries and how to score it
 
+> **PREMISE CORRECTED, 2026-09-09 — THIS SPEC IS SUPERSEDED.** The arm this document calls
+> `Pgc1a` is **PGC1a + Bcl-xL**, not PGC1a alone. Every claim specified below that reads
+> `Pgc1a` vs `EV` as a single-factor PGC1a contrast is wrong at the premise, C1 and C2 among
+> them, and the analysis this document specifies (scripts 50 and 51) is **superseded by script
+> 52**. The scope decision here — the CRISPR series out of scope — is also **reversed**:
+> `NTEV`/`NTPgc1a` carry the only construct-free PGC1a contrast in the cohort. Read
+> `docs/2026-09-09_orthotopic_identity_correction.md` first. Preserved as the record of what
+> was specified and why; **do not execute anything from it as written.**
+
+
 **2026-09-07. Carry-over note. Written in chat, to be executed in Claude Code.**
 Repo: `myc_mouse`, `experimental-cohorts` branch off `paper-final`. Numbered
 scripts continue `paper-final`'s sequence.

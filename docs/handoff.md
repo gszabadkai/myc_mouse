@@ -32,9 +32,9 @@ the MEC pipeline. Section 1 covers both.
 
 | | |
 |---|---|
-| HEAD | `27635f0` -- "Script 51: C1 is selective, C2 is normalisation-dependent, and C3's construction was wrong" |
-| commits ahead of `paper-final` | **11** |
-| pushed | **YES, 2026-09-08.** `origin/experimental-cohorts` was created by this session's push and the branch now tracks it. 0 ahead / 0 behind. |
+| HEAD | `082034c` -- "Fix the record: the orthotopic Pgc1a arm is PGC1a + Bcl-xL, and 50/51 are void" |
+| commits ahead of `paper-final` | **12** |
+| pushed | **the correction commits are NOT pushed.** `origin/experimental-cohorts` exists and the branch tracks it, but is now behind by this session's work. |
 | scripts | `49` (fat-pad), `50` and `51` (orthotopic) -- all author-run and reconciled, but **50 and 51 rest on a wrong sample premise and their conclusions are void**. Code deliberately unaltered. Next number is **52**. |
 | data | `data/fatpad_timeline/` and `data/orthotopic_series/` pinned (matrix gitignored, README tracked) |
 | panels | 28 manuscript panels UNCHANGED. `fatpad_confound.R` is a discussion panel outside both runners, like the six `biogax_*.R`. |
@@ -87,9 +87,10 @@ depends on it.
    and with C3 void it certainly does not. **It must not be cited to this dataset.** It still
    needs a different source or it comes out.
 
-3. **`docs/2026-09-09_reprioritisation_narrative_v3.md` needs your review.** Its Movement 3,
-   *"PGC1a induces PUMA independently of p53"*, may rest on the now-void C1. Tracked in this
-   session, contents unchanged.
+3. **`docs/2026-09-09_reprioritisation_narrative_v3.md` is tracked and CHECKED — no change
+   needed.** Its Movement 3 rests on iMMEC p53DN, FOXO3 ChIP priors and the mouse timeline
+   `Foxo3` numbers, **not** on orthotopic C1, and sections 5 and 6 are already written
+   post-correction with the four-arm escape table and the survivor framing.
 
 4. **Rebase before anything substantial:** `git rebase paper-final`. Do **not** merge to
    `paper-final` until 52 is signed off.
@@ -98,9 +99,10 @@ depends on it.
 
 ## 3. What happened this session -- script 51, specificity and normalisation
 
-> **VOID as of 2026-09-09 (sample identity).** Everything in this section is preserved as the
-> record of what was concluded and why; the arm it calls `Pgc1a` is PGC1a + Bcl-xL. See
-> section 2 item 0.
+> **PARTIALLY VOID as of 2026-09-09 (sample identity).** The arm this section calls `Pgc1a` is
+> PGC1a + Bcl-xL, so C1 and everything resting on `Bcl2l1` in that arm fall. **C3, the
+> composition gate with its positive control, R3 (demoted) and R5 stand.** Preserved as the
+> record of what was concluded and why; see section 2 item 0.
 
 **Not a fourth claim.** C1 holds, C2 holds as an observation, C3 is uninformative,
 and none of those verdicts was reopened. Script 51 rebuilt the 21-sample cohort

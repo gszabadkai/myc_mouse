@@ -1,7 +1,7 @@
 ---
 date: 2026-09-08
 tags: [project/myc_mouse, experimental-cohorts, orthotopic, bcl2l1, mcl1, bbc3, pgc1a, specificity, normalisation]
-status: VOID (sample identity, 2026-09-09) -- the `Pgc1a` arm is PGC1a + Bcl-xL. Body preserved as the record of what was concluded; see docs/2026-09-09_orthotopic_identity_correction.md
+status: partially void -- the `Pgc1a` arm is PGC1a + Bcl-xL (see 2026-09-09 correction); C1 and everything resting on `Bcl2l1` in that arm are void; C3, the composition gate, R3 (demoted) and R5 stand
 relates-to:
   - scripts/51_orthotopic_specificity_checks.R  (writes results/orthotopic_specificity_checks.rds)
   - docs/2026-09-08_orthotopic_vector_series.md  (the result this qualifies and corrects)
