@@ -342,7 +342,7 @@ from a Letter with full ED to Nat Comms discards nothing.
 1. **p53 target panel across all orthotopic arms** — tests Movement 5's mechanism.
 2. **`NTPgc1a` vs `NTEV`** — respiratory rulers, mitoPPS, construct-free twelve,
    `Foxo3`. The only construct-free PGC1α contrast.
-3. **Four-arm `Myc` and OXPHOS table**, all 35 samples in one scoring run.
+3. **Four-arm `Myc` and OXPHOS table**, all 49 vector + CRISPR samples in one scoring run.
 4. **`Cdkn2a` in the timeline** — the protective negative.
 5. **`Sirt3`, `Ctbp1`, `Ctbp2`, `Nampt`, `Nmnat1`, `Nmnat3`** across timeline and
    orthotopic. Won't test activity, but a coordinated shift in NAD⁺ synthesis

@@ -81,8 +81,8 @@ depends on it.
    manuscript, which has Bcl-xL as the **permissive** partner throughout. R3 survives, demoted
    to a **standalone negative control**, transcript-level only.
 
-1. **Script 52 is the next session** and is not started here. It re-scores **all 35 vector +
-   CRISPR samples in one run**, contrasts **within series**, and reads the cohort as a
+1. **Script 52 is the next session** and is not started here. It re-scores **all 49 vector +
+   CRISPR samples in one run** (21 + 28), contrasts **within series**, and reads the cohort as a
    dose-of-escape series. The correction document section 4 carries the pull order; section 6.4
    carries its spec.
 

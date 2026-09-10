@@ -152,7 +152,7 @@ was read correctly; it proves nothing about what the samples are.
 `docs/2026-09-07_orthotopic_analysis_plan.md`. **It returns.** `NTEV`/`NTPgc1a` carry the
 **only construct-free PGC1a contrast in the cohort** — the one place `Bcl2l1` means endogenous
 BCL-XL — and `KOEV`/`KOPgc1a` complete the escape series. Anything involving them re-scores
-**all 35 vector + CRISPR samples in one run**, because these scores are cohort-relative; the
+**all 49 vector + CRISPR samples in one run** (21 vector + 28 CRISPR), because these scores are cohort-relative; the
 21-sample scoring behind scripts 50 and 51 stays untouched as the record, and **values from the
 two runs are never quoted beside each other**. Clean contrasts are **within series**: the
 CRISPR arms are clones and the vector arms a polyclonal pool.

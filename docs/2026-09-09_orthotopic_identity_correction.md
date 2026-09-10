@@ -142,7 +142,7 @@ The pull, in order:
    tested where the model's prediction is now explicit.
 
 **Scoring rule.** `ox_rel`, GSVA and mitoPPS are cohort-relative. Re-score **all
-35 vector + CRISPR samples in one run** as the primary for anything involving NT,
+49 vector + CRISPR samples in one run** (21 + 28; seven arms of seven) as the primary for anything involving NT,
 and leave the 21-sample scoring untouched as the record behind scripts 50 and 51.
 Never quote a value from one run beside a value from the other.
 
@@ -202,8 +202,8 @@ Updated:
    naming its source.
 4. **`scripts/52_orthotopic_escape_series.R`** — renamed from v1's plan, because
    the job changed:
-   - All 35 vector + CRISPR samples, scored in one run. Labels corrected and
-     asserted.
+   - All 49 vector + CRISPR samples, scored in one run. Labels corrected, and
+     the counts ASSERTED in code (7 x 7 = 49; 49 + 18 = 67), not described.
    - Primary contrasts within series.
    - The p53 target panel as the pre-declared test of §2's explanation.
    - The construct-free twelve in `NTPgc1a` vs `NTEV`.

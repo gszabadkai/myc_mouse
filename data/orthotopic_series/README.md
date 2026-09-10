@@ -83,7 +83,7 @@ carry the only construct-free PGC1a contrast in the cohort, and `KOEV`/`KOPgc1a`
 escape series. Both return.
 
 The 21-sample vector-series scoring behind scripts 50 and 51 stays on the record as it is.
-Anything involving the CRISPR arms re-scores **all 35 vector + CRISPR samples in one run**,
+Anything involving the CRISPR arms re-scores **all 49 vector + CRISPR samples in one run** (21 vector + 28 CRISPR),
 because `ox_rel`, GSVA and mitoPPS are cohort-relative. **Never quote a value from one scoring
 run beside a value from the other.**
 
