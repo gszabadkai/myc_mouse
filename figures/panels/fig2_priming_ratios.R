@@ -368,12 +368,9 @@ LEGEND <- panel_legend(
   source = c(
     "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- $ratios (Script 42's nine ratio fits, carried unchanged; drawn), $ratio_line (the drawn line and the sensitivity fit), $ratio_band (the drawn 95% prediction interval), $ratio_resid (every ratio's residual and its rank), $ratio_range (the scatter check), $retention_provenance, $four_genes (the gene-level Bbc3 interaction), $licence"))
 
-# EVERY ITEM IS PRESENT. sprintf() with a zero-length argument returns
-# character(0) and panel_legend() accepts it, so an item can drop out of the
-# block without an error -- which is how the PUMA:Bcl-xL item went missing from
-# this panel's first draft. Counted, so it cannot happen silently again.
-stopifnot(length(LEGEND$detail) == 6L, length(LEGEND$bounds) == 8L,
-          all(nzchar(c(LEGEND$what, LEGEND$detail, LEGEND$bounds))))
+# (That every item arrived is checked by panel_legend() itself, for every panel.
+# This panel's first draft is why: its PUMA:Bcl-xL item evaluated to character(0)
+# and dropped out of the block without an error.)
 
 # THE N3 CLEARANCE, asserted rather than proof-read: no field of the block may
 # carry the word, so a later edit that brings it back stops the panel.

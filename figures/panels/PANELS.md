@@ -2026,6 +2026,8 @@ are the allocation note's to assign; rename with `git mv` then.
   difference IS each half's interaction.
 - `plane_content_lim(tv)` -- one frame for the two content-ruler planes (the arms, their null
   bars, the four genes), asserted no smaller than 54's `plane_limits`.
+- `panel_legend()` now stops on a legend item that evaluates to nothing, for every panel (added
+  at 2G's sign-off; see "`panel_legend()` stops on an item that evaluates to nothing", below).
 
 ### Sentences these results change -- recorded, not softened
 
@@ -2123,9 +2125,10 @@ band.
   and the sensitivity fit;
 - check 3's verdict, recomputed from the nine;
 - retention = d12/d6 for all nine;
-- the legend block carries every item and no "priming". The item count is asserted because the
-  first draft lost the PUMA:Bcl-xL item silently: `sprintf()` with a zero-length argument
-  returns `character(0)`, and `panel_legend()` accepts it.
+- the legend block carries no "priming". The first draft also lost its PUMA:Bcl-xL item
+  silently: `sprintf()` with a zero-length argument returns `character(0)`, and `c()` drops
+  it. The count check written for that moved into `panel_legend()` itself, for every panel
+  (next section).
 
 **The legend keeps three statistics apart.**
 - PUMA:Bcl-xL's own ratio interaction is -0.735 (raw p 0.037; Benjamini-Hochberg 0.33 across
@@ -2147,6 +2150,42 @@ comes with a slot stops 2G instead of leaving it citing a file that is gone.
 
 **Not carried over:** script 42's matched-pair empirical null (p 0.082 in the old legend). It
 is not in script 54's object, and the rebuild reads nothing else.
+
+### `panel_legend()` stops on an item that evaluates to nothing (2026-09-21)
+
+The author's instruction at 2G's sign-off: a guard that lives in one panel protects only that
+panel, and the failure is silent.
+- **Why it has to read the call.** An item built from a zero-length value evaluates to
+  `character(0)`, and `c()` drops it before `panel_legend()` sees the vector. The value alone
+  cannot show that an item went missing.
+- **What it checks.** When `detail`, `bounds` or `source` is written as `c(...)`, each argument
+  is evaluated on its own, in the caller's frame. It must give at least one string, and none may
+  be empty or NA. A NULL passes only from an argument written as `if (...) ...`, because that
+  item is left out on purpose. A field passed as a ready-made vector is checked on its value.
+- **What it does not catch.** A zero-length value inside one item, as in
+  `paste0("slope ", sprintf(...))`. That still gives a string, and the number's own assertion
+  is the guard for it.
+- **The test.** Twelve deliberate cases, including a reproduction of the 2G bug, all behave as
+  intended. Then all 39 panels were sourced under the guard: `fig*`, `plane_`, `biogax_`,
+  `explainer_` and `fatpad_`.
+
+**It found one more, in Fig. 2G (alt), and it was the panel's claim.**
+- The item "THE CLAIM, AND THE SCRIPT ASSERTS IT" named Bik among the other BH3-only sensors.
+- Script 42's roster has never carried Bik, so `say("Bik")` returned `character(0)`, and so did
+  the whole `sprintf()`.
+- So the item has been missing since the panel was built (37c3e61, 2026-08-09). The 16 August
+  `legends.md` has 2G (alt)'s block without it, and the item was never reviewed in a render.
+- **The fix.** The named sensors are declared once (`OTHER_SENSORS`: Bcl2l11, Bid, Pmaip1) and
+  asserted equal to the roster's BH3-only sensors other than Bbc3 and Bmf. A roster change now
+  stops the panel instead of dropping the item.
+- The claim itself was already asserted (`sens_sig == "Bbc3"`). With the fix, 38 panels pass
+  unchanged and 2G (alt) passes with its item restored.
+- **For the author: the restored item is unreviewed text.** It frames "THE CLAIM" on the Myc
+  temporal arm: Bbc3 "significantly down under Myc" (padj 0.016), the only BH3-only sensor
+  that is. The panel's own first bound says each temporal coordinate is "DESCRIBED, not
+  claimed", and that only the distance from the diagonal is batch-clean. It is restored as
+  written, with only the empty Bik reference removed. Whether the wording stands is the
+  author's call.
 
 ### Superseded, kept as the record (2026-09-21)
 

@@ -742,11 +742,63 @@ save_panel_p <- function(plot, slug,
 #             n=6 power floor, a circularity, whatever applies). Not optional in
 #             this project: most of its numbers carry one.
 #   source -- the results/*.rds objects and script the numbers came from
+#
+# EVERY ITEM MUST ARRIVE (added 2026-09-21, after Fig. 2G's rebuild lost one
+# without an error). An item built by sprintf() or paste() from a zero-length
+# value -- a column that is not there, a filter that matched nothing, a table
+# ranked before the column was added -- evaluates to character(0), and c() drops
+# it before this function ever sees the vector. The block is then one item short
+# and nothing fails. The VALUE cannot show that an item went missing, so the
+# check reads the CALL: when `detail`, `bounds` or `source` is written as c(...),
+# each argument is evaluated on its own, in the caller's frame, and must give at
+# least one string, none of them empty or NA. The one exemption is an argument
+# written as `if (...) ...`: a NULL from that is an item left out on purpose,
+# and the condition says so in the code. A field passed as a ready-made vector
+# (a name, or through do.call) can only be checked on its value.
+#
+# A zero-length value INSIDE an item -- paste0("slope ", sprintf("%.2f",
+# numeric(0))) -- still gives a string and is not caught: that is a different
+# failure, and the fix for it is the number's own assertion.
+legend_items_ok <- function(ex, field, slot, env) {
+  if (!is.call(ex) || !identical(ex[[1L]], as.name("c"))) return(invisible(TRUE))
+  args <- as.list(ex)[-1L]
+  for (i in seq_along(args)) {
+    a <- args[[i]]
+    v <- eval(a, env)
+    if (is.null(v) && is.call(a) && identical(a[[1L]], as.name("if"))) next
+    vanished <- is.null(v) || length(v) == 0L
+    what_is <-
+      if (is.null(v))              "NULL"
+      else if (length(v) == 0L)    paste0(class(v)[1L], "(0)")
+      else if (!is.character(v))   paste("a", class(v)[1L], "rather than text")
+      else if (anyNA(v))           "NA"
+      else if (!all(nzchar(v)))    "an empty string"
+      else NA_character_
+    if (!is.na(what_is))
+      stop(sprintf(paste0(
+        "panel_legend(\"%s\"): item %d of `%s` evaluated to %s. %s The item:\n  %s"),
+        slot, i, field, what_is,
+        if (vanished) paste(
+          "c() drops a zero-length item without an error, so it would have vanished",
+          "from the legend. The usual cause is sprintf() or paste() of a zero-length",
+          "value -- a missing column or an empty filter.")
+        else "A legend item must be non-empty text.",
+        substr(deparse1(a), 1L, 160L)), call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 panel_legend <- function(slot, what, detail, bounds, source = NULL) {
+  env <- parent.frame()
+  legend_items_ok(substitute(detail), "detail", slot, env)
+  legend_items_ok(substitute(bounds), "bounds", slot, env)
+  legend_items_ok(substitute(source), "source", slot, env)
+  full <- function(x) is.character(x) && !anyNA(x) && all(nzchar(x))
   stopifnot(is.character(slot),   length(slot)   == 1L,
-            is.character(what),   length(what)   == 1L,
-            is.character(detail), length(detail) >= 1L,
-            is.character(bounds), length(bounds) >= 1L)
+            full(what),           length(what)   == 1L,
+            full(detail),         length(detail) >= 1L,
+            full(bounds),         length(bounds) >= 1L,
+            is.null(source) || full(source))
   structure(list(slot = slot, what = what, detail = detail,
                  bounds = bounds, source = source),
             class = "panel_legend")

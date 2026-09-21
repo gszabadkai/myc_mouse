@@ -78,6 +78,14 @@ g <- function(x, col) d[[col]][d$gene == x]
 # wild-type window and significantly down under Myc, and it is the only BH3-only
 # sensor that is.
 sens_sig <- d$gene[d$sensor & d$sig & d$lfc_myc_time < 0]
+# The sensors the claim's item names beside Bbc3 -- every BH3-only sensor on the
+# roster except Bbc3 and Bmf, which has an item of its own. Asserted against the
+# roster (2026-09-21): until then the item also named Bik, which script 42's
+# roster has never carried, so sprintf() returned character(0) and the whole
+# item -- the panel's claim -- had been missing from every rendered legend since
+# the panel was built. panel_legend() now stops on an item like that.
+OTHER_SENSORS <- c("Bcl2l11", "Bid", "Pmaip1")
+stopifnot(setequal(OTHER_SENSORS, setdiff(d$gene[d$sensor], c("Bbc3", "Bmf"))))
 stopifnot(identical(sens_sig, "Bbc3"),
           g("Bbc3", "padj_wt_time") > 0.5, g("Bbc3", "padj_myc_time") < 0.05,
           g("Bcl2l1", "padj_wt_time") > 0.5, g("Bcl2l1", "padj_myc_time") > 0.5,
@@ -187,8 +195,9 @@ LEGEND <- panel_legend(
   detail = c(
     sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
-    sprintf("THE CLAIM, AND THE SCRIPT ASSERTS IT: %s -- and it is the ONLY BH3-only sensor that is flat in development and significantly down under Myc. The other sensors do not do it: %s; %s; %s; %s.",
-            say("Bbc3"), say("Bcl2l11"), say("Bid"), say("Pmaip1"), say("Bik")),
+    sprintf("THE CLAIM, AND THE SCRIPT ASSERTS IT: %s -- and it is the ONLY BH3-only sensor that is flat in development and significantly down under Myc. The other sensors do not do it: %s.",
+            say("Bbc3"),
+            paste(vapply(OTHER_SENSORS, say, character(1)), collapse = "; ")),
     sprintf("BCL-XL DOES NOT MOVE ON EITHER TIMELINE: %s. So the reversal of the PUMA:Bcl-xL ratio that Fig. 2G reports is entirely its numerator, which is what makes the ratio worth quoting as a PUMA result rather than a balance result.",
             say("Bcl2l1")),
     sprintf("AND THE PANEL CARRIES ITS OWN NEGATIVE CONTROL: %s. Bmf is the one death transcript the window itself moves, and it moves in BOTH genotypes by nearly the same amount -- it sits on the diagonal. A gene on the diagonal is developmental; Bbc3 is as far off it as anything here.",
