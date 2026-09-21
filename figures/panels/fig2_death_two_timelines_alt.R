@@ -63,6 +63,12 @@ stopifnot(all(c("gene", "arm", "lfc_wt_time", "padj_wt_time", "lfc_myc_time",
 DEATH <- "BH3-only|effector|brake|execution|apoptosome|IAP"
 d <- m[grepl(DEATH, m$arm), ]
 d$sig <- !is.na(d$padj_myc_time) & d$padj_myc_time < 0.05
+# BAX CARRIES NO TEST (author, 2026-09-21). It was not pre-specified, so no
+# p-value for it may appear anywhere a reader could read it as a test, and a ring
+# is one. It is drawn by position only: no ring, and its name in the plain ink. A
+# light "n.s." ring would be read as a test too, the other way.
+UNTESTED <- "Bax"
+d$ring <- ifelse(d$gene %in% UNTESTED, "untested", ifelse(d$sig, "sig", "ns"))
 d$sensor <- grepl("BH3-only", d$arm)
 stopifnot(nrow(d) >= 12L, "Bbc3" %in% d$gene, "Bcl2l1" %in% d$gene)
 
@@ -104,20 +110,21 @@ p <- ggplot2::ggplot(d, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
   # Significance moves from the SHAPE to the RING, so that every transcript can
   # carry the ramp: an open shape has no fill, and with only four significant
   # points the old encoding would have left the colour on four of eighteen.
-  ggplot2::geom_point(ggplot2::aes(fill = lfc_myc_time, colour = sig),
+  ggplot2::geom_point(ggplot2::aes(fill = lfc_myc_time, colour = ring),
                       shape = 21, size = 1.9, stroke = 0.45) +
   # The gene NAME carries the significance too (author, 2026-08-09), in the
   # declared significance ink. Passed as a per-row constant in the plot data's own
   # order rather than as an aesthetic, so the panel does not grow a third key.
   ggrepel::geom_text_repel(ggplot2::aes(label = gene), size = 1.7,
-                           colour = ifelse(d$sig, unname(sig_cols[["sig"]]), "grey15"),
+                           colour = ifelse(d$ring == "sig", unname(sig_cols[["sig"]]), "grey15"),
                            fontface = "italic", seed = 6,
                            max.overlaps = Inf, min.segment.length = 0,
                            segment.size = 0.2, segment.colour = "grey60",
                            box.padding = 0.30, point.padding = 0.20) +
   heat_fill(CLIM, name = "6>12W_myc", breaks = c(-0.8, 0, 0.8)) +
-  ggplot2::scale_colour_manual(values = c(`TRUE` = "grey10", `FALSE` = "grey72"),
-                               breaks = c(TRUE, FALSE),
+  ggplot2::scale_colour_manual(values = c(sig = "grey10", ns = "grey72",
+                                          untested = "transparent"),
+                               breaks = c("sig", "ns"),
                                labels = c("padj < 0.05 under Myc", "n.s."),
                                name = NULL) +
   ggplot2::labs(x = "wild-type 6>12W  (log2FC)", y = "Myc+ 6>12W  (log2FC)") +
@@ -163,6 +170,9 @@ say <- function(x, nm = x)
   sprintf("%s %+.3f in development (padj %.2f) and %+.3f under Myc (padj %.3f)",
           nm, g(x, "lfc_wt_time"), g(x, "padj_wt_time"),
           g(x, "lfc_myc_time"), g(x, "padj_myc_time"))
+# Bax by position only (UNTESTED, above)
+say_pos <- function(x) sprintf("%s %+.3f in development and %+.3f under Myc", x,
+                               g(x, "lfc_wt_time"), g(x, "lfc_myc_time"))
 
 LEGEND <- panel_legend(
   slot = "Fig. 2G (alt)",
@@ -171,7 +181,8 @@ LEGEND <- panel_legend(
     "across the wild-type window on the horizontal axis, and across the same ",
     "window in the Myc+ gland on the vertical. The dashed diagonal is what a ",
     "gene would do under development alone. Dark rings mark transcripts significant on ",
-    "the Myc timeline."),
+    "the Myc timeline; Bax, which was not pre-specified, is drawn by position only, ",
+    "without a ring."),
   detail = c(
     sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
@@ -181,15 +192,16 @@ LEGEND <- panel_legend(
             say("Bcl2l1")),
     sprintf("AND THE PANEL CARRIES ITS OWN NEGATIVE CONTROL: %s. Bmf is the one death transcript the window itself moves, and it moves in BOTH genotypes by nearly the same amount -- it sits on the diagonal. A gene on the diagonal is developmental; Bbc3 is as far off it as anything here.",
             say("Bmf")),
-    sprintf("ONE HONEST QUALIFIER, VISIBLE ON THE PANEL: %s. Bax is an EFFECTOR, not a BH3-only sensor, so \"specific to Bbc3\" is true as the sentence writes it -- but the sentence should say \"among the BH3-only sensors\", because a reader can see Bax in the same quadrant.",
-            say("Bax")),
+    sprintf("ONE HONEST QUALIFIER, VISIBLE ON THE PANEL: %s -- a position, with no test, because Bax was not pre-specified. Bax is an EFFECTOR, not a BH3-only sensor, so \"specific to Bbc3\" is true as the sentence writes it -- but the sentence should say \"among the BH3-only sensors\", because a reader can see Bax in the same quadrant.",
+            say_pos("Bax")),
     sprintf("The interaction terms rank the same way: Bbc3 %+.3f, Bax %+.3f, Bid %+.3f, Bak1 %+.3f, against Bcl2l1 %+.3f and Bmf %+.3f.",
             g("Bbc3", "lfc_interaction"), g("Bax", "lfc_interaction"),
             g("Bid", "lfc_interaction"), g("Bak1", "lfc_interaction"),
             g("Bcl2l1", "lfc_interaction"), g("Bmf", "lfc_interaction"))),
   bounds = c(
     "BATCH = TIMEPOINT, and it bites BOTH axes: each coordinate is a temporal contrast and is DESCRIBED, not claimed. What is batch-CLEAN is the vertical distance from the diagonal, which is the interaction, because genotype is balanced within each extraction batch. Read the panel down from the line, not along the axes.",
-    "The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Only three of the transcripts drawn reach padj < 0.05 on the Myc timeline.",
+    sprintf("The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Of the transcripts that carry a test, %d reach padj < 0.05 on the Myc timeline (%s).",
+            sum(d$ring == "sig"), paste(sort(d$gene[d$ring == "sig"]), collapse = ", ")),
     "A TRANSCRIPT IS NOT AN APOPTOTIC STATE. How close a mitochondrion sits to the apoptotic threshold is a property of its protein complement; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute.",
     "Several of these transcripts are lowly expressed (Bid 148, Bbc3 152, Birc5 150 mean counts), so a real half-log2 effect could be missed in either timeline.",
     "This panel and Fig. 2G are two readings of the same event, not two results: Fig. 2G draws the pro:anti ratios, this one draws their members against development."),

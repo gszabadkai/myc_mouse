@@ -80,6 +80,10 @@
 #   results/substrate_specificity_tradeoff.rds (script 43) -- $tradeoff, $tradeoff_perm
 #   results/interaction_results.rds            (script 03) -- the DESeq2 record the
 #                                                 drawn temporal tests are checked against
+#   results/combined_df_annotated_raw.rds      (the archived main pipeline,
+#                                                 archive_main_pipeline/02_deseq_interaction_model.R,
+#                                                 last re-saved by its 04_group_comparison.R)
+#                                                 -- symbol -> Ensembl only
 #   results/collapse_module_ownership.rds      (script 44) -- $mech_genes, for the
 #                                                 ranking quoted in the legend
 #   results/two_timeline_verification.rds      (script 54) -- part B, both fits
@@ -240,6 +244,14 @@ cmp <- do.call(rbind, lapply(DIST, function(nm) data.frame(
           paste("interaction", fmt_p(pi_(nm)))),
   stringsAsFactors = FALSE)))
 cmp$col <- ifelse(cmp$p < 0.05, "sig", "ns")
+# FOXO3 CARRIES NO TEST (author, 2026-09-21). It was not pre-specified, so no
+# p-value for it may appear anywhere a reader could read it as a test. Its three
+# brackets stay, to show which comparisons the facet is about, but unlabelled and
+# in a neutral ink outside the sig/ns pair: an "ns" grey would be read as a test
+# too, the other way.
+UNTESTED <- "Foxo3"
+cmp$lab[cmp$measure %in% UNTESTED] <- ""
+cmp$col[cmp$measure %in% UNTESTED] <- "untested"
 brk <- bracket_frame(cmp, range(D$v), pad = 0.035, step = 0.105, tick = 0.020)
 
 pts_layer <- function(dat, size) {
@@ -262,7 +274,7 @@ pA <- ggplot2::ggplot(D, ggplot2::aes(group, v, colour = group, fill = group)) +
                                         measure = factor(DIST[1], levels = DIST)),
                       inherit.aes = FALSE) +
   ggplot2::facet_wrap(~ measure, nrow = 1) +
-  ggplot2::scale_colour_manual(values = c(group_cols, sig_cols),
+  ggplot2::scale_colour_manual(values = c(group_cols, sig_cols, untested = "grey72"),
                                breaks = names(group_cols), labels = group_labels,
                                name = NULL) +
   ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
@@ -378,11 +390,15 @@ mg$int_p <- as.data.frame(ir$interaction_raw)$pvalue[
   match(ann$gene[match(mg$gene, ann$mgi_symbol)],
         rownames(as.data.frame(ir$interaction_raw)))]
 mg <- mg[order(mg$int_p), ]
-stopifnot(identical(mg$gene[1:2], c("Foxo3", "Bbc3")))
+stopifnot(identical(mg$gene[1:2], c("Foxo3", "Bbc3")), mg$gene[3] != "Bax")
 
 say <- function(nm) sprintf(
   "%s %+.2f (p = %s) across the wild-type window and %+.2f (p = %s) across the Myc+ one",
   nm, bt(nm, "neg"), fmt_p(pv(nm, "neg")), bt(nm, "pos"), fmt_p(pv(nm, "pos")))
+# Foxo3 by position only (UNTESTED, above)
+say_pos <- function(nm) sprintf(
+  "%s %+.2f across the wild-type window and %+.2f across the Myc+ one",
+  nm, bt(nm, "neg"), bt(nm, "pos"))
 
 LEGEND <- panel_legend(
   slot = "Fig. 2H+I (alt)",
@@ -400,21 +416,17 @@ LEGEND <- panel_legend(
   detail = c(
     "n = 24 animals, 6 per group. Every quantity is z-scored ACROSS THE 24, which is the only way a mitoPPS score, a VST expression level and a log2 ratio can share one axis and one fill -- so a value says high or low FOR THAT QUANTITY and never compares one facet with another. A z-score is a linear transform, so each p-value is the p-value of the untransformed quantity.",
     sprintf("THE THREE FACETS ARE THREE DIFFERENT ANSWERS, WHICH IS THE POINT. OXPHOS mitoPPS falls on BOTH timelines: %s. Foxo3 rises ONLY in the wild-type gland: %s. And the PUMA:Bcl-xL ratio collapses ONLY under Myc: %s.",
-            say("OXPHOS mitoPPS"), say("Foxo3"), say("PUMA:Bcl-xL")),
-    sprintf("THE UPPER BRACKET IS THE ONE BATCH = TIMEPOINT LEAVES CLEAN, and it is the one the section's claim lives in: Foxo3 %+.2f, p = %s; PUMA:Bcl-xL %+.2f, p = %s; OXPHOS mitoPPS %+.2f, p = %s -- so the two arms of the chain differ between the genotypes and the respiratory arm falls the same way in both. For the two transcripts the DESeq2 record puts the same interaction at Foxo3 %+.3f (p = %.4f) and Bbc3 %+.3f (p = %.4f); Bbc3 is not a facet here but is the numerator of the ratio that is. Neither clears the genome-wide IHW adjustment (independent hypothesis weighting, a weighted Benjamini-Hochberg) -- what licenses the test is pre-specification, and Foxo3 and Bbc3 are ranks 1 and 2 of script 44's 26 mechanism genes.",
-            ti$beta[ti$measure == "Foxo3"], fmt_p(pi_("Foxo3")),
+            say("OXPHOS mitoPPS"), say_pos("Foxo3"), say("PUMA:Bcl-xL")),
+    sprintf("THE UPPER BRACKET IS THE ONE BATCH = TIMEPOINT LEAVES CLEAN, and it is the one the section's claim lives in: PUMA:Bcl-xL %+.2f, p = %s; OXPHOS mitoPPS %+.2f, p = %s -- so the ratio differs between the genotypes and the respiratory arm falls the same way in both. Foxo3's upper bracket is drawn without a test (%+.2f): it was not pre-specified, so no p-value for it appears anywhere on this panel. For Bbc3, not a facet here but the numerator of the ratio that is, the DESeq2 record puts the same interaction at %+.3f (p = %.4f). It does not clear the genome-wide IHW adjustment (independent hypothesis weighting, a weighted Benjamini-Hochberg); what licenses the Bbc3 test is pre-specification. Foxo3's DESeq2 interaction is %+.3f.",
             ti$beta[ti$measure == "PUMA:Bcl-xL"], fmt_p(pi_("PUMA:Bcl-xL")),
             ti$beta[ti$measure == "OXPHOS mitoPPS"], fmt_p(pi_("OXPHOS mitoPPS")),
-            int_de["lfc", "Foxo3"], int_de["p", "Foxo3"],
-            int_de["lfc", "Bbc3"], int_de["p", "Bbc3"]),
-    sprintf("NEITHER GENOTYPE CONTRAST IS SIGNIFICANT ON ITS OWN AND THAT IS THE RESULT, not a gap in it. Myc RAISES Foxo3 at six weeks (%+.3f, p = %.3f) and LOWERS it at twelve (%+.3f, p = %.3f) by almost exactly as much; each half misses 0.05 and their difference is the strongest term in the roster. A panel that labelled either half would print a failed test beside the claim, so neither is drawn.",
+            ti$beta[ti$measure == "Foxo3"],
+            int_de["lfc", "Bbc3"], int_de["p", "Bbc3"],
+            int_de["lfc", "Foxo3"]),
+    sprintf("THE GENOTYPE CONTRASTS ARE NOT DRAWN. Myc raises Foxo3 at six weeks (%+.3f) and lowers it at twelve (%+.3f) by almost exactly as much. Foxo3 was not pre-specified, so neither half, and not their difference, is given a test here.",
             as.data.frame(ir$myc_6W_raw)[ann$gene[match("Foxo3", ann$mgi_symbol)], "log2FoldChange"],
-            as.data.frame(ir$myc_6W_raw)[ann$gene[match("Foxo3", ann$mgi_symbol)], "pvalue"],
-            as.data.frame(ir$myc_12W_raw)[ann$gene[match("Foxo3", ann$mgi_symbol)], "log2FoldChange"],
-            as.data.frame(ir$myc_12W_raw)[ann$gene[match("Foxo3", ann$mgi_symbol)], "pvalue"]),
-    sprintf("THE DRAWN TEST IS ONE INSTRUMENT ACROSS THE PANEL and it agrees with the analysis of record where one exists. Neither the mitoPPS axis nor the ratio has a DESeq2 test, so all six brackets are ordinary least squares on the drawn values (Fig. 1E's fit_simple idiom). For Foxo3 the DESeq2 record is %+.3f, padj %.4f across the wild-type window and %+.3f, padj %.3f across the Myc+ one; for Bbc3 %+.3f, padj %.3f and %+.3f, padj %.3f. Same signs, same side of 0.05, asserted in the script.",
-            DE["wt_lfc", "Foxo3"], DE["wt_padj", "Foxo3"],
-            DE["myc_lfc", "Foxo3"], DE["myc_padj", "Foxo3"],
+            as.data.frame(ir$myc_12W_raw)[ann$gene[match("Foxo3", ann$mgi_symbol)], "log2FoldChange"]),
+    sprintf("THE DRAWN TEST IS ONE INSTRUMENT ACROSS THE PANEL and it agrees with the analysis of record where one exists. Neither the mitoPPS axis nor the ratio has a DESeq2 test, so every labelled bracket is ordinary least squares on the drawn values (Fig. 1E's fit_simple idiom). For Bbc3, the ratio's numerator, the DESeq2 record is %+.3f, padj %.3f across the wild-type window and %+.3f, padj %.3f across the Myc+ one; ordinary least squares on its per-animal values gives the same signs and the same side of 0.05, asserted in the script.",
             DE["wt_lfc", "Bbc3"], DE["wt_padj", "Bbc3"],
             DE["myc_lfc", "Bbc3"], DE["myc_padj", "Bbc3"]),
     sprintf("THE REVERSAL IS ALL NUMERATOR. Bbc3 group medians run %+.2f, %+.2f in the wild type and %+.2f, %+.2f under Myc, while Bcl2l1 runs %+.2f, %+.2f and %+.2f, %+.2f and moves on NEITHER timeline (DESeq2 padj %.2f and %.2f). That is what makes the ratio quotable as a PUMA result rather than a balance result.",
@@ -428,8 +440,8 @@ LEGEND <- panel_legend(
             iaB("ox_ppd", "none")$interaction, iaB("ox_ppd", "none")$p,
             slB(FP_B, "neg"), slB(FP_B, "pos"),
             iaB("ox_ppd", "epi + imm")$interaction, iaB("ox_ppd", "epi + imm")$p),
-    sprintf("AND FOXO3 IS WHY THE MIDDLE FACET IS THERE: among the %d biogenesis- and cell-death-related genes script 44 curates, Foxo3 has the LOWEST interaction p (%.4f) and Bbc3 the second (%.4f), with a clear gap to the third (%s, %.3f). That is the ranking the text quotes, and it is a far smaller and more meaningful universe than the 8,774-gene scan Fig. 2H uses.",
-            nrow(mg), mg$int_p[1], mg$int_p[2], mg$gene[3], mg$int_p[3]),
+    sprintf("AND FOXO3 IS WHY THE MIDDLE FACET IS THERE, as a lead: among the %d biogenesis- and cell-death-related genes script 44 curates, Foxo3 and Bbc3 rank first and second on the interaction, ahead of %s. Foxo3 was found by that ranking rather than named before it, so its position is described and not tested, and no p-value from the ranking is printed. The universe is far smaller and more meaningful than the 8,774-gene scan Fig. 2H uses.",
+            nrow(mg), mg$gene[3]),
     sprintf("THE CONTROL IS THE REDOX mitoPPS AXIS, not drawn here, and what it shows is that its two slopes do NOT differ between the genotypes: interaction %+.2f (p %.2f) unadjusted and %+.2f (p %.2f) adjusted (Fig. 2I's legend carries the per-genotype slopes).",
             iaB("redox_ppd", "none")$interaction, iaB("redox_ppd", "none")$p,
             iaB("redox_ppd", "epi + imm")$interaction, iaB("redox_ppd", "epi + imm")$p)),
@@ -449,6 +461,7 @@ LEGEND <- panel_legend(
     "results/gsva_scores.rds (scripts/15) -- $expr_mat, the VST matrix the per-animal values and the ratio are built from",
     "results/substrate_specificity_tradeoff.rds (scripts/43) -- $tradeoff and $tradeoff_perm, the interaction and its permutation null",
     "results/interaction_results.rds (scripts/03) -- the raw DESeq2 temporal contrasts the drawn tests are checked against",
+    "results/combined_df_annotated_raw.rds (the archived main pipeline: scripts/archive_main_pipeline/02_deseq_interaction_model.R, last re-saved by its 04_group_comparison.R) -- the symbol-to-Ensembl mapping only",
     "results/collapse_module_ownership.rds (scripts/44) -- $mech_genes, the 26 biogenesis/cell-death genes the Foxo3 ranking is computed over",
     "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- part B: $coupling_panel and $coupling_lines (drawn), $coupling_fits, $coupling_interaction, $coupling_perm, $coupling_cor, $tradeoff_43"))
 

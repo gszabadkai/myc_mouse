@@ -63,11 +63,12 @@ stopifnot(nrow(p53) == 9L, nrow(pin) == 12L, "Trp53" %in% p53$gene,
 
 COLS <- c("gene", "baseMean", "lfc_wt_time", "padj_wt_time",
           "lfc_myc_time", "padj_myc_time", "lfc_interaction")
-# The third class was called "the two that move"; it now carries the THRESHOLD it
-# means (author, 2026-08-09). Note 0.05 and not the 0.001 first suggested -- the
-# two are padj 0.0078 (Foxo3, wild-type timeline) and 0.016 (Bbc3, Myc timeline),
-# so 0.001 would be a claim neither of them supports.
-MOVES <- "moves (padj < 0.05)"
+# The third class was called "the two that move", then carried the threshold it
+# meant, "moves (padj < 0.05)" (author, 2026-08-09). Since 2026-09-21 it cannot:
+# Foxo3 was not pre-specified, so no p-value for it may appear anywhere a reader
+# could read it as a test, and a key reading "padj < 0.05" is one. The class is
+# named for its role instead; Bbc3 still carries its own padj on its label.
+MOVES <- "reference genes"
 d <- rbind(
   data.frame(p53[, COLS], class = "p53 arm", stringsAsFactors = FALSE),
   data.frame(pin[pin$gene != "Foxo3", COLS], class = "other PUMA inducers",
@@ -102,7 +103,8 @@ dd  <- d[!(d$gene %in% out$gene), ]
 stopifnot(nrow(out) <= 3L, all(out$baseMean < 200),
           !any(out$class == "p53 arm"), !any(out$class == MOVES))
 
-# THE TWO MOVERS CARRY THEIR OWN NUMBER (author, 2026-08-09). Each is labelled
+# THE TWO MOVERS CARRIED THEIR OWN NUMBER (author, 2026-08-09); since 2026-09-21
+# only Bbc3 does (see MOVES above). Each was labelled
 # with the padj of the timeline it actually moves on -- the smaller of the two,
 # which for Foxo3 is the wild-type window and for Bbc3 the Myc+ one. The panel's
 # own geometry says which: Foxo3 is displaced along x, Bbc3 down y. Built as a
@@ -117,8 +119,10 @@ stopifnot(nrow(mv) == 2L, all(mv$padj_shown < 0.05),
           # the legend block names the two timelines; keep it from drifting
           identical(mv$on_wt[mv$gene == "Foxo3"], TRUE),
           identical(mv$on_wt[mv$gene == "Bbc3"], FALSE))
-mv$lab <- sprintf('italic("%s")~"  padj %s"', mv$gene,
-                  formatC(mv$padj_shown, format = "g", digits = 2))
+UNTESTED <- "Foxo3"
+mv$lab <- ifelse(mv$gene %in% UNTESTED, sprintf('italic("%s")', mv$gene),
+                 sprintf('italic("%s")~"  padj %s"', mv$gene,
+                         formatC(mv$padj_shown, format = "g", digits = 2)))
 
 LIM <- c(-1, 1) * WIN
 p <- ggplot2::ggplot(dd, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
@@ -165,6 +169,9 @@ p <- ggplot2::ggplot(dd, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
 say <- function(x)
   sprintf("%s %+.3f and %+.3f (padj %.2f and %.2f)", x, g(x, "lfc_wt_time"),
           g(x, "lfc_myc_time"), g(x, "padj_wt_time"), g(x, "padj_myc_time"))
+# Foxo3 by position only (UNTESTED, above)
+say_pos <- function(x) sprintf("%s %+.3f and %+.3f", x, g(x, "lfc_wt_time"),
+                               g(x, "lfc_myc_time"))
 
 LEGEND <- panel_legend(
   slot = "Fig. S2D (alt)",
@@ -172,8 +179,9 @@ LEGEND <- panel_legend(
     "The p53-dependent arm of PUMA regulation on both timelines: how each gene ",
     "changes across the wild-type window horizontally and across the same ",
     "window in the Myc+ gland vertically. The other established PUMA inducers ",
-    "are drawn in pale grey, and Bbc3 and Foxo3 -- the two genes that do move -- ",
-    "are drawn as reference points so the band has a scale to be null on."),
+    "are drawn in pale grey, and Bbc3 and Foxo3 -- the two genes that leave the ",
+    "diagonal -- are drawn as reference points so the band has a scale to be null ",
+    "on. Bbc3 carries its adjusted p; Foxo3, which was not pre-specified, carries none."),
   detail = c(
     sprintf("n = 6 per group. Raw (unshrunken) DESeq2 log2 fold changes. The p53 arm is script 42's own `exclusions$p53_axis` (%d genes: Trp53, Mdm2 and the transactivation targets Cdkn1a, Cdkn2a, Trp53inp1, Zmat3, Eda2r, Phlda3, Ccng1); the pale class is the remaining %d of `exclusions$puma_inputs`. Neither roster is assembled here.",
             nrow(a53), sum(d$class == "other PUMA inducers")),
@@ -184,7 +192,7 @@ LEGEND <- panel_legend(
             p53$lfc_myc_6W[p53$gene == "Cdkn1a"], p53$padj_myc_6W[p53$gene == "Cdkn1a"],
             p53$lfc_myc_6W[p53$gene == "Phlda3"], p53$padj_myc_6W[p53$gene == "Phlda3"]),
     sprintf("THE TWO REFERENCE GENES MOVE IN TWO DIFFERENT WAYS, and the grammar shows both: %s -- Bbc3 leaves the BAND, straight down the Myc axis; and %s -- Foxo3 stays on the band but leaves the DIAGONAL, because it rises across the wild-type window and does not under Myc. A band of dots means nothing until the reader can see how far a gene that did move sits from it.",
-            say("Bbc3"), say("Foxo3")),
+            say("Bbc3"), say_pos("Foxo3")),
     sprintf("ONE GENE OF THE ARM DOES MOVE, ON THE OTHER AXIS, and the panel should not be read as flatter than it is: %s. Eda2r is the only p53-arm gene to clear padj 0.05 on either timeline, it does so on the WILD-TYPE one, and its mean expression is %d counts. It is a developmental change, not a Myc one, and it is drawn at the far left where a reader can see it.",
             say("Eda2r"), round(g("Eda2r", "baseMean"))),
     sprintf("Two of the twelve PUMA inducers fall outside the drawn window and are named here instead: %s. Both are at the floor of what this design can measure (mean expression %s), and neither is in the p53 arm.",
