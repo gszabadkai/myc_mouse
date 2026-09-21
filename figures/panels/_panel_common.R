@@ -475,13 +475,15 @@ plane_content_lim <- function(tv) {
 #          as partial residuals, so the line through each genotype's points IS
 #          that model's slope (script 54 asserts it; so does this)
 # Both axes are z-scores over the 24 animals, so the halves share one scale and a
-# slope of 1 lies at 45 degrees in both. The only number on the page is each
-# half's own interaction -- the claim -- from that half's own fit.
+# slope of 1 lies at 45 degrees in both. The numbers on the page are each half's
+# own interaction, from that half's own fit, with its parametric and its
+# permutation p side by side.
 coupling_two_fits <- function(tv, key = TRUE) {
   pd <- as.data.frame(tv$coupling_panel)
   ln <- as.data.frame(tv$coupling_lines)
   cf <- as.data.frame(tv$coupling_fits)
   ix <- as.data.frame(tv$coupling_interaction)
+  pm <- as.data.frame(tv$coupling_perm)
   stopifnot(nrow(pd) == 24L, nrow(ln) == 4L, all(table(pd$genotype) == 12L),
             setequal(ln$fit, c("unadjusted", "adjusted")))
   sl  <- function(fit, g) cf$slope[cf$axis == "ox_ppd" & cf$fit == fit & cf$genotype == g]
@@ -522,23 +524,23 @@ coupling_two_fits <- function(tv, key = TRUE) {
   XL  <- pad(range(pd$x))
   YL  <- pad(range(c(long$y, seg$y, seg$yend)))
 
-  # each half's interaction, in the emptiest corner of the SHARED frame, checked
-  # against every point of both halves rather than eyeballed
+  # each half's interaction with BOTH of its p-values, side by side (author,
+  # 2026-09-21): the parametric p alone is anti-conservative at n = 24 and the
+  # permutation p alone hides the discrepancy; the two together are the impasse
+  # the legends describe. Two lines need more room than an empty corner reliably
+  # has, so the shared frame gets a band of its own above every point.
+  pp <- function(cv) pm$p_emp[pm$axis == "ox_ppd" & pm$covariates == cv]
+  stopifnot(length(pp("none")) == 1L, length(pp("epi + imm")) == 1L)
+  lab_of <- function(i, pe)
+    sprintf("difference in slope %+.2f\np %.4f parametric, %.3f permutation",
+            i$interaction, i$p, pe)
   lab <- data.frame(fit = factor(FITS, levels = FITS),
-                    label = c(sprintf("difference in slope %+.2f, p %.4f", i_u$interaction, i_u$p),
-                              sprintf("difference in slope %+.2f, p %.4f", i_a$interaction, i_a$p)))
-  empty <- function(cx, cy) {
-    fx <- (long$x - XL[1]) / diff(XL); fy <- (long$y - YL[1]) / diff(YL)
-    bx <- if (cx == 0) c(0, 0.62) else c(0.38, 1)
-    by <- if (cy == 0) c(0, 0.12) else c(0.88, 1)
-    !any(fx >= bx[1] & fx <= bx[2] & fy >= by[1] & fy <= by[2])
-  }
-  corners <- list(c(0, 1), c(1, 0), c(0, 0), c(1, 1))
-  ok <- vapply(corners, function(k) empty(k[1], k[2]), logical(1))
-  stopifnot(any(ok))
-  cn <- corners[[which(ok)[1]]]
-  lab$x <- if (cn[1] == 0) XL[1] + diff(XL) * 0.02 else XL[2] - diff(XL) * 0.02
-  lab$y <- if (cn[2] == 1) YL[2] - diff(YL) * 0.01 else YL[1] + diff(YL) * 0.01
+                    label = c(lab_of(i_u, pp("none")), lab_of(i_a, pp("epi + imm"))))
+  top   <- YL[2]
+  YL[2] <- YL[2] + diff(YL) * 0.17
+  stopifnot(max(c(long$y, seg$y, seg$yend)) < top)
+  lab$x <- XL[1] + diff(XL) * 0.02
+  lab$y <- YL[2] - diff(YL) * 0.01
 
   ggplot2::ggplot(long, ggplot2::aes(x, y)) +
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85") +
@@ -550,7 +552,7 @@ coupling_two_fits <- function(tv, key = TRUE) {
                         stroke = 0.25, colour = "grey25") +
     ggplot2::geom_text(data = lab, inherit.aes = FALSE,
                        ggplot2::aes(x = x, y = y, label = label),
-                       hjust = ifelse(cn[1] == 0, 0, 1), vjust = ifelse(cn[2] == 1, 1, 0),
+                       hjust = 0, vjust = 1, lineheight = 0.95,
                        size = 1.75, colour = "grey20") +
     ggplot2::scale_colour_manual(values = geno_cols, guide = "none") +
     ggplot2::scale_fill_manual(values = group_cols, labels = group_labels,

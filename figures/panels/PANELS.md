@@ -2005,7 +2005,7 @@ against them -- including the ones that go against the draft.
 | slot | script | what changed |
 |---|---|---|
 | **Fig. 2I** | `fig2_oxphos_puma_coupling.R` | **Rebuilt** (author's ruling 7). Unadjusted and adjusted halves on one z-scale, two lines each, twelve animals per line, each half printing its OWN interaction (+1.17, p 0.0046; +0.78, p 0.0052). The 2026-08-05 version drew unadjusted lines beside the adjusted p, said six animals per line and said the null permutes genotype labels; all three are fixed, and the fragility (epi and imm correlate -0.84 / -0.92, 8 residual df within genotype, no positive control) is in the legend. Redox is legend-only: its two slopes do not differ (p 0.84 / 0.72). **Second round:** the robustness clause is withdrawn, and the legend states the impasse: the unadjusted interaction clears its permutation null (p 0.026) and the adjusted one does not (p 0.085). The panel is hypothesis-generating and asserts nothing. |
-| **Fig. 2H+I (alt)**, part B | `fig2_puma_chain_alt.R` | **Rebuilt** on 2I's builder, `coupling_two_fits()`, so the original and the alternative cannot disagree; the single Myc+ line and its mixed-fit p are gone. **Rendered in the second round.** The flag on `combined_df_annotated_raw.rds` is a false positive (author's ruling), and part B fits the 100 mm layout. Part A: Foxo3's three brackets keep their shape and lose their p-values, in a neutral ink. |
+| **Fig. 2H+I (alt)**, part B | `fig2_puma_chain_alt.R` | **Rebuilt** on 2I's builder, `coupling_two_fits()`, so the original and the alternative cannot disagree; the single Myc+ line and its mixed-fit p are gone. **Rendered in the second round.** The flag on `combined_df_annotated_raw.rds` is a false positive (author's ruling). The panel is 112 mm since the third round, so that part B can carry both p-values. Part A: Foxo3's three brackets keep their shape and lose their p-values, in a neutral ink. |
 | *(none yet)* | `plane_arms_content.R` | NEW. The arms on the two-timeline plane, content ruler, each with the 95% null range of its distance from the diagonal (2,000 expression-matched sets); the declared +/-0.20 band drawn. Same axes as `plane_four_genes.R`. |
 | *(none yet)* | `plane_arms_mitopps.R` | NEW. The seven mitochondrial arms on mitoPPS (ruling 5: both rulers reported, mitoPPS drawn). |
 | *(none yet)* | `plane_four_genes.R` | NEW. The three-way contrast of the author's 2026-09-21 ruling: lost under MYC (Bbc3, Bax), did not follow the wild-type rise (Foxo3), on the diagonal (Bcl2l1). No p-value for Bax or Foxo3 anywhere, legend included (ruling 2). **Third round:** the legend prints each gene's interaction p, labelled exploratory (below). |
@@ -2084,15 +2084,19 @@ and a concealed one reads as selective reporting. The note, section 3, has the f
 
 The manuscript text still carries no p-value for Foxo3 or Bax.
 
+| slot | script | what changed |
+|---|---|---|
+| Fig. 2I, 2H+I (alt) part B | `coupling_two_fits()` in `_panel_common.R` | **Both p-values, side by side** (author): "p 0.0046 parametric, 0.026 permutation" unadjusted, "p 0.0052 parametric, 0.085 permutation" adjusted. The parametric p alone is anti-conservative at this n; the permutation p alone hides the discrepancy. The two lines sit in a band of their own above the data. |
+| Fig. 2H+I (alt) | `fig2_puma_chain_alt.R` | **112 mm, not 100** (heights 1.10 : 1.40). Part B's facets are `coord_fixed`, so the label band narrowed them, and at 100 mm the second line was clipped. |
+
+The N3 residue stays, by ruling: the slugs `fig2_priming_ratios` / `figS2_priming_balance` are
+filenames, and `biogax_rescue_licence.R` quotes "respiratory capacity" in order to examine a
+claim, not to assert it.
+
 ### Still open
 
-- Fig. 2G's ruling-4 rebuild, next session from 54's object; its legend block still says
-  "priming".
-- The on-panel parametric p in Fig. 2I and 2H+I (alt) part B (0.0046, 0.0052), on a panel that
-  now asserts nothing: the author's call.
-- N3 residue outside the six blocks: the slugs `fig2_priming_ratios` / `figS2_priming_balance`
-  in the `legends.md` headings, and "respiratory capacity" in a proposed claim quoted by
-  `biogax_rescue_licence.R`.
+- Fig. 2G's ruling-4 rebuild, next session from 54's object, including its "priming"
+  clearance.
 - `paper/analysis_record.qmd` still describes the old 2G and 2I (untouched, by instruction).
 
 ## Not built here

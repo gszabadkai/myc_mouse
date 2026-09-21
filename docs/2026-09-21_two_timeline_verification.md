@@ -133,7 +133,7 @@ log ratio per SD of the OXPHOS mitoPPS score, with n = 12 per genotype (6 per ag
 - This is recorded as an **impasse at n = 24, not a choice** between the two fits. Neither is preferred.
 - **In Figure 1 the coupling is hypothesis-generating and asserts nothing.**
 - Both permutation results are in the Fig. 2I legend, which now states the impasse; 2H+I (alt) part B says the same. Both panels assert the pattern (unadjusted p < 0.05, adjusted p >= 0.05), so a re-run that changes it stops the panel instead of leaving the sentence behind.
-- Each half of the drawn panel still prints its parametric interaction p (0.0046 and 0.0052). Whether those stay on a panel that asserts nothing is open (section 6).
+- Each half of the drawn panel prints its parametric and its permutation p side by side (author, third round): 0.0046 and 0.026 unadjusted, 0.0052 and 0.085 adjusted. The parametric p alone is anti-conservative at this n, and the permutation p alone hides the discrepancy. Together they are the impasse, shown on the page.
 
 ### 1.7 The arms on both rulers (ruling 5)
 
@@ -228,6 +228,10 @@ Third round, the same day: **a correction** (author).
 - **One word of the author's form is changed:** "has the largest genotype difference" became "separates the genotypes more sharply than any".
   - By magnitude, Foxo3 is fifth of the 26: Chac1 +0.805, Htra2 -0.546, Bbc3 -0.541 and Endog -0.533 are larger.
   - It is first by p, and by |z| (2.68, against Bbc3's 2.65), which is what "more sharply" states.
+- **The two open questions, answered in the same message:**
+  - **On-panel p-values:** print BOTH the parametric and the permutation values, side by side (section 1.6). Fig. 2I and 2H+I (alt) part B now read "p 0.0046 parametric, 0.026 permutation" (unadjusted) and "p 0.0052 parametric, 0.085 permutation" (adjusted). The label sits in a band of its own above the data.
+  - **The N3 residue: leave both.** A filename is a filename, and `biogax_rescue_licence.R` quotes a claim in order to examine it, not to assert it.
+- **Housekeeping:** the sixth commit stays where it is, the reversal is a commit of its own, and the branch is pushed. Fig. 2G is next session, from script 54's object, including its "priming" clearance.
 
 ---
 
@@ -298,7 +302,7 @@ Source: `$coupling_timepoint`.
 
 `figures/panels/PANELS.md` has the full list. In short:
 - **Fig. 2I rebuilt:** two fits, one builder.
-- **Fig. 2H+I (alt) part B rebuilt** on the same builder. Rendered in the second round; part B fits the 100 mm layout.
+- **Fig. 2H+I (alt) part B rebuilt** on the same builder. Rendered in the second round; part B fitted the 100 mm layout until both p-values were printed, and the panel is 112 mm since the third round.
 - **Three new unslotted panels:** `plane_arms_content`, `plane_arms_mitopps`, `plane_four_genes`.
 - **IHW relabels** in five legends.
 - **Three helpers** added to `_panel_common.R`.
@@ -326,10 +330,7 @@ Source: `$coupling_timepoint`.
 **Pending:**
 - **Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".
 - **Task D** (asserts in scripts 32, 43 and 44). Its targets moved: the retention rate is retired by ruling 4, the eight-ratio slope now lives in script 54, and the two p-values in the paragraph are still to be named.
-- **The on-panel p in Fig. 2I and 2H+I (alt) part B.** Each half still prints its parametric interaction p (0.0046, 0.0052). The panel now asserts nothing, so whether those stay is the author's call.
-- **N3 residue outside the six blocks.**
-  - The file slugs `fig2_priming_ratios` and `figS2_priming_balance` print as identifiers in the `legends.md` headings.
-  - `biogax_rescue_licence.R` quotes a proposed claim containing "respiratory capacity".
-  - Neither is touched: renaming a file, or rewording a proposed claim, is the author's call.
+- ~~The on-panel p in Fig. 2I and 2H+I (alt) part B.~~ Answered in the third round: both p-values, side by side.
+- ~~N3 residue outside the six blocks~~ (the two file slugs in the `legends.md` headings; "respiratory capacity" quoted by `biogax_rescue_licence.R`). Answered in the third round: leave both.
 - **Documents that still call IHW "BH"** (narrative v3 "Bbc3 BH 0.84"; several PANELS.md entries). They are left as written and corrected here.
 - **`paper/analysis_record.qmd`** is not updated, by instruction.

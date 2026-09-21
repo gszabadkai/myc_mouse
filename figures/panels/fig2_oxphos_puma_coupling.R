@@ -36,7 +36,8 @@
 #
 # The reader sees opposite slopes on the left become flat against positive on the
 # right, and a difference between the two lines in each half. That difference is
-# the only number printed on the page -- once per half, each from its own fit --
+# printed once per half, from that half's own fit, with its parametric and its
+# permutation p side by side (author, 2026-09-21) -- the impasse, on the page --
 # and neither half is preferred over the other.
 #
 # THE QUANTITY IS THE INTERACTION, NOT EITHER SLOPE. The per-genotype slopes were a
@@ -105,8 +106,8 @@ LEGEND <- panel_legend(
     "standardised over the 24 animals, with a line fitted within each genotype: ",
     "without covariates (left) and in the pre-specified model adjusted for the ",
     "epithelial and immune composites (right). Each half prints the difference ",
-    "between its two lines, from that half's own fit. The panel is a lead and ",
-    "asserts nothing."),
+    "between its two lines, from that half's own fit, with its parametric and its ",
+    "permutation p side by side. The panel is a lead and asserts nothing."),
   detail = c(
     sprintf("n = 24 animals; each line is fitted on the TWELVE animals of one genotype (six per age). Both axes are z-scores over all 24, so a slope is SD of the ratio per SD of the axis and the two halves are on one scale. Lines: wild type in blue, Myc+ in vermilion; points in the four-group palette."),
     sprintf("LEFT, UNADJUSTED: ordinary least squares within each genotype, identical to lm(ratio ~ genotype x axis). Wild type %+.2f (p %.3f), Myc+ %+.2f (p %.3f); difference %+.2f (p %.4f).",
@@ -136,7 +137,7 @@ LEGEND <- panel_legend(
             cc("neg", "ratio ~ imm"), cc("neg", "ox_ppd ~ imm")),
     sprintf("BATCH = TIMEPOINT, and it reaches this panel: each line is fitted across both ages. Adjusted for timepoint alone, the unadjusted Myc+ slope falls to %+.2f (p %.2f), so much of it is a difference between the ages rather than between animals. Recorded as an open item, not pursued.",
             tqp$slope_with_tp, tqp$p_with_tp),
-    sprintf("AN IMPASSE AT n = 24, NOT A CHOICE. Against the within-timepoint permutation null the UNADJUSTED interaction clears (%.1fth percentile, empirical p %.3f) and the ADJUSTED one does not (%.1fth, p %.3f). The fit that clears is the one exposed to composition, and the fit that removes composition does not clear, so neither can be preferred on these data: the panel is hypothesis-generating and asserts nothing. Adding a timepoint-by-genotype term to the adjusted model also moves its p from %.4f to %.3f (script 43).",
+    sprintf("AN IMPASSE AT n = 24, NOT A CHOICE. Against the within-timepoint permutation null the UNADJUSTED interaction clears (%.1fth percentile, empirical p %.3f) and the ADJUSTED one does not (%.1fth, p %.3f). The fit that clears is the one exposed to composition, and the fit that removes composition does not clear, so neither can be preferred on these data: the panel is hypothesis-generating and asserts nothing. Both p-values are printed on the page, side by side, because the parametric p alone is anti-conservative at this n and the permutation p alone would hide the discrepancy. Adding a timepoint-by-genotype term to the adjusted model also moves its p from %.4f to %.3f (script 43).",
             pw("none")$percentile, pw("none")$p_emp,
             pw("epi + imm")$percentile, pw("epi + imm")$p_emp,
             tv$tradeoff_43$p, tv$tradeoff_43$p_with_tp),

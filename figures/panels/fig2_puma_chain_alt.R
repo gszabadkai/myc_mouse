@@ -371,7 +371,7 @@ stopifnot(pwB("none")$p_emp < 0.05, pwB("epi + imm")$p_emp >= 0.05)
 
 p <- patchwork::wrap_plots(
   patchwork::wrap_plots(pA, pH, nrow = 1, widths = c(2.55, 1)),
-  pB, ncol = 1, heights = c(1.15, 1))
+  pB, ncol = 1, heights = c(1.10, 1.40))
 
 # =============================================================================
 # the legend text (never drawn)
@@ -402,7 +402,8 @@ LEGEND <- panel_legend(
     "the same ratio, both standardised over the 24 animals, with a line fitted within ",
     "each genotype: without covariates (left) and in the pre-specified model adjusted ",
     "for the epithelial and immune composites (right). Each half prints the ",
-    "difference between its two lines."),
+    "difference between its two lines, with its parametric and its permutation p ",
+    "side by side."),
   detail = c(
     "n = 24 animals, 6 per group. Every quantity is z-scored ACROSS THE 24, which is the only way a mitoPPS score, a VST expression level and a log2 ratio can share one axis and one fill -- so a value says high or low FOR THAT QUANTITY and never compares one facet with another. A z-score is a linear transform, so each p-value is the p-value of the untransformed quantity.",
     sprintf("THE THREE FACETS ARE THREE DIFFERENT ANSWERS, WHICH IS THE POINT. OXPHOS mitoPPS falls on BOTH timelines: %s. Foxo3 rises ONLY in the wild-type gland: %s. And the PUMA:Bcl-xL ratio collapses ONLY under Myc: %s.",
@@ -461,7 +462,11 @@ LEGEND <- panel_legend(
     "results/collapse_module_ownership.rds (scripts/44) -- $mech_genes, the 26 biogenesis/cell-death genes the Foxo3 ranking is computed over",
     "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- part B: $coupling_panel and $coupling_lines (drawn), $coupling_fits, $coupling_interaction, $coupling_perm, $coupling_cor, $tradeoff_43"))
 
-save_panel_p(p, "fig2_puma_chain_alt", height = 100)
+# 112 mm, not 100 (2026-09-21): part B prints both p-values side by side, which
+# needs a label band above the data, and its facets are coord_fixed, so they
+# narrow when the band is added unless part B gets more height. At 100 mm the
+# second line was clipped.
+save_panel_p(p, "fig2_puma_chain_alt", height = 112)
 
 # =============================================================================
 # SANDBOX -- run line-by-line in Positron; skipped by source()
