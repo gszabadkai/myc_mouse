@@ -2010,7 +2010,7 @@ against them -- including the ones that go against the draft.
 | *(none yet)* | `plane_arms_mitopps.R` | NEW. The seven mitochondrial arms on mitoPPS (ruling 5: both rulers reported, mitoPPS drawn). |
 | *(none yet)* | `plane_four_genes.R` | NEW. The three-way contrast of the author's 2026-09-21 ruling: lost under MYC (Bbc3, Bax), did not follow the wild-type rise (Foxo3), on the diagonal (Bcl2l1). No p-value for Bax or Foxo3 anywhere, legend included (ruling 2). **Third round:** the legend prints each gene's interaction p, labelled exploratory (below). |
 | Fig. 2G (alt), 2H, S2C, S1E, 2H+I (alt) | five scripts | **IHW relabel.** The adjusted p each prints is `interaction_results.rds`'s `padj`, whose own description is "Weighted BH adjusted p-values"; each legend called it Benjamini-Hochberg. Legend text only, no drawn element moves. 2G (alt)'s stale "Filled points are significant" now reads "Dark rings mark ...". |
-| **Fig. 2G** | `fig2_priming_ratios.R` | **Not rebuilt in this session.** The committed version still draws the imported 0.487 line that ruling 4 retires, so treat it as not shippable. Everything a rebuild needs is in 54's object (`$ratio_line`, `$ratio_band`, `$ratio_resid`, `$ratio_range`). |
+| **Fig. 2G** | `fig2_priming_ratios.R` | **Not rebuilt in this session.** The committed version still draws the imported 0.487 line that ruling 4 retires, so treat it as not shippable. Everything a rebuild needs is in 54's object (`$ratio_line`, `$ratio_band`, `$ratio_resid`, `$ratio_range`). **Rebuilt in the next session** (below, "Fig. 2G, rebuilt on ruling 4"). |
 
 The `plane_` prefix keeps the three new panels outside the `^fig` glob that
 `rebuild_panels.R`, `panels_to_pdf.R` and `paper/analysis_record.qmd` share -- the record's
@@ -2093,6 +2093,61 @@ The N3 residue stays, by ruling: the slugs `fig2_priming_ratios` / `figS2_primin
 filenames, and `biogax_rescue_licence.R` quotes "respiratory capacity" in order to examine a
 claim, not to assert it.
 
+### Fig. 2G, rebuilt on ruling 4 (2026-09-21, the next session)
+
+`fig2_priming_ratios.R` now reads `results/two_timeline_verification.rds` and nothing else, and
+draws what script 54 PART B fitted. The slug is unchanged, by the N3 ruling on filenames. Built
+to the note's sections 1.2, 1.3, 1.5 and 3. 89 x 64 mm (was 58): the y axis takes the whole
+band.
+
+| element | now | why |
+|---|---|---|
+| the line | through the origin over the eight ratios other than PUMA:Bcl-xL: slope 0.429 (SE 0.137), printed on the page as "slope 0.43" in Fig. 1G's form | ruling 4: fitted inside the ratio set. No imported rate (the 0.487 line is gone) and no hard-coded 0.55 |
+| the band | the line's 95% prediction interval, `$ratio_band`, drawn in full | it is what PUMA:Bcl-xL is read against; a band cropped to the points would hide its width |
+| the points | all nine (ruling 3). Shape is the denominator: circles Bcl-xL, triangles Mcl-1. PUMA:Bcl-xL is the one open point, keyed "not used to fit the line" (first keyed "not in the fit", which read as a verdict -- "does not fit" -- against a point that lies inside the band) | the second encoding a second denominator needs, which is why the 2026-08-05 version left the two Mcl-1 ratios out |
+| the legend | residual -0.350 (-1.58 residual SDs), the largest of the nine, inside the interval (-0.276 to +0.855), no verdict; the seven-ratio sensitivity fit reported and not drawn; check 3; the nine six-week p-values; Bax:Bcl-xL's retention as computed (0.5495); "priming" cleared; the members are not drawn here, and a sentence about them cites the four-gene plane | sections 1.2, 1.3, 1.5; the N3 clearance; the author's sign-off |
+
+**Two elements of the 2026-08-05 panel are gone.** Bringing back the second is the author's call:
+- **The dashed residual drops.** PUMA:Bcl-xL and Bak1:Bcl-xL sit 0.014 apart on the six-week
+  axis, so a drop from PUMA:Bcl-xL would pass about half a millimetre from Bak1's point and read
+  as Bak1's. The band carries the reading.
+- **The filled/open "significantly induced at 6W" encoding.** It scoped a retention, a quotient
+  that means nothing where the six-week effect is near zero, and ruling 4 retires retention as
+  the reading. The fit takes all eight comparators whatever their six-week p. The nine p-values
+  are printed in the legend rather than dropped.
+
+**Asserted, so a re-run of script 54 that changes any of them stops the panel:**
+- the drawn line is the refit of `$ratios` (to 1e-12);
+- the band is that line's closed-form prediction interval (to 1e-10);
+- PUMA:Bcl-xL is rank 1 of 9, below the line, and inside the interval, on both the drawn fit
+  and the sensitivity fit;
+- check 3's verdict, recomputed from the nine;
+- retention = d12/d6 for all nine;
+- the legend block carries every item and no "priming". The item count is asserted because the
+  first draft lost the PUMA:Bcl-xL item silently: `sprintf()` with a zero-length argument
+  returns `character(0)`, and `panel_legend()` accepts it.
+
+**The legend keeps three statistics apart.**
+- PUMA:Bcl-xL's own ratio interaction is -0.735 (raw p 0.037; Benjamini-Hochberg 0.33 across
+  the nine). It tests against no attenuation, and eight of the nine ratios have a smaller Myc
+  effect at twelve weeks than at six, so it is not the panel's comparison.
+- The gene-level Bbc3 interaction (-0.541, raw p 0.0081) is a member's statistic. The four-gene
+  plane draws it, as Bbc3's distance below the diagonal, and Fig. 2H's legend quotes it.
+
+**The members are not on this panel** (author, at sign-off). The manuscript's clause about the
+pro- and anti-apoptotic members cites the four-gene plane, not 2G. The legend says so twice:
+its first sentence ends "the members themselves are not drawn here", and one bound, "THIS PANEL
+DRAWS RATIOS, NOT THEIR MEMBERS", says what a ratio's position does not show. The plane has no
+slot yet, so the legend cites it by filename. The filename is asserted, so the rename that
+comes with a slot stops 2G instead of leaving it citing a file that is gone.
+- The line's residual is the panel's.
+
+**One number in the note is corrected:** the interval's lower edge is **-0.276** (-0.27645), not
+-0.277 (section 1.2 had rounded -0.2765 a second time). The legend formats it from the object.
+
+**Not carried over:** script 42's matched-pair empirical null (p 0.082 in the old legend). It
+is not in script 54's object, and the rebuild reads nothing else.
+
 ### Superseded, kept as the record (2026-09-21)
 
 Marked in their own headers and here, and left runnable so the record shows what was drawn.
@@ -2100,7 +2155,7 @@ Do not build on them.
 
 | script | layer | why it is superseded |
 |---|---|---|
-| `fig2_priming_ratios.R` (Fig. 2G, 16 August) | panels | draws the imported 0.487 line that ruling 4 retires; rebuilt in a fresh session |
+| ~~`fig2_priming_ratios.R` (Fig. 2G, 16 August)~~ | panels | drew the imported 0.487 line that ruling 4 retires. **Rebuilt on ruling 4** (above); the retired version is in git history (last committed at f61ae42, 2026-08-05), not on disk |
 | `figures/fig05_death_arm.R` | exploratory figures | draws the HARD-CODED 0.55 (script 42's `params$GLOBAL_RATE`) as the "global rate" |
 | `figures/figure2_developmental_window.R` | assembled manuscript figures | the same, labelled "x0.55" in its panel E |
 
@@ -2116,10 +2171,11 @@ What each is over, and where it is computed, is in the note
 
 ### Still open
 
-- Fig. 2G's ruling-4 rebuild, next session from 54's object, including its "priming"
-  clearance. Its line is the eight-ratio 0.43 fitted inside the ratio set, not 0.450, 0.487
-  or 0.552.
+- ~~Fig. 2G's ruling-4 rebuild, next session from 54's object, including its "priming"
+  clearance.~~ Done: "Fig. 2G, rebuilt on ruling 4", above.
 - `paper/analysis_record.qmd` still describes the old 2G and 2I (untouched, by instruction).
+  It sources the panel by slug, so a render picks up the new 2G and its legend block; only the
+  record's own prose about 2G is stale.
 
 ## Not built here
 

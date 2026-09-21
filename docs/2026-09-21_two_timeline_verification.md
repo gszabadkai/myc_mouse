@@ -53,7 +53,7 @@ fit through the origin to the eight pro:anti ratios that are not PUMA:Bcl-xL.
 | PUMA:Bcl-xL, six-week effect | +0.674 |
 | predicted twelve-week effect / observed | +0.289 / **-0.061** |
 | **residual** | **-0.350 = -1.58 residual SDs**, the largest of the nine |
-| 95% prediction interval at its six-week effect | [-0.277, +0.855]: **PUMA:Bcl-xL lies inside it** |
+| 95% prediction interval at its six-week effect | [-0.276, +0.855]: **PUMA:Bcl-xL lies inside it** (corrected from -0.277 in the Fig. 2G rebuild: the value is -0.27645, which had been rounded twice) |
 | the next three residuals | Pmaip1:Bcl2l1 +0.308, Bmf:Bcl2l1 -0.307, Bbc3:Mcl1 -0.260 |
 | sensitivity, the seven that are not a PUMA ratio (reported, not drawn) | slope 0.456; residual -0.368 (-1.73 SD); inside [-0.258, +0.873] |
 
@@ -328,7 +328,7 @@ Source: `$coupling_timepoint`.
 - **Rendered and inspected:** 2H, 2H+I (alt), S2C, S2D (alt), 2G (alt), D4 and `plane_four_genes`.
 
 **Pending:**
-- **Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".
+- ~~**Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".~~ **Done** (the next session). `fig2_priming_ratios.R` reads script 54's object only and draws the line fitted to the other eight, its 95% prediction band in full, and all nine ratios, with shape for the denominator and PUMA:Bcl-xL as the one open point. The legend block reports the residual without a verdict and is cleared of "priming". Both are asserted. The residual drops and the "significantly induced at 6W" encoding are gone, and the reasons are in `PANELS.md`. The rebuild also corrected section 1.2's lower interval edge to -0.276.
 - **Task D ran (section 7):** 32, 43 and 44 were re-sourced and every assert passed. **Still to re-source:** 33, for its new assert on the 21, and 42, whose notes changed (the author's rulings 1 and 3).
 - ~~The on-panel p in Fig. 2I and 2H+I (alt) part B.~~ Answered in the third round: both p-values, side by side.
 - ~~N3 residue outside the six blocks~~ (the two file slugs in the `legends.md` headings; "respiratory capacity" quoted by `biogax_rescue_licence.R`). Answered in the third round: leave both.
