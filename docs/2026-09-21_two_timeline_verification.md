@@ -384,3 +384,12 @@ Task D applies the principle of commit 97348a8: a number copied between document
 - **Why:** the commit that adds the asserts postdates each object, so all three are stale by the freshness rule until re-sourced.
 - **What to watch for:** each prints a `PART 0 (TEXT)` line. A stop there means the paragraph's number and the analysis have drifted apart.
 - **Script 54 need not be re-run** if the three reproduce. Script 43 is seeded and script 32 is deterministic. Script 44 is seeded, and its fitted rate is closed-form.
+
+**Re-sourced the same day. Every assert passed.**
+- **32** (object 14:48 UTC): +26.54%, which rounds to the paragraph's 27. This is the same value script 33 carries.
+- **43** (14:50 UTC): 0.00 / 1.30. The rerun matches the copies script 54 recorded exactly: the arm values, and the coupling interaction (6.0885, p 0.0052; 0.088 with the timepoint term).
+- **44** (15:02 UTC): 0.4872, which rounds to 0.487, and the constant checks pass.
+  - **The first attempt stopped in PART C.** Positron blocks forked R processes, and `fgsea()` uses BiocParallel's default backend, which forks on macOS. The rerun registered `BiocParallel::SerialParam()` in the session first.
+  - **The backend cannot change the result.** fgsea draws its seeds in the main process; a test gave identical results under forked, serial and PSOCK backends. The same one-line registration serves any fgsea script sourced in Positron.
+  - **The new object is identical to the 27 July one in every analysis component,** fgsea included (773 pathways, zero difference). Only the date and the reworded constant note differ.
+- **All three objects now postdate the Task D commit** (14:41 UTC), so they are fresh by the rule. Script 54 was not re-run, because its inputs reproduced.
