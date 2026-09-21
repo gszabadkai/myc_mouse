@@ -190,11 +190,11 @@ LEGEND <- panel_legend(
   bounds = c(
     "BATCH = TIMEPOINT, and it bites BOTH axes: each coordinate is a temporal contrast and is DESCRIBED, not claimed. What is batch-CLEAN is the vertical distance from the diagonal, which is the interaction, because genotype is balanced within each extraction batch. Read the panel down from the line, not along the axes.",
     "The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Only three of the transcripts drawn reach padj < 0.05 on the Myc timeline.",
-    "A TRANSCRIPT IS NOT A PRIMING STATE. Apoptotic priming is a property of the protein complement and of how close the mitochondrion sits to the threshold; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute.",
+    "A TRANSCRIPT IS NOT AN APOPTOTIC STATE. How close a mitochondrion sits to the apoptotic threshold is a property of its protein complement; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute.",
     "Several of these transcripts are lowly expressed (Bid 148, Bbc3 152, Birc5 150 mean counts), so a real half-log2 effect could be missed in either timeline.",
-    "This panel and fig2_priming_ratios.R are two readings of the same event, not two results: one draws the ratios against the global rescaling, this one draws the members against development."),
+    "This panel and Fig. 2G are two readings of the same event, not two results: Fig. 2G draws the pro:anti ratios, this one draws their members against development."),
   source = c(
-    "results/priming_arm_teb.rds (scripts/42_priming_arm_and_teb_substrate.R) -- $machinery, the curated death roster with all four contrasts and their adjusted p-values",
+    "Script 42's saved object -- $machinery, the curated death roster with all four contrasts and their adjusted p-values",
     "The grammar: two_timeline_base() in figures/panels/_panel_common.R, shared with Figs. 2F (alt), 2H+I (alt) and S2D (alt)"))
 
 save_panel_p(p, "fig2_death_two_timelines_alt", height = 76)

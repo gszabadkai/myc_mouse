@@ -136,7 +136,7 @@ LEGEND <- panel_legend(
     "Several of these genes are lowly expressed (Trp73 at 12 counts, Chac1 at 95, Trib3 at 118), so their standard errors are wide and a real half-log2 effect could be missed. The mean expression is on the face of the panel for exactly that reason.",
     "Foxo3 is in this roster and is drawn. The sentence says \"OTHER known PUMA inducers\", so it should name Foxo3 as the exception rather than let the reader infer that the roster excludes it."),
   source = c(
-    "results/priming_arm_teb.rds (scripts/42_priming_arm_and_teb_substrate.R) -- $exclusions$puma_inputs, the twelve-gene roster with all four contrasts and the interaction"))
+    "Script 42's saved object -- $exclusions$puma_inputs, the twelve-gene roster with all four contrasts and the interaction"))
 
 save_panel_p(p, "figS2_puma_inducers", height = 52)
 

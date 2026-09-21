@@ -399,7 +399,7 @@ LEGEND <- panel_legend(
     "difference between its two lines."),
   detail = c(
     "n = 24 animals, 6 per group. Every quantity is z-scored ACROSS THE 24, which is the only way a mitoPPS score, a VST expression level and a log2 ratio can share one axis and one fill -- so a value says high or low FOR THAT QUANTITY and never compares one facet with another. A z-score is a linear transform, so each p-value is the p-value of the untransformed quantity.",
-    sprintf("THE THREE FACETS ARE THREE DIFFERENT ANSWERS, WHICH IS THE POINT. OXPHOS mitoPPS falls on BOTH timelines: %s. Foxo3 rises ONLY in the wild-type gland: %s. And the priming ratio collapses ONLY under Myc: %s.",
+    sprintf("THE THREE FACETS ARE THREE DIFFERENT ANSWERS, WHICH IS THE POINT. OXPHOS mitoPPS falls on BOTH timelines: %s. Foxo3 rises ONLY in the wild-type gland: %s. And the PUMA:Bcl-xL ratio collapses ONLY under Myc: %s.",
             say("OXPHOS mitoPPS"), say("Foxo3"), say("PUMA:Bcl-xL")),
     sprintf("THE UPPER BRACKET IS THE ONE BATCH = TIMEPOINT LEAVES CLEAN, and it is the one the section's claim lives in: Foxo3 %+.2f, p = %s; PUMA:Bcl-xL %+.2f, p = %s; OXPHOS mitoPPS %+.2f, p = %s -- so the two arms of the chain differ between the genotypes and the respiratory arm falls the same way in both. For the two transcripts the DESeq2 record puts the same interaction at Foxo3 %+.3f (p = %.4f) and Bbc3 %+.3f (p = %.4f); Bbc3 is not a facet here but is the numerator of the ratio that is. Neither clears the genome-wide IHW adjustment (independent hypothesis weighting, a weighted Benjamini-Hochberg) -- what licenses the test is pre-specification, and Foxo3 and Bbc3 are ranks 1 and 2 of script 44's 26 mechanism genes.",
             ti$beta[ti$measure == "Foxo3"], fmt_p(pi_("Foxo3")),
@@ -443,9 +443,9 @@ LEGEND <- panel_legend(
     "BATCH = TIMEPOINT: the six brackets in part A are all WITHIN-genotype temporal contrasts, and the 6W and 12W cohorts were extracted as two batches. Each bracket is therefore DESCRIBED, not claimed; what is batch-clean is the CONTRAST BETWEEN the two brackets in a facet, because genotype is balanced within each batch.",
     "THE THREE FACETS ARE NOT INDEPENDENT MEASUREMENTS: PUMA:Bcl-xL is built from the two transcripts in the heatmap beside it, so its pattern must follow theirs. It is drawn because it is the quantity the text names, not as separate evidence.",
     "mitoPPS is a RELATIVE score -- a high OXPHOS-subunit value means the compartment spends more of its budget there, not that the cell respires more. Neither axis of part B is a rate.",
-    "PUMA:Bcl-xL is a transcript ratio, not priming; and the direction of the chain is not established by any part of this panel. PUMA restrains the mitochondrial pyruvate carrier (Kim, Cancer Cell 2019), so respiration sits upstream and FOXO3 -> BBC3 closes the circuit rather than starting it."),
+    "PUMA:Bcl-xL is a transcript ratio, not a measurement of how close a cell sits to the apoptotic threshold; and the direction of the chain is not established by any part of this panel. PUMA restrains the mitochondrial pyruvate carrier (Kim, Cancer Cell 2019), so respiration sits upstream and FOXO3 -> BBC3 closes the circuit rather than starting it."),
   source = c(
-    "results/priming_arm_teb.rds (scripts/42) -- $axis_scores (per-animal mitoPPS axes), $purity (the composition covariates the model adjusts for)",
+    "Script 42's saved object -- $axis_scores (per-animal mitoPPS axes), $purity (the composition covariates the model adjusts for)",
     "results/gsva_scores.rds (scripts/15) -- $expr_mat, the VST matrix the per-animal values and the ratio are built from",
     "results/substrate_specificity_tradeoff.rds (scripts/43) -- $tradeoff and $tradeoff_perm, the interaction and its permutation null",
     "results/interaction_results.rds (scripts/03) -- the raw DESeq2 temporal contrasts the drawn tests are checked against",

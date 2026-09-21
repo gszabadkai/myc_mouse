@@ -238,7 +238,7 @@ LEGEND <- panel_legend(
   source = c(
     "results/fgsea_percategory.rds (scripts/20_fgsea_percategory.R) -- NES per ranking x category on the unshrunken Wald statistic; the `timepoint_neg` ranking is the contrast drawn",
     "results/substrate_specificity_tradeoff.rds (scripts/43_substrate_specificity_and_tradeoff.R) -- $comparator and $wt_null for the gene-level arms and their expression-matched nulls; $defs$prolif_sets is the drawn proliferation roster",
-    "results/priming_arm_teb.rds (scripts/42_priming_arm_and_teb_substrate.R) -- $teb_signatures, the purity-adjusted per-sample composite"))
+    "Script 42's saved object -- $teb_signatures, the purity-adjusted per-sample composite"))
 
 save_panel_p(p, "fig2_wt_teb_proliferation", height = 30)
 

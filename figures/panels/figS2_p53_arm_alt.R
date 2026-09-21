@@ -198,7 +198,7 @@ LEGEND <- panel_legend(
     "Several of these genes are lowly expressed (Cdkn2a at 6 counts, Eda2r at 101), so a real half-log2 effect could be missed.",
     "Foxo3 belongs to the PUMA-inducer roster and is drawn here as a mover, not as a member of the null class. The sentence should say \"other than Foxo3\"."),
   source = c(
-    "results/priming_arm_teb.rds (scripts/42_priming_arm_and_teb_substrate.R) -- $exclusions$p53_axis and $exclusions$puma_inputs, the two rosters script 42's own PART C used to exclude alternative routes; $machinery for Bbc3",
+    "Script 42's saved object -- $exclusions$p53_axis and $exclusions$puma_inputs, the two rosters script 42's own PART C used to exclude alternative routes; $machinery for Bbc3",
     "The grammar: two_timeline_base() in figures/panels/_panel_common.R, shared with Figs. 2F (alt), 2G (alt) and 2H+I (alt)"))
 
 save_panel_p(p, "figS2_p53_arm_alt", height = 76)
