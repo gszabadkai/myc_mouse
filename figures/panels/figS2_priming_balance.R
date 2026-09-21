@@ -273,7 +273,7 @@ LEGEND <- panel_legend(
     "the five non-MitoCarta brakes that are not in those sets. One point per ",
     "gene, positioned by its raw log2 fold change; filled points are significant."),
   detail = c(
-    sprintf("n = 6 wild-type animals per timepoint, %d transcripts. DESeq2 raw (unshrunken) log2 fold changes on the `6>12W_wt` contrast, Benjamini-Hochberg adjusted genome-wide.",
+    sprintf("n = 6 wild-type animals per timepoint, %d transcripts. DESeq2 raw (unshrunken) log2 fold changes on the `6>12W_wt` contrast; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
     sprintf("%d of %d transcripts reaches padj < 0.05, and it moves the WRONG WAY for a loss of priming: %s %+.2f (padj %.3f), a pro-apoptotic gene going UP. Nothing else clears 0.05 on either arm or among the brakes.",
             n_sig_wt, nrow(d), one$gene[1], one$lfc[1], one$padj[1]),

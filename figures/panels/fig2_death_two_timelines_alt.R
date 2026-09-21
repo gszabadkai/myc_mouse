@@ -170,10 +170,10 @@ LEGEND <- panel_legend(
     "The death machinery on both timelines at once: how each transcript changes ",
     "across the wild-type window on the horizontal axis, and across the same ",
     "window in the Myc+ gland on the vertical. The dashed diagonal is what a ",
-    "gene would do under development alone. Filled points are significant on ",
+    "gene would do under development alone. Dark rings mark transcripts significant on ",
     "the Myc timeline."),
   detail = c(
-    sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes, Benjamini-Hochberg adjusted genome-wide.",
+    sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
     sprintf("THE CLAIM, AND THE SCRIPT ASSERTS IT: %s -- and it is the ONLY BH3-only sensor that is flat in development and significantly down under Myc. The other sensors do not do it: %s; %s; %s; %s.",
             say("Bbc3"), say("Bcl2l11"), say("Bid"), say("Pmaip1"), say("Bik")),

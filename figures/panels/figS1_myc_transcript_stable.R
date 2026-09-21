@@ -165,7 +165,7 @@ LEGEND <- panel_legend(
   detail = c(
     "n = 6 animals per group, n = 24. Boxes are median and quartiles, whiskers 1.5x the interquartile range. Groups are ordered by age so that each age's genotype pair is adjacent, which is the comparison the two lower brackets make. The x axis is blank because the colour key carries the group names.",
     "The y axis is log2 of DESeq2 normalised counts, labelled in counts. On that scale a constant genotype gap is a constant vertical distance, which is the claim.",
-    sprintf("Brackets carry the raw (unshrunken) DESeq2 contrasts and their Benjamini-Hochberg adjusted p-values, red where padj < 0.05: the genotype gap is %+.2f log2 at six weeks (padj %.2g) and %+.2f at twelve (padj %.2g); across age the wild-type gland changes by %+.2f (padj %.2f) and the Myc+ gland by %+.2f (padj %.2f). The interaction is %+.2f, padj %.2g.",
+    sprintf("Brackets carry the raw (unshrunken) DESeq2 contrasts and their IHW-adjusted p-values (independent hypothesis weighting, a weighted Benjamini-Hochberg), red where padj < 0.05: the genotype gap is %+.2f log2 at six weeks (padj %.2g) and %+.2f at twelve (padj %.2g); across age the wild-type gland changes by %+.2f (padj %.2f) and the Myc+ gland by %+.2f (padj %.2f). The interaction is %+.2f, padj %.2g.",
             f("myc_6W","lfc"), f("myc_6W","padj"), f("myc_12W","lfc"), f("myc_12W","padj"),
             f("6>12W_wt","lfc"), f("6>12W_wt","padj"),
             f("6>12W_myc","lfc"), f("6>12W_myc","padj"),

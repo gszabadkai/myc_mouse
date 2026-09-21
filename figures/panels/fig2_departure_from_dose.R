@@ -180,7 +180,7 @@ LEGEND <- panel_legend(
     sprintf("THE PRE-REGISTRATION HAD TWO GENES AND THEY SPLIT. Script 44's `pre_specified_genes` are Bbc3 and Bcl2l11, named in advance from the cell experiments. Bbc3 collapses at percentile %.2f; Bcl2l11 sits at percentile %.1f (z %+.2f), the ordinary middle of the distribution, with an interaction p of %.2f. Drawing only the half that worked would be the wrong panel.",
             m("Bbc3", "pct"), m("Bcl2l11", "pct"), m("Bcl2l11", "z"),
             m("Bcl2l11", "int_p")),
-    sprintf("The interactions themselves: %s %.4f, %s %.4f, %s %.2f. None survives genome-wide correction (Bbc3's Benjamini-Hochberg value is %.2f), which is the expected outcome for an interaction at n = 6 per cell and is why the licence is pre-specification rather than the p-value.",
+    sprintf("The interactions themselves: %s %.4f, %s %.4f, %s %.2f. None survives genome-wide correction (Bbc3's IHW-adjusted value is %.2f), which is the expected outcome for an interaction at n = 6 per cell and is why the licence is pre-specification rather than the p-value.",
             "Bbc3", m("Bbc3", "int_p"), "Foxo3", m("Foxo3", "int_p"),
             "Bcl2l11", m("Bcl2l11", "int_p"), m("Bbc3", "int_padj")),
     sprintf("THE SAME DEPARTURE IS REACHED BY TWO DIFFERENT ROUTES, and the text should keep the distinction. Foxo3: Myc raises it at six weeks (%+.3f) and lowers it at twelve (%+.3f), and the WILD-TYPE gland raises it with age (%+.3f) while the Myc+ gland does not (%+.3f). Bbc3: %+.3f to %+.3f, with the wild-type gland flat (%+.3f) and the Myc+ gland falling (%+.3f).",
