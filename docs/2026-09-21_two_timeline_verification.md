@@ -329,7 +329,7 @@ Source: `$coupling_timepoint`.
 
 **Pending:**
 - **Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".
-- **Task D is written (section 7) and waits on the re-source of scripts 32, 43 and 44.** Those re-runs are the first time the asserts execute.
+- **Task D ran (section 7):** 32, 43 and 44 were re-sourced and every assert passed. **Still to re-source:** 33, for its new assert on the 21, and 42, whose notes changed (the author's rulings 1 and 3).
 - ~~The on-panel p in Fig. 2I and 2H+I (alt) part B.~~ Answered in the third round: both p-values, side by side.
 - ~~N3 residue outside the six blocks~~ (the two file slugs in the `legends.md` headings; "respiratory capacity" quoted by `biogax_rescue_licence.R`). Answered in the third round: leave both.
 - **Documents that still call IHW "BH"** (narrative v3 "Bbc3 BH 0.84"; several PANELS.md entries). They are left as written and corrected here.
@@ -362,6 +362,7 @@ Task D applies the principle of commit 97348a8: a number copied between document
 - **The lower end, 21.**
   - Script 33 writes it, not script 32: `genotype_untouched$adj_pct` = 21.12%, the mass-marker effect adjusted for prep-stress and contamination.
   - Covering it means an assert in script 33 and a fourth re-source. That is the author's call.
+  - **Now covered** (author's ruling, the same day: "an assert on the 27 but not the 21 leaves half a quoted range unchecked"). Script 33 declares 21 in its own PART 0 (TEXT) block and asserts it after `genotype_untouched`. It first executes when 33 is re-sourced.
 - **The coupling p-values**, by ruling. The permutation impasse leaves no single fit to assert against.
 - **Anything withdrawn today**, by ruling: the "only PUMA" claim, the coupling's robustness clause and the shared-withdrawal phrasing.
 
@@ -371,13 +372,13 @@ Task D applies the principle of commit 97348a8: a number copied between document
   - the target of the matched-pair null control;
   - the saved `params$GLOBAL_RATE`.
 
-  Its prose also types it three times (lines 644, 685 and 712; the last reads "matched pairs retain 0.55, script 40's global rate exactly", a typed copy of a computed 0.551). Its nine retentions are computed: script 54 checked each against d12/d6 to 1e-12. Script 42 is not in Task D's re-source set, so it is not edited.
+  Its prose also types it three times (lines 644, 685 and 712; the last reads "matched pairs retain 0.55, script 40's global rate exactly", a typed copy of a computed 0.551). Its nine retentions are computed: script 54 checked each against d12/d6 to 1e-12. Script 42 is not in Task D's re-source set, so it is not edited. **Replaced by the author's ruling, the same day:** the two notes that typed "x0.55" now point to script 44's `$defs$global_rate_fitted`, and the third prints the computed control median instead of typing it. The edit moves 42's last commit past its object, so 42 must be re-sourced.
 - **Found: the constant standing in for a computed rate.**
   - `figures/fig05_death_arm.R` (line 58) and the assembled `figures/figure2_developmental_window.R` (line 73) read `pa$params$GLOBAL_RATE` and draw it as the rescaling line, labelled "global rate x0.55" and "x0.55".
   - `fig05` also uses `machinery$vs_global`, which is banded on the constant.
-  - Both are in the older exploratory and assembled layer, not `figures/panels/`. They are not changed: they should read `defs$global_rate_fitted` or be retired, and that is the author's call.
+  - Both are in the older exploratory and assembled layer, not `figures/panels/`. They are not changed: they should read `defs$global_rate_fitted` or be retired, and that is the author's call. **Marked SUPERSEDED by the author's ruling, the same day,** in their own headers and in PANELS.md. The code is unchanged, as with the 16 August Fig. 2G.
 - **The panel layer** uses no `GLOBAL_RATE`. The current Fig. 2G reads the fitted 0.487, and its rebuild drops any imported rate (ruling 4).
-- **The Results text** in the analysis record says "the overall 0.55-fold transcriptomic rescaling". The record's own callout says the sentence should quote 0.487 ("the genes MYC moves") or 0.450 (whole transcriptome). If the paragraph still says 0.55, it is quoting a rounded copy of the mitochondrial slope (0.552), not script 44's rate.
+- **The Results text** in the analysis record says "the overall 0.55-fold transcriptomic rescaling". The record's own callout says the sentence should quote 0.487 ("the genes MYC moves") or 0.450 (whole transcriptome). If the paragraph still says 0.55, it is quoting a rounded copy of the mitochondrial slope (0.552), not script 44's rate. **It is wrong, and it is being corrected in the manuscript** (section 8).
 
 **Re-source:** `scripts/32_mito_content_proxies.R`, `scripts/43_substrate_specificity_and_tradeoff.R` and `scripts/44_collapse_module_and_ownership.R`.
 - **Order:** any, since none reads another's output.
@@ -393,3 +394,28 @@ Task D applies the principle of commit 97348a8: a number copied between document
   - **The backend cannot change the result.** fgsea draws its seeds in the main process; a test gave identical results under forked, serial and PSOCK backends. The same one-line registration serves any fgsea script sourced in Positron.
   - **The new object is identical to the 27 July one in every analysis component,** fgsea included (773 pathways, zero difference). Only the date and the reworded constant note differ.
 - **All three objects now postdate the Task D commit** (14:41 UTC), so they are fresh by the rule. Script 54 was not re-run, because its inputs reproduced.
+
+**Second re-source, after the author's rulings 1 and 3 (pending):**
+- `scripts/33_mtdna_axis_and_coupling_null.R`: its new assert on the 21 executes for the first time.
+- `scripts/42_priming_arm_and_teb_substrate.R`: only its notes changed. It is seeded (`set.seed(1)`), so a rerun on the same inputs reproduces its object, and it is needed because the edit made the object older than the script.
+- In either order, before any number is read from their objects again.
+
+---
+
+## 8. Four rates, each "about a half", none a substitute for another
+
+Four distinct rescaling rates now exist in this analysis (author, 2026-09-21). Every one reads as "about a half", and **none substitutes for another**. This is the list a future session will get wrong.
+
+| rate | what it is over | where it is computed |
+|---|---|---|
+| **0.450** | **The whole transcriptome as reported.** All 8,774 genes of script 44's `collapse_genes` (baseMean >= 20, abs(LFC at 6W) >= 0.2, reported at both ages). The 12-week MYC effect regressed on the 6-week one, gene by gene, through the origin; R2 0.381. | The Fig. 1G panel's all-gene fit, on script 44's object |
+| **0.487** | **The genes MYC moves.** The 2,648 of those genes with a six-week padj < 0.1. The same fit; R2 0.51. | Script 44, `$defs$global_rate_fitted`, asserted since Task D. The rate of record for "the genes MYC moves". |
+| **0.552** | **The mitochondrial compartment.** The 143 MitoPathways on the content measure, as set-average log2 fold changes, fitted WITH an intercept (0.0001); R2 0.801. | Script 40, `background_vs_myc.rds$regressions` ("rescale, content, all") |
+| **0.43** | **The eight pro:anti ratios** other than PUMA:Bcl-xL. Each ratio's genotype effect at 12 weeks regressed on its effect at 6 weeks, through the origin: 0.429 (SE 0.137). | Script 54, `$ratio_line` |
+
+- **The hard-coded 0.55** (`GLOBAL_RATE` in scripts 42 and 44) is **none of these**. It is a typed, rounded copy of the mitochondrial slope. It survives only as a labelled reference, and the two figure scripts that drew it as "the global rate" are superseded (section 7).
+- **The paragraph's two corrections** (the author's). The paragraph quotes no number here, but its prose was written against 0.55:
+  - **"just over half amplitude" becomes "just under half"**, against 0.487;
+  - **the ratio sentence becomes "by less than half as much"**, against the eight-ratio line's 0.43, not against any imported rate.
+- **The old Results text's "0.55-fold transcriptomic rescaling" is wrong.** It quotes a rounded copy of the mitochondrial slope as a transcriptome rate. It is being corrected in the manuscript, recorded here so the two do not drift back.
+

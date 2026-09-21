@@ -111,6 +111,21 @@ group_levels <- c("6W_neg", "6W_pos", "12W_neg", "12W_pos")
 geno_cols    <- c(neg = "#4575B4", pos = "#D73027")
 
 # =============================================================================
+# PART 0 (TEXT): THE NUMBER THE MANUSCRIPT PARAGRAPH QUOTES
+# -----------------------------------------------------------------------------
+# Task D, 2026-09-21. The author's ruling: an assert on the 27 but not the 21 leaves
+# half a quoted range unchecked. The principle of commit 97348a8: a number copied
+# between documents is never checked; a number in a stopifnot is checked every run.
+# So the number is DECLARED here, before anything is computed, and ASSERTED in
+# PART D, where it is computed.
+#
+# The Figure-1 closing paragraph quotes mitochondrial content as "21-27%". This
+# script writes the LOWER end: the genotype effect on the chaperone-free
+# mass-marker share, adjusted for prep-stress and contamination, +21.1%. The upper
+# end, the unadjusted +26.5%, is asserted in script 32, which writes it.
+TEXT_CONTENT_LOWER_PCT <- 21
+
+# =============================================================================
 # PART 1: LOAD + IDENTIFIER MAP
 # =============================================================================
 mc  <- readRDS(here::here("results", "mito_content_proxies.rds"))
@@ -356,6 +371,12 @@ genotype_untouched <- purrr::map_dfr(
                    retained_note = if (keep_ratio) NA_character_
                                    else "raw effect ns -- nothing to retain; ratio undefined")
   })
+
+# PART 0 (TEXT) assert: the paragraph's lower end, at the precision it quotes it
+mass_adj <- genotype_untouched$adj_pct[genotype_untouched$panel == "MASS_MARKERS_NOCHAP"]
+stopifnot(length(mass_adj) == 1L, round(mass_adj) == TEXT_CONTENT_LOWER_PCT)
+message(sprintf("33 PART 0 (TEXT): adjusted mass-marker content effect %+.2f%% -> the paragraph's %d%%",
+                mass_adj, TEXT_CONTENT_LOWER_PCT))
 
 # --- D2. Over-adjustment check: adjusting for a covariate ON the causal path
 # would destroy real biology. It cannot here -- the axis is genotype-independent,

@@ -2093,10 +2093,32 @@ The N3 residue stays, by ruling: the slugs `fig2_priming_ratios` / `figS2_primin
 filenames, and `biogax_rescue_licence.R` quotes "respiratory capacity" in order to examine a
 claim, not to assert it.
 
+### Superseded, kept as the record (2026-09-21)
+
+Marked in their own headers and here, and left runnable so the record shows what was drawn.
+Do not build on them.
+
+| script | layer | why it is superseded |
+|---|---|---|
+| `fig2_priming_ratios.R` (Fig. 2G, 16 August) | panels | draws the imported 0.487 line that ruling 4 retires; rebuilt in a fresh session |
+| `figures/fig05_death_arm.R` | exploratory figures | draws the HARD-CODED 0.55 (script 42's `params$GLOBAL_RATE`) as the "global rate" |
+| `figures/figure2_developmental_window.R` | assembled manuscript figures | the same, labelled "x0.55" in its panel E |
+
+**There is no single "global rate".** Four distinct rates exist. Each reads as "about a half"
+and none substitutes for another:
+- 0.450 over all 8,774 reported genes;
+- 0.487 over the 2,648 genes MYC moves;
+- 0.552 over the 143 mitochondrial pathways;
+- 0.43 over the eight pro:anti ratios.
+
+What each is over, and where it is computed, is in the note
+(`docs/2026-09-21_two_timeline_verification.md`, section 8). The hard-coded 0.55 is none of them.
+
 ### Still open
 
 - Fig. 2G's ruling-4 rebuild, next session from 54's object, including its "priming"
-  clearance.
+  clearance. Its line is the eight-ratio 0.43 fitted inside the ratio set, not 0.450, 0.487
+  or 0.552.
 - `paper/analysis_record.qmd` still describes the old 2G and 2I (untouched, by instruction).
 
 ## Not built here
@@ -2131,3 +2153,6 @@ The four already-assembled manuscript figures (`figures/figure1_myc_mitochondrio
 `figure2_developmental_window.R`, `figureS1_compartment_detail.R`, `figureS2_controls.R`) are
 untouched by this layer and still rebuild via `figures/rebuild_manuscript_figures.R` — but they now
 pick up the new sample palette, so they should be re-rendered and re-checked at the same time.
+**`figure2_developmental_window.R` is SUPERSEDED (2026-09-21).** It draws the hard-coded 0.55 as
+the global rate. It is kept as the record, not for use (see "Superseded, kept as the record"
+above).

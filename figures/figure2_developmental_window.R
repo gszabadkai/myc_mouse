@@ -1,4 +1,15 @@
 # =============================================================================
+# SUPERSEDED 2026-09-21 (author's ruling) -- kept as the record, NOT for use.
+# -----------------------------------------------------------------------------
+# This script draws the HARD-CODED 0.55 -- script 42's `params$GLOBAL_RATE`, a
+# typed copy of script 40's mitochondrial-compartment slope -- as the "global
+# rate" line. That is what commit 97348a8 was about: a copied number, labelled as
+# a computed one, in a runnable script. There is no single "global rate". Four
+# distinct rates exist and none substitutes for another; they are listed in
+# docs/2026-09-21_two_timeline_verification.md, section 8. The code is left as it
+# was, so the record shows what was drawn. The publication layer is
+# figures/panels/ (figures/panels/PANELS.md).
+# =============================================================================
 # figure2_developmental_window.R -- MANUSCRIPT FIGURE 2
 # "Development opens the window"
 # -----------------------------------------------------------------------------
