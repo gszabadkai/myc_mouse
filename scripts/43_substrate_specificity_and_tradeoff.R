@@ -50,6 +50,25 @@ NPERM <- 5000L   # within-timepoint shuffles for PART B's axis null
 NBIN  <- 20L     # baseMean bins for the matched null
 
 # =============================================================================
+# PART 0 (TEXT): THE NUMBERS THE MANUSCRIPT PARAGRAPH QUOTES
+# -----------------------------------------------------------------------------
+# Task D, 2026-09-21. The principle of commit 97348a8: a number copied between
+# documents is never checked; a number in a stopifnot is checked every run. So the
+# numbers are DECLARED here, before anything is computed, and ASSERTED in PART A,
+# where they are computed.
+#
+# The Figure-1 closing paragraph quotes two percentiles this script writes: where
+# the wild-type window's change in each arm falls among 2,000 expression-matched
+# random sets -- the respiratory chain at the "0th" and the pooled proliferative
+# programme at the "1.3rd". They are asserted at that precision. The null is seeded
+# (set.seed(1) above), so a re-run on the same inputs reproduces them exactly.
+#
+# NOT asserted, by the author's ruling (2026-09-21): the coupling p-values. The
+# permutation impasse means there is no single fit to assert against, and an assert
+# would presume one.
+TEXT_WT_PCT <- c("OXPHOS subunits" = 0.0, "PROLIF_* pooled" = 1.3)
+
+# =============================================================================
 # PART 0: LOAD
 # =============================================================================
 ir  <- readRDS(here::here("results", "interaction_results.rds"))
@@ -189,6 +208,14 @@ wt_null <- dplyr::bind_rows(lapply(names(arm_ens), function(a) {
                  percentile  = 100 * mean(nul < obs),
                  p_emp_lower = mean(nul <= obs))
 })) |> dplyr::arrange(percentile)
+
+# PART 0 (TEXT) assert: the paragraph's two percentiles, at the precision it quotes
+pct_text <- wt_null$percentile[match(names(TEXT_WT_PCT), wt_null$arm)]
+stopifnot(!anyNA(pct_text),
+          isTRUE(all.equal(round(pct_text, 1), unname(TEXT_WT_PCT))))
+message(sprintf("43 PART 0 (TEXT): wild-type matched-null percentiles %s -> the paragraph's %s",
+                paste(sprintf("%.2f", pct_text), collapse = " / "),
+                paste(sprintf("%.1f", TEXT_WT_PCT), collapse = " / ")))
 
 # --- the PAIRED null: OXPHOS-versus-proliferation is the actual claim -----------
 # A one-set null answers "is OXPHOS extreme?". The claim is comparative, so the

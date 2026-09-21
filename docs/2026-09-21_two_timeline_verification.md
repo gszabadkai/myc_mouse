@@ -329,8 +329,58 @@ Source: `$coupling_timepoint`.
 
 **Pending:**
 - **Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".
-- **Task D** (asserts in scripts 32, 43 and 44). Its targets moved: the retention rate is retired by ruling 4, the eight-ratio slope now lives in script 54, and the two p-values in the paragraph are still to be named.
+- **Task D is written (section 7) and waits on the re-source of scripts 32, 43 and 44.** Those re-runs are the first time the asserts execute.
 - ~~The on-panel p in Fig. 2I and 2H+I (alt) part B.~~ Answered in the third round: both p-values, side by side.
 - ~~N3 residue outside the six blocks~~ (the two file slugs in the `legends.md` headings; "respiratory capacity" quoted by `biogax_rescue_licence.R`). Answered in the third round: leave both.
 - **Documents that still call IHW "BH"** (narrative v3 "Bbc3 BH 0.84"; several PANELS.md entries). They are left as written and corrected here.
 - **`paper/analysis_record.qmd`** is not updated, by instruction.
+
+---
+
+## 7. Task D: the paragraph's numbers behind asserts
+
+Task D applies the principle of commit 97348a8: a number copied between documents is never checked, and a number in a stopifnot is checked every run.
+- **Where the numbers live.** Each writer script now DECLARES the numbers the Figure-1 closing paragraph quotes, in a `PART 0 (TEXT)` block before anything is computed, and ASSERTS them where they are computed.
+- **Precision.** Each is checked at the precision the paragraph quotes it.
+- **Pre-checked.** Every assert was evaluated against the saved objects before commit and holds. All three scripts parse.
+- **The first run.** The asserts first execute when you re-source the scripts.
+
+**Covered**
+
+| the paragraph quotes | script | asserted where | value now | checked to |
+|---|---|---|---|---|
+| **27** (upper end of "21-27%") | 32 | PART 3, after `share_stats` | +26.54%: MYC's effect on the chaperone-free mass-marker share | the integer percent |
+| **0th** (respiratory chain) and **1.3rd** (pooled proliferation) | 43 | PART A, after `wt_null` | 0.00 and 1.30, of 2,000 matched sets (seeded) | one decimal |
+| **0.487** (the retention rate) | 44 | PART C, after `collapse_genes`, and again before the save | 0.48723, through the origin over the 2,648 genes MYC moves | three decimals |
+
+**The hard-coded 0.55 in script 44** is asserted to be a reference and never a computed value:
+- **The fitted rate is recomputed in closed form**, so replacing it with the constant would fail. The residual and the retention-minus-rate columns are re-derived against the fitted rate.
+- **The saved `defs` holds 0.55 in exactly one field,** `global_rate_assumed`.
+- **The notes no longer type the constant.** Script 44's notes printed "script 40's value 0.55" as typed text; they now format it from `GLOBAL_RATE` and call it a labelled reference.
+
+**Not covered**
+- **The lower end, 21.**
+  - Script 33 writes it, not script 32: `genotype_untouched$adj_pct` = 21.12%, the mass-marker effect adjusted for prep-stress and contamination.
+  - Covering it means an assert in script 33 and a fourth re-source. That is the author's call.
+- **The coupling p-values**, by ruling. The permutation impasse leaves no single fit to assert against.
+- **Anything withdrawn today**, by ruling: the "only PUMA" claim, the coupling's robustness clause and the shared-withdrawal phrasing.
+
+**The repository-wide audit of 0.55**
+- **Script 42** (`GLOBAL_RATE`, line 61) uses it only as a reference:
+  - the +/-0.15 bands of `machinery$vs_global`;
+  - the target of the matched-pair null control;
+  - the saved `params$GLOBAL_RATE`.
+
+  Its prose also types it three times (lines 644, 685 and 712; the last reads "matched pairs retain 0.55, script 40's global rate exactly", a typed copy of a computed 0.551). Its nine retentions are computed: script 54 checked each against d12/d6 to 1e-12. Script 42 is not in Task D's re-source set, so it is not edited.
+- **Found: the constant standing in for a computed rate.**
+  - `figures/fig05_death_arm.R` (line 58) and the assembled `figures/figure2_developmental_window.R` (line 73) read `pa$params$GLOBAL_RATE` and draw it as the rescaling line, labelled "global rate x0.55" and "x0.55".
+  - `fig05` also uses `machinery$vs_global`, which is banded on the constant.
+  - Both are in the older exploratory and assembled layer, not `figures/panels/`. They are not changed: they should read `defs$global_rate_fitted` or be retired, and that is the author's call.
+- **The panel layer** uses no `GLOBAL_RATE`. The current Fig. 2G reads the fitted 0.487, and its rebuild drops any imported rate (ruling 4).
+- **The Results text** in the analysis record says "the overall 0.55-fold transcriptomic rescaling". The record's own callout says the sentence should quote 0.487 ("the genes MYC moves") or 0.450 (whole transcriptome). If the paragraph still says 0.55, it is quoting a rounded copy of the mitochondrial slope (0.552), not script 44's rate.
+
+**Re-source:** `scripts/32_mito_content_proxies.R`, `scripts/43_substrate_specificity_and_tradeoff.R` and `scripts/44_collapse_module_and_ownership.R`.
+- **Order:** any, since none reads another's output.
+- **Why:** the commit that adds the asserts postdates each object, so all three are stale by the freshness rule until re-sourced.
+- **What to watch for:** each prints a `PART 0 (TEXT)` line. A stop there means the paragraph's number and the analysis have drifted apart.
+- **Script 54 need not be re-run** if the three reproduce. Script 43 is seeded and script 32 is deterministic. Script 44 is seeded, and its fitted rate is closed-form.

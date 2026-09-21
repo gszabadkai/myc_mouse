@@ -93,6 +93,27 @@ BM_FLOOR    <- 20      # script 42's expression floor
 OX_WT_REF   <- -0.2548 # Issue #4's OXPHOS-subunit wild-type value (positive control)
 
 # =============================================================================
+# PART 0 (TEXT): THE NUMBER THE MANUSCRIPT PARAGRAPH QUOTES
+# -----------------------------------------------------------------------------
+# Task D, 2026-09-21. The principle of commit 97348a8: a number copied between
+# documents is never checked; a number in a stopifnot is checked every run. So the
+# number is DECLARED here, before anything is computed, and ASSERTED in PART C,
+# where it is computed, and again before the save.
+#
+# The paragraph's retention rate is RATE_HAT: the rescaling slope this script FITS
+# through the origin over the genes MYC moves at six weeks, 0.487 -- the rate of
+# record in the analysis record. It is asserted to the three decimals quoted.
+#
+# AND THE HARD-CODED 0.55 IS NEVER A COMPUTED VALUE. GLOBAL_RATE above is script
+# 40's mitochondrial-compartment slope (0.552), copied into this script as a number.
+# It is kept only as a labelled REFERENCE, `defs$global_rate_assumed`, and asserted
+# to reach nothing else: PART C's rate is recomputed from the data in closed form,
+# every PART C quantity is re-derived against that rate, and the saved `defs` holds
+# 0.55 in that one field only. The repository-wide audit of the same constant is in
+# docs/2026-09-21_two_timeline_verification.md (Task D).
+TEXT_RATE <- 0.487
+
+# =============================================================================
 # PART 0: LOAD
 # =============================================================================
 ir   <- readRDS(here::here("results", "interaction_results.rds"))
@@ -470,6 +491,21 @@ collapse_genes <- tibble::tibble(
   dplyr::mutate(pct_z = 100 * rank(z_resid) / dplyr::n()) |>
   dplyr::arrange(z_resid)
 
+# PART 0 (TEXT) asserts. The rate is FITTED: it is recomputed here in closed form
+# (least squares through the origin), so replacing it with the constant cannot
+# pass. It matches the paragraph. And every PART C quantity is taken against it,
+# not against GLOBAL_RATE.
+x6 <- m6[keep6]; x12 <- m12[keep6]
+cg_ens <- collapse_genes$ens
+stopifnot(abs(RATE_HAT - sum(x6 * x12) / sum(x6^2)) < 1e-12,
+          isTRUE(all.equal(round(RATE_HAT, 3), TEXT_RATE)),
+          max(abs(collapse_genes$ret_minus_rate -
+                  (collapse_genes$retention - RATE_HAT))) < 1e-12,
+          max(abs(collapse_genes$resid_aligned -
+                  sign(m6[cg_ens]) * (m12[cg_ens] - RATE_HAT * m6[cg_ens]))) < 1e-12)
+message(sprintf("44 PART 0 (TEXT): retention rate %.4f, fitted over %d genes -> the paragraph's %.3f",
+                RATE_HAT, length(keep6), TEXT_RATE))
+
 # ROBUSTNESS GATE: the two statistics must agree, or neither is usable.
 rank_agreement <- stats::cor(collapse_genes$z_resid, collapse_genes$ret_minus_rate,
                              method = "spearman", use = "pairwise.complete.obs")
@@ -655,11 +691,12 @@ notes <- c(
                 "pre-specified genes fail the padj filter -- Bbc3 and Bcl2l11 -- so they are",
                 "reported with in_ranking = FALSE rather than dropped; PUMA's finding was",
                 "never in its level. Global rate re-fitted on the ranking set: %.3f (script",
-                "40's value 0.55). Rank agreement between the standardised residual and the",
+                "40's %.2f is kept only as a labelled reference). Rank agreement between the",
+                "standardised residual and the",
                 "retention ratio: Spearman %.3f -- BELOW ~0.7 THIS IS A STOP, not a footnote,",
                 "because a ratio of noisy quantities cannot stand alone."),
           length(keep_rep), BM_FLOOR, LFC6_FLOOR, length(keep6), PADJ6,
-          RATE_HAT, rank_agreement),
+          RATE_HAT, GLOBAL_RATE, rank_agreement),
   "",
   paste("  A collapse module here is a HYPOTHESIS ABOUT CO-DEPENDENCE, not a demonstration",
         "of co-regulation: n=24, batch = timepoint, and the ranking is over Myc-responsive",
@@ -720,6 +757,13 @@ out <- list(
               promotion_gate = c(bh_fdr = GATE_FDR, n_mito = GATE_MITO)),
   analysis_date = Sys.Date(),
   notes = notes)
+
+# PART 0 (TEXT) assert: the hard-coded constant reaches the saved object ONLY as the
+# labelled reference, and the rate that is saved as fitted is the fitted one
+const_hits <- names(out$defs)[vapply(out$defs, function(v)
+  is.numeric(v) && length(v) == 1L && isTRUE(all.equal(v, GLOBAL_RATE)), logical(1))]
+stopifnot(identical(const_hits, "global_rate_assumed"),
+          identical(out$defs$global_rate_fitted, RATE_HAT))
 
 saveRDS(out, here::here("results", "collapse_module_ownership.rds"))
 message("44: wrote results/collapse_module_ownership.rds")
