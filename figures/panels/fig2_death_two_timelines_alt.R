@@ -63,12 +63,13 @@ stopifnot(all(c("gene", "arm", "lfc_wt_time", "padj_wt_time", "lfc_myc_time",
 DEATH <- "BH3-only|effector|brake|execution|apoptosome|IAP"
 d <- m[grepl(DEATH, m$arm), ]
 d$sig <- !is.na(d$padj_myc_time) & d$padj_myc_time < 0.05
-# BAX CARRIES NO TEST (author, 2026-09-21). It was not pre-specified, so no
-# p-value for it may appear anywhere a reader could read it as a test, and a ring
-# is one. It is drawn by position only: no ring, and its name in the plain ink. A
-# light "n.s." ring would be read as a test too, the other way.
-UNTESTED <- "Bax"
-d$ring <- ifelse(d$gene %in% UNTESTED, "untested", ifelse(d$sig, "sig", "ns"))
+# BAX IS NOT RINGED (author, 2026-09-21, reason corrected the same day). The ring
+# marks significance on the Myc+ ARM, and for Bax that is not the contrast any
+# claim rests on: what the text says about Bax concerns its interaction. So no
+# ring, its name in the plain ink, and no padj. This is NOT about pre-specification
+# -- exploratory values are shown elsewhere, labelled as such.
+UNMARKED <- "Bax"
+d$ring <- ifelse(d$gene %in% UNMARKED, "unmarked", ifelse(d$sig, "sig", "ns"))
 d$sensor <- grepl("BH3-only", d$arm)
 stopifnot(nrow(d) >= 12L, "Bbc3" %in% d$gene, "Bcl2l1" %in% d$gene)
 
@@ -123,7 +124,7 @@ p <- ggplot2::ggplot(d, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
                            box.padding = 0.30, point.padding = 0.20) +
   heat_fill(CLIM, name = "6>12W_myc", breaks = c(-0.8, 0, 0.8)) +
   ggplot2::scale_colour_manual(values = c(sig = "grey10", ns = "grey72",
-                                          untested = "transparent"),
+                                          unmarked = "transparent"),
                                breaks = c("sig", "ns"),
                                labels = c("padj < 0.05 under Myc", "n.s."),
                                name = NULL) +
@@ -170,7 +171,7 @@ say <- function(x, nm = x)
   sprintf("%s %+.3f in development (padj %.2f) and %+.3f under Myc (padj %.3f)",
           nm, g(x, "lfc_wt_time"), g(x, "padj_wt_time"),
           g(x, "lfc_myc_time"), g(x, "padj_myc_time"))
-# Bax by position only (UNTESTED, above)
+# Bax without its padj (UNMARKED, above)
 say_pos <- function(x) sprintf("%s %+.3f in development and %+.3f under Myc", x,
                                g(x, "lfc_wt_time"), g(x, "lfc_myc_time"))
 
@@ -181,8 +182,8 @@ LEGEND <- panel_legend(
     "across the wild-type window on the horizontal axis, and across the same ",
     "window in the Myc+ gland on the vertical. The dashed diagonal is what a ",
     "gene would do under development alone. Dark rings mark transcripts significant on ",
-    "the Myc timeline; Bax, which was not pre-specified, is drawn by position only, ",
-    "without a ring."),
+    "the Myc timeline; Bax is drawn without one, because its change on the Myc ",
+    "timeline is not the contrast any claim about it rests on."),
   detail = c(
     sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
@@ -192,7 +193,7 @@ LEGEND <- panel_legend(
             say("Bcl2l1")),
     sprintf("AND THE PANEL CARRIES ITS OWN NEGATIVE CONTROL: %s. Bmf is the one death transcript the window itself moves, and it moves in BOTH genotypes by nearly the same amount -- it sits on the diagonal. A gene on the diagonal is developmental; Bbc3 is as far off it as anything here.",
             say("Bmf")),
-    sprintf("ONE HONEST QUALIFIER, VISIBLE ON THE PANEL: %s -- a position, with no test, because Bax was not pre-specified. Bax is an EFFECTOR, not a BH3-only sensor, so \"specific to Bbc3\" is true as the sentence writes it -- but the sentence should say \"among the BH3-only sensors\", because a reader can see Bax in the same quadrant.",
+    sprintf("ONE HONEST QUALIFIER, VISIBLE ON THE PANEL: %s -- unringed and without its padj, because no claim rests on Bax's Myc-timeline change. Bax is an EFFECTOR, not a BH3-only sensor, so \"specific to Bbc3\" is true as the sentence writes it -- but the sentence should say \"among the BH3-only sensors\", because a reader can see Bax in the same quadrant.",
             say_pos("Bax")),
     sprintf("The interaction terms rank the same way: Bbc3 %+.3f, Bax %+.3f, Bid %+.3f, Bak1 %+.3f, against Bcl2l1 %+.3f and Bmf %+.3f.",
             g("Bbc3", "lfc_interaction"), g("Bax", "lfc_interaction"),
@@ -200,7 +201,7 @@ LEGEND <- panel_legend(
             g("Bcl2l1", "lfc_interaction"), g("Bmf", "lfc_interaction"))),
   bounds = c(
     "BATCH = TIMEPOINT, and it bites BOTH axes: each coordinate is a temporal contrast and is DESCRIBED, not claimed. What is batch-CLEAN is the vertical distance from the diagonal, which is the interaction, because genotype is balanced within each extraction batch. Read the panel down from the line, not along the axes.",
-    sprintf("The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Of the transcripts that carry a test, %d reach padj < 0.05 on the Myc timeline (%s).",
+    sprintf("The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Rings mark %d transcripts at padj < 0.05 on the Myc timeline (%s); Bax is left unringed, for the reason above.",
             sum(d$ring == "sig"), paste(sort(d$gene[d$ring == "sig"]), collapse = ", ")),
     "A TRANSCRIPT IS NOT AN APOPTOTIC STATE. How close a mitochondrion sits to the apoptotic threshold is a property of its protein complement; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute.",
     "Several of these transcripts are lowly expressed (Bid 148, Bbc3 152, Birc5 150 mean counts), so a real half-log2 effect could be missed in either timeline.",

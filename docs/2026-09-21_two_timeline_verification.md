@@ -202,12 +202,32 @@ Afterwards:
 - **The open item in section 5 is recorded and not pursued.**
 
 Second round, the same day:
-1. **No p-value for Foxo3 or Bax anywhere a reader could read it as a test.** Neither was pre-specified. 2H+I (alt) part A keeps Foxo3's brackets and loses their p-values.
+1. **No p-value for Foxo3 or Bax anywhere a reader could read it as a test.** Neither was pre-specified. 2H+I (alt) part A keeps Foxo3's brackets and loses their p-values. **Over-extended: partly reversed in the third round, below.**
 2. **The flags on `combined_df_*` and on the outputs of scripts 11 and 16 are false positives of the timestamp rule** (section 4). Render the panels. The headers of 2H and S2C credited script 03 for `combined_df_annotated_raw.rds`; 2H's temporal fold changes are repointed to `interaction_results.rds`, which script 54 read.
 3. **"Priming" is cleared from the six legend blocks.** `priming_arm_teb.rds` stays as a filename and is no longer printed in captions.
 4. **Commit in five groups:** script 54 and this note; the Fig. 2I rebuild, the `_panel_common.R` changes and 2H+I (alt) part B; the three `plane_` panels; the IHW relabels; the priming clearance.
 5. **Two text changes:** "MYC neither causes nor prevents the respiratory withdrawal" is withdrawn (section 1.7), and so is the coupling's robustness clause (section 1.6).
 6. **Fig. 2G is built next session** from script 54's object.
+
+Third round, the same day: **a correction** (author).
+- **Second-round ruling 1 over-extended ruling 2, and is partly reversed.** Ruling 2 was about the manuscript TEXT, not the panels.
+  - **Pre-specification governs what may be CLAIMED, not what may be SHOWN.** An exploratory p-value, reported and labelled as exploratory, is normal practice.
+  - A concealed one is worse than either alternative: the reader cannot calibrate the observation, and it reads as selective reporting.
+  - The incoherence showed in the second round's own output: a sentence that used Foxo3's p-value while declining to print it.
+- **Reversed:**
+  - **Foxo3's interaction p** is back in the legends with its status attached, in the author's form: interaction -0.486, nominal p 0.0074; not pre-specified; does not survive correction across the 26 (Bonferroni 0.19); reported as exploratory. The ranking sentence has its anchor again.
+  - **The symbol changes are undone.** Bax is an ordinary symbol inside S2C's key, and Foxo3's brackets in 2H+I (alt) are back in normal ink with their p-values.
+  - **2H** carries Foxo3's interaction p and the two six-week adjusted p-values again. Those two are now computed rather than typed.
+  - **D4** carries Foxo3's ring and padj again.
+  - **S2D (alt)** carries Foxo3's padj on its label again.
+- **Stays removed, for other reasons:**
+  - **2G (alt):** Bax's dark ring, red label and padj. They marked significance on the Myc+ ARM, which is not the contrast any claim rests on. That is unrelated to pre-specification.
+  - **S2D (alt):** the "reference genes" key. A class defined by a threshold was the problem there.
+- **The manuscript text still carries no p-value for Foxo3 or Bax.** That part of ruling 2 stands.
+- **Reversed on the same principle, though not named in the correction.** `plane_four_genes.R` (first round) withheld Bax's and Foxo3's p-values from its legend, although that legend says the rule's p half "is in the detail above". It now prints each gene's interaction p (Bax 0.123, Foxo3 0.0074), labelled exploratory. Bax's Myc+-arm p is not printed, on the 2G (alt) ground.
+- **One word of the author's form is changed:** "has the largest genotype difference" became "separates the genotypes more sharply than any".
+  - By magnitude, Foxo3 is fifth of the 26: Chac1 +0.805, Htra2 -0.546, Bbc3 -0.541 and Endog -0.533 are larger.
+  - It is first by p, and by |z| (2.68, against Bbc3's 2.65), which is what "more sharply" states.
 
 ---
 
@@ -284,7 +304,7 @@ Source: `$coupling_timepoint`.
 - **Three helpers** added to `_panel_common.R`.
 
 **Second round, the same day:**
-- **No test for Foxo3 or Bax, anywhere.** Every one of these is removed:
+- **No test for Foxo3 or Bax, anywhere.** *Reversed in the third round (section 3), except 2G (alt) and S2D (alt)'s key.* Every one of these was removed:
   - **2H+I (alt):** part A keeps Foxo3's three brackets, unlabelled, in a neutral ink outside the sig/ns pair, because an "ns" grey would be read as a test too. The legend gives Foxo3 by position, and no p-value from the mechanism-gene ranking is printed.
   - **2H:** Foxo3's interaction p is gone from the legend, and so are the typed "0.22 and 0.21". The ranking-set fact is asserted instead.
   - **2G (alt):** Bax has no ring, its name is in the plain ink, and its padj is gone. The count of significant transcripts is now computed. The typed "three" had been four with Bax (Bax, Bbc3, Bmf, Htra2); it is three without Bax.
@@ -297,6 +317,11 @@ Source: `$coupling_timepoint`.
   - The sixth block, Fig. 2G's, is cleared in its rebuild.
 - **Fig. 2I and 2H+I (alt) part B state the impasse** (section 1.6) and no longer say the difference persists.
 - **Rendered and inspected:** 2H, 2H+I (alt), S2C, S1E, S1F, 2I, 2G (alt), 2E, S2D, S2D (alt) and D4.
+
+**Third round, the same day (the correction, section 3):**
+- **Reversed** in 2H+I (alt), 2H, S2C, S2D (alt), D4 and `plane_four_genes.R`: Foxo3's and Bax's p-values are shown and labelled exploratory, and the symbols are back to the panels' own grammar.
+- **Kept, with the reason corrected:** 2G (alt)'s unmarked Bax, and S2D (alt)'s "reference genes" key.
+- **Rendered and inspected:** 2H, 2H+I (alt), S2C, S2D (alt), 2G (alt), D4 and `plane_four_genes`.
 
 **Pending:**
 - **Fig. 2G's ruling-4 rebuild,** next session from script 54's object (ruling 6). The committed version still draws the retired 0.487 line, and its legend block still says "priming".

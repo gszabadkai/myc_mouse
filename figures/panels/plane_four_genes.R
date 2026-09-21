@@ -26,8 +26,12 @@
 #
 # THE LICENCE IS NOT THE SAME FOR THE FOUR (ruling 2). Bbc3 was pre-specified;
 # Bcl2l1 is the fixed denominator of the pre-specified pair; Bax and Foxo3 are
-# exploratory, so their POSITIONS are drawn and described and NO p-value for
-# either is printed anywhere -- page or legend.
+# exploratory. Ruling 2 governs what the manuscript TEXT may claim, and it quotes
+# no p-value for either. The legend SHOWS their interaction p, labelled
+# exploratory (author's correction, 2026-09-21): pre-specification governs what
+# may be claimed, not what may be shown, and a value withheld from a legend cannot
+# be calibrated. For these two the legend prints the interaction -- the contrast
+# the rule reads -- and not the arms' p-values.
 #
 # SAME AXES AS plane_arms_content.R, by construction (plane_content_lim()), so the
 # genes can be read against the arms: the respiratory chain inside the declared
@@ -96,11 +100,15 @@ with_p <- function(x) {
   sprintf("%s %+.3f across the wild-type window and %+.3f across the Myc+ one (SE %.3f, raw p %.4f); interaction %+.3f (SE %.3f, raw p %.4f)",
           x, r$wt_lfc, r$myc_lfc, r$myc_se, r$myc_p, r$int_lfc, r$int_se, r$int_p)
 }
-position_only <- function(x) {
+with_int_p <- function(x) {
   r <- g(x)
-  sprintf("%s %+.3f across the wild-type window and %+.3f across the Myc+ one; interaction %+.3f",
-          x, r$wt_lfc, r$myc_lfc, r$int_lfc)
+  sprintf("%s %+.3f across the wild-type window and %+.3f across the Myc+ one; interaction %+.3f (SE %.3f, raw p %.4f)",
+          x, r$wt_lfc, r$myc_lfc, r$int_lfc, r$int_se, r$int_p)
 }
+# Bax is off the diagonal by the magnitude half of the rule alone; the legend says
+# so, so it is asserted
+ALPHA <- tv$params$alpha
+stopifnot(identical(ALPHA, 0.05), g("Bax")$int_p > ALPHA, abs(g("Bax")$int_lfc) >= DIAG)
 
 LEGEND <- panel_legend(
   slot = "not currently cited",
@@ -120,11 +128,11 @@ LEGEND <- panel_legend(
     sprintf("PRE-SPECIFIED: %s.", with_p("Bbc3")),
     sprintf("THE DENOMINATOR OF THE PRE-SPECIFIED PAIR, on the diagonal on both halves of the rule: %s.",
             with_p("Bcl2l1")),
-    sprintf("EXPLORATORY, POSITIONS ONLY: %s -- beyond the declared magnitude, with Bbc3's sign; and %s -- the same rule, by the other route: it rises in the normal gland and is flat under MYC.",
-            position_only("Bax"), position_only("Foxo3"))),
+    sprintf("EXPLORATORY, NOT PRE-SPECIFIED: %s -- beyond the declared magnitude, with Bbc3's sign, and off the diagonal by the magnitude half of the rule alone (its p is above %.2f); and %s -- the same rule, by the other route: it rises in the normal gland and is flat under MYC. Neither was named in advance, so both p-values are reported as exploratory.",
+            with_int_p("Bax"), ALPHA, with_int_p("Foxo3"))),
   bounds = c(
     "BATCH = TIMEPOINT, on BOTH axes: each coordinate is a temporal contrast and is DESCRIBED, not claimed. What is batch-clean is the vertical distance from the diagonal, because genotype is balanced within each extraction batch. Read the panel down from the line, never along an axis.",
-    "THE LICENCE, GENE BY GENE. Bbc3 was named in advance from the PGC1a westerns; Bcl2l1 is the fixed denominator of that pair. Bax and Foxo3 were not pre-specified: their positions are descriptive, and no p-value for either is quoted.",
+    "THE LICENCE, GENE BY GENE. Bbc3 was named in advance from the PGC1a westerns; Bcl2l1 is the fixed denominator of that pair. Bax and Foxo3 were not pre-specified: their p-values are shown and reported as exploratory, and the manuscript text quotes none for either.",
     "THE DOTTED BAND IS HALF THE RULE: the declared magnitude. The rule's other half, a raw interaction p above 0.05, is in the detail above rather than on the page.",
     "A transcript's position is not a protein level and not a measurement of how close a cell sits to the apoptotic threshold."),
   source = c(

@@ -2008,7 +2008,7 @@ against them -- including the ones that go against the draft.
 | **Fig. 2H+I (alt)**, part B | `fig2_puma_chain_alt.R` | **Rebuilt** on 2I's builder, `coupling_two_fits()`, so the original and the alternative cannot disagree; the single Myc+ line and its mixed-fit p are gone. **Rendered in the second round.** The flag on `combined_df_annotated_raw.rds` is a false positive (author's ruling), and part B fits the 100 mm layout. Part A: Foxo3's three brackets keep their shape and lose their p-values, in a neutral ink. |
 | *(none yet)* | `plane_arms_content.R` | NEW. The arms on the two-timeline plane, content ruler, each with the 95% null range of its distance from the diagonal (2,000 expression-matched sets); the declared +/-0.20 band drawn. Same axes as `plane_four_genes.R`. |
 | *(none yet)* | `plane_arms_mitopps.R` | NEW. The seven mitochondrial arms on mitoPPS (ruling 5: both rulers reported, mitoPPS drawn). |
-| *(none yet)* | `plane_four_genes.R` | NEW. The three-way contrast of the author's 2026-09-21 ruling: lost under MYC (Bbc3, Bax), did not follow the wild-type rise (Foxo3), on the diagonal (Bcl2l1). No p-value for Bax or Foxo3 anywhere, legend included (ruling 2). |
+| *(none yet)* | `plane_four_genes.R` | NEW. The three-way contrast of the author's 2026-09-21 ruling: lost under MYC (Bbc3, Bax), did not follow the wild-type rise (Foxo3), on the diagonal (Bcl2l1). No p-value for Bax or Foxo3 anywhere, legend included (ruling 2). **Third round:** the legend prints each gene's interaction p, labelled exploratory (below). |
 | Fig. 2G (alt), 2H, S2C, S1E, 2H+I (alt) | five scripts | **IHW relabel.** The adjusted p each prints is `interaction_results.rds`'s `padj`, whose own description is "Weighted BH adjusted p-values"; each legend called it Benjamini-Hochberg. Legend text only, no drawn element moves. 2G (alt)'s stale "Filled points are significant" now reads "Dark rings mark ...". |
 | **Fig. 2G** | `fig2_priming_ratios.R` | **Not rebuilt in this session.** The committed version still draws the imported 0.487 line that ruling 4 retires, so treat it as not shippable. Everything a rebuild needs is in 54's object (`$ratio_line`, `$ratio_band`, `$ratio_resid`, `$ratio_range`). |
 
@@ -2063,11 +2063,26 @@ are the allocation note's to assign; rename with `git mv` then.
 
 | slot | script | what changed |
 |---|---|---|
-| Fig. 2H+I (alt), 2H, 2G (alt), S2C, S2D (alt), Discussion D4 | six scripts | **No test for Foxo3 or Bax anywhere** (neither was pre-specified). Their printed p-values are gone from legends and pages, and so are their significance marks: Foxo3's brackets (2H+I alt) are unlabelled in a neutral ink; Bax has no ring (2G alt) and is a cross outside the key (S2C); Foxo3 has no ring in D4; and S2D (alt)'s key "moves (padj < 0.05)" now reads "reference genes". 2G (alt)'s typed "only three" significant transcripts had been four with Bax; the count is now computed. |
+| Fig. 2H+I (alt), 2H, 2G (alt), S2C, S2D (alt), Discussion D4 | six scripts | **No test for Foxo3 or Bax anywhere** (neither was pre-specified). Their printed p-values are gone from legends and pages, and so are their significance marks: Foxo3's brackets (2H+I alt) are unlabelled in a neutral ink; Bax has no ring (2G alt) and is a cross outside the key (S2C); Foxo3 has no ring in D4; and S2D (alt)'s key "moves (padj < 0.05)" now reads "reference genes". 2G (alt)'s typed "only three" significant transcripts had been four with Bax; the count is now computed. **Reversed in the third round** (below), except 2G (alt) and S2D (alt)'s key. |
 | Fig. 2H | `fig2_departure_from_dose.R` | Foxo3's and Bbc3's temporal fold changes now come from `interaction_results.rds`, the object script 54 read, keyed by `$collapse_genes$ens`; the panel no longer reads `combined_df_annotated_raw.rds`. The values are unchanged. |
 | Fig. S2C, 2H+I (alt) | two scripts | Their headers credit `combined_df_annotated_raw.rds` to its real writer, the archived main pipeline (`02_deseq_interaction_model.R`, last re-saved by `04_group_comparison.R`), not to script 03. |
 | Figs. 2E, 2G (alt), S2C, S2D, S2D (alt), 2H+I (alt) | six scripts | **"Priming" cleared** from the legend blocks. Captions cite "Script 42's saved object" in place of `priming_arm_teb.rds`, which stays as the filename. Fig. 2G's block is cleared in its rebuild. |
 | 2H, 2H+I (alt), S2C, S1E, S1F | -- | **Rendered.** The flags on the two combined tables, and on the outputs of scripts 11 and 16, are false positives of the timestamp rule (the note, section 4). |
+
+### Third round (2026-09-21, same day): the correction
+
+The second round's "no p-value for Foxo3 or Bax anywhere" over-extended ruling 2, which
+was about the manuscript TEXT (author). Pre-specification governs what may be CLAIMED,
+not what may be SHOWN: an exploratory p-value labelled as exploratory is normal practice,
+and a concealed one reads as selective reporting. The note, section 3, has the full record.
+
+| slot | script | what changed |
+|---|---|---|
+| Fig. 2H+I (alt), 2H, S2C, S2D (alt), Discussion D4, *(none yet)* `plane_four_genes.R` | six scripts | **Reversed.** The values are shown and labelled exploratory, and the symbols are back to each panel's own grammar. Foxo3 is given as interaction -0.486, nominal p 0.0074, not surviving correction across script 44's 26 (Bonferroni 0.19). 2H's six-week adjusted p-values are back, now computed rather than typed. `plane_four_genes.R` was the first round's instance of the same over-extension; it now prints each gene's interaction p. |
+| Fig. 2G (alt) | `fig2_death_two_timelines_alt.R` | **Kept**, with the reason corrected: Bax's ring, red label and padj marked significance on the Myc+ ARM, which is not the contrast any claim rests on. |
+| Fig. S2D (alt) | `figS2_p53_arm_alt.R` | **Key kept** as "reference genes": a class defined by a threshold was the problem. Foxo3's padj is back on its label. |
+
+The manuscript text still carries no p-value for Foxo3 or Bax.
 
 ### Still open
 

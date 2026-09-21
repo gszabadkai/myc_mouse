@@ -106,12 +106,6 @@ stopifnot(nrow(d) == 37L, n_class[["pro-apoptotic"]] == 25L,
 # annotation table; they stay in the distribution and simply go unlabelled.
 d$gene[is.na(d$gene)] <- ""
 d$sig <- !is.na(d$padj) & d$padj < 0.05
-# BAX CARRIES NO TEST (author, 2026-09-21). It was not pre-specified, so no
-# p-value for it may appear anywhere a reader could read it as a test, and an open
-# "n.s." circle is one. It is drawn as a cross, outside the key.
-UNTESTED <- "Bax"
-d$mark <- ifelse(d$gene %in% UNTESTED, "untested", ifelse(d$sig, "sig", "ns"))
-stopifnot(sum(d$mark == "untested") == 1L)
 
 # =============================================================================
 # the power control -- the same transcripts under the genotype contrast
@@ -235,7 +229,7 @@ stopifnot(
 
 p <- ggplot2::ggplot(d, ggplot2::aes(lfc, y)) +
   ggplot2::geom_vline(xintercept = 0, linewidth = 0.3, colour = "grey45") +
-  ggplot2::geom_point(ggplot2::aes(shape = mark), size = 1.3, stroke = 0.32,
+  ggplot2::geom_point(ggplot2::aes(shape = sig), size = 1.3, stroke = 0.32,
                       colour = "grey20", fill = "grey20") +
   ggplot2::geom_segment(data = lab, inherit.aes = FALSE,
                         ggplot2::aes(x = x0, xend = lfc, y = y0, yend = y),
@@ -244,8 +238,8 @@ p <- ggplot2::ggplot(d, ggplot2::aes(lfc, y)) +
                      ggplot2::aes(x = x_lab, y = y_lab, label = gene,
                                   hjust = hj, vjust = vj),
                      size = 1.7, colour = "grey15", fontface = "italic") +
-  ggplot2::scale_shape_manual(values = c(sig = 21, ns = 1, untested = 4),
-                              breaks = c("sig", "ns"),
+  ggplot2::scale_shape_manual(values = c(`TRUE` = 21, `FALSE` = 1),
+                              breaks = c(TRUE, FALSE),
                               labels = c("padj < 0.05", "n.s."), name = NULL) +
   ggplot2::scale_x_continuous(limits = XR, labels = lab_signed,
                               expand = ggplot2::expansion(mult = 0)) +
@@ -280,8 +274,7 @@ LEGEND <- panel_legend(
     "Every transcript of the mitochondrial death apparatus across the wild-type ",
     "6 to 12 week window: the 25 pro- and 7 anti-apoptotic MitoCarta genes, plus ",
     "the five non-MitoCarta brakes that are not in those sets. One point per ",
-    "gene, positioned by its raw log2 fold change; filled points are significant. ",
-    "Bax, which was not pre-specified, is a cross and carries no test."),
+    "gene, positioned by its raw log2 fold change; filled points are significant."),
   detail = c(
     sprintf("n = 6 wild-type animals per timepoint, %d transcripts. DESeq2 raw (unshrunken) log2 fold changes on the `6>12W_wt` contrast; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
             nrow(d)),
@@ -294,13 +287,13 @@ LEGEND <- panel_legend(
             comp$myc_content[1], comp$myc_content[2], prime_myc),
     sprintf("THE POWER CONTROL, because a negative at n = 6 needs one: on these SAME %d transcripts, in the same libraries and at the same n, the genotype contrast at six weeks reaches padj < 0.05 for %d of them, against %d across the window. The measurement can see movement in these genes; there is none to see here.",
             sum(!is.na(d$padj_myc)), n_sig_myc, n_sig_wt),
-    sprintf("SEVEN GENES ARE NAMED, in mouse symbols; the proteins the text calls them by are Bax (BAX), Bak1 (BAK), Bcl2l11 (BIM), Bbc3 (PUMA), Bnip3 (BNIP3), Bcl2 (BCL-2) and Bcl2l1 (BCL-XL). Of those that carry a test, none moves except Bnip3: Bak1 %+.3f (padj %.2f), Bcl2l11 %+.3f (%.2f), Bbc3 %+.3f (%.2f), Bcl2 %+.3f (%.2f), Bcl2l1 %+.3f (%.2f). Bax, which was not pre-specified, is given by position only: %+.3f. Bbc3 and Bcl2l1 are the numerator and denominator of the ratio Figs. 2G and 2H turn on, and both are flat across the window.",
+    sprintf("SEVEN GENES ARE NAMED, in mouse symbols; the proteins the text calls them by are Bax (BAX), Bak1 (BAK), Bcl2l11 (BIM), Bbc3 (PUMA), Bnip3 (BNIP3), Bcl2 (BCL-2) and Bcl2l1 (BCL-XL). None moves except Bnip3: Bax %+.3f (padj %.2f), Bak1 %+.3f (%.2f), Bcl2l11 %+.3f (%.2f), Bbc3 %+.3f (%.2f), Bcl2 %+.3f (%.2f), Bcl2l1 %+.3f (%.2f). Bbc3 and Bcl2l1 are the numerator and denominator of the ratio Figs. 2G and 2H turn on, and both are flat across the window.",
+            d$lfc[d$gene == "Bax"],     d$padj[d$gene == "Bax"],
             d$lfc[d$gene == "Bak1"],    d$padj[d$gene == "Bak1"],
             d$lfc[d$gene == "Bcl2l11"], d$padj[d$gene == "Bcl2l11"],
             d$lfc[d$gene == "Bbc3"],    d$padj[d$gene == "Bbc3"],
             d$lfc[d$gene == "Bcl2"],    d$padj[d$gene == "Bcl2"],
-            d$lfc[d$gene == "Bcl2l1"],  d$padj[d$gene == "Bcl2l1"],
-            d$lfc[d$gene == "Bax"]),
+            d$lfc[d$gene == "Bcl2l1"],  d$padj[d$gene == "Bcl2l1"]),
     "The third row is the OTHER anti-apoptotic arm: the caspase inhibitors XIAP, cIAP1 and cIAP2 (Birc2, Birc3) and survivin (Birc5), plus the Bcl2a1b paralog. None is a MitoCarta gene, so none is in the apoptosis sets the first two rows are drawn from, and they answer a different question -- whether the gland BUFFERS against death rather than whether it moves its apoptotic transcripts. Their membership is asserted in the script, so the row label cannot drift away from what it names. Nothing in this row moves either (padj 0.32 to 0.88)."),
   bounds = c(
     "BATCH = TIMEPOINT. The 6W and 12W cohorts were extracted as two separate batches, so this panel reads as \"no detectable movement at n = 6 on a confounded axis\", not as \"no movement\". The power control above is what makes the first reading worth having.",

@@ -104,8 +104,8 @@ tlfc <- function(g, contrast)
 stopifnot(!anyNA(MARK$int_p),
           max(abs(as.data.frame(ir$myc_6W_raw)[MARK$ens, "log2FoldChange"] -
                   cg$lfc_6W[match(MARK$gene, cg$gene)])) < 1e-6,
-          # the legend's "neither survives genome-wide correction"
-          all(MARK$int_padj[MARK$role == "pre-specified"] > 0.05),
+          # the legend's "none survives genome-wide correction"
+          all(MARK$int_padj > 0.05),
           # and its "both fall outside the ranking set"
           !any(cg$in_ranking[match(c("Bbc3", "Foxo3"), cg$gene)]))
 
@@ -195,9 +195,10 @@ LEGEND <- panel_legend(
     sprintf("THE PRE-REGISTRATION HAD TWO GENES AND THEY SPLIT. Script 44's `pre_specified_genes` are Bbc3 and Bcl2l11, named in advance from the cell experiments. Bbc3 collapses at percentile %.2f; Bcl2l11 sits at percentile %.1f (z %+.2f), the ordinary middle of the distribution, with an interaction p of %.2f. Drawing only the half that worked would be the wrong panel.",
             m("Bbc3", "pct"), m("Bcl2l11", "pct"), m("Bcl2l11", "z"),
             m("Bcl2l11", "int_p")),
-    sprintf("The interactions of the two pre-specified genes: %s p %.4f, %s p %.2f. Neither survives genome-wide correction (Bbc3's IHW-adjusted value is %.2f), which is the expected outcome for an interaction at n = 6 per cell and is why the licence is pre-specification rather than the p-value. Foxo3 was not pre-specified, so no p-value is given for it.",
+    sprintf("The interaction p-values: %s %.4f and %s %.2f, the two pre-specified genes; %s's interaction is %+.3f at nominal p %.4f. None survives genome-wide correction (IHW-adjusted: Bbc3 %.2f, Foxo3 %.2f), which is the expected outcome for an interaction at n = 6 per cell and is why the licence is pre-specification rather than the p-value. Foxo3 was not pre-specified -- this scan found it -- so its p is reported as exploratory.",
             "Bbc3", m("Bbc3", "int_p"), "Bcl2l11", m("Bcl2l11", "int_p"),
-            m("Bbc3", "int_padj")),
+            "Foxo3", tlfc("Foxo3", "interaction_raw"), m("Foxo3", "int_p"),
+            m("Bbc3", "int_padj"), m("Foxo3", "int_padj")),
     sprintf("THE SAME DEPARTURE IS REACHED BY TWO DIFFERENT ROUTES, and the text should keep the distinction. Foxo3: Myc raises it at six weeks (%+.3f) and lowers it at twelve (%+.3f), and the WILD-TYPE gland raises it with age (%+.3f) while the Myc+ gland does not (%+.3f). Bbc3: %+.3f to %+.3f, with the wild-type gland flat (%+.3f) and the Myc+ gland falling (%+.3f).",
             scan_of("Foxo3", "lfc_6W"), scan_of("Foxo3", "lfc_12W"),
             tlfc("Foxo3", "timepoint_neg_raw"), tlfc("Foxo3", "timepoint_pos_raw"),
@@ -215,8 +216,9 @@ LEGEND <- panel_legend(
             nrow(tail05), paste(utils::head(near[!near %in% c("Foxo3", "Bbc3")], 6),
                                 collapse = ", ")),
     "AND THE ARROW IS NOT THE OBVIOUS ONE. PUMA restrains the mitochondrial pyruvate carrier (Kim, Cancer Cell 2019), so \"PUMA falls, therefore respiration falls\" is backwards; respiration sits upstream (Dey & Moraes), and FOXO3 -> BBC3 closes it into a negative-feedback circuit rather than a linear chain. Nothing on this panel establishes a direction.",
-    "A z of -2.5 among 8,774 genes is a RANK STATEMENT, not a test. It says these two are in the far tail of the residual distribution; it does not say the residual is significant, and the interaction p-values above make clear that neither pre-specified gene is after correction.",
-    "The residual is measured against a rate fitted on OTHER genes (the 2,648 Myc-responsive ones), so a gene that is itself in that set contributes to its own expectation. Neither Bbc3 nor Foxo3 is: both fall outside the ranking set (asserted in the script), which is a point in favour of the scan and against reading their six-week effects as established.",
+    "A z of -2.5 among 8,774 genes is a RANK STATEMENT, not a test. It says these two are in the far tail of the residual distribution; it does not say the residual is significant, and the interaction p-values above make clear that none of them is after correction.",
+    sprintf("The residual is measured against a rate fitted on OTHER genes (the 2,648 Myc-responsive ones), so a gene that is itself in that set contributes to its own expectation. Neither Bbc3 nor Foxo3 is: both fall outside the ranking set (their six-week adjusted p-values are %.2f and %.2f), which is a point in favour of the scan and against reading their six-week effects as established.",
+            scan_of("Bbc3", "padj_6W"), scan_of("Foxo3", "padj_6W")),
     "Genotype contrasts are clean, but an interaction is a difference of two 6-versus-6 contrasts and is the least powered quantity in the design (median lfcSE 0.333 against 0.233)."),
   source = c(
     "results/collapse_module_ownership.rds (scripts/44_collapse_module_and_ownership.R) -- $collapse_genes, the per-gene departure scan; $defs$global_rate_fitted and $defs$pre_specified_genes",

@@ -38,11 +38,6 @@ ro <- ro[!is.na(ro$wt_pct) & !is.na(ro$wt_lfc), ]
 BAND <- c(5, 95)
 ro$clears <- ro$wt_pct < BAND[1] | ro$wt_pct > BAND[2]
 ro$sig    <- !is.na(ro$wt_padj) & ro$wt_padj < 0.05
-# FOXO3 CARRIES NO TEST (author, 2026-09-21). It was not pre-specified, so no
-# p-value for it may appear anywhere a reader could read it as a test, and a red
-# ring is one. It stays named (it clears the band) but unringed, in plain ink.
-UNTESTED <- c("Foxo3", "Bax")
-ro$sig[ro$sym %in% UNTESTED] <- FALSE
 
 # The two families that have to be findable on the page whatever they did: the
 # biogenesis axis (the hypothesis under test) and whatever clears the band.
@@ -124,11 +119,11 @@ LEGEND <- panel_legend(
     sprintf("The biogenesis axis is unremarkable throughout: Esrra %.1f pct, Nrf1 %.1f, Gabpa %.1f, Tfam %.1f.",
             get1("Esrra", "wt_pct"), get1("Nrf1", "wt_pct"),
             get1("Gabpa", "wt_pct"), get1("Tfam", "wt_pct")),
-    sprintf("Exactly one gene clears the band downward -- %s at the %.1f percentile -- and it is not significant (padj %.2f) and not a mitochondrial factor. Upward and significant: Sirt1 %+.3f (%.1f pct, padj %.3f). Foxo3 also clears the band upward (%+.3f, %.1f pct), given by position only because it was not pre-specified.",
+    sprintf("Exactly one gene clears the band downward -- %s at the %.1f percentile -- and it is not significant (padj %.2f) and not a mitochondrial factor. Upward and significant: Foxo3 %+.3f (%.1f pct, padj %.4f; exploratory, as Foxo3 was not pre-specified) and Sirt1 %+.3f (%.1f pct, padj %.3f).",
             paste(ro$sym[ro$wt_pct < BAND[1]], collapse = ", "),
             min(ro$wt_pct), ro$wt_padj[which.min(ro$wt_pct)],
-            get1("Sirt1", "wt_lfc"), get1("Sirt1", "wt_pct"), get1("Sirt1", "wt_padj"),
-            get1("Foxo3", "wt_lfc"), get1("Foxo3", "wt_pct"))),
+            get1("Foxo3", "wt_lfc"), get1("Foxo3", "wt_pct"), get1("Foxo3", "wt_padj"),
+            get1("Sirt1", "wt_lfc"), get1("Sirt1", "wt_pct"), get1("Sirt1", "wt_padj"))),
   bounds = c(
     sprintf("Esrrb is the roster's top riser (%+.2f, %.1f pct) and reads as a candidate ERRE competitor until three things are checked: within animals it couples to OXPHOS at +0.36 in wild type but -0.29 in Myc+ (opposite signs), its sibling Esrrg rises too (%+.2f, %.1f pct) and couples POSITIVELY at +0.75, and its per-animal spread inside one group is 12-fold against Esrra's 1.2-fold. A rising factor needs a repression model, and this one does not survive it.",
             get1("Esrrb", "wt_lfc"), get1("Esrrb", "wt_pct"),
