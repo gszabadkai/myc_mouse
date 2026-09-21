@@ -389,16 +389,29 @@ bracket_layers <- function(brk, size = 1.75, linewidth = 0.22) {
 # `lim` is one symmetric pair for BOTH axes. Callers that draw two rulers with
 # different ranges should build two plots and combine them, not facet: a facet
 # with free scales cannot keep coord_equal honest.
+#
+# `band` (added 2026-09-21, script 54) draws the DECLARED on-the-diagonal
+# threshold as two faint dotted lines, y = x +/- band. It is the magnitude half of
+# the rule fixed before the numbers were read (|interaction| < 0.20 AND raw
+# p > 0.05), so a panel that draws it shows the rule rather than a threshold
+# chosen to fit. Off by default: the three callers that predate it are unchanged.
 two_timeline_base <- function(lim, diag_label = "development alone",
                               diag_at = 0.30, quadrant = NULL,
-                              quadrant_at = c(0.98, 0.03), quadrant_hjust = 1) {
-  stopifnot(length(lim) == 2L, lim[1] < lim[2])
+                              quadrant_at = c(0.98, 0.03), quadrant_hjust = 1,
+                              band = NULL) {
+  stopifnot(length(lim) == 2L, lim[1] < lim[2],
+            is.null(band) || (length(band) == 1L && band > 0))
   at <- function(f) lim[1] + diff(lim) * f
   out <- list(
     ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85"),
-    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85"),
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85"))
+  if (!is.null(band))
+    out <- c(out, list(ggplot2::geom_abline(slope = 1, intercept = c(-band, band),
+                                            linetype = "13", linewidth = 0.3,
+                                            colour = "grey62")))
+  out <- c(out, list(
     ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "22",
-                         linewidth = 0.35, colour = "grey45"))
+                         linewidth = 0.35, colour = "grey45")))
   if (!is.null(diag_label))
     out <- c(out, list(ggplot2::annotate(
       "text", x = at(diag_at), y = at(diag_at), label = diag_label,
@@ -427,6 +440,141 @@ two_timeline_base <- function(lim, diag_label = "development alone",
 pole_cols <- c(down = unname(ms_diverging[["neg"]]),
                up   = unname(ms_diverging[["pos"]]),
                other = "grey72")
+
+# --- the shared frame for the two content-ruler planes ------------------------
+# The arms (plane_arms_content.R) and the four genes (plane_four_genes.R) are in
+# the same units -- a log2 fold change, averaged over a set or not -- and the
+# author asked for them on IDENTICAL axes, so the limits are computed here, once,
+# from everything either panel draws: both arms' coordinates, the arms' null bars,
+# and the genes. Script 54 stores a first version as `plane_limits`; the null bars
+# reach slightly past it, so this is the one both panels use, asserted no smaller.
+plane_content_lim <- function(tv) {
+  ac <- as.data.frame(tv$arms_content)
+  an <- as.data.frame(tv$arm_null)
+  dr <- as.data.frame(tv$arm_diagonal)
+  fg <- as.data.frame(tv$four_genes)
+  keep <- ac$arm %in% dr$arm[dr$draw]
+  k    <- match(ac$arm[keep], an$arm)
+  stopifnot(!anyNA(k))
+  bars <- c(ac$c_wt[keep] + an$null_int_lo[k], ac$c_wt[keep] + an$null_int_hi[k])
+  v    <- c(ac$c_wt[keep], ac$c_myc[keep], bars, fg$wt_lfc, fg$myc_lfc)
+  lim  <- c(-1, 1) * max(abs(v)) * 1.06
+  stopifnot(lim[2] >= max(tv$plane_limits) - 1e-12)
+  lim
+}
+
+# --- the coupling, both fits on one scale -------------------------------------
+# Declared here, 2026-09-21 (author's ruling 7), because TWO panels draw it --
+# Fig. 2I and part B of Fig. 2H+I (alt) -- and the earlier versions of both drew
+# an unadjusted fit beside the adjusted model's p. One builder, so the two cannot
+# drift apart again.
+#
+# Reads script 54's object ONLY, and draws what it holds:
+#   left   unadjusted: OLS within each genotype, identical to ratio ~ genotype * axis
+#   right  the pre-specified model ratio ~ genotype * axis + epithelial + immune,
+#          as partial residuals, so the line through each genotype's points IS
+#          that model's slope (script 54 asserts it; so does this)
+# Both axes are z-scores over the 24 animals, so the halves share one scale and a
+# slope of 1 lies at 45 degrees in both. The only number on the page is each
+# half's own interaction -- the claim -- from that half's own fit.
+coupling_two_fits <- function(tv, key = TRUE) {
+  pd <- as.data.frame(tv$coupling_panel)
+  ln <- as.data.frame(tv$coupling_lines)
+  cf <- as.data.frame(tv$coupling_fits)
+  ix <- as.data.frame(tv$coupling_interaction)
+  stopifnot(nrow(pd) == 24L, nrow(ln) == 4L, all(table(pd$genotype) == 12L),
+            setequal(ln$fit, c("unadjusted", "adjusted")))
+  sl  <- function(fit, g) cf$slope[cf$axis == "ox_ppd" & cf$fit == fit & cf$genotype == g]
+  dr  <- function(fit, g) ln$slope[ln$fit == fit & ln$genotype == g]
+  i_u <- ix[ix$axis == "ox_ppd" & ix$covariates == "none", ]
+  i_a <- ix[ix$axis == "ox_ppd" & ix$covariates == "epi + imm", ]
+  FU  <- "U unadjusted, within genotype"
+  FP  <- "P pooled, shared covariates: epi + imm"
+  # the drawn lines ARE the reported fits, and their difference IS each half's
+  # interaction -- in code, so a re-run of script 54 cannot leave the page behind
+  stopifnot(abs(dr("unadjusted", "neg") - sl(FU, "neg")) < 1e-10,
+            abs(dr("unadjusted", "pos") - sl(FU, "pos")) < 1e-10,
+            abs(dr("adjusted", "neg")   - sl(FP, "neg")) < 1e-10,
+            abs(dr("adjusted", "pos")   - sl(FP, "pos")) < 1e-10,
+            abs((dr("unadjusted", "pos") - dr("unadjusted", "neg")) - i_u$interaction) < 1e-10,
+            abs((dr("adjusted", "pos")   - dr("adjusted", "neg"))   - i_a$interaction) < 1e-10)
+
+  FITS <- c(unadjusted = "unadjusted", adjusted = "adjusted: epithelial + immune")
+  long <- rbind(
+    data.frame(pd[, c("group", "genotype", "x")], y = pd$y_unadjusted, fit = "unadjusted"),
+    data.frame(pd[, c("group", "genotype", "x")], y = pd$y_adjusted,   fit = "adjusted"))
+  long$fit   <- factor(FITS[long$fit], levels = FITS)
+  long$group <- factor(long$group, levels = names(group_cols))
+
+  # each line over its own genotype's x range: a line extrapolated past the
+  # animals it was fitted to claims more than it has
+  xr  <- tapply(pd$x, pd$genotype, range)
+  seg <- do.call(rbind, lapply(seq_len(nrow(ln)), function(i) {
+    x <- xr[[ln$genotype[i]]]
+    data.frame(fit = FITS[[ln$fit[i]]], genotype = ln$genotype[i],
+               x = x[1], xend = x[2],
+               y = ln$intercept[i] + ln$slope[i] * x[1],
+               yend = ln$intercept[i] + ln$slope[i] * x[2])
+  }))
+  seg$fit <- factor(seg$fit, levels = FITS)
+
+  pad <- function(r) r + c(-1, 1) * diff(r) * 0.06
+  XL  <- pad(range(pd$x))
+  YL  <- pad(range(c(long$y, seg$y, seg$yend)))
+
+  # each half's interaction, in the emptiest corner of the SHARED frame, checked
+  # against every point of both halves rather than eyeballed
+  lab <- data.frame(fit = factor(FITS, levels = FITS),
+                    label = c(sprintf("difference in slope %+.2f, p %.4f", i_u$interaction, i_u$p),
+                              sprintf("difference in slope %+.2f, p %.4f", i_a$interaction, i_a$p)))
+  empty <- function(cx, cy) {
+    fx <- (long$x - XL[1]) / diff(XL); fy <- (long$y - YL[1]) / diff(YL)
+    bx <- if (cx == 0) c(0, 0.62) else c(0.38, 1)
+    by <- if (cy == 0) c(0, 0.12) else c(0.88, 1)
+    !any(fx >= bx[1] & fx <= bx[2] & fy >= by[1] & fy <= by[2])
+  }
+  corners <- list(c(0, 1), c(1, 0), c(0, 0), c(1, 1))
+  ok <- vapply(corners, function(k) empty(k[1], k[2]), logical(1))
+  stopifnot(any(ok))
+  cn <- corners[[which(ok)[1]]]
+  lab$x <- if (cn[1] == 0) XL[1] + diff(XL) * 0.02 else XL[2] - diff(XL) * 0.02
+  lab$y <- if (cn[2] == 1) YL[2] - diff(YL) * 0.01 else YL[1] + diff(YL) * 0.01
+
+  ggplot2::ggplot(long, ggplot2::aes(x, y)) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85") +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85") +
+    ggplot2::geom_segment(data = seg, inherit.aes = FALSE,
+                          ggplot2::aes(x = x, xend = xend, y = y, yend = yend,
+                                       colour = genotype), linewidth = 0.5) +
+    ggplot2::geom_point(ggplot2::aes(fill = group), shape = 21, size = 1.5,
+                        stroke = 0.25, colour = "grey25") +
+    ggplot2::geom_text(data = lab, inherit.aes = FALSE,
+                       ggplot2::aes(x = x, y = y, label = label),
+                       hjust = ifelse(cn[1] == 0, 0, 1), vjust = ifelse(cn[2] == 1, 1, 0),
+                       size = 1.75, colour = "grey20") +
+    ggplot2::scale_colour_manual(values = geno_cols, guide = "none") +
+    ggplot2::scale_fill_manual(values = group_cols, labels = group_labels,
+                               breaks = names(group_cols), name = NULL,
+                               guide = if (key) "legend" else "none") +
+    ggplot2::facet_wrap(~ fit, nrow = 1) +
+    ggplot2::scale_x_continuous(labels = lab_signed) +
+    ggplot2::scale_y_continuous(labels = lab_signed) +
+    ggplot2::coord_fixed(ratio = 1, xlim = XL, ylim = YL, expand = FALSE) +
+    ggplot2::labs(x = "OXPHOS mitoPPS, per animal  (z)",
+                  y = "PUMA:Bcl-xL  (log2 ratio, z)") +
+    ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1,
+                                                 override.aes = list(size = 1.7))) +
+    theme_panel(base_size = 6) +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(face = "plain", size = 5.6, hjust = 0,
+                                         margin = ggplot2::margin(0, 0, 1, 0, "mm")),
+      strip.clip = "off",
+      panel.spacing.x = ggplot2::unit(3, "mm"),
+      legend.position = if (key) "bottom" else "none",
+      legend.key.size = ggplot2::unit(2.6, "mm"),
+      legend.margin   = ggplot2::margin(-1.5, 0, 0, 0, "mm"),
+      plot.margin     = ggplot2::margin(1.5, 2.5, 0.5, 1.5, "mm"))
+}
 
 # --- the dominant pathway axis -----------------------------------------------
 # Figs. 1C and 1D are the sample scores and the per-set loadings of ONE principal

@@ -59,22 +59,20 @@
 # timeline (p 0.53 both). So the reversal is entirely the numerator, which is what
 # makes the ratio quotable as a PUMA result rather than a balance result.
 #
-# PART B IS THE STATISTIC. The same OXPHOS mitoPPS score against the same ratio.
-# ONE fitted line, through the Myc+ animals, dashed, with its R2 (author,
-# 2026-08-09). The wild-type animals trend the OTHER way just as strongly
-# (R2 0.33, p 0.052), and it is the DIFFERENCE between the two slopes that script
-# 43 tests at p = 0.0052 -- so that p is PRINTED beside the R2 and the ink says
-# whose number each is: the R2 in the Myc+ colour, the interaction in neutral.
+# PART B IS THE STATISTIC, IN BOTH SPECIFICATIONS (rebuilt 2026-09-21, the
+# author's ruling 7). The 2026-08-09 part B drew ONE line, through the Myc+
+# animals, beside the ADJUSTED model's interaction p -- one fit drawn, another
+# quoted, and a single line where the claim is a difference between two. It is
+# now Fig. 2I's own builder, coupling_two_fits() in _panel_common.R, reading
+# script 54: unadjusted beside adjusted, two lines each, twelve animals per line,
+# each half printing its own difference. The alternative and the original cannot
+# disagree, because they are drawn by the same code from the same object.
 #
-# WHAT IS RECONSTRUCTED AND WHAT IS QUOTED. The per-animal ratio is rebuilt from
-# the VST matrix and reproduces script 43's interaction to 1.2% (asserted, the
-# same check fig2_oxphos_puma_coupling.R makes). The number for the text is
-# script 43's, not the panel's.
-#
-# READ IT AS A LEAD. The permutation null in the same object puts that
-# interaction at the 91.7th percentile of 5,000 draws (p = 0.083) and a timepoint
-# term moves p from 0.0052 to 0.088. It is the one axis-by-genotype interaction
-# in the corpus that reaches nominal significance.
+# READ IT AS A LEAD THAT ASSERTS NOTHING (author, 2026-09-21). Against the
+# within-timepoint permutation null the unadjusted interaction clears and the
+# adjusted one does not, so the fit that clears is the one exposed to
+# composition: an impasse at n = 24, not a choice. The legend carries both
+# permutation results, from the object.
 #
 # Reads (read-only, no re-run):
 #   results/priming_arm_teb.rds                (script 42) -- $axis_scores, $purity
@@ -84,6 +82,7 @@
 #                                                 drawn temporal tests are checked against
 #   results/collapse_module_ownership.rds      (script 44) -- $mech_genes, for the
 #                                                 ranking quoted in the legend
+#   results/two_timeline_verification.rds      (script 54) -- part B, both fits
 # Output: outputs/figures/panels/fig2_puma_chain_alt.pdf
 # =============================================================================
 
@@ -98,6 +97,9 @@ pa  <- readRDS(pa_path)
 ss  <- readRDS(ss_path)
 gs  <- readRDS(here::here("results", "gsva_scores.rds"))
 cmo <- readRDS(here::here("results", "collapse_module_ownership.rds"))
+tv_path <- here::here("results", "two_timeline_verification.rds")
+require_fresher_than(tv_path)
+tv  <- readRDS(tv_path)
 
 ax <- as.data.frame(pa$axis_scores)
 pu <- as.data.frame(pa$purity)
@@ -340,63 +342,28 @@ pH <- ggplot2::ggplot(M, ggplot2::aes(group, measure, fill = med)) +
     plot.margin     = ggplot2::margin(1, 1.5, 0.5, 0.5, "mm"))
 
 # =============================================================================
-# PART B -- the coupling, and the reconstruction proved against the record
+# PART B -- the coupling, both specifications, from script 54
 # =============================================================================
-d <- data.frame(y = z(ratio),
-                myc = factor(as.character(sm$myc_status), levels = c("neg", "pos")),
-                group = factor(as.character(sm$group), levels = gl),
-                a = ax$oxphos_ppd, epi = pu$epithelial, imm = pu$immune)
-m   <- summary(stats::lm(y ~ myc * a + epi + imm, d))$coefficients
-rec <- tr[tr$outcome == OUT & tr$axis == "oxphos_ppd", ]
-per <- tp[tp$outcome == OUT & tp$axis == "oxphos_ppd", ]
-stopifnot(nrow(rec) == 1L,
-          abs(m["mycpos:a", 1] - rec$myc_x_axis) / abs(rec$myc_x_axis) < 0.05,
-          rec$p < 0.01)
+# Fig. 2I's builder (coupling_two_fits() in _panel_common.R), so the alternative
+# and the original are drawn by the same code from the same object. It asserts
+# that the drawn lines ARE the reported fits and that their difference IS each
+# half's interaction. No key: part A names the four groups directly above, in the
+# same palette.
+pB <- coupling_two_fits(tv, key = FALSE)
 
-fit_g <- function(g) stats::lm(y ~ a, data = d[d$myc == g, ])
-r2  <- summary(fit_g("pos"))$r.squared
-r2w <- summary(fit_g("neg"))$r.squared
-
-# TWO labels, bottom right, right-aligned, and the INK SAYS WHOSE NUMBER IT IS:
-# the R2 in the Myc+ colour because it belongs to the dashed line, the interaction
-# p in neutral ink because it belongs to both genotypes and is the statistic the
-# text quotes. Without the second line the panel would show one slope and let a
-# reader take it for the result (author, 2026-08-09). Checked empty rather than
-# eyeballed -- the strip covers both lines.
-lab_at <- c(x = max(d$a), y = min(d$y) + 0.035 * diff(range(d$y)))
-LINE   <- 0.085 * diff(range(d$y))
-stopifnot(!any(d$a > lab_at["x"] - 0.32 * diff(range(d$a)) &
-               d$y < lab_at["y"] + LINE + 0.10 * diff(range(d$y))))
-
-pB <- ggplot2::ggplot(d, ggplot2::aes(a, y)) +
-  ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85") +
-  # ONE line, through the Myc+ animals (author, 2026-08-09). The wild-type
-  # animals keep their points; their slope is in the legend block, and so is the
-  # reason it matters -- see the bounds.
-  ggplot2::geom_smooth(data = d[d$myc == "pos", ], method = "lm", formula = y ~ x,
-                       se = FALSE, linewidth = 0.5, linetype = "22",
-                       colour = unname(geno_cols[["pos"]])) +
-  ggplot2::geom_point(ggplot2::aes(fill = group), shape = 21, size = 1.7,
-                      stroke = 0.25, colour = "grey25") +
-  ggplot2::annotate("text", x = lab_at["x"], y = lab_at["y"] + LINE,
-                    hjust = 1, vjust = 0, size = 1.9, parse = TRUE,
-                    colour = unname(geno_cols[["pos"]]),
-                    label = as.character(as.expression(
-                      bquote(Myc * "+ " * R^2 == .(sprintf("%.2f", r2)))))) +
-  ggplot2::annotate("text", x = lab_at["x"], y = lab_at["y"], hjust = 1, vjust = 0,
-                    size = 1.9, colour = "grey20",
-                    label = sprintf("interaction p = %.4f", rec$p)) +
-  # No key of its own: part A names the four groups directly above, in the same
-  # palette, and a second identical legend would cost 6 mm to say it twice.
-  ggplot2::scale_fill_manual(values = group_cols, guide = "none") +
-  ggplot2::scale_x_continuous(labels = function(x) sprintf("%.1f", x)) +
-  ggplot2::scale_y_continuous(labels = lab_signed) +
-  ggplot2::labs(x = "OXPHOS mitoPPS, per animal", y = "PUMA:Bcl-xL  (z)") +
-  theme_panel(base_size = 6) +
-  ggplot2::theme(
-    axis.title.y = ggplot2::element_text(
-                     margin = ggplot2::margin(r = 0.6, unit = "mm")),
-    plot.margin  = ggplot2::margin(1, 2.5, 0.5, 1.5, "mm"))
+# the numbers part B's legend lines quote, read from script 54's object, never typed
+cfB  <- as.data.frame(tv$coupling_fits)
+ixB  <- as.data.frame(tv$coupling_interaction)
+pmB  <- as.data.frame(tv$coupling_perm)
+crB  <- as.data.frame(tv$coupling_cor)
+FU_B <- "U unadjusted, within genotype"
+FP_B <- "P pooled, shared covariates: epi + imm"
+slB  <- function(fit, g) cfB$slope[cfB$axis == "ox_ppd" & cfB$fit == fit & cfB$genotype == g]
+iaB  <- function(axis, cv) ixB[ixB$axis == axis & ixB$covariates == cv, ]
+pwB  <- function(cv) pmB[pmB$covariates == cv, ]
+ccB  <- function(g) crB$r[crB$genotype == g & crB$pair == "epi ~ imm"]
+# the impasse the legend states, asserted so a re-run cannot flip it silently
+stopifnot(pwB("none")$p_emp < 0.05, pwB("epi + imm")$p_emp >= 0.05)
 
 p <- patchwork::wrap_plots(
   patchwork::wrap_plots(pA, pH, nrow = 1, widths = c(2.55, 1)),
@@ -406,7 +373,6 @@ p <- patchwork::wrap_plots(
 # the legend text (never drawn)
 # =============================================================================
 gmed <- function(nm, gp) M$med[M$measure == nm & M$group == gp]
-slope <- function(g) stats::coef(fit_g(g))[2]
 mg <- as.data.frame(cmo$mech_genes)
 mg$int_p <- as.data.frame(ir$interaction_raw)$pvalue[
   match(ann$gene[match(mg$gene, ann$mgi_symbol)],
@@ -427,7 +393,10 @@ LEGEND <- panel_legend(
     "the two within-genotype 6-to-12-week contrasts and the upper one, spanning ",
     "their midpoints, is the difference between them. Beside them, the two ",
     "members of the ratio as group medians. B. The same mitoPPS score against ",
-    "the same ratio, with a line fitted through the Myc+ animals."),
+    "the same ratio, both standardised over the 24 animals, with a line fitted within ",
+    "each genotype: without covariates (left) and in the pre-specified model adjusted ",
+    "for the epithelial and immune composites (right). Each half prints the ",
+    "difference between its two lines."),
   detail = c(
     "n = 24 animals, 6 per group. Every quantity is z-scored ACROSS THE 24, which is the only way a mitoPPS score, a VST expression level and a log2 ratio can share one axis and one fill -- so a value says high or low FOR THAT QUANTITY and never compares one facet with another. A z-score is a linear transform, so each p-value is the p-value of the untransformed quantity.",
     sprintf("THE THREE FACETS ARE THREE DIFFERENT ANSWERS, WHICH IS THE POINT. OXPHOS mitoPPS falls on BOTH timelines: %s. Foxo3 rises ONLY in the wild-type gland: %s. And the priming ratio collapses ONLY under Myc: %s.",
@@ -454,22 +423,23 @@ LEGEND <- panel_legend(
             gmed("Bcl2l1", "6W_neg"), gmed("Bcl2l1", "12W_neg"),
             gmed("Bcl2l1", "6W_pos"), gmed("Bcl2l1", "12W_pos"),
             DE["wt_padj", "Bcl2l1"], DE["myc_padj", "Bcl2l1"]),
-    sprintf("B IS ONE HALF OF AN INTERACTION. The drawn line is the Myc+ animals, slope %+.2f, R2 %.2f, p = %.3f. The wild-type animals are drawn as points and trend the OTHER way just as strongly (slope %+.2f, R2 %.2f, p = %.3f). Script 43's model (ratio ~ genotype * axis + epithelial + immune) tests the DIFFERENCE between the two slopes: %+.2f, p = %.4f.",
-            slope("pos"), r2, summary(fit_g("pos"))$coefficients[2, 4],
-            slope("neg"), r2w, summary(fit_g("neg"))$coefficients[2, 4],
-            rec$myc_x_axis, rec$p),
+    sprintf("B IS AN INTERACTION, DRAWN IN BOTH SPECIFICATIONS -- Fig. 2I's builder, from script 54; twelve animals per line, both axes z-scored over the 24. Unadjusted: wild type %+.2f, Myc+ %+.2f, difference %+.2f (p %.4f). Adjusted, the pre-specified model with its covariate coefficients shared across genotypes: wild type %+.2f, Myc+ %+.2f, difference %+.2f (p %.4f). The slopes move with the specification, which is why neither is quoted.",
+            slB(FU_B, "neg"), slB(FU_B, "pos"),
+            iaB("ox_ppd", "none")$interaction, iaB("ox_ppd", "none")$p,
+            slB(FP_B, "neg"), slB(FP_B, "pos"),
+            iaB("ox_ppd", "epi + imm")$interaction, iaB("ox_ppd", "epi + imm")$p),
     sprintf("AND FOXO3 IS WHY THE MIDDLE FACET IS THERE: among the %d biogenesis- and cell-death-related genes script 44 curates, Foxo3 has the LOWEST interaction p (%.4f) and Bbc3 the second (%.4f), with a clear gap to the third (%s, %.3f). That is the ranking the text quotes, and it is a far smaller and more meaningful universe than the 8,774-gene scan Fig. 2H uses.",
             nrow(mg), mg$int_p[1], mg$int_p[2], mg$gene[3], mg$int_p[3]),
-    sprintf("PART B IS A RECONSTRUCTION AND SAYS SO. Script 43 fits on its own log matrix; this rebuilds the ratio from the VST matrix and reproduces the recorded interaction to %.1f%% (asserted). The number for the text is script 43's.",
-            100 * abs(m["mycpos:a", 1] - rec$myc_x_axis) / abs(rec$myc_x_axis)),
-    sprintf("Redox is the control and it is not drawn here (fig2_oxphos_puma_coupling.R has it): both genotypes couple to redox strongly and in the SAME direction, so the interaction there is %+.2f at p = %.2f.",
-            tr$myc_x_axis[tr$outcome == OUT & tr$axis == "redox_ppd"],
-            tr$p[tr$outcome == OUT & tr$axis == "redox_ppd"])),
+    sprintf("THE CONTROL IS THE REDOX mitoPPS AXIS, not drawn here, and what it shows is that its two slopes do NOT differ between the genotypes: interaction %+.2f (p %.2f) unadjusted and %+.2f (p %.2f) adjusted (Fig. 2I's legend carries the per-genotype slopes).",
+            iaB("redox_ppd", "none")$interaction, iaB("redox_ppd", "none")$p,
+            iaB("redox_ppd", "epi + imm")$interaction, iaB("redox_ppd", "epi + imm")$p)),
   bounds = c(
-    sprintf("PART B DRAWS ONE OF THE TWO SLOPES AND PRINTS THE STATISTIC FOR BOTH. The wild-type animals are points only, and they trend the opposite way at R2 %.2f (p = %.3f) -- as strong as the drawn line. The two numbers on the panel are therefore about different things and the ink says so: the R2 in the Myc+ colour is the dashed fit, the neutral p = %.4f is the DIFFERENCE between the two slopes, which is what the text quotes. Without reading the second number a viewer sees a Myc-specific correlation where the result is a genotype-by-slope interaction.",
-            r2w, summary(fit_g("neg"))$coefficients[2, 4], rec$p),
-    sprintf("A LEAD, NOT A RESULT. The permutation null in script 43 puts that interaction at the %.1fth percentile of 5,000 draws (empirical p = %.3f), and adding a timepoint term moves p from %.4f to %.4f. At n = 6 per cell an interaction between a genotype and a slope is the least powered thing this design can be asked for.",
-            per$percentile, per$p_emp, rec$p, rec$p_with_tp),
+    sprintf("PART B'S ADJUSTMENT IS FRAGILE. The two covariates are RNA surrogates for composition from the same count matrix as the ratio (no measured purity exists); they correlate %+.2f with each other in wild type and %+.2f in Myc+; and no positive control was carried through the adjustment.",
+            ccB("neg"), ccB("pos")),
+    sprintf("AN IMPASSE AT n = 24, NOT A CHOICE. Shuffling the OXPHOS score within each timepoint (%d times), the UNADJUSTED interaction sits at the %.1fth percentile (empirical p %.3f) and clears; the ADJUSTED one sits at the %.1fth (p %.3f) and does not. The fit that clears is the one exposed to composition, so neither fit can be preferred and part B asserts nothing. Adding a timepoint-by-genotype term to the adjusted model moves its p from %.4f to %.3f (script 43). At n = 6 per cell an interaction between a genotype and a slope is the least powered thing this design can be asked for.",
+            pwB("none")$n_perm, pwB("none")$percentile, pwB("none")$p_emp,
+            pwB("epi + imm")$percentile, pwB("epi + imm")$p_emp,
+            tv$tradeoff_43$p, tv$tradeoff_43$p_with_tp),
     "BATCH = TIMEPOINT: the six brackets in part A are all WITHIN-genotype temporal contrasts, and the 6W and 12W cohorts were extracted as two batches. Each bracket is therefore DESCRIBED, not claimed; what is batch-clean is the CONTRAST BETWEEN the two brackets in a facet, because genotype is balanced within each batch.",
     "THE THREE FACETS ARE NOT INDEPENDENT MEASUREMENTS: PUMA:Bcl-xL is built from the two transcripts in the heatmap beside it, so its pattern must follow theirs. It is drawn because it is the quantity the text names, not as separate evidence.",
     "mitoPPS is a RELATIVE score -- a high OXPHOS-subunit value means the compartment spends more of its budget there, not that the cell respires more. Neither axis of part B is a rate.",
@@ -479,7 +449,8 @@ LEGEND <- panel_legend(
     "results/gsva_scores.rds (scripts/15) -- $expr_mat, the VST matrix the per-animal values and the ratio are built from",
     "results/substrate_specificity_tradeoff.rds (scripts/43) -- $tradeoff and $tradeoff_perm, the interaction and its permutation null",
     "results/interaction_results.rds (scripts/03) -- the raw DESeq2 temporal contrasts the drawn tests are checked against",
-    "results/collapse_module_ownership.rds (scripts/44) -- $mech_genes, the 26 biogenesis/cell-death genes the Foxo3 ranking is computed over"))
+    "results/collapse_module_ownership.rds (scripts/44) -- $mech_genes, the 26 biogenesis/cell-death genes the Foxo3 ranking is computed over",
+    "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- part B: $coupling_panel and $coupling_lines (drawn), $coupling_fits, $coupling_interaction, $coupling_perm, $coupling_cor, $tradeoff_43"))
 
 save_panel_p(p, "fig2_puma_chain_alt", height = 100)
 
@@ -510,9 +481,9 @@ if (FALSE) {
   mg[, c("group", "gene", "lfc_6W", "lfc_12W", "int_p", "percentile")] |>
     head(10) |> print(row.names = FALSE, digits = 3)
 
-  ## both slopes, the reconstruction against the record, and the redox control
-  data.frame(slope_wt = slope("neg"), slope_myc = slope("pos"),
-             refit_int = m["mycpos:a", 1], recorded_int = rec$myc_x_axis,
-             p_recorded = rec$p) |> print(row.names = FALSE, digits = 4)
-  tr[tr$outcome == OUT, ] |> print(row.names = FALSE, digits = 3)
+  ## part B: every fit on one scale, both interactions, and the redox control --
+  ## all from script 54's object, which reproduces script 43 exactly
+  cfB[cfB$axis %in% c("ox_ppd", "redox_ppd"), ] |> print(row.names = FALSE, digits = 3)
+  ixB |> print(row.names = FALSE, digits = 4)
+  pmB |> print(row.names = FALSE, digits = 4)
 }
