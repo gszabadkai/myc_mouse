@@ -1994,6 +1994,92 @@ spec, if a reviewer ever demands it, is the within-regulon split (three bars or 
   PUMA, no BAX, no caspase; they are in MYC's at 2.68×, p = 0.011), so a restored death phenotype
   cannot be direct transcription of the machinery. Section 5 of the document has the wording.
 
+## The Figure-1 verification pass (2026-09-21, branch `experimental-cohorts`)
+
+Every number below is held by `scripts/54_two_timeline_verification.R` ->
+`results/two_timeline_verification.rds` (author-run 2026-09-21); the dated note is
+`docs/2026-09-21_two_timeline_verification.md`. The reading rules were fixed before any
+number was retrieved and were not adjusted afterwards, and the note records every outcome
+against them -- including the ones that go against the draft.
+
+| slot | script | what changed |
+|---|---|---|
+| **Fig. 2I** | `fig2_oxphos_puma_coupling.R` | **Rebuilt** (author's ruling 7). Unadjusted and adjusted halves on one z-scale, two lines each, twelve animals per line, each half printing its OWN interaction (+1.17, p 0.0046; +0.78, p 0.0052). The 2026-08-05 version drew unadjusted lines beside the adjusted p, said six animals per line and said the null permutes genotype labels; all three are fixed, and the fragility (epi and imm correlate -0.84 / -0.92, 8 residual df within genotype, no positive control) is in the legend. Redox is legend-only: its two slopes do not differ (p 0.84 / 0.72). **Second round:** the robustness clause is withdrawn, and the legend states the impasse: the unadjusted interaction clears its permutation null (p 0.026) and the adjusted one does not (p 0.085). The panel is hypothesis-generating and asserts nothing. |
+| **Fig. 2H+I (alt)**, part B | `fig2_puma_chain_alt.R` | **Rebuilt** on 2I's builder, `coupling_two_fits()`, so the original and the alternative cannot disagree; the single Myc+ line and its mixed-fit p are gone. **Rendered in the second round.** The flag on `combined_df_annotated_raw.rds` is a false positive (author's ruling), and part B fits the 100 mm layout. Part A: Foxo3's three brackets keep their shape and lose their p-values, in a neutral ink. |
+| *(none yet)* | `plane_arms_content.R` | NEW. The arms on the two-timeline plane, content ruler, each with the 95% null range of its distance from the diagonal (2,000 expression-matched sets); the declared +/-0.20 band drawn. Same axes as `plane_four_genes.R`. |
+| *(none yet)* | `plane_arms_mitopps.R` | NEW. The seven mitochondrial arms on mitoPPS (ruling 5: both rulers reported, mitoPPS drawn). |
+| *(none yet)* | `plane_four_genes.R` | NEW. The three-way contrast of the author's 2026-09-21 ruling: lost under MYC (Bbc3, Bax), did not follow the wild-type rise (Foxo3), on the diagonal (Bcl2l1). No p-value for Bax or Foxo3 anywhere, legend included (ruling 2). |
+| Fig. 2G (alt), 2H, S2C, S1E, 2H+I (alt) | five scripts | **IHW relabel.** The adjusted p each prints is `interaction_results.rds`'s `padj`, whose own description is "Weighted BH adjusted p-values"; each legend called it Benjamini-Hochberg. Legend text only, no drawn element moves. 2G (alt)'s stale "Filled points are significant" now reads "Dark rings mark ...". |
+| **Fig. 2G** | `fig2_priming_ratios.R` | **Not rebuilt in this session.** The committed version still draws the imported 0.487 line that ruling 4 retires, so treat it as not shippable. Everything a rebuild needs is in 54's object (`$ratio_line`, `$ratio_band`, `$ratio_resid`, `$ratio_range`). |
+
+The `plane_` prefix keeps the three new panels outside the `^fig` glob that
+`rebuild_panels.R`, `panels_to_pdf.R` and `paper/analysis_record.qmd` share -- the record's
+completeness check would otherwise fail -- the same device as the `biogax_` panels. The slots
+are the allocation note's to assign; rename with `git mv` then.
+
+### New in `_panel_common.R`
+
+- `two_timeline_base(..., band = NULL)` draws the declared on-the-diagonal magnitude as two
+  dotted lines. Off by default, so the three earlier callers render unchanged.
+- `coupling_two_fits(tv, key)` -- the coupling in both specifications, shared by 2I and 2H+I
+  (alt) part B. It asserts that the drawn lines ARE the reported fits and that their
+  difference IS each half's interaction.
+- `plane_content_lim(tv)` -- one frame for the two content-ruler planes (the arms, their null
+  bars, the four genes), asserted no smaller than 54's `plane_limits`.
+
+### Sentences these results change -- recorded, not softened
+
+- **"Only the PUMA to BCL-XL balance behaved differently" is WITHDRAWN.** Check 1 failed
+  against its pre-declared threshold: Bax's interaction is -0.231, beyond 0.20 with Bbc3's
+  sign. Bax is MYC-specific on the plane by the declared rule.
+- **"Respiratory priority tracked this ratio only where MYC was present" is WITHDRAWN**
+  (ruling 7): the quantity is the interaction. **The redox sentence is withdrawn**; its
+  replacement -- the two redox slopes do not differ -- is legend-only.
+- **The coupling's robustness clause is WITHDRAWN** (second round). "The difference did not
+  depend on adjustment" cannot stand. The unadjusted interaction clears its permutation null
+  (p 0.026) and the adjusted one does not (p 0.085), so the fit that clears is the one
+  exposed to composition. That is an impasse at n = 24, not a choice. In Figure 1 the
+  coupling is hypothesis-generating and asserts nothing.
+- **"MYC neither causes nor prevents the respiratory withdrawal" is WITHDRAWN** (second
+  round). Replacement: **most of the withdrawal occurs on both timelines** (content ruler:
+  -0.255 wild type, -0.405 Myc+, 63% shared). All seven mitochondrial arms exceed their
+  matched nulls, so the MYC-specific component is compartment-wide rather than
+  OXPHOS-specific.
+- **Foxo3 "rose in the normal gland and did not rise under MYC"**, not "fell under MYC": its
+  Myc+ arm is flat (-0.013).
+- **PUMA:BCL-XL against the eight-ratio line** is the largest departure of the nine (-0.35,
+  -1.58 residual SD) and lies inside the line's 95% prediction interval. No "off the line"
+  criterion was declared, so the residual is reported without a verdict.
+- **"OXPHOS on the diagonal" needs its ruler.** Content: -0.150, inside 0.20 by 0.050 but
+  beyond its matched null (percentile 1.2). mitoPPS: -0.044.
+- **Bax's 0.55 retention was computed** (d12/d6 = 0.5495), not the hard-coded 0.55 -- but
+  "matches the global rate exactly" compared two estimators, and ruling 4 retires that
+  comparison.
+- **Adjusted p is IHW, not BH**, wherever `interaction_results.rds`'s `padj` is quoted --
+  including "Bbc3 BH 0.84" in `docs/2026-09-09_reprioritisation_narrative_v3.md` and the Fig.
+  2H entry above, which are left as the record of what was written and corrected here.
+
+### Second round (2026-09-21, same day)
+
+| slot | script | what changed |
+|---|---|---|
+| Fig. 2H+I (alt), 2H, 2G (alt), S2C, S2D (alt), Discussion D4 | six scripts | **No test for Foxo3 or Bax anywhere** (neither was pre-specified). Their printed p-values are gone from legends and pages, and so are their significance marks: Foxo3's brackets (2H+I alt) are unlabelled in a neutral ink; Bax has no ring (2G alt) and is a cross outside the key (S2C); Foxo3 has no ring in D4; and S2D (alt)'s key "moves (padj < 0.05)" now reads "reference genes". 2G (alt)'s typed "only three" significant transcripts had been four with Bax; the count is now computed. |
+| Fig. 2H | `fig2_departure_from_dose.R` | Foxo3's and Bbc3's temporal fold changes now come from `interaction_results.rds`, the object script 54 read, keyed by `$collapse_genes$ens`; the panel no longer reads `combined_df_annotated_raw.rds`. The values are unchanged. |
+| Fig. S2C, 2H+I (alt) | two scripts | Their headers credit `combined_df_annotated_raw.rds` to its real writer, the archived main pipeline (`02_deseq_interaction_model.R`, last re-saved by `04_group_comparison.R`), not to script 03. |
+| Figs. 2E, 2G (alt), S2C, S2D, S2D (alt), 2H+I (alt) | six scripts | **"Priming" cleared** from the legend blocks. Captions cite "Script 42's saved object" in place of `priming_arm_teb.rds`, which stays as the filename. Fig. 2G's block is cleared in its rebuild. |
+| 2H, 2H+I (alt), S2C, S1E, S1F | -- | **Rendered.** The flags on the two combined tables, and on the outputs of scripts 11 and 16, are false positives of the timestamp rule (the note, section 4). |
+
+### Still open
+
+- Fig. 2G's ruling-4 rebuild, next session from 54's object; its legend block still says
+  "priming".
+- The on-panel parametric p in Fig. 2I and 2H+I (alt) part B (0.0046, 0.0052), on a panel that
+  now asserts nothing: the author's call.
+- N3 residue outside the six blocks: the slugs `fig2_priming_ratios` / `figS2_priming_balance`
+  in the `legends.md` headings, and "respiratory capacity" in a proposed claim quoted by
+  `biogax_rescue_licence.R`.
+- `paper/analysis_record.qmd` still describes the old 2G and 2I (untouched, by instruction).
+
 ## Not built here
 
 | slot | why |
