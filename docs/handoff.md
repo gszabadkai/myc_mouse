@@ -1,13 +1,14 @@
 ---
-date: 2026-09-21
-tags: [project/myc_mouse, handoff, experimental-cohorts, figure-1, figure-2, verification]
+date: 2026-09-22
+tags: [project/myc_mouse, handoff, main, figure-1, figure-2, foxo3, verification]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
-  - docs/2026-09-21_two_timeline_verification.md       (READ FIRST -- script 54, the rulings of record, the four rates)
+  - docs/2026-09-21_two_timeline_verification.md       (READ FIRST -- script 54, the rulings of record, the four rates; section 9 is the 2026-09-22 Foxo3 record)
   - figures/panels/PANELS.md                            (the manifest of record; from "The Figure-1 verification pass" on)
   - scripts/54_two_timeline_verification.R              (writes results/two_timeline_verification.rds)
+  - scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R (PART I: the FOXO3 target programme)
   - docs/2026-09-10_orthotopic_escape_series.md         (scripts 52 and 53)
-  - docs/experimental_cohorts_branch_notes.md           (the branch's rules and status)
+  - docs/experimental_cohorts_branch_notes.md           (the retired branch's notes; its cohort rule still holds)
   - docs/2026-09-09_orthotopic_identity_correction.md   (voids the conclusions of scripts 50 and 51)
   - docs/2026-09-02_myc_oxphos_priming_gate_model.md    (the gate model)
   - docs/2026-08-27_human_validation_plan.md            (the parallel arm; untracked)
@@ -18,13 +19,13 @@ relates-to:
 
 **2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
 
-Read this file first. Sections 1 to 3b are current as of **2026-09-21, late evening**.
-Sections 3c to 3f and 4 to 9 are carried over from the 2026-09-10 handoff. Where today's work
-supersedes something in them, that is marked in place.
+Read this file first. Sections 1 to 3 are current as of **2026-09-22**. Section 3a is the
+2026-09-21 evening session. Sections 3b to 3g and 4 to 9 are carried over, and where today's
+work supersedes something in them, it is marked in place.
 
-**The author is coming back with suggestions for what to build from the seven-gene numbers in
-section 3.3.** Nothing has been built from them yet. Start there, and wait for the
-suggestions before writing a panel.
+**The author has the read-only report in 3.3, on whether the FOXO3 chain has a timing
+problem, and will decide how the paragraph reads.** Nothing has been built from it. Start
+there, and wait.
 
 ---
 
@@ -32,15 +33,15 @@ suggestions before writing a panel.
 
 | | |
 |---|---|
-| checkout | `experimental-cohorts`, tracking `origin/experimental-cohorts` |
-| HEAD | this handoff's commit, on top of `98b61e0` ("panel_legend() stops on an item that evaluates to nothing") |
-| pushed | everything through `98b61e0`. **This handoff's commit is local only:** push when the author says so |
-| vs `paper-final` | 33 commits ahead of `origin/paper-final` before this handoff, and 0 behind. `origin/paper-final` has not moved since `b691133` (2026-09-07), so the old "rebase before anything substantial" is currently a no-op. Not merged |
-| scripts | 49 to 54, all run. 52 and 53 (2026-09-10) are the orthotopic escape series; 53 is a figure script, and its PDF is `outputs/orthotopic/53_escape_dose.pdf`. 54 (2026-09-21) is the Figure-1 verification. **The next number is 55** |
-| results | all fresh by the rule (object modification time after the last commit touching its writer). Script 54's object was written 2026-09-21 11:53 UTC. 32, 43 and 44 were re-sourced for Task D, and 33 and 42 at 16:29, after the rate-audit commit (`b21c6b0`, 16:26). **The note's section 7 still calls the 33/42 re-source pending; it is done.** Both scripts reached their final `saveRDS()`, so every assert in them passed, including 33's new one on the 21 |
-| panels | still 28 manuscript slots. **Fig. 2G is rebuilt** (3.1), and `panel_legend()` now guards every panel (3.2) |
-| repo | moved off Google Drive on 2026-09-21 (`50a5638`) to `/Users/gs/code/myc_mouse`. `.git` held no Icon stubs this session. The six working-tree stubs under `data/` are gitignored |
-| scratch | `sandbox/` exists and is gitignored. This session's scratch lived in the session scratchpad and is not needed; 3.3 carries the code |
+| checkout | `main`, tracking `origin/main`. **It is the only branch**, local and remote |
+| HEAD | this handoff's commit, on top of `1a43f04` ("PANELS.md: the second Fig. 2H row no longer lists combined_df_annotated_raw.rds") |
+| pushed | everything through `1a43f04`. **This handoff's commit is local only:** push when the author says so |
+| branches | every other branch was deleted on 2026-09-22 (3.1). Five are tagged `archive/*`: `analysis-exploratory`, `BlockA-revision-step-by-step`, `new-analysis`, `paper-figures`, `paper-final`. `experimental-cohorts` was not tagged; its tip `20104a3` is an ancestor of `main`. The other tags are `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction`. All eight tags are on the remote |
+| scripts | 49 to 54, all run; nothing new this session. 52 and 53 are the orthotopic escape series (53's PDF is `outputs/orthotopic/53_escape_dose.pdf`); 54 is the Figure-1 verification. **The next number is 55** |
+| results | **no object was written this session.** All were fresh by the rule as of 2026-09-21: Task D's re-sources (3b; the note's section 7), and 33 and 42 at 16:29 UTC. Checked today: script 47's object (2026-08-18) postdates `334ebab`. Script 23's object (2026-07-17) postdates its last commit, but predates `gsva_scores.rds` and `mitopps_scores.rds` (07-24) and `gsva_overview.rds` (07-29) |
+| panels | still 28 manuscript slots. **Fig. 2H's legend gained a bound** (3.2). **`legends.md` was regenerated** at 2026-09-22 11:44 by a real `rebuild_panels.R` run, 28 of 28 ok (3.4) |
+| repo | `/Users/gs/code/myc_mouse`, off Drive since 2026-09-21 (`50a5638`). `.git` holds no Icon stubs; the six working-tree stubs under `data/` are gitignored |
+| scratch | none in the repo. This session's computations ran as read-only R in the session; 3.3 carries the code |
 
 **Untracked, and staying that way:**
 - the six `.txt` session exports at the repo root;
@@ -48,40 +49,241 @@ suggestions before writing a panel.
 - `docs/library_reference/2026-08-22_consensus_myc_double_hit_thread.md`;
 - `docs/2026-08-27_human_validation_plan.md`.
 
-**THE TEXT CUT HAS STILL NOT HAPPENED**, as far as this branch records. Nothing here blocks it
+**THE TEXT CUT HAS STILL NOT HAPPENED**, as far as the repo records. Nothing here blocks it
 or depends on it.
 
 ---
 
 ## 2. Do this first
 
-1. **Read 3.3, the seven-gene table, and wait for the author's suggestions.**
-   - The question was whether "induced at 6W and lost by 12W" separates Bbc3 from six other
-     death-machinery genes. On the gene-level numbers it does not.
-   - What does separate Bbc3 is its interaction's size relative to its SE.
-   - Build nothing until the author says which reading to draw, and whether it is a panel at
-     all. "What any build has to respect", in 3.3, lists the constraints.
-2. **Open, and the author's call: Fig. 2G (alt)'s restored claim item** (3.2). It has never
-   been reviewed in a render. It frames a claim on the Myc temporal arm, which the panel's
-   own first bound says is "DESCRIBED, not claimed".
-3. **Regenerate `outputs/figures/panels/legends.md`:**
-   `source(here::here("figures", "panels", "rebuild_panels.R"))`. It must be a real run,
-   because a dry run writes nothing.
-   - The file still carries the 16 August Fig. 2G block, and lacks 2G (alt)'s restored item.
-   - The runner re-renders every `fig*` panel. The `plane_`, `biogax_`, `explainer_` and
-     `fatpad_` panels are outside its glob.
-4. **Standing from 2026-09-10: the orthotopic conclusions of scripts 50 and 51 are void.**
+1. **Read 3.3 and wait for the author's ruling on the FOXO3 paragraph.**
+   - The manuscript's chain is: respiratory priority falls, Foxo3 follows, PUMA follows.
+   - Bbc3's fall is entirely an interaction. The FOXO3 target programme is lower under MYC at
+     both ages, with no interaction detected.
+   - So either the link is written as transcript-level, or the chain has a gap at the activity
+     step. 3.3 says what the numbers allow.
+   - Build nothing until the author decides.
+2. **Still waiting from 2026-09-21: the seven-gene table** (3a.3). The author's suggestions for
+   what to build from it have not come, and nothing has been built.
+3. **Open, and the author's call: Fig. 2G (alt)'s restored claim item** (3a.2). Since today's
+   rebuild it is in `legends.md`, so it can be reviewed there.
+4. **Offered, not done: the isoform caveat in Fig. S2D (alt)'s legend.** The legend carries
+   Cdkn2a's low-count caveat, but not the fact that a gene-level count cannot separate p19Arf
+   from p16Ink4a (note section 9.3). This is the author's call.
+5. **Standing from 2026-09-10: the orthotopic conclusions of scripts 50 and 51 are void.**
    Read `docs/2026-09-09_orthotopic_identity_correction.md` before touching that dataset;
-   3d and section 5 have the detail.
+   3e and section 5 have the detail.
 
 ---
 
-## 3. What happened this session (2026-09-21, evening)
+## 3. What happened this session (2026-09-22)
 
-Two commits, both pushed: `fea4d60` and `98b61e0`. Then a read-only report, 3.3, which is
-what the author will build on.
+Three commits, all pushed: `dd58b8d`, `d3d7f3b` and `1a43f04`. There were also branch and tag
+operations, and two read-only reports: the `analysis-exploratory` resolution (3.1) and the
+FOXO3 timing report (3.3).
 
-### 3.1 Fig. 2G rebuilt on ruling 4 -- `fea4d60`, signed off
+### 3.1 The move recorded, and every other branch retired
+
+- **`dd58b8d`:** one line each in `CLAUDE.md`, this file and
+  `docs/experimental_cohorts_branch_notes.md`: work continues on `main` from `b7253f7`, and
+  `experimental-cohorts` is retired. The trees were checked and are identical.
+- **`analysis-exploratory` held nothing new.**
+  - Its two commits (`bedb15e`, `46bcba7`) are script-23-only copies of `07b6516` and
+    `fe6d004`, which have been on `main` since 13 July.
+  - Script 23 is byte-identical on both (blob `2994a74`), so a cherry-pick would have been
+    empty.
+  - The author accepted the correction. The tip was tagged `archive/analysis-exploratory` and
+    the branch deleted.
+- **What the resolution report established,** in case PARTs 2b or 5b are asked about again:
+  - PART 5b's Foxo3 numbers are the same estimate as script 54's check 2: the same object,
+    contrasts and gene ID. 35 of 35 roster genes map identically by script 23's route and by
+    the reconciler.
+  - PART 2b's gene table is duplicated, for the shared genes, by script 42's
+    `exclusions$p53_axis`. Its extra genes (Perp, Aen, Ei24) do not move.
+  - Both saved tables reproduce from `interaction_results.rds` with zero deviation.
+  - Nothing downstream reads `$h1$arf_p53` or `$puma_regulators`.
+- **Then the author deleted the rest:** `experimental-cohorts`, `new-analysis`,
+  `paper-figures`, `paper-final` and `BlockA-revision-step-by-step`, from the remote.
+  - Every tip was checked first, and all are ancestors of `main`.
+  - The local `experimental-cohorts` was deleted with `-d`.
+
+### 3.2 Foxo3's target programme does not follow its transcript -- `d3d7f3b`
+
+**The finding.** The record is the verification note, section 9.1.
+- **The source is script 47 PART I** (`biogenesis_axis_developmental.rds$foxo_lanes`,
+  `TFT_FOXO3_CHUNG`, 38 genes):
+  - NES -1.76 at 6W and -1.80 at 12W, adjusted p 0.003 for each within the TF category;
+  - interaction NES +1.09, p 0.30;
+  - FOXO1 null as the control.
+- **A second method agrees:** script 23 PART 5b's programme score gives genotype -0.351
+  (p 0.006) and interaction +0.072 (p 0.76).
+- **PART 5b's per-animal correlations are not cited.**
+- **Against the transcript:** Foxo3 is +0.473 in wild type and -0.013 in Myc+, interaction
+  -0.486. At 6W, Foxo3's message is higher under MYC while its output is lower.
+
+**What changed.**
+- **Fig. 2H** (`fig2_departure_from_dose.R`):
+  - a new bound reads the programme's NES from script 47's object, with asserts;
+  - the prior now reads "a p53-independent activator of PUMA", without "canonical".
+  - It was rendered, and the drawn panel is unchanged.
+  - The author asked for "lower under MYC at both ages without a genotype difference". Since
+    "lower under MYC" is itself a genotype difference, it is written as "no difference between
+    the ages is detected".
+- **One manuscript sentence (the author's),** note 9.2: "Foxo3, which switches PUMA on without
+  p53" becomes "Foxo3, a p53-independent activator of PUMA". The clause asserted activity in
+  this tissue, and the programme shows output going the other way. The manuscript is outside
+  the repo, so the change is recorded, not applied.
+- **Two ARF caveats,** note 9.3 and CLAUDE.md:
+  - Cdkn2a's baseMean is 5.6 counts;
+  - a gene-level count cannot distinguish p19Arf from p16Ink4a.
+- **Do not cite script 23 PART 2b's module test** (note 9.4, CLAUDE.md). Its target set
+  contains Bbc3 and Bax, and it tests against mu = 0.
+- **CLAUDE.md's stale claim is corrected.** It said script 23's object had 9 convergence rows
+  and that 2b/5b had never run. The object has 11 rows and both outputs.
+- **PANELS.md:** the Fig. 2H entry and its slot row are updated. The second 2H row followed in
+  `1a43f04`.
+
+### 3.3 The read-only report: does the FOXO3 chain have a timing problem?
+
+**The author's framing.** Bbc3's fall is entirely an interaction: flat in wild type, -0.541
+under MYC, appearing between 6 and 12 weeks. A programme depressed under MYC at both ages
+cannot explain a change within the window. So either the link is transcript-level, which is
+weak, or the chain has a gap. Three questions were asked. Nothing was built or saved.
+
+**1. The programme's interaction is not detected, and the interval is wide.** On 5b's score
+(38 genes, per-animal z units, 20 df):
+
+| | estimate | 95% CI | p |
+|---|---|---|---|
+| MYC effect, 6W | -0.387 | -0.74 to -0.04 | 0.032 |
+| MYC effect, 12W | -0.315 | -0.66 to +0.04 | 0.075 |
+| interaction | **+0.072** (SE 0.237) | **-0.42 to +0.57** | 0.76 |
+
+- **The interval spans a lot.** Its lower end is a further drop about the size of the whole 6W
+  effect. Its upper end is the suppression erased and reversed. This is "not detected", not
+  "absent".
+- **The point estimate has the wrong sign for the chain:** slightly less suppression at 12W.
+- **On a log2 scale** (the same genes, centred per gene, not scaled):
+  - the programme's interaction is +0.079 (-0.15 to +0.31);
+  - Bbc3 in the same model is -0.493 (-0.83 to -0.15).
+  - So the interval excludes a fall the size of Bbc3's, but not a smaller one. A 38-gene
+    average can also hide a subset that fell.
+- **The 12W MYC effect alone misses 0.05 on this score.** "Lower at both ages" rests on script
+  47's NES and on the pooled genotype effect (p 0.006).
+- **Script 47's NES has no interval.** fGSEA returns an NES and a p. An interval would need a
+  bootstrap over animals, which is new analysis.
+
+**2. The FOXO3 targets** (`interaction_results.rds`, raw MLE):
+
+| gene | baseMean | in the Chung set | 6W MYC: LFC (SE), p | 12W MYC: LFC (SE), p | interaction: LFC (SE), p |
+|---|---|---|---|---|---|
+| **Pdk4** | 2085 | no | **+2.001 (0.465), 1.7e-5** | +0.232 (0.465), 0.62 | **-1.769 (0.657), 0.0071** |
+| Sod2 | 1423 | yes | +0.303 (0.176), 0.086 | +0.230 (0.177), 0.19 | -0.073 (0.250), 0.77 |
+| Cat | 897 | yes | +0.177 (0.138), 0.20 | +0.009 (0.139), 0.95 | -0.168 (0.196), 0.39 |
+| Gadd45a | 547 | yes | +0.038 (0.181), 0.84 | -0.163 (0.183), 0.37 | -0.201 (0.258), 0.44 |
+| Txnip | 3982 | yes | -0.201 (0.276), 0.47 | -0.183 (0.276), 0.51 | +0.018 (0.390), 0.96 |
+
+- **None follows the programme with any support.**
+  - Only Txnip has its shape, and it is nowhere near significant. It is also a known
+    MYC-repressed gene.
+  - Sod2 and Cat point the other way.
+- **Pdk4 does not fall under MYC.** It rises about four-fold at 6W and is back near baseline
+  by 12W. It carries an interaction, with the transcript's shape, not the programme's.
+- **Three things weaken reading Pdk4 as FOXO3 output:**
+  - **Most of its interaction is the global fade.** On Fig. 2H's scan it sits at z -1.44, the
+    6.0th percentile, against about the 0.5th for Foxo3 and Bbc3. The 0.487 rate alone
+    predicts a 12W effect of about +0.97.
+  - **Pdk2, which is not a FOXO target, does the same:** interaction -0.85, p 0.008.
+  - **Pdk4 is also an ERRa/PGC-1a and PPAR target,** and Esrra fades similarly (+0.68 at 6W,
+    +0.37 at 12W).
+- **It is not adipocyte contamination:** Spearman -0.11 against script 33's seven adipocyte
+  markers over the 24 animals. Only adipocytes were checked.
+
+**3. The pyruvate arm is off the diagonal, below it: MYC-specific by the declared magnitude.**
+- **Where it is computed:** script 40, `background_vs_myc.rds$ruler`, row "Pyruvate
+  metabolism".
+  - It has 14 expressed genes: the PDH complex, Pdk1 to Pdk4, the phosphatases, and Mpc1/2.
+  - Fig. 1F draws its 6W and 12W values on the priority ruler.
+- **Priority (mitoPPS):**
+  - The MYC effect is +0.328 at 6W (padj 0.042) and +0.006 at 12W. The "12W deprioritisation"
+    is the loss of the 6W promotion, not a demotion below the compartment.
+  - On the plane: wild type +0.166, Myc+ -0.156, interaction **-0.321** (95% CI -0.55 to
+    -0.09, raw p 0.009, from a linear model on the per-animal scores).
+  - That is beyond script 54's 0.20. It is rank 1 of 143 pathways, and does not survive
+    correction over the 143.
+  - Script 54's eight arms all sit within 0.048 of the diagonal.
+- **Content:** the interaction is -0.365. The median pathway's is -0.183 (the global fade), so
+  pyruvate ranks 7th.
+- **Which way it points.** At the level of the arm it cuts against FOXO3, but only if the score
+  is read as flux, and it is not flux: it sums the enzyme and its inhibitors.
+  - **The loss is carried by the brakes.** The interactions run Pdk4 -1.77 and Pdk2 -0.85,
+    then Pdha1 -0.54, Pdhb -0.48, Mpc2 -0.40 and Dlat -0.31.
+  - **The fraction of the 6W effect kept at 12W** is 0.12 to 0.14 for the kinases, 0.33 to
+    0.63 for the PDH subunits, and 0.78 for Mpc1.
+  - Gene by gene, then, the brake retreats faster than the enzyme. That is the direction
+    reduced FOXO3-type output predicts, but it is weak and not FOXO3-specific.
+
+**What it means for the paragraph.**
+- **The link is transcript-level.** Foxo3, Bbc3 and Pdk4 share "up at 6W, lost by 12W".
+  Foxo3's and Bbc3's go beyond the global fade; Pdk4's mostly does not.
+- **At the activity step,** the programme shows no detected change within the window, and its
+  point estimate has the wrong sign. The interval leaves room for a moderate fall.
+- **The chain has a gap at activity** that these data neither fill nor rule out.
+
+**To regenerate** (read-only, about 5 s):
+
+```r
+suppressPackageStartupMessages(library(DESeq2))
+source(here::here("functions", "reconcile_gene_symbols.R"))
+h   <- function(...) here::here(...)
+ir  <- readRDS(h("results", "interaction_results.rds"))
+gs  <- readRDS(h("results", "gsva_scores.rds"))
+gmt <- fgsea::gmtPathways(h("data", "genesets_from_library", "mammary_mito_myc_metab_v1_mouse.gmt"))
+sm  <- as.data.frame(gs$sample_meta); sm <- sm[match(colnames(gs$expr_mat), sm$sample), ]
+tp  <- factor(sm$timepoint, c("6W", "12W")); myc <- factor(sm$myc_status, c("neg", "pos"))
+# 1. the programme score (script 23 PART 5b's construction): the interaction and its CI
+g   <- intersect(gmt[["TFT_FOXO3_CHUNG"]], rownames(gs$expr_mat))
+sc  <- colMeans(t(scale(t(gs$expr_mat[g, ]))))
+fit <- lm(sc ~ tp * myc); print(round(cbind(est = coef(fit), confint(fit)), 3))
+# 2. five FOXO3 targets: 6W MYC effect, 12W MYC effect, interaction -- LFC, SE, raw p
+D <- lapply(ir[c("myc_6W_raw", "myc_12W_raw", "interaction_raw")], as.data.frame)
+G <- c("Pdk4", "Sod2", "Cat", "Gadd45a", "Txnip")
+e <- vapply(G, function(x) recon_to_ensembl(x, rownames(D[[1]])), character(1))
+print(signif(do.call(cbind, lapply(D, function(d) d[e, c("log2FoldChange", "lfcSE", "pvalue")])), 3))
+# 3. the pyruvate arm on both rulers (script 40), and its per-animal interaction
+r <- as.data.frame(readRDS(h("results", "background_vs_myc.rds"))$ruler)
+print(r[r$pathway == "Pyruvate metabolism", ], digits = 3)
+ps <- as.data.frame(readRDS(h("results", "mitopps_scores.rds"))$mitopps_scores)
+print(round(confint(lm(ps[["Pyruvate metabolism"]] ~ factor(ps$timepoint, c("6W", "12W")) *
+                         factor(ps$myc_status, c("neg", "pos")))), 3))
+```
+
+### 3.4 Legends rebuilt, and the `combined_df_annotated_raw` audit -- `1a43f04`
+
+- **`rebuild_panels.R`, a real run:** 28 of 28 panels ok in 13 s, and `legends.md` rewritten
+  with 28 blocks, ASCII-clean.
+  - Ten blocks changed since 16 August: 2E, 2G, 2G (alt), 2H, 2H+I (alt), 2I, S1E, S2C, S2D and
+    S2D (alt). They match the verification pass and today's 2H bound.
+  - The runner's glob is `^fig`, so the `plane_`, `biogax_`, `explainer_` and `fatpad_` panels
+    were not re-rendered.
+  - One ggplot2 warning ("Vectorized input to `element_text()`") came from a panel other than
+    2H. It is not traced.
+- **`grep combined_df_annotated_raw`:** 49 hits, and one was stale: PANELS.md's second Fig. 2H
+  row, fixed in `1a43f04`.
+  - **Fig. 2H+I (alt) and S2C** still read the file, as a symbol-to-Ensembl dictionary only.
+    Every value they draw comes from `interaction_results.rds`.
+  - **By design:** script 16 (required by CLAUDE.md), script 39, `99_session_bootstrap.R`, and
+    four older exploratory figures outside `figures/panels/`.
+  - **The rest** are records and history.
+
+---
+
+## 3a. 2026-09-21, evening -- Fig. 2G, the legend guard, and the seven-gene table
+
+Two commits, both pushed: `fea4d60` and `98b61e0`. Then a read-only report, 3a.3, which the
+author has not yet built on.
+
+### 3a.1 Fig. 2G rebuilt on ruling 4 -- `fea4d60`, signed off
 
 `figures/panels/fig2_priming_ratios.R` now reads `results/two_timeline_verification.rds` and
 nothing else. It was built to the note's sections 1.2, 1.3, 1.5 and 3. It is 89 x 64 mm,
@@ -138,7 +340,7 @@ up from 58.
 - script 42's matched-pair null (p 0.082 in the old legend) is not carried over, because it
   is not in script 54's object.
 
-### 3.2 `panel_legend()` guards every panel -- `98b61e0`
+### 3a.2 `panel_legend()` guards every panel -- `98b61e0`
 
 **The guard.**
 - **The failure.** An item built from a zero-length value evaluates to `character(0)`, and
@@ -166,7 +368,7 @@ up from 58.
   significantly down under Myc". That is a claim on the temporal arm, which the panel's own
   first bound says is described, not claimed. It is restored as written, minus Bik.
 
-### 3.3 The seven-gene table: Bbc3 against six others on the 6W MYC effect and the interaction
+### 3a.3 The seven-gene table: Bbc3 against six others on the 6W MYC effect and the interaction
 
 **The author's question:** from `interaction_results.rds` and script 42's saved object, report
 the six-week MYC effect and the interaction (log2FC, SE and raw p for each) for Bbc3,
@@ -280,7 +482,7 @@ data.frame(gene = G, arm = m$arm, baseMean = round(v("myc_6W_raw", "baseMean")),
 
 ---
 
-## 3a. Earlier the same day (2026-09-21) -- script 54 and three rounds of rulings
+## 3b. Earlier the same day (2026-09-21) -- script 54 and three rounds of rulings
 
 The record is `docs/2026-09-21_two_timeline_verification.md`: every outcome against rules
 fixed before retrieval, the rulings of record in section 3, and the four rates in section 8.
@@ -325,7 +527,7 @@ Commits run from `932d592` to `b21c6b0`. In short:
 **Recorded and not pursued** (the note, section 5): the unadjusted Myc+ coupling slope is
 largely timepoint.
 
-## 3b. 2026-09-10 -- scripts 52 and 53, the orthotopic escape series
+## 3c. 2026-09-10 -- scripts 52 and 53, the orthotopic escape series
 
 This is the first handoff written after them. The record is
 `docs/2026-09-10_orthotopic_escape_series.md`.
@@ -346,7 +548,7 @@ This is the first handoff written after them. The record is
 
 ---
 
-## 3c. History (2026-09-08 to 09-10) -- script 51, specificity and normalisation
+## 3d. History (2026-09-08 to 09-10) -- script 51, specificity and normalisation
 
 > **PARTIALLY VOID as of 2026-09-09 (sample identity).** The arm this section calls `Pgc1a` is
 > PGC1a + Bcl-xL, so C1 and everything resting on `Bcl2l1` in that arm fall. **C3, the
@@ -418,7 +620,7 @@ changed**, and the branch notes gained two corollaries -- see section 5.
 
 ---
 
-## 3d. History -- the orthotopic vector series (script 50)
+## 3e. History -- the orthotopic vector series (script 50)
 
 `scripts/50_orthotopic_vector_series_scoring.R`, author-run 2026-09-08, reproducing the dry
 run exactly; the note is `docs/2026-09-08_orthotopic_vector_series.md` and all 33 quoted
@@ -469,7 +671,7 @@ a transcript), and any pooling with the timeline or the human cohorts.
 
 ---
 
-## 3e. History -- the fat-pad timeline, closed (script 49)
+## 3f. History -- the fat-pad timeline, closed (script 49)
 
 **New branch `experimental-cohorts`**, off `paper-final`, for the two datasets outside the
 6W/12W purified-MEC pipeline: the orthotopic Bcl-xL / PGC1a series (not started) and the
@@ -531,7 +733,7 @@ does not read this branch -- **tell it**.
 
 ---
 
-## 3f. History -- the gate model (script 48)
+## 3g. History -- the gate model (script 48)
 
 **The ask:** a model of MYC, OXPHOS subunits and PUMA/BIM that can be tested in human
 tumours, verified in the mouse first.
@@ -633,7 +835,7 @@ have moved since, so search for the headings instead.
    panels and the written sentences disagree" at 1564; the no-panel sentence list at 1947.
 7. `docs/2026-09-02_myc_oxphos_priming_gate_model.md` -- the gate model and the three
    corrections it forces on the human plan.
-8. **Read before touching `experimental-cohorts`:**
+8. **Read before touching the orthotopic or fat-pad data** (formerly `experimental-cohorts`):
    `docs/experimental_cohorts_branch_notes.md` (rules, **four** corollaries, dataset status),
    then `docs/2026-09-08_orthotopic_vector_series.md` (this session; sections 5 and 6 are the
    manuscript consequences), `docs/2026-09-07_orthotopic_analysis_plan.md` (its spec), and
@@ -643,6 +845,21 @@ have moved since, so search for the headings instead.
 ---
 
 ## 5. Corrections that must not be re-introduced
+
+**Added 2026-09-22: Foxo3, ARF and the pyruvate arm** (the note, section 9, and 3.3).
+- **The Foxo3 transcript is not FOXO3 output.** The target programme is lower under MYC at
+  both ages, with no interaction detected. Do not write that FOXO3 "switches PUMA on" in this
+  tissue; the manuscript now says "a p53-independent activator of PUMA".
+- **"No interaction" is not established for the programme.** The interaction is +0.072 with a
+  95% CI of -0.42 to +0.57: not detected, not absent.
+- **ARF cannot be read from Cdkn2a** (5.6 counts, and gene level cannot separate p19Arf from
+  p16Ink4a).
+- **Do not cite:** script 23 PART 2b's module test, or PART 5b's per-animal correlations.
+- **The pyruvate arm's priority score is not pyruvate flux.** It sums PDH and its kinases, and
+  its 12W loss is carried mostly by Pdk4 and Pdk2.
+- **Pdk4's interaction (-1.77, p 0.007) is mostly the global fade** of a four-fold 6W effect:
+  it sits at the 6.0th percentile of the departure scan. It is not evidence of FOXO3 output on
+  its own.
 
 **Added 2026-09-21: script 54, the rulings of record, and this session.**
 - **Withdrawn, do not bring back:**
@@ -660,12 +877,12 @@ have moved since, so search for the headings instead.
   off-the-line criterion was declared.
 - **The adjusted p on disk is IHW, not BH.**
 - **At gene level, Bbc3 is not significantly induced at 6W** (+0.258, p 0.064). "Induced at
-  6W" belongs to the PUMA:Bcl-xL ratio, 62% of which is Bcl-xL falling under MYC (3.3).
+  6W" belongs to the PUMA:Bcl-xL ratio, 62% of which is Bcl-xL falling under MYC (3a.3).
 - **2G (alt)'s "entirely its numerator" is about three-quarters** on the DESeq2 members
-  (3.3).
+  (3a.3).
 - **A key or label must name the method, never read as a verdict.** "Not in the fit" was read
   as "does not fit".
-- **An empty legend item vanishes silently.** `panel_legend()` now stops on one (3.2). Do not
+- **An empty legend item vanishes silently.** `panel_legend()` now stops on one (3a.2). Do not
   build a panel's legend in a way that bypasses the guard, for example with a pre-built
   vector when the items could be written in `c()`.
 
@@ -755,19 +972,31 @@ Retiring a panel is three steps, all of them required:
 
 ## 7. Open items
 
-**On `experimental-cohorts`, new 2026-09-21:**
+**New 2026-09-22:**
 
-- **Whether the seven-gene reading (3.3) becomes a panel, and which reading it draws.** This
+- **The FOXO3 paragraph: transcript-level link, or a stated gap at activity?** This is waiting
+  on the author (3.3).
+- **Fig. S2D (alt)'s legend lacks the p19Arf/p16Ink4a isoform caveat** (section 2, item 4). It
+  was offered, not done.
+- **One ggplot2 warning in the rebuild** ("Vectorized input to `element_text()`"), from a panel
+  other than 2H. It is not traced (3.4).
+- **Older documents still say "canonical p53-independent activator":** the 2026-07-26 and
+  2026-08-17 notes, narrative v3, `figS2_puma_inducers.R`'s header comment, and
+  `paper/analysis_record.qmd`. They are left as written; newer supersedes older (note 9.2).
+
+**Carried from 2026-09-21, still open:**
+
+- **Whether the seven-gene reading (3a.3) becomes a panel, and which reading it draws.** This
   is waiting on the author's suggestions.
 - **Fig. 2G (alt)'s restored claim item: keep, reword, or cut.** This is the author's call
-  (3.2).
-- **Fig. 2G (alt)'s "entirely its numerator"** is about three-quarters on these numbers (3.3).
+  (3a.2). It is now in `legends.md`.
+- **Fig. 2G (alt)'s "entirely its numerator"** is about three-quarters on these numbers (3a.3).
   Rewording it is the author's call; it has not been changed.
-- **2G against 2G (alt) for the slot.** This was already open (below), and both have changed
-  today.
-- **`legends.md` needs a real `rebuild_panels.R` run** (section 2, item 3).
-- **The note's section 7 still calls the 33/42 re-source "pending".** Both ran (section 1),
-  and the note was not edited this session.
+- **2G against 2G (alt) for the slot.** This was already open (below), and both changed on
+  2026-09-21.
+- ~~**`legends.md` needs a real `rebuild_panels.R` run.**~~ **Done 2026-09-22** (3.4).
+- **The note's section 7 still calls the 33/42 re-source "pending".** Both ran on 2026-09-21 at
+  16:29 UTC, and that line of the note has not been edited.
 - **The superseded 0.55 drawings.** `figures/fig05_death_arm.R` and
   `figures/figure2_developmental_window.R` are marked SUPERSEDED. Retiring them, or pointing
   them at `defs$global_rate_fitted`, is the author's call.
@@ -777,10 +1006,10 @@ Retiring a panel is three steps, all of them required:
   largely timepoint.
 
 The lists below are carried over from 2026-09-10 and **were not re-verified this session.**
-Script 52 has since closed C1 (3b), so read the orthotopic items against
+Script 52 has since closed C1 (3c), so read the orthotopic items against
 `docs/2026-09-10_orthotopic_escape_series.md` first.
 
-**On `paper-final`:**
+**The manuscript** (these were the `paper-final` items; that branch is archived, and the work is on `main`):
 
 - **The text cut.** Blocked only on the text arriving. Everything else is done.
 - Per-slot choice between each original panel and its alternative: **2F, 2G, 2H+2I, S2D**.
@@ -788,7 +1017,7 @@ Script 52 has since closed C1 (3b), so read the orthotopic items against
 - A fifth arrow in `figS1_design_contrasts.R:60-93` if the diagonal panel is adopted.
 - Whether the gate model earns a panel. It has none, deliberately.
 
-**On `experimental-cohorts`:**
+**The orthotopic and fat-pad datasets** (these were the `experimental-cohorts` items; that branch is retired, and the work is on `main`):
 
 - **THE C3 / ABSTRACT DECISION IS OPEN AND IS YOURS.** The orthotopic series cannot test
   *"mouse tumours resemble human tumours rather than the gland they arose from"*. Another
@@ -812,8 +1041,9 @@ Script 52 has since closed C1 (3b), so read the orthotopic items against
 - The orthotopic series is **done for the questions asked of it**. If the reversal question is
   still wanted, it needs a design where `ox_rel` varies **within** a common state -- not one
   built to move it between arms. Script 51 section 5 shows *why* from two directions.
-- The branch is **pushed** (`origin/experimental-cohorts`, created 2026-09-08) and still
-  unmerged. Rebase on `paper-final` before the next substantial piece of work.
+- ~~The branch is **pushed** (`origin/experimental-cohorts`, created 2026-09-08) and still
+  unmerged. Rebase on `paper-final` before the next substantial piece of work.~~ **Superseded
+  2026-09-22:** everything is on `main`, and both branches are deleted (3.1).
 - `sandbox/precheck_fatpad_oxphos_confound.R` is scratch on disk, gitignored, and is deleted
   before merge. Only its dated note survives.
 - **CLAUDE.md's branch section is stale** -- it describes `new-analysis`/`analysis-exploratory`/
@@ -823,9 +1053,8 @@ Script 52 has since closed C1 (3b), so read the orthotopic items against
 - The `Myc` 7.5x fat-pad discrepancy is open and needs per-epithelial-cell measurement to
   settle. Do not import either dataset's `Myc` scale into the other.
 
-**Everywhere (updated 2026-09-21):** `experimental-cohorts` is pushed through `98b61e0`, and
-only this handoff's commit is local. `paper-final` has not moved on the remote since
-`b691133` (2026-09-07).
+**Everywhere (updated 2026-09-22):** `main` is the only branch, pushed through `1a43f04`,
+and only this handoff's commit is local.
 
 ---
 
@@ -844,7 +1073,7 @@ recreated after the move off Drive; use `git show main:<path>` instead.)*
 Before that session writes scripts or `.rds` files, give it its own worktree:
 
 ```
-git worktree add ../myc_mouse_human -b human-validation paper-final
+git worktree add ../myc_mouse_human -b human-validation main
 ```
 
 The pattern is already established by `../myc_mouse_main`. Two sessions sharing one
@@ -858,7 +1087,7 @@ by mouse data (section 3a) and two of the three were wrong. Second, the two trap
 section 3: a loading belongs to the SUBSET it was measured on, and any purity or composition
 adjustment needs a positive control read before the endpoint of interest. A cohort stratified
 by PAM50 / TP53 / purity is exactly where both bite, and that session does not read
-`experimental-cohorts`.
+this repo.
 
 Note also that `docs/2026-08-27_human_validation_plan.md` is untracked by rule, so it is
 **not on the remote** -- if that session expects to find its own spec on `origin`, it is not
