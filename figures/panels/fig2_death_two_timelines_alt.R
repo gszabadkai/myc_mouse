@@ -28,7 +28,9 @@
 #                                  nothing to it.
 #   at the origin                  Bcl2l1 (-0.11 / +0.07, neither significant).
 #                                  BCL-XL DOES NOT MOVE, so the ratio's reversal
-#                                  is entirely its numerator.
+#                                  ALONG THESE TIMELINES is entirely its
+#                                  numerator. The genotype INTERACTION is a
+#                                  different contrast -- see Fig. 2G's block.
 #   below the line, below zero     lost under Myc and not in development. Bbc3
 #                                  (+0.06 / -0.48, padj 0.016) is alone among the
 #                                  BH3-only sensors.
@@ -198,7 +200,7 @@ LEGEND <- panel_legend(
     sprintf("THE CLAIM, AND THE SCRIPT ASSERTS IT: %s -- and it is the ONLY BH3-only sensor that is flat in development and significantly down under Myc. The other sensors do not do it: %s.",
             say("Bbc3"),
             paste(vapply(OTHER_SENSORS, say, character(1)), collapse = "; ")),
-    sprintf("BCL-XL DOES NOT MOVE ON EITHER TIMELINE: %s. So the reversal of the PUMA:Bcl-xL ratio that Fig. 2G reports is entirely its numerator, which is what makes the ratio worth quoting as a PUMA result rather than a balance result.",
+    sprintf("BCL-XL DOES NOT MOVE ON EITHER TIMELINE: %s. So the reversal of the PUMA:Bcl-xL ratio ALONG THESE TIMELINES is entirely its numerator, which is what makes the ratio worth quoting as a PUMA result rather than a balance result. That is a statement about the two timelines, and not about the ratio's genotype INTERACTION, which is a different contrast and has its own decomposition in Fig. 2G's block.",
             say("Bcl2l1")),
     sprintf("AND THE PANEL CARRIES ITS OWN NEGATIVE CONTROL: %s. Bmf is the one death transcript the window itself moves, and it moves in BOTH genotypes by nearly the same amount -- it sits on the diagonal. A gene on the diagonal is developmental; Bbc3 is as far off it as anything here.",
             say("Bmf")),

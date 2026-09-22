@@ -56,8 +56,10 @@
 #
 # PART A, RIGHT: THE TWO MEMBERS OF THE RATIO, as group medians. Bbc3 tracks the
 # ratio (+0.74 -> -0.81 under Myc, flat in the wild type); Bcl2l1 follows neither
-# timeline (p 0.53 both). So the reversal is entirely the numerator, which is what
-# makes the ratio quotable as a PUMA result rather than a balance result.
+# timeline (p 0.53 both). So the reversal ALONG THE TIMELINES is entirely the
+# numerator, which is what makes the ratio quotable as a PUMA result rather than a
+# balance result. The ratio's genotype INTERACTION is a different contrast, and it
+# is not entirely the numerator either -- Fig. 2G's block decomposes it.
 #
 # PART B IS THE STATISTIC, IN BOTH SPECIFICATIONS (rebuilt 2026-09-21, the
 # author's ruling 7). The 2026-08-09 part B drew ONE line, through the Myc+

@@ -307,6 +307,25 @@ bax    <- row_of("Bax:Bcl2l1")
 PLANE_MEMBERS <- "plane_four_genes.R"
 stopifnot(file.exists(here::here("figures", "panels", PLANE_MEMBERS)))
 bbc3_g <- fg[fg$gene == "Bbc3", ]
+
+# WHAT THE RATIO'S INTERACTION IS MADE OF, from the members' own interactions.
+# The ratio is log2(pro) - log2(anti), so the denominator enters with the opposite
+# sign: Bbc3 falls and MYC's repression of Bcl-xL weakens, and BOTH push the ratio
+# down. The two therefore partition the members' difference with no cancellation,
+# which is the invariant asserted below. This corrects "entirely its numerator":
+# on these numbers the numerator carries about three quarters of it, not all.
+xl_g     <- fg[fg$gene == "Bcl2l1", ]
+mem_diff <- bbc3_g$int_lfc - xl_g$int_lfc
+share_pro  <- abs(bbc3_g$int_lfc) / (abs(bbc3_g$int_lfc) + abs(xl_g$int_lfc))
+share_anti <- 1 - share_pro
+stopifnot(nrow(xl_g) == 1L,
+          # opposite signs, so |pro| + |anti| IS |their difference|: a partition
+          bbc3_g$int_lfc < 0, xl_g$int_lfc > 0,
+          abs((abs(bbc3_g$int_lfc) + abs(xl_g$int_lfc)) - abs(mem_diff)) < 1e-12,
+          # the members' difference and the ratio's own interaction are two
+          # estimators of one quantity: same sign, and close without being equal
+          sign(mem_diff) == sign(tgt$int), abs(mem_diff - tgt$int) < 0.05)
+
 stopifnot(nrow(bax) == 1L, nrow(bbc3_g) == 1L,
           # the licence the legend states, read from the object rather than typed
           grepl("^pre-specified", tv$licence[["Bbc3"]]),
@@ -357,6 +376,9 @@ LEGEND <- panel_legend(
     sprintf("THE RATIO'S OWN INTERACTION IS A DIFFERENT COMPARISON, and not this panel's. PUMA:Bcl-xL's twelve-week Myc effect minus its six-week one is %+.3f (raw p %.3f; Benjamini-Hochberg across the nine ratios %.2f; %+.3f, raw p %.3f, with the epithelial and immune composites as covariates). Its null is no attenuation at all, and %s of the nine ratios have a smaller Myc effect at twelve weeks than at six, so that p asks whether PUMA:Bcl-xL attenuates, not whether it attenuates more than the set does; the line fitted inside the set is the comparison this panel draws. The gene-level Bbc3 interaction, %+.3f (raw p %.4f), is a third statistic and belongs to the MEMBER, which the four-gene plane draws; none of the three stands in for another.",
             tgt$int, tgt$int_p, tgt$int_p_bh, tgt$int_adj, tgt$int_p_adj,
             as_word(n_smaller), bbc3_g$int_lfc, bbc3_g$int_p),
+    sprintf("WHAT THAT INTERACTION IS MADE OF, and it is not all the numerator: on the members' own interactions it is about three quarters Bbc3, %+.3f (%.0f%%), and one quarter Bcl2l1, %+.3f (%.0f%%) -- the weakening of MYC's repression of Bcl-xL, which enters with the opposite sign because Bcl-xL is the denominator, so that both members push the ratio down -- and their difference, %+.3f, is the members' version of the ratio's own %+.3f.",
+            bbc3_g$int_lfc, 100 * share_pro, xl_g$int_lfc, 100 * share_anti,
+            mem_diff, tgt$int),
     "PUMA:Bcl-xL IS THE PRE-SPECIFIED PAIR: Bbc3 was named in advance from the PGC1a westerns, and Bcl-xL is its fixed denominator. The other eight ratios are its comparison set, and nothing is claimed for any of them.",
     sprintf("A RETENTION IS COMPUTED, NOT COMPARED. Bax:Bcl-xL's twelve-week effect over its six-week one is %.6f / %.6f = %.4f, taken from its own two coordinates. It is not evidence that the ratio fades at a programme-wide rate: that would set a ratio-level estimate against a gene- or pathway-level slope, two different estimators, and this panel's only comparator is the line fitted inside the ratio set.",
             bax$d12, bax$d6, bax$d12 / bax$d6),
@@ -366,7 +388,7 @@ LEGEND <- panel_legend(
     "Both axes are the Myc genotype contrast at one age, which is clean: genotype is balanced within each extraction batch. The panel therefore does not carry the batch = timepoint caveat of the temporal panels. It does carry n = 6 per cell.",
     "These are TRANSCRIPT ratios. How close a mitochondrion sits to the apoptotic threshold is a property of its protein complement; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute."),
   source = c(
-    "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- $ratios (Script 42's nine ratio fits, carried unchanged; drawn), $ratio_line (the drawn line and the sensitivity fit), $ratio_band (the drawn 95% prediction interval), $ratio_resid (every ratio's residual and its rank), $ratio_range (the scatter check), $retention_provenance, $four_genes (the gene-level Bbc3 interaction), $licence"))
+    "results/two_timeline_verification.rds (scripts/54_two_timeline_verification.R) -- $ratios (Script 42's nine ratio fits, carried unchanged; drawn), $ratio_line (the drawn line and the sensitivity fit), $ratio_band (the drawn 95% prediction interval), $ratio_resid (every ratio's residual and its rank), $ratio_range (the scatter check), $retention_provenance, $four_genes (the members' gene-level interactions), $licence"))
 
 # (That every item arrived is checked by panel_legend() itself, for every panel.
 # This panel's first draft is why: its PUMA:Bcl-xL item evaluated to character(0)
