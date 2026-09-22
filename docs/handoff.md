@@ -45,7 +45,7 @@ parked for after the manuscript.
 | branches | every other branch was deleted on 2026-09-22 (3.1). Five are tagged `archive/*`: `analysis-exploratory`, `BlockA-revision-step-by-step`, `new-analysis`, `paper-figures`, `paper-final`. `experimental-cohorts` was not tagged; its tip `20104a3` is an ancestor of `main`. The other tags are `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction`. All eight tags are on the remote |
 | scripts | 49 to 54, all run; nothing new this session. 52 and 53 are the orthotopic escape series (53's PDF is `outputs/orthotopic/53_escape_dose.pdf`); 54 is the Figure-1 verification. **The next number is 55** |
 | results | **no object was written this session.** All were fresh by the rule as of 2026-09-21: Task D's re-sources (3b; the note's section 7), and 33 and 42 at 16:29 UTC. Checked today: script 47's object (2026-08-18) postdates `334ebab`. Script 23's object (2026-07-17) postdates its last commit, but predates `gsva_scores.rds` and `mitopps_scores.rds` (07-24) and `gsva_overview.rds` (07-29) |
-| panels | still 28 manuscript slots. **Fig. 2H's legend gained a bound** (3.2). **`legends.md` was regenerated** at 2026-09-22 11:44 by a real `rebuild_panels.R` run, 28 of 28 ok (3.4) |
+| panels | still 28 manuscript slots. **Fig. 2G's ruling-4 rebuild is COMPLETE** (`fea4d60`, 2026-09-21, signed off; 3a.1). The 16 August panel, which drew the retired 0.487 line, has not been the committed one since. **Do not rebuild it.** **Fig. 2H's legend gained a bound** (3.2). **`legends.md` was regenerated** at 2026-09-22 11:44 by a real `rebuild_panels.R` run, 28 of 28 ok (3.4) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive since 2026-09-21 (`50a5638`). `.git` holds no Icon stubs; the six working-tree stubs under `data/` are gitignored |
 | scratch | none in the repo. This session's computations ran as read-only R in the session scratchpad. The documents carry the code: 3.3 here, the verification note's 10.4, and the follow-up note's appendix |
 | human arm | **read-only inputs today:** `../myc_human_validation` (frozen at `d3ac60e`) and `../myc_human_exploratory`. Nothing was written to either. Two read-only `gh` fetches went into the scratchpad: the upstream Menegollo TCGA fork scripts, and the gene-set library's human bicluster workbook (the follow-up note, section 8) |
@@ -379,6 +379,32 @@ handoff created to point at it.
 - The scarcity may be biological.
 
 **Everything through `8114213` was pushed at the author's word.**
+
+### 3.9 Fig. 2G's decomposition, and a scope word for the two alts -- `ea0de33`
+
+**The session opened on a false premise, and it is recorded so it cannot return.** The request
+was to rebuild Fig. 2G on ruling 4, on the understanding that the committed panel was still the
+16 August one. **It was not.** The rebuild landed on 2026-09-21 as `fea4d60` (3a.1), and the
+committed file was checked against the whole spec before anything was written: it reads only
+script 54's object, fits the line inside the ratio set, draws the band in full and all nine
+ratios, carries no imported rate, and its block is clear of "priming" under an assert. The
+author had carried the item over from the interrupted session without checking `fea4d60`.
+- **The key's wording stands as the author set it:** "not used to fit the line", not "not in
+  the fit", which had read as a verdict.
+
+**What was actually outstanding, and is now done.**
+- **2G gains one bound:** what the ratio's interaction is made of. On the members' own
+  interactions it is about three quarters Bbc3 (-0.541) and one quarter Bcl2l1 (+0.179). The
+  denominator enters with the opposite sign, so both members push the ratio down, and their
+  difference (-0.720) is the members' version of the ratio's own -0.735.
+  - Read from `$four_genes`, with asserts on the opposite signs (so the shares partition the
+    difference) and on the two estimators agreeing in sign and within 0.05.
+- **2G (alt) and 2H+I (alt) take a scope word.** "Entirely its numerator" now says it is about
+  the TIMELINES, where Bcl-xL does not move (p 0.53 both), and each points at 2G's block for
+  the genotype INTERACTION, which is a different contrast.
+  - **The fraction is deliberately not in either panel** (the author's ruling). The two claims
+    are not in conflict: one is about the temporal arms, the other about the interaction.
+- All three panels render. 2H+I (alt)'s change is in its header comment only.
 
 ---
 
@@ -1112,8 +1138,12 @@ Retiring a panel is three steps, all of them required:
   is waiting on the author's suggestions.
 - **Fig. 2G (alt)'s restored claim item: keep, reword, or cut.** This is the author's call
   (3a.2). It is now in `legends.md`.
-- **Fig. 2G (alt)'s "entirely its numerator"** is about three-quarters on these numbers (3a.3).
-  Rewording it is the author's call; it has not been changed.
+- ~~**Fig. 2G (alt)'s "entirely its numerator"** is about three-quarters on these numbers
+  (3a.3).~~ **Closed 2026-09-22** (3.9): the phrase is scoped to the timelines in 2G (alt) and
+  2H+I (alt), where Bcl-xL does not move (p 0.53 both), and each now says the genotype
+  interaction is a different contrast. The fraction stays out of both, by the author's ruling:
+  the two claims describe different contrasts and both hold. The decomposition lives in 2G's
+  own block.
 - **2G against 2G (alt) for the slot.** This was already open (below), and both changed on
   2026-09-21.
 - ~~**`legends.md` needs a real `rebuild_panels.R` run.**~~ **Done 2026-09-22** (3.4).
