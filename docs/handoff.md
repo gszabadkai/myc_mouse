@@ -1,9 +1,10 @@
 ---
 date: 2026-09-22
-tags: [project/myc_mouse, handoff, main, figure-1, figure-2, foxo3, verification]
+tags: [project/myc_mouse, handoff, main, figure-1, figure-2, foxo3, verification, human, follow-up]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
-  - docs/2026-09-21_two_timeline_verification.md       (READ FIRST -- script 54, the rulings of record, the four rates; section 9 is the 2026-09-22 Foxo3 record)
+  - docs/2026-09-21_two_timeline_verification.md       (READ FIRST -- script 54, the rulings of record, the four rates; sections 9-10 are the 2026-09-22 Foxo3 record)
+  - docs/2026-09-22_mitochondrial_priorities_followup.md (parked human follow-up; section 10 below)
   - figures/panels/PANELS.md                            (the manifest of record; from "The Figure-1 verification pass" on)
   - scripts/54_two_timeline_verification.R              (writes results/two_timeline_verification.rds)
   - scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R (PART I: the FOXO3 target programme)
@@ -19,13 +20,18 @@ relates-to:
 
 **2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
 
-Read this file first. Sections 1 to 3 are current as of **2026-09-22**. Section 3a is the
-2026-09-21 evening session. Sections 3b to 3g and 4 to 9 are carried over, and where today's
-work supersedes something in them, it is marked in place.
+Read this file first. Sections 1 to 3 are current as of **2026-09-22, end of day**. Section 3a
+is the 2026-09-21 evening session. Sections 3b to 3g and 4 to 9 are carried over, and where
+today's work supersedes something in them, it is marked in place. Section 10 holds the threads
+parked for after the manuscript.
 
-**The author has the read-only report in 3.3, on whether the FOXO3 chain has a timing
-problem, and will decide how the paragraph reads.** Nothing has been built from it. Start
-there, and wait.
+**Nothing from today is waiting on a ruling.**
+- **The FOXO3 question is closed.** The author ruled that Figure 1's Foxo3-to-PUMA link is
+  transcript-level and stays there: the activity step was tested three ways and none supports
+  it. It is a measured negative (3.5; the verification note, section 10).
+- **The afternoon's human analyses are parked** as a follow-up for after the manuscript
+  (3.6 to 3.8, section 10).
+- Start with section 2.
 
 ---
 
@@ -34,14 +40,15 @@ there, and wait.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. **It is the only branch**, local and remote |
-| HEAD | this handoff's commit, on top of `1a43f04` ("PANELS.md: the second Fig. 2H row no longer lists combined_df_annotated_raw.rds") |
-| pushed | everything through `1a43f04`. **This handoff's commit is local only:** push when the author says so |
+| HEAD | this handoff's commit, on top of `8114213` ("Follow-up note: subtype as the subject, not the confound") |
+| pushed | everything through `8114213`. **This handoff's commit is local only:** push when the author says so |
 | branches | every other branch was deleted on 2026-09-22 (3.1). Five are tagged `archive/*`: `analysis-exploratory`, `BlockA-revision-step-by-step`, `new-analysis`, `paper-figures`, `paper-final`. `experimental-cohorts` was not tagged; its tip `20104a3` is an ancestor of `main`. The other tags are `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction`. All eight tags are on the remote |
 | scripts | 49 to 54, all run; nothing new this session. 52 and 53 are the orthotopic escape series (53's PDF is `outputs/orthotopic/53_escape_dose.pdf`); 54 is the Figure-1 verification. **The next number is 55** |
 | results | **no object was written this session.** All were fresh by the rule as of 2026-09-21: Task D's re-sources (3b; the note's section 7), and 33 and 42 at 16:29 UTC. Checked today: script 47's object (2026-08-18) postdates `334ebab`. Script 23's object (2026-07-17) postdates its last commit, but predates `gsva_scores.rds` and `mitopps_scores.rds` (07-24) and `gsva_overview.rds` (07-29) |
 | panels | still 28 manuscript slots. **Fig. 2H's legend gained a bound** (3.2). **`legends.md` was regenerated** at 2026-09-22 11:44 by a real `rebuild_panels.R` run, 28 of 28 ok (3.4) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive since 2026-09-21 (`50a5638`). `.git` holds no Icon stubs; the six working-tree stubs under `data/` are gitignored |
-| scratch | none in the repo. This session's computations ran as read-only R in the session; 3.3 carries the code |
+| scratch | none in the repo. This session's computations ran as read-only R in the session scratchpad. The documents carry the code: 3.3 here, the verification note's 10.4, and the follow-up note's appendix |
+| human arm | **read-only inputs today:** `../myc_human_validation` (frozen at `d3ac60e`) and `../myc_human_exploratory`. Nothing was written to either. Two read-only `gh` fetches went into the scratchpad: the upstream Menegollo TCGA fork scripts, and the gene-set library's human bicluster workbook (the follow-up note, section 8) |
 
 **Untracked, and staying that way:**
 - the six `.txt` session exports at the repo root;
@@ -56,31 +63,30 @@ or depends on it.
 
 ## 2. Do this first
 
-1. **Read 3.3 and wait for the author's ruling on the FOXO3 paragraph.**
-   - The manuscript's chain is: respiratory priority falls, Foxo3 follows, PUMA follows.
-   - Bbc3's fall is entirely an interaction. The FOXO3 target programme is lower under MYC at
-     both ages, with no interaction detected.
-   - So either the link is written as transcript-level, or the chain has a gap at the activity
-     step. 3.3 says what the numbers allow.
-   - Build nothing until the author decides.
-2. **Still waiting from 2026-09-21: the seven-gene table** (3a.3). The author's suggestions for
+1. **Still waiting from 2026-09-21: the seven-gene table** (3a.3). The author's suggestions for
    what to build from it have not come, and nothing has been built.
-3. **Open, and the author's call: Fig. 2G (alt)'s restored claim item** (3a.2). Since today's
+2. **Open, and the author's call: Fig. 2G (alt)'s restored claim item** (3a.2). Since today's
    rebuild it is in `legends.md`, so it can be reviewed there.
-4. **Offered, not done: the isoform caveat in Fig. S2D (alt)'s legend.** The legend carries
+3. **Offered, not done: the isoform caveat in Fig. S2D (alt)'s legend.** The legend carries
    Cdkn2a's low-count caveat, but not the fact that a gene-level count cannot separate p19Arf
    from p16Ink4a (note section 9.3). This is the author's call.
-5. **Standing from 2026-09-10: the orthotopic conclusions of scripts 50 and 51 are void.**
+4. **Standing from 2026-09-10: the orthotopic conclusions of scripts 50 and 51 are void.**
    Read `docs/2026-09-09_orthotopic_identity_correction.md` before touching that dataset;
    3e and section 5 have the detail.
+5. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked
+   human threads (section 10).
 
 ---
 
 ## 3. What happened this session (2026-09-22)
 
-Three commits, all pushed: `dd58b8d`, `d3d7f3b` and `1a43f04`. There were also branch and tag
-operations, and two read-only reports: the `analysis-exploratory` resolution (3.1) and the
-FOXO3 timing report (3.3).
+Seven commits, all pushed: `dd58b8d`, `d3d7f3b`, `1a43f04`, `b881522` (this handoff's first
+version), `8e4dd96`, `531d531` and `8114213`. This handoff's update is local.
+
+There were also branch and tag operations, and these read-only analyses:
+- the `analysis-exploratory` resolution (3.1);
+- the FOXO3 timing report (3.3) and the dilution test that closed it (3.5);
+- three TCGA checks on the human arm's data (3.6 to 3.8).
 
 ### 3.1 The move recorded, and every other branch retired
 
@@ -229,6 +235,8 @@ weak, or the chain has a gap. Three questions were asked. Nothing was built or s
 - **At the activity step,** the programme shows no detected change within the window, and its
   point estimate has the wrong sign. The interval leaves room for a moderate fall.
 - **The chain has a gap at activity** that these data neither fill nor rule out.
+- **Ruled on the same day** (3.5): the activity step was tested again (the subset) and closed
+  as a measured negative.
 
 **To regenerate** (read-only, about 5 s):
 
@@ -275,6 +283,102 @@ print(round(confint(lm(ps[["Pyruvate metabolism"]] ~ factor(ps$timepoint, c("6W"
   - **By design:** script 16 (required by CLAUDE.md), script 39, `99_session_bootstrap.R`, and
     four older exploratory figures outside `figures/panels/`.
   - **The rest** are records and history.
+
+### 3.5 Dilution rejected, and the FOXO3 activity step closed -- `8e4dd96`
+
+**The question** (the author's): does the programme score's undetected interaction hide a
+responsive subset, targets falling under MYC within the window and averaged away?
+
+**The rules, declared before retrieval:**
+- at least 5 of the 38 genes with an interaction below -0.20;
+- the subset mean below -0.20, **and** the remainder within 0.10 of zero;
+- 1,000 seeded, baseMean-matched random sets.
+
+**Both tests fail.**
+- **k = 9 against a null median of 10** (32nd percentile). There is no hidden falling subset.
+- **The remainder mean is +0.161** (94th percentile).
+
+**The set skews the other way.**
+- 13 genes sit above +0.20, against a null median of 5, and the set's mean interaction is at
+  the 95th percentile.
+- Across the 38, interaction and the 6W MYC effect correlate at **-0.89**. That is the 0.487
+  rescaling.
+- The set is rich in genes MYC represses at 6W (Esr1, Bcl6, Ar, Plau, Tnfsf10, Cdkn1a, Id1),
+  whose repression relaxes by 12W. **The programme's interaction is the mirror of the global
+  fade, not a FOXO3 signal.**
+
+**Recorded as flaws or limits:**
+- **75% of random matched sets pass the rule as written.** The null carried the test.
+- **The six "drifting lower" genes** were defined after the numbers were seen. They are
+  descriptive only and were not tested.
+
+**The author's ruling.**
+- The activity step has been tested three ways: the score, the canonical targets and the
+  subset. None supports it.
+- **Figure 1's Foxo3-to-PUMA link is transcript-level, and it stays there.** This is a measured
+  negative, not an untested gap.
+
+**Where it is recorded.**
+- The verification note, **section 10**, set out like Check 1's failure. It has a pointer at the
+  head of section 1, and 9.1's "not ruled on" sentence now points to it.
+- **Esr1 is flagged for a future session:** the only raw interaction p below 0.05 in the set
+  (+0.813), mostly the fade (7.7th percentile of script 44's scan). See note 10.3 and section 10.
+
+### 3.6 TCGA: the ESR1-high and MYC-high high-mitochondria groups (read-only)
+
+This is cross-sectional, association only. It is recorded in the follow-up note, section 3.1.
+- **The data:** Menegollo's published fork calls on 849 TCGA tumours.
+  - MB2 upper is "MYC-high" (M_a median +0.56, 38% ER+).
+  - MB1 upper is "ESR1-high" (99% ER+).
+- **The two are not mutually exclusive:** 21 tumours are in both, against 9.4 expected (odds
+  ratio 3.1, 95% CI 1.7 to 5.5). The 21 are all ER+ and mostly LumB, with intermediate MYC
+  scores.
+- **ESR1 against the MYC score within the 158 high-mitochondria tumours:** rho -0.69, and -0.22
+  with the three groups held fixed.
+
+### 3.7 TCGA: do the two allocate the compartment differently? Parked -- `531d531`
+
+**Circularity was checked before any scoring.**
+- The fork-defining gene blocks were rebuilt from the upstream Menegollo scripts. MB2's is
+  confirmed (rho 0.975), and MB1's is the best-supported candidate (0.88).
+- The blocks are 7 to 13% MitoCarta. MB2's high side over-represents translation and
+  respiratory genes, at 1.4 to 3.2 times the denominator rate.
+
+**The primary ER+ contrast** (21 both-forks against 65 MB1-upper-only):
+- import +0.027, translation +0.027, OXPHOS subunits -0.007;
+- no interval excludes zero, and none lies below it.
+- **The verdict: UNTESTABLE, not refuted.**
+
+**Power:**
+- The design detects 0.70 SD, and the observed effects are about 0.3 SD.
+- **A follow-up needs about 116 both-forks tumours.**
+- Script 07's null is shifted for this contrast (the median pathway sits at the 86th
+  percentile).
+
+**The secondary contrast is confounded by subtype.** 98 of 142 pathways differ, which is what a
+basal-versus-luminal difference looks like.
+
+**Parked** as `docs/2026-09-22_mitochondrial_priorities_followup.md`, with section 10 of this
+handoff created to point at it.
+
+### 3.8 Subtype as the subject, and what separating it costs -- `8114213`
+
+**The author's framing** is in the follow-up note, section 6.
+- For a future paper, subtype is the hypothesis: developmental state sets mitochondrial
+  priorities, with the oncogene on top.
+- **The prediction is declared in advance:** the subtype signal large, the MYC signal small.
+  Today's result must not be cited as support.
+
+**The cost check** (TCGA and SCAN-B, on M_a): the covariance breaks on the **luminal side only**.
+- MYC-high luminal tumours are plentiful: 140 and 623.
+- MYC-low basal tumours barely exist: 8 and 11.
+- **SCAN-B is enough for the main effects.** The detectable MYC slope with subtype held fixed is
+  0.060 SD per SD, but about 90% of that estimate comes from luminal tumours.
+- **SCAN-B is not enough for the basal side.** A within-basal contrast detects only d 0.86, and
+  d 0.5 would need a cohort of about 9,400.
+- The scarcity may be biological.
+
+**Everything through `8114213` was pushed at the author's word.**
 
 ---
 
@@ -846,6 +950,21 @@ have moved since, so search for the headings instead.
 
 ## 5. Corrections that must not be re-introduced
 
+**Added 2026-09-22, afternoon: the dilution test and the human checks** (the verification
+note's section 10; the follow-up note; 3.5 to 3.8).
+- **The FOXO3 activity step is a measured negative, not an untested gap.** It was tested three
+  ways, and none supports it. There is no hidden falling subset in the target set.
+- **The programme's flat interaction is the mirror of the global fade,** not a FOXO3 signal.
+- **A subset rule without the null built in discriminates nothing.** The dilution rule as
+  written passes 75% of random matched sets.
+- **The six "drifting lower" genes are descriptive.** Never cite them as a finding.
+- **Human allocation (MYC-high against ER-high): untestable at n = 21, not refuted.** Never read
+  those near-zero estimates as evidence of similarity.
+- **The ESR1-high and MYC-high high-mitochondria groups overlap** (21 tumours). They are not
+  two exclusive routes, and the whole comparison is association only.
+- **In the human cohorts, a "MYC effect adjusted for subtype" is about 90% a luminal
+  estimate.** MYC-low basal tumours barely exist (8 in TCGA, 11 in SCAN-B).
+
 **Added 2026-09-22: Foxo3, ARF and the pyruvate arm** (the note, section 9, and 3.3).
 - **The Foxo3 transcript is not FOXO3 output.** The target programme is lower under MYC at
   both ages, with no interaction detected. Do not write that FOXO3 "switches PUMA on" in this
@@ -974,9 +1093,12 @@ Retiring a panel is three steps, all of them required:
 
 **New 2026-09-22:**
 
-- **The FOXO3 paragraph: transcript-level link, or a stated gap at activity?** This is waiting
-  on the author (3.3).
-- **Fig. S2D (alt)'s legend lacks the p19Arf/p16Ink4a isoform caveat** (section 2, item 4). It
+- ~~**The FOXO3 paragraph: transcript-level link, or a stated gap at activity?**~~ **Resolved
+  2026-09-22:** the author ruled that the link is transcript-level and the activity step is a
+  measured negative (3.5).
+- **Parked, after the manuscript:** the human mitochondrial-priorities thread and Esr1
+  (section 10).
+- **Fig. S2D (alt)'s legend lacks the p19Arf/p16Ink4a isoform caveat** (section 2, item 3). It
   was offered, not done.
 - **One ggplot2 warning in the rebuild** ("Vectorized input to `element_text()`"), from a panel
   other than 2H. It is not traced (3.4).
@@ -1053,8 +1175,8 @@ Script 52 has since closed C1 (3c), so read the orthotopic items against
 - The `Myc` 7.5x fat-pad discrepancy is open and needs per-epithelial-cell measurement to
   settle. Do not import either dataset's `Myc` scale into the other.
 
-**Everywhere (updated 2026-09-22):** `main` is the only branch, pushed through `1a43f04`,
-and only this handoff's commit is local.
+**Everywhere (updated 2026-09-22, end of day):** `main` is the only branch, pushed through
+`8114213`, and only this handoff's commit is local.
 
 ---
 
@@ -1118,7 +1240,8 @@ there.
 
 - **What reshapes mitochondrial priorities in high-mitochondria human tumours** (MYC-high
   against ER-high): `docs/2026-09-22_mitochondrial_priorities_followup.md`. Untestable at
-  n = 21, not refuted. A follow-up needs about 116 both-forks tumours.
+  n = 21, not refuted. A follow-up needs about 116 both-forks tumours. Its section 6 has the
+  subtype framing and the cost of separating subtype from MYC.
 - **Esr1**, from the FOXO3 dilution test (2026-09-22): the only gene in the FOXO3 target set
   with a raw interaction p below 0.05 (+0.813, raw p 0.036, IHW 1.00).
   - MYC represses it at 6W (-0.813) and not at 12W; most of that is the global fade (7.7th
