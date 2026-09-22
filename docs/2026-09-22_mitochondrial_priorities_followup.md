@@ -239,7 +239,112 @@ no.** A future session must not read today's near-zero estimates as evidence of 
 
 ---
 
-## 6. Link back
+## 6. Subtype as the subject, not the confound
+
+Added 2026-09-22, after the result above; the author's framing.
+
+### 6.1 Today it stays a confound
+
+The basal-versus-luminal difference covaries with MYC-versus-ER, and this design cannot separate
+them. Nothing in this section changes that. **The secondary three-group contrast (3.6) remains
+uninterpretable.**
+
+### 6.2 For the follow-up paper, it is the hypothesis
+
+- **PAM50 subtypes are named after normal mammary cell states,** and are widely read as
+  reflecting differentiation state and cell of origin.
+- **The mouse arm of the current manuscript** shows a developmental programme reallocating the
+  mitochondrial compartment independently of MYC (section 7).
+- **If subtypes are developmental states,** subtype-associated mitochondrial allocation is the
+  human counterpart of that mouse result.
+- **The question then becomes what the paper is about:** does the developmental state a tumour
+  arises in set its mitochondrial priorities, with the oncogene acting on top?
+
+### 6.3 The prediction, declared in advance (2026-09-22)
+
+> **If allocation follows developmental state rather than oncogene, the subtype signal should
+> be large and the MYC signal small.**
+
+Today's underpowered result is consistent with that. That is exactly why the prediction is
+declared here, **before** the better-powered version is run. **Today's result must not be cited
+as support for it.**
+
+### 6.4 What this framing enables that today's design cannot
+
+- **Scoring tumour subtypes against normal mammary differentiation states,** not only against
+  each other. Normal tissue has both a hierarchy and an allocation profile.
+  - Constraint: MitoPPS is cohort-relative. A normal reference must be scored in the same run
+    as the tumours, or compared by pattern and rank, never by value (the standing rule on
+    cohort-relative scores).
+- **Posing the human question as whether subtypes recapitulate the mouse's pubertal-to-adult
+  reallocation,** rather than as a free comparison. The mouse supplies the axis.
+  - The concrete object is the wild-type 6-to-12W priority change across the 143
+    MitoPathways (`background_vs_myc.rds$ruler`, column `p_tn`).
+  - All 142 human MitoPathways appear by name in the mouse ruler, which adds only its two
+    synthetic apoptosis pathways. So the axis carries over across the 141 shared non-mtDNA
+    pathways with no gene-level ortholog mapping. But only the pattern may be compared, never
+    the MitoPPS values (the validation repo's rule).
+- **Precedent in the frozen validation plan:** its Block D2 sketched a cell-of-origin analogue,
+  a luminal-progenitor score minus a mature-luminal score. It mapped the progenitor score to
+  MB2's upper fork and the mature-luminal score to MB1's
+  (`myc_human_validation/docs/2026-08-27_human_validation_plan.md`, "Block D2").
+
+### 6.5 The required design is different, not just larger -- and what it costs in n
+
+**Subtype and oncogene score must be separable.** That means enough MYC-high luminal and
+MYC-low basal tumours to break their covariance.
+
+This was checked on 2026-09-22, before assuming SCAN-B is enough. The MYC score is M_a (Felsher,
+MitoCarta-stripped, GSVA; the validation repo's primary), in TCGA and in SCAN-B, where the
+validation repo's replication scored it. "MYC-high" and "MYC-low" are the cohort's own top and
+bottom tertiles. Luminal means LumA plus LumB. Powers are at 80%, at alpha 0.05 and with
+Bonferroni correction across 142 pathways.
+
+| | TCGA-BRCA | SCAN-B (GSE202203) |
+|---|---|---|
+| tumours with PAM50 (basal + luminal) | 981 (867) | 3,143 (2,753) |
+| R^2 of M_a on PAM50, five levels | 0.38 | 0.28 |
+| R^2 on basal versus luminal; variance inflation | 0.32; 1.47 | 0.21; 1.27 |
+| M_a median: basal / LumA / LumB | +0.47 / -0.32 / +0.02 | +0.45 / -0.29 / +0.01 |
+| **MYC-high luminal** | **140** (20% of luminal) | **623** (26%) |
+| **MYC-low basal** | **8** (4.7% of basal) | **11** (3.5%) |
+| basal below the cohort's median M_a (a lenient "low") | 13 (7.6%) | 19 (6.0%) |
+| detectable MYC slope with subtype held fixed (SD per SD M_a) | 0.115 / 0.182 | 0.060 / 0.095 |
+| share of that slope's leverage from luminal tumours | 86% | 92% |
+| detectable subtype effect with MYC held fixed (d) | 0.29 / 0.46 | 0.19 / 0.30 |
+| within luminal, MYC-high against MYC-low (d) | 0.29 / 0.45 | 0.14 / 0.23 |
+| **within basal, MYC-high against MYC-low (d)** | **1.02 / 1.60** | **0.86 / 1.36** |
+
+**The covariance can be broken on the luminal side only.**
+- MYC-high luminal tumours are plentiful.
+- MYC-low basal tumours barely exist: 8 in TCGA and 11 in SCAN-B, and only 13 and 19 even at a
+  median threshold.
+
+**What SCAN-B is sufficient for:**
+- the main-effects separation: MYC with subtype held fixed, and subtype with MYC held fixed;
+- MYC within luminal tumours.
+- **But the "MYC effect adjusted for subtype" is about 90% a luminal estimate.** Carrying it
+  over to basal tumours assumes there is no subtype-by-MYC interaction.
+
+**What SCAN-B is not sufficient for:** the basal side. That covers whether MYC-low basal tumours
+allocate differently from MYC-high ones, and whether MYC's effect differs by subtype.
+- At SCAN-B's rates, a within-basal contrast at d = 0.5 needs about 33 MYC-low basal tumours.
+  That means about 950 basal tumours, and a cohort of about **9,400**.
+- At d = 0.3 it needs about 91, meaning about 2,600 basal tumours and a cohort of about
+  **26,000**.
+
+**The scarcity may be biological, not a sampling problem.**
+- If basal tumours are near-uniformly MYC-high on this score, no cohort breaks that side of the
+  covariance.
+- A follow-up would then have to say so, and ask the MYC question within luminal tumours only.
+  Luminal tumours carry the within-subtype MYC range in both cohorts.
+
+**Caveat before any design is fixed:** M_a is one estimator. The exploratory repo holds 21, and
+the off-diagonal counts should be rechecked on them.
+
+---
+
+## 7. Link back
 
 This connects to the mouse result that a developmental programme reallocates mitochondrial
 priorities independently of MYC. That is the current manuscript's Figure 1 (the author's
@@ -252,7 +357,7 @@ reference).
 
 ---
 
-## 7. Provenance
+## 8. Provenance
 
 **Inputs, all read-only.**
 - **`myc_human_validation` at `d3ac60e`:**
@@ -471,4 +576,43 @@ for (p in c("Protein import and sorting", "Translation", "OXPHOS subunits",
   cat(sprintf("%-40s observed %+.3f | null median %+.3f (95%% %+.3f to %+.3f) | percentile %.1f\n",
               p, obs, median(nd), quantile(nd, 0.025), quantile(nd, 0.975), 100 * mean(nd < obs)))
 }
+```
+
+### A.3 The subtype-versus-MYC cost check (section 6.5)
+
+This reproduces every number in the 6.5 table exactly (checked on 2026-09-22). It is standalone
+and needs no workbook.
+
+```r
+# Section 6.5: can subtype and MYC score be separated, and at what n? Read-only.
+V  <- "/Users/gs/code/myc_human_validation/results/"
+tc <- merge(as.data.frame(readRDS(paste0(V, "tcga_brca_myc_scores.rds"))$estimators)[, c("patient", "M_a")],
+            as.data.frame(readRDS(paste0(V, "tcga_brca_covariates.rds"))$covariates)[, c("patient", "PAM50")],
+            by = "patient")
+tc$PAM50 <- sub("^BRCA_", "", tc$PAM50)
+g  <- readRDS(paste0(V, "scanb_bim_replication.rds"))$scores$gsva        # SCAN-B M_a, as replicated
+ph <- readRDS(paste0(V, "scanb_pheno.rds"))$pheno
+sb <- data.frame(M_a = as.numeric(g["M_a", ]), PAM50 = ph$PAM50[match(colnames(g), ph$sample_id)])
+z1 <- qnorm(0.975) + qnorm(0.8); z2 <- qnorm(1 - 0.025 / 142) + qnorm(0.8)
+cost <- function(d, nm) {
+  d  <- d[!is.na(d$PAM50) & !is.na(d$M_a), ]
+  t3 <- quantile(d$M_a, c(1/3, 2/3)); d$myc <- cut(d$M_a, c(-Inf, t3, Inf), labels = c("low", "mid", "high"))
+  bl <- d[d$PAM50 %in% c("Basal", "LumA", "LumB"), ]; bl$basal <- bl$PAM50 == "Basal"
+  r2 <- summary(lm(M_a ~ basal, bl))$r.squared; vif <- 1 / (1 - r2); n <- nrow(bl)
+  tab <- table(ifelse(bl$basal, "Basal", "Luminal"), bl$myc)
+  x <- resid(lm(M_a ~ basal, bl)); nb <- sum(bl$basal); nl <- sum(!bl$basal)
+  cat(sprintf("%s: n %d (basal+luminal %d) | R2 PAM50 %.2f, basal-vs-luminal %.2f, VIF %.2f\n", nm, nrow(d), n,
+      summary(lm(M_a ~ PAM50, d))$r.squared, r2, vif))
+  cat(sprintf("  MYC-high luminal %d | MYC-low basal %d | basal below cohort median %d\n",
+      tab["Luminal", "high"], tab["Basal", "low"], sum(d$M_a[d$PAM50 == "Basal"] < median(d$M_a))))
+  cat(sprintf("  MYC slope | subtype: %.3f / %.3f; luminal share of leverage %.0f%%; subtype | MYC: d %.2f / %.2f\n",
+      z1 * sqrt(vif / n), z2 * sqrt(vif / n), 100 * sum(x[!bl$basal]^2) / sum(x^2),
+      z1 * sqrt((1 / nb + 1 / nl) * vif), z2 * sqrt((1 / nb + 1 / nl) * vif)))
+  for (s in c("Luminal", "Basal")) cat(sprintf("  within %s, high %d vs low %d: d %.2f / %.2f\n", s,
+      tab[s, "high"], tab[s, "low"], z1 * sqrt(1 / tab[s, "high"] + 1 / tab[s, "low"]), z2 * sqrt(1 / tab[s, "high"] + 1 / tab[s, "low"])))
+}
+cost(tc, "TCGA"); cost(sb, "SCAN-B")
+# cohort size for the basal side, at SCAN-B's rates (11 of 317 basal are MYC-low; 317 of 3,143 are basal)
+for (dd in c(0.5, 0.3)) { k <- ceiling((z1 / dd)^2 * (1 + 11 / 271))
+  cat(sprintf("within-basal d = %.1f: %d MYC-low basal -> ~%.0f basal -> cohort ~%.0f\n", dd, k, k / (11 / 317), k / (11 / 317) / (317 / 3143))) }
 ```
