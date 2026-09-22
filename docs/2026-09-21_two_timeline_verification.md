@@ -21,6 +21,9 @@ The results that go against the draft come first.
 
 ## 1. Findings against the pre-declared rules
 
+**A second negative against declared rules, 2026-09-22: the FOXO3 dilution test FAILED, and the
+FOXO3 activity step is closed as a measured negative (section 10).**
+
 ### 1.1 CHECK 1 FAILED: a negative result against a pre-declared threshold
 
 **The rule, fixed before retrieval.**
@@ -460,9 +463,9 @@ from 2026-08-18 and postdates the script's last commit (`334ebab`), so it is fre
 - Fig. 2H places Foxo3's message beside Bbc3's. It does not show FOXO3 output tracking PUMA in
   this tissue.
 
-**"Not detected" is not "absent".** An NES carries no interval, and the per-animal score's
-interval
-has not been ruled on. Neither is quoted as "no interaction".
+**"Not detected" is not "absent".** An NES carries no interval. The per-animal score's interval
+(-0.42 to +0.57) and the activity question are closed in section 10. Neither is quoted as "no
+interaction".
 
 **Figure layer.**
 - Fig. 2H (`fig2_departure_from_dose.R`) gains a bound that reads these values from script 47's
@@ -516,3 +519,173 @@ PART 2b tests the mean interaction of its twelve "p53 target (activity)" genes a
   shared genes.
 
 Cite the gene-level numbers through script 42, never the module test.
+
+---
+
+## 10. DILUTION REJECTED, AND THE FOXO3 ACTIVITY STEP CLOSED AS A MEASURED NEGATIVE (2026-09-22)
+
+The question (author, 2026-09-22) was whether the programme score's undetected interaction
+(+0.072, 95% CI -0.42 to +0.57; section 10.2) is dilution. On that reading, a subset of FOXO3
+targets falls under MYC between 6 and 12 weeks and is averaged away by targets that do not move.
+
+### 10.1 THE DILUTION TEST FAILED: a negative result against pre-declared rules
+
+**The rules, fixed by the author before any number was seen.**
+- A *responsive subset* is at least 5 of the 38 genes with a negative interaction beyond -0.20,
+  the threshold script 54 uses.
+- Dilution is supported only if the subset's mean interaction is below -0.20 **and** the
+  remaining genes' mean is within 0.10 of zero.
+- The comparison is against chance: 1,000 seeded draws of 38 random expressed genes, matched on
+  baseMean.
+
+**Implementation choices, fixed before retrieval** (where the rules left a choice):
+- **The genes.** The 38 are the score's: `TFT_FOXO3_CHUNG` genes present in
+  `gsva_scores.rds$expr_mat`. The 39th member, G6pc, is absent there.
+- **The interactions** are script 03's raw MLE, from `interaction_results.rds`.
+- **The null.** Script 54's 20 baseMean quantile bins over expressed genes, sampled without
+  replacement, with the 38 excluded from the pool. Seed 20260922.
+- **The statistic compared with the null** is k, the number of genes below -0.20. The set counts
+  as unusual only if 5% or fewer of the draws reach its k.
+- **Disclosure.** Eight of the 38 genes' interactions had been seen earlier the same day: Sod2,
+  Cat, Gadd45a, Txnip, Cdkn1a, Bcl2l11, Bnip3l and Foxo1. Script 47's target table, also seen,
+  carries both timeline arms for fifteen of the 38.
+
+**The outcome.**
+
+| | observed | matched null, 1,000 draws | against the rule |
+|---|---|---|---|
+| subset size k (interaction < -0.20) | 9 of 38 | median 10, IQR 8 to 12, 95th percentile 14; 68% of draws reach 9 or more | **32nd percentile: FAILS** |
+| subset mean | -0.302 | median -0.359 | passes, **by construction**: every member is below -0.20 |
+| remainder mean (29 genes) | **+0.161** | median +0.061; 95% range -0.019 to +0.188 | **not within 0.10 of zero: FAILS** (94th percentile) |
+| the full dilution rule | not passed | passed by 75.2% of draws | see the flaw below |
+
+**BOTH DECLARED TESTS FAIL. There is no hidden falling subset.**
+- The FOXO3 set's lower tail is **smaller** than the median random matched set's: k = 9 against 10,
+  at the 32nd percentile.
+- None of the nine has a raw interaction p below 0.087.
+
+**The set is an outlier in the OPPOSITE direction.**
+- 13 genes sit above +0.20, against a null median of 5.
+- The remainder mean is at the 94th percentile.
+- The set's mean interaction (+0.051) is at the 95th percentile (null median -0.047).
+
+**The explanation is the global fade.**
+- Across the 38, interaction and the 6W MYC effect correlate at **-0.89** (Spearman).
+- That is the 0.487 rescaling (script 44). Under it, the expected interaction is
+  (0.487 - 1) x the 6W effect, about -0.51 x the 6W effect.
+- The set is rich in genes MYC represses at 6W, and that repression relaxes by 12W:
+
+  | gene | 6W MYC effect | interaction |
+  |---|---|---|
+  | Esr1 | -0.81 | +0.81 |
+  | Bcl6 | -0.75 | +0.49 |
+  | Ar | -0.67 | +0.46 |
+  | Plau | -0.65 | +0.42 |
+  | Tnfsf10 | -0.58 | +0.43 |
+  | Cdkn1a | -0.52 | +0.33 |
+  | Id1 | -0.50 | +0.50 |
+
+- **The programme's interaction is the mirror of the global fade, not a FOXO3 signal.**
+
+**A FLAW IN THE RULE, recorded so that it is visible.**
+- 75% of random matched sets (752 of 1,000) pass the dilution rule as written. The rule alone did
+  not discriminate; **the matched null carried the test.**
+- The subset-mean condition cannot fail, because the subset is defined by the same -0.20
+  threshold.
+- The other two conditions are met by most random sets. k >= 5 almost always holds (null
+  median 10), and a random set's remainder mean sits near zero (null median +0.061).
+
+**Descriptive only: the six genes "drifting lower".**
+- **The subset separates on where its genes start, not where they end.**
+  - 6W MYC effect: subset mean +0.20 against the remainder's -0.33 (Wilcoxon p 5.5e-5).
+  - 12W MYC effect: -0.10 against -0.16 (p 0.97).
+  - This is the fade again: sorting by interaction mostly sorts by the 6W effect.
+- **Three of the nine were already responding.** Cited2, Prdx3 and Dusp5 were MYC-induced at 6W
+  and fade at an ordinary rate: the 25th, 76th and 27th percentiles of script 44's departure
+  scan.
+- **Six had no 6W effect and are lower under MYC at 12W:** Fbxo32, Galt, Ccng2, Rbl2, Cdkn2d and
+  Gadd45a.
+  - **This group was defined after the numbers were seen, and it was NOT tested.** It is
+    descriptive only.
+  - None of its members reaches raw p 0.05 (0.087 to 0.53).
+- **The nine share no function.**
+  - Four are cell-cycle-arrest genes (Ccng2, Rbl2, Gadd45a, Cdkn2d), but Cdkn1a (+0.33) and
+    Ccnd1 (+0.25) go the other way.
+  - Their median baseMean is 796 against the remainder's 1,181 (p 0.17).
+
+### 10.2 The activity step, closed: three tests, and none supports it
+
+The manuscript's chain is: respiratory priority falls, Foxo3 follows, PUMA follows. Bbc3's fall
+is an interaction: flat in wild type (+0.062) and falling under MYC (-0.479), an interaction of
+-0.541. So the FOXO3 step has to change within the window. It has now been tested three ways.
+
+| test | what the step needs | what the data show |
+|---|---|---|
+| **the programme score** (script 23 PART 5b's construction: 38 genes, per animal, n = 24) | a negative interaction | +0.072 (SE 0.237), 95% CI -0.42 to +0.57, p 0.76. On a log2 scale (the same genes, centred, not scaled): +0.079 (-0.15 to +0.31), which excludes a fall the size of Bbc3's (-0.493 in the same model). Script 47's interaction NES is +1.09 (p 0.30) |
+| **the canonical targets:** Pdk4, Sod2, Cat, Gadd45a, Txnip | a fall under MYC within the window | None follows the programme. Pdk4 **rises** about four-fold under MYC at 6W (+2.001, p 1.7e-5) and returns by 12W (interaction -1.769, p 0.0071). That is the global fade: the 6.0th percentile of script 44's scan, and Pdk2, not a FOXO target, does the same (-0.845, p 0.008). Sod2 and Cat are higher under MYC at 6W (not significant); Gadd45a and Txnip have no significant effect at either age |
+| **the responsive subset** (10.1) | a falling subset beyond chance | k = 9 against a matched median of 10, and the set skews positive |
+
+**None supports the step. Figure 1's Foxo3-to-PUMA link is transcript-level, and it stays
+there.**
+- The Foxo3 transcript and Bbc3 share the departure from the dose line (near the 0.5th percentile
+  of script 44's scan).
+- FOXO3's measured output does not follow.
+- **This is a measured negative, not an untested gap.**
+- **What the negative bounds:** the score's interval alone does not exclude a moderate
+  programme-wide fall (log2 lower bound -0.15). The subset test is what removes dilution as the
+  explanation, and the set's skew runs the other way.
+
+The pyruvate arm (read the same day) does not change this.
+- Its 12W loss of priority is carried mostly by Pdk4 and Pdk2, the brakes on pyruvate
+  dehydrogenase: priority interaction -0.321, rank 1 of 143 (`background_vs_myc.rds$ruler`).
+- A priority score is not a flux.
+
+### 10.3 FOR A FUTURE SESSION, not now: Esr1
+
+- **Esr1 is the only gene in the FOXO3 set with a raw interaction p below 0.05:** +0.813 (SE
+  0.388, p 0.036; IHW 1.00).
+- **MYC represses it at 6W and not at all at 12W.**
+  - 6W: -0.813 (SE 0.274, p 0.0030; IHW 0.027).
+  - 12W: +0.000 (p 1.00).
+  - The two timelines: wild type -0.372 (p 0.18), Myc+ +0.441 (p 0.11). baseMean 915.
+- **Most of its interaction is the fade.** On script 44's departure scan it sits at z -1.30, the
+  7.7th percentile, not in the far tail where Foxo3 and Bbc3 sit (about the 0.5th).
+- **Why flag it: oestrogen receptor status is not peripheral in a mammary manuscript** (the
+  author, 2026-09-22).
+- **Flagged, not pursued.** It is exploratory, found in this test rather than pre-specified.
+  Esr1 is also expressed in the mammary stroma, not only in hormone-sensing luminal cells, so a
+  contamination check comes before any reading.
+- Sources: `interaction_results.rds` (script 03); `collapse_module_ownership.rds$collapse_genes`
+  (script 44).
+
+### 10.4 How 10.1 was computed
+
+This was computed read-only, in session, on 2026-09-22; no object was saved. It reproduces
+exactly: k 9; remainder +0.161, at the 94.3rd percentile; 68.0% of draws reach k; 75.2% pass
+the rule. The programme score and target numbers in 10.2 regenerate from the block in
+`docs/handoff.md` section 3.3 (the 2026-09-22 handoff).
+
+```r
+suppressPackageStartupMessages(library(DESeq2))
+source(here::here("functions", "reconcile_gene_symbols.R"))
+h   <- function(...) here::here(...)
+it  <- as.data.frame(readRDS(h("results", "interaction_results.rds"))$interaction_raw)
+gs  <- readRDS(h("results", "gsva_scores.rds"))
+gmt <- fgsea::gmtPathways(h("data", "genesets_from_library", "mammary_mito_myc_metab_v1_mouse.gmt"))
+g38 <- intersect(gmt[["TFT_FOXO3_CHUNG"]], rownames(gs$expr_mat))        # the score's 38
+ens <- vapply(g38, function(x) recon_to_ensembl(x, rownames(it)), character(1))
+iv  <- setNames(it$log2FoldChange, rownames(it))
+stat_of <- function(v) c(k = sum(v < -0.20), m_rem = mean(v[v >= -0.20]),
+                         pass = sum(v < -0.20) >= 5 && abs(mean(v[v >= -0.20])) <= 0.10)
+obs <- stat_of(iv[ens])
+bm  <- setNames(it$baseMean, rownames(it))
+expressed <- rownames(it)[is.finite(bm) & bm > 0 & is.finite(iv)]
+bin  <- setNames(cut(rank(bm[expressed], ties.method = "first"), 20L, labels = FALSE), expressed)
+pool <- split(setdiff(expressed, ens), bin[setdiff(expressed, ens)])
+need <- table(bin[ens])
+set.seed(20260922)
+nul <- t(replicate(1000, stat_of(iv[unlist(lapply(names(need), function(b)
+  sample(pool[[b]], need[[b]])))])))
+print(round(c(obs, p_k = mean(nul[, "k"] >= obs[["k"]]), pass_rate = mean(nul[, "pass"]),
+              pct_rem = 100 * mean(nul[, "m_rem"] < obs[["m_rem"]])), 3))
+```
