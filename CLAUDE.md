@@ -358,9 +358,19 @@ interaction, and the death composites are mito-defined (circular).** Two standin
 `pro_comp`/`priming` are built from `MITOCARTA_APOPTOSIS_PRO`/`_ANTI`, so any coupling to a
 mito axis is mito-vs-mito; and branch 1's `binom.test(..., p = 0.5)` is the **wrong null**
 under a global attenuation (every Myc-induced gene has ΔLFC>0 by construction — use the
-genome-wide supporting fraction, script 34 PART G). Also: **`results/death_timing_substrate.rds`
-on disk is STALE** — script 23 as committed builds an 11-row `convergence` table (`23:489-530`);
-the saved object has 9, so Parts 2b/5b have never been run. Re-source 23 before reading it.
+genome-wide supporting fraction, script 34 PART G). Also, `results/death_timing_substrate.rds`
+(saved 2026-07-17) **does** carry the 11-row `convergence` table, `$h1$arf_p53` (PART 2b) and
+`$puma_regulators` (PART 5b). Both gene tables reproduce exactly from `interaction_results.rds`
+(checked 2026-09-22), but the object predates `gsva_scores.rds`/`mitopps_scores.rds` (24 Jul) and
+`gsva_overview.rds` (29 Jul). Nothing downstream reads either part. Three do-not-cite rules
+(`docs/2026-09-21_two_timeline_verification.md` section 9):
+- **PART 2b's module test.** Its p53-target set contains Bbc3 and Bax, the genes whose fall it
+  explains, and it tests against mu = 0, the null script 34 retired. Cite the gene table via script
+  42's `exclusions$p53_axis` instead.
+- **PART 5b's per-animal correlations** (the retired n = 12 construction).
+- **ARF from Cdkn2a.** Its baseMean is 5.6 counts, and a gene-level count cannot tell p19Arf from
+  p16Ink4a, which share exons 2-3. "ARF not lost" cannot be read from these data. The
+  introduction's Cdkn2a escape route will draw exactly this question.
 
 Both go into the final analysis; report convergence and divergence, do not pick one.
 - Branch 1 (main `09`, `archive_main_pipeline/09_cell_death_pathway_summary.R`, ported

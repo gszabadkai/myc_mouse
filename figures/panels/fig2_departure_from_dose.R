@@ -27,11 +27,19 @@
 # about a gene's position. It is in the legend block.
 #
 # AND FOXO3 WAS NOT PRE-SPECIFIED. It was found in this scan. What makes it a
-# lead rather than one of forty-four names is the prior -- FOXO3 is PUMA's
-# canonical p53-independent activator, with direct ChIP evidence -- not its
+# lead rather than one of forty-four names is the prior -- FOXO3 is a
+# p53-independent activator of PUMA, with direct ChIP evidence -- not its
 # position, and the legend block says so in as many words. The forty-three other
 # genes below the 0.5th percentile are mostly unrelated (Fut9, Cntnap2, Inhba,
 # Wfdc2, Vtcn1), which is exactly why adjacency on its own proves nothing.
+#
+# THE PRIOR IS ABOUT FOXO3 ACTIVITY, AND THE TRANSCRIPT IS NOT ITS ACTIVITY
+# (2026-09-22). Script 47 PART I reads the FOXO3 target programme on the same
+# contrasts: it is LOWER under Myc at both ages and no interaction is detected,
+# with FOXO1 null as the control. So the transcript separates between
+# the timelines while the programme does not follow it. The panel places Foxo3's
+# message beside Bbc3's; it does not show FOXO3 output tracking PUMA in this
+# tissue. The legend block says both.
 #
 # THE MECHANISM IS IN THE TWO GENES' OWN NUMBERS, not on the panel:
 #   Foxo3  Myc effect +0.243 at 6W, -0.242 at 12W; the WILD-TYPE gland raises it
@@ -48,6 +56,9 @@
 #                                            and the two temporal contrasts the
 #                                            detail quotes: the object script 54
 #                                            reads, keyed by $collapse_genes$ens
+#   results/biogenesis_axis_developmental.rds (script 47 PART I) -- $foxo_lanes,
+#                                            the FOXO3 and FOXO1 target-set NES on
+#                                            the same five rankings
 #
 # Until 2026-09-21 the temporal contrasts and the symbol mapping came from
 # results/combined_df_annotated_raw.rds, credited here to script 03. That object is
@@ -108,6 +119,32 @@ stopifnot(!anyNA(MARK$int_p),
           all(MARK$int_padj > 0.05),
           # and its "both fall outside the ranking set"
           !any(cg$in_ranking[match(c("Bbc3", "Foxo3"), cg$gene)]))
+
+# the FOXO3 target programme on the same contrasts (script 47 PART I), for the
+# bound that separates Foxo3's message from its output
+ba_path <- here::here("results", "biogenesis_axis_developmental.rds")
+require_fresher_than(ba_path)
+ba <- readRDS(ba_path)
+if (is.null(ba$foxo_lanes))
+  stop("Fig. 2H needs script 47 PART I -- re-source scripts/47_... and try again")
+fl <- as.data.frame(ba$foxo_lanes)
+lane <- function(set, rk, col) fl[[col]][fl$pathway == set & fl$ranking == rk]
+stopifnot(
+  all(vapply(c("myc_6W", "myc_12W", "interaction"), function(rk)
+    length(lane("TFT_FOXO3_CHUNG", rk, "NES")) == 1L, logical(1))),
+  # the legend's "lower under MYC at both ages"
+  lane("TFT_FOXO3_CHUNG", "myc_6W",  "NES") < 0,
+  lane("TFT_FOXO3_CHUNG", "myc_12W", "NES") < 0,
+  lane("TFT_FOXO3_CHUNG", "myc_6W",  "padj_within_category") < 0.05,
+  lane("TFT_FOXO3_CHUNG", "myc_12W", "padj_within_category") < 0.05,
+  # its "interaction not detected"
+  lane("TFT_FOXO3_CHUNG", "interaction", "pval") > 0.05,
+  # its "FOXO1 null in both" -- the specificity control
+  all(fl$padj_within_category[fl$pathway == "TFT_FOXO1_CHUNG" &
+                              fl$ranking %in% c("myc_6W", "myc_12W")] > 0.05),
+  # and the transcript it is contrasted with separates the timelines
+  tlfc("Foxo3", "timepoint_neg_raw") > 0,
+  tlfc("Foxo3", "interaction_raw") < 0)
 
 # =============================================================================
 # the panel
@@ -212,9 +249,17 @@ LEGEND <- panel_legend(
                                                                sum(is.na(cg$gene[cg$z_resid > XHI]))) else "",
             format(nrow(cg), big.mark = ","))),
   bounds = c(
-    sprintf("FOXO3 WAS NOT PRE-SPECIFIED. It was found in this scan, and %d genes sit below the 0.5th percentile with it -- mostly unrelated (%s). Position alone is therefore not evidence: what makes Foxo3 a lead rather than one of forty-four names is the PRIOR, that FOXO3 is PUMA's canonical p53-independent activator with direct ChIP evidence. The text should introduce it that way round.",
+    sprintf("FOXO3 WAS NOT PRE-SPECIFIED. It was found in this scan, and %d genes sit below the 0.5th percentile with it -- mostly unrelated (%s). Position alone is therefore not evidence: what makes Foxo3 a lead rather than one of forty-four names is the PRIOR, that FOXO3 is a p53-independent activator of PUMA with direct ChIP evidence. The text should introduce it that way round.",
             nrow(tail05), paste(utils::head(near[!near %in% c("Foxo3", "Bbc3")], 6),
                                 collapse = ", ")),
+    sprintf("THE TRANSCRIPT AND THE TARGET PROGRAMME DO NOT AGREE. The Foxo3 transcript separates between the timelines: the wild-type gland raises it with age (%+.3f) and the Myc+ gland does not (%+.3f). Its target programme does not follow. The FOXO3 target set (Chung, %d genes) is LOWER under MYC at both ages, NES %+.2f at six weeks and %+.2f at twelve (adjusted p %.3f and %.3f within the TF category), and no difference between the ages is detected (interaction NES %+.2f, p %.2f). The FOXO1 set, the specificity control, is null in both genotype contrasts. So this panel places Foxo3's MESSAGE beside Bbc3's; it does not show FOXO3 OUTPUT tracking PUMA in this tissue, and the prior above is about output.",
+            tlfc("Foxo3", "timepoint_neg_raw"), tlfc("Foxo3", "timepoint_pos_raw"),
+            lane("TFT_FOXO3_CHUNG", "myc_6W", "size"),
+            lane("TFT_FOXO3_CHUNG", "myc_6W", "NES"), lane("TFT_FOXO3_CHUNG", "myc_12W", "NES"),
+            lane("TFT_FOXO3_CHUNG", "myc_6W", "padj_within_category"),
+            lane("TFT_FOXO3_CHUNG", "myc_12W", "padj_within_category"),
+            lane("TFT_FOXO3_CHUNG", "interaction", "NES"),
+            lane("TFT_FOXO3_CHUNG", "interaction", "pval")),
     "AND THE ARROW IS NOT THE OBVIOUS ONE. PUMA restrains the mitochondrial pyruvate carrier (Kim, Cancer Cell 2019), so \"PUMA falls, therefore respiration falls\" is backwards; respiration sits upstream (Dey & Moraes), and FOXO3 -> BBC3 closes it into a negative-feedback circuit rather than a linear chain. Nothing on this panel establishes a direction.",
     "A z of -2.5 among 8,774 genes is a RANK STATEMENT, not a test. It says these two are in the far tail of the residual distribution; it does not say the residual is significant, and the interaction p-values above make clear that none of them is after correction.",
     sprintf("The residual is measured against a rate fitted on OTHER genes (the 2,648 Myc-responsive ones), so a gene that is itself in that set contributes to its own expectation. Neither Bbc3 nor Foxo3 is: both fall outside the ranking set (their six-week adjusted p-values are %.2f and %.2f), which is a point in favour of the scan and against reading their six-week effects as established.",
@@ -222,7 +267,8 @@ LEGEND <- panel_legend(
     "Genotype contrasts are clean, but an interaction is a difference of two 6-versus-6 contrasts and is the least powered quantity in the design (median lfcSE 0.333 against 0.233)."),
   source = c(
     "results/collapse_module_ownership.rds (scripts/44_collapse_module_and_ownership.R) -- $collapse_genes, the per-gene departure scan; $defs$global_rate_fitted and $defs$pre_specified_genes",
-    "results/interaction_results.rds (scripts/03_deseq_results_qc.R) -- raw interaction p-values, and the two temporal contrasts quoted in the detail (the object script 54 reads), keyed by $collapse_genes$ens"))
+    "results/interaction_results.rds (scripts/03_deseq_results_qc.R) -- raw interaction p-values, and the two temporal contrasts quoted in the detail (the object script 54 reads), keyed by $collapse_genes$ens",
+    "results/biogenesis_axis_developmental.rds (scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R PART I) -- $foxo_lanes, the FOXO3 and FOXO1 target-set NES on the Wald-ranked contrasts"))
 
 save_panel_p(p, "fig2_departure_from_dose", height = 44)
 

@@ -82,6 +82,7 @@ Source: `$ratio_line`, `$ratio_resid`, `$ratio_band`.
 - **The sentence** is "**rose in the normal gland and did not rise under MYC**", not "fell under MYC": the Myc+ arm is flat.
 - **The pair that both miss 0.05** is the *genotype* pair: 6W +0.243 (p 0.057), 12W -0.242 (p 0.059). The significance prohibition binds those, not the temporal arms (ruling 1).
 - **Foxo3 is exploratory:** it was not pre-specified and was found in script 44's scan. Its p-values are in section 2 and are not quoted in the manuscript (ruling 2).
+- **The target programme does not follow the transcript** (2026-09-22): section 9.1.
 
 ### 1.5 Check 3 passes
 
@@ -419,3 +420,99 @@ Four distinct rescaling rates now exist in this analysis (author, 2026-09-21). E
   - **the ratio sentence becomes "by less than half as much"**, against the eight-ratio line's 0.43, not against any imported rate.
 - **The old Results text's "0.55-fold transcriptomic rescaling" is wrong.** It quotes a rounded copy of the mitochondrial slope as a transcriptome rate. It is being corrected in the manuscript, recorded here so the two do not drift back.
 
+
+---
+
+## 9. 2026-09-22: Foxo3's target programme, one manuscript sentence, and two caveats
+
+### 9.1 The FOXO3 target programme does not follow the Foxo3 transcript
+
+**Finding.** The Foxo3 transcript separates between the timelines (section 1.4). Its target
+programme does not follow. The programme is **lower under MYC at both ages**, and **no interaction
+is detected**. No panel carried this until Fig. 2H's legend block, today.
+
+**Source: script 47 PART I**, `results/biogenesis_axis_developmental.rds$foxo_lanes`. The object is
+from 2026-08-18 and postdates the script's last commit (`334ebab`), so it is fresh by the rule.
+- The set is `TFT_FOXO3_CHUNG`, 38 genes tested.
+- The score is fGSEA NES on the Wald-ranked contrasts. The adjusted p is within the TF category.
+
+| ranking | FOXO3 NES | p | adjusted p | FOXO1 NES (control) | adjusted p |
+|---|---|---|---|---|---|
+| MYC effect, 6W | **-1.76** | 0.0025 | **0.003** | -1.10 | 0.31 |
+| MYC effect, 12W | **-1.80** | 0.0024 | **0.003** | -1.21 | 0.20 |
+| interaction | +1.09 | 0.30 | 0.37 | -0.55 | 1.00 |
+| wild type, 6W -> 12W | +1.43 | 0.059 | 0.10 | -0.63 | 1.00 |
+| Myc+, 6W -> 12W | +1.71 | 0.0038 | 0.006 | -0.56 | 0.99 |
+
+**A second method agrees: script 23 PART 5b's programme score.**
+- The score is the row-z mean of VST expression over the same Chung set, per animal, n = 24,
+  tested with a linear model.
+- Genotype effect: -0.351 (p 0.006). Interaction: +0.072 (p 0.76).
+- Recomputed today from the current `gsva_scores.rds$expr_mat`, it is identical to the saved
+  object.
+- **PART 5b's per-animal correlations are not cited.** They are the n = 12 within-timepoint
+  construction that scripts 33, 35 and 36 retired.
+
+**Set against the transcript** (section 1.4, from `interaction_results.rds`):
+- Foxo3: wild type +0.473, Myc+ -0.013, interaction -0.486.
+- The genotype pair: +0.243 at 6W, -0.242 at 12W.
+- At 6W, then, Foxo3's message is higher under MYC while its target programme is lower.
+- Fig. 2H places Foxo3's message beside Bbc3's. It does not show FOXO3 output tracking PUMA in
+  this tissue.
+
+**"Not detected" is not "absent".** An NES carries no interval, and the per-animal score's
+interval
+has not been ruled on. Neither is quoted as "no interaction".
+
+**Figure layer.**
+- Fig. 2H (`fig2_departure_from_dose.R`) gains a bound that reads these values from script 47's
+  object and asserts them.
+- The prior loses "canonical" (section 9.2).
+- PANELS.md's Fig. 2H entry and its slot row are updated.
+- Rendered and inspected today. `legends.md` still needs the runner (handoff section 2, item 3).
+
+### 9.2 One manuscript sentence changes (author, 2026-09-22)
+
+"Foxo3, **which switches PUMA on without p53**" becomes "Foxo3, **a p53-independent activator of
+PUMA**".
+- **Why.** The relative clause asserted FOXO3 activity in this tissue, and the programme data
+  (9.1) show output going the other way. The new wording states the prior, which is a property of
+  FOXO3 from the literature, and claims nothing about activity here.
+- **In the figure layer,** Fig. 2H's legend and PANELS.md now say "a p53-independent activator of
+  PUMA".
+- **Left as written:** the older dated notes (2026-07-26, 2026-08-17, narrative v3), the header
+  comment of `figS2_puma_inducers.R`, and `paper/analysis_record.qmd` (not updated, by
+  instruction) still say "canonical". Newer supersedes older.
+
+### 9.3 Two caveats on ARF, for the introduction's Cdkn2a escape route
+
+The introduction names reduced Cdkn2a signalling as an escape route, so both will be asked.
+- **Cdkn2a is barely expressed.** Its baseMean is 5.6 normalised counts; script 42's
+  `exclusions$p53_axis` rounds it to 6.
+  - Its numbers are +0.139 at 6W, +0.535 at 12W and interaction +0.396, with IHW 1.00.
+  - At this depth a real half-log2 change can be missed, so these numbers are close to
+    uninformative in either direction.
+- **A gene-level count cannot distinguish p19Arf from p16Ink4a.**
+  - Cdkn2a encodes both from alternative first exons (1-beta and 1-alpha) that share exons 2 and 3,
+    and this pipeline counts at gene level.
+  - So "ARF not lost" cannot be read from these data, and neither can "p16 not lost".
+- **Where it is drawn:** Fig. S2D (alt), `figS2_p53_arm_alt.R`. Its legend carries the low-count
+  caveat but not the isoform one.
+- Script 23 PART 2b's verdict string ("ARF not lost") carries neither.
+
+### 9.4 Script 23 PART 2b's module test: do not cite
+
+PART 2b tests the mean interaction of its twelve "p53 target (activity)" genes against zero
+(+0.192, t p 0.18). The test has two faults:
+- **The target set includes Bbc3 and Bax,** the two genes whose fall the test sets out to explain.
+- **It tests against mu = 0,** the null that script 34 retired. Under the global attenuation, a
+  MYC-induced gene has a negative interaction by construction. The right expectation for each gene
+  is its own 6W effect times the rescaling rate (script 34 PART G; section 8's 0.487).
+
+**Nothing downstream is affected:**
+- the verdict is "rejected";
+- no script or panel reads `death_timing_substrate.rds$h1$arf_p53`;
+- the gene-level table is sound, and script 42's `exclusions$p53_axis` duplicates it for the
+  shared genes.
+
+Cite the gene-level numbers through script 42, never the module test.

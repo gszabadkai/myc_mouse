@@ -119,7 +119,7 @@ green**. Two rules travel with it:
 | **Fig. 2F** | `fig2_wt_mito_contraction.R` | s2p1: "MECs withdraw from the respiratory chain; OXPHOS subunit LFC **and** MitoPPS drop across all complexes while biogenesis pathways remain relatively stable … the maturing gland upregulates amino-acid and lipid catabolism" | `background_vs_myc.rds$ruler` (`c_tn`, `p_tn`), `substrate_specificity_tradeoff.rds` (`$comparator`, `$comparator_priority`, `$wt_null`, `$defs`) |
 | **Fig. 2I** | `fig2_oxphos_puma_coupling.R` | s2p2: "the interaction between MYC and OXPHOS subunit coupling to the PUMA/Bcl-XL ratio is highly significant (p = 0.0052), whereas no such link exists for other redox and metabolic axes" | `substrate_specificity_tradeoff.rds` (`$tradeoff`, `$tradeoff_perm`, `$ambient`), `priming_arm_teb.rds` (`$axis_scores`, `$purity`), `gsva_scores.rds` |
 | **Fig. S2D** | `figS2_puma_inducers.R` | s2p2: "no changes in the transcriptome of other known PUMA inducers were observed" | `priming_arm_teb.rds$exclusions$puma_inputs` |
-| **Fig. 2H** | `fig2_departure_from_dose.R` | s2p2: "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `interaction_results.rds`, `combined_df_annotated_raw.rds` |
+| **Fig. 2H** | `fig2_departure_from_dose.R` | s2p2: "closely tracking *Bbc3* was its known p53-independent activator, *Foxo3*" | `collapse_module_ownership.rds` (`$collapse_genes`, `$defs`), `interaction_results.rds`, `biogenesis_axis_developmental.rds$foxo_lanes` (script 47 PART I, since 2026-09-22) |
 | **Fig. 2G** | `fig2_priming_ratios.R` | s2p2: "most apoptotic priming ratios … remained stable, since both pro- and anti-apoptotic proteins diminished in accordance with the global rescaling … the PUMA/BCL-XL ratio showed a striking reversal" | `priming_arm_teb.rds` (`$priming`, `$pair_null`), `collapse_module_ownership.rds` (`$defs$global_rate_fitted`, `$wt_genes`) |
 | **Fig. S2C** | `figS2_priming_balance.R` | s2p1: "the overall apoptotic priming remains stable in the WT timeline" | `collapse_module_ownership.rds$wt_genes`, `substrate_specificity_tradeoff.rds$buffer`, `background_vs_myc.rds$ruler`, `interaction_results.rds` + `combined_df_annotated_raw.rds` (power control) |
 | **Fig. S1A** | `figS1_design_contrasts.R` | p1: "both longitudinal (6W versus 12W for WT or Myc+ genotypes) and cross-sectional (WT versus Myc+ at 6W or 12W) comparisons" | none (schematic) |
@@ -1142,8 +1142,18 @@ project's `Myc` casing so it matches Figs. 2E/2G/S1E).
 than a footnote. Forty-four genes sit below the 0.5th percentile with it and they are mostly
 unrelated (`Adh7`, `Agpat2`, `Aldh3a2`, `Ccnjl`, `Cntnap2`, `Inhba`, `Wfdc2`, `Vtcn1` …). **Position
 alone is therefore not evidence.** What makes `Foxo3` a lead rather than one of forty-four names is
-the **prior** — FOXO3 is PUMA's canonical p53-independent activator, with direct ChIP evidence —
+the **prior** — FOXO3 is a p53-independent activator of PUMA, with direct ChIP evidence —
 and the text should introduce it that way round.
+
+**2026-09-22: the transcript and the target programme do not agree, and the legend now says so.**
+The Foxo3 transcript separates between the timelines (wild type +0.473, Myc+ −0.013). Its target
+programme does not follow. Script 47 PART I's FOXO3 target set (Chung, 38 genes) is **lower under
+MYC at both ages**: NES −1.76 at 6W and −1.80 at 12W, adjusted p 0.003 for each within the TF
+category. No interaction is detected (NES +1.09, p 0.30), and FOXO1 is null as the control. The panel
+places Foxo3's *message* beside Bbc3's; it does not show FOXO3 *output* tracking PUMA. The prior is
+about output. A new bound in the legend block reads these values from
+`biogenesis_axis_developmental.rds$foxo_lanes`, and they are asserted. "Canonical" is dropped to
+match the manuscript's change (record: `docs/2026-09-21_two_timeline_verification.md` section 9).
 
 **The same departure is reached by two different routes, which the text should keep.** `Foxo3`:
 Myc raises it at six weeks (+0.243) and lowers it at twelve (−0.242), and the **wild-type gland
