@@ -1,0 +1,245 @@
+# =============================================================================
+# fig2_death_two_timelines_alt.R -- one BH3-only sensor is flat in development
+# and lost under Myc, and it is PUMA
+# -----------------------------------------------------------------------------
+# SLOT: Fig. 2G (alt). An ALTERNATIVE to fig2_priming_ratios.R, not a
+# replacement -- both are built and the author picks.
+#
+#   "... the PUMA/BCL-XL ratio showed a striking reversal ... This reduction was
+#    HIGHLY SPECIFIC TO THE Bbc3 TRANSCRIPT, as other BH3-only sensors did not
+#    show similar trends. Notably, Bbc3 mRNA levels remained constant in the WT
+#    gland but decreased significantly within the 6>12W_myc context (-0.48,
+#    padj = 0.016), demonstrating a specific interaction between genotype and
+#    timeline effects."
+#
+# WHY A SECOND VERSION. fig2_priming_ratios.R draws the RATIOS against the global
+# rescaling line, which is the first half of the sentence and is the right picture
+# for it. It cannot show the second half -- the specificity -- because a ratio
+# hides which of its two members moved, and it cannot show the third, that Bbc3 is
+# flat in the wild-type gland, because the wild-type timeline is not on it.
+#
+# THE PLANE IS FIG. 2F (alt)'s, one level down: x = what the wild-type gland does
+# across the window, y = what the Myc+ gland does, dashed diagonal = development
+# alone. Read the four regions:
+#
+#   on the diagonal, upper right   up in both -- purely developmental. Bmf sits
+#                                  here (+1.02 / +0.84, both significant): the
+#                                  one death gene the window moves, and Myc does
+#                                  nothing to it.
+#   at the origin                  Bcl2l1 (-0.11 / +0.07, neither significant).
+#                                  BCL-XL DOES NOT MOVE, so the ratio's reversal
+#                                  is entirely its numerator.
+#   below the line, below zero     lost under Myc and not in development. Bbc3
+#                                  (+0.06 / -0.48, padj 0.016) is alone among the
+#                                  BH3-only sensors.
+#
+# THE ONE HONEST QUALIFIER, and it is on the panel rather than buried: Bax also
+# falls significantly on the Myc timeline (-0.38, padj 0.008). Bax is an EFFECTOR,
+# not a BH3-only sensor, so "specific to Bbc3" holds as the sentence writes it --
+# but the sentence should say "among the BH3-only sensors", and a reader can see
+# Bax sitting there.
+#
+# Reads (read-only, no re-run):
+#   results/priming_arm_teb.rds (script 42) -- $machinery, the curated death
+#                                  roster with all four contrasts and padj
+# Output: outputs/figures/panels/fig2_death_two_timelines_alt.pdf
+# =============================================================================
+
+source(here::here("figures", "panels", "_panel_common.R"))
+
+pa_path <- here::here("results", "priming_arm_teb.rds")
+require_fresher_than(pa_path)
+m <- as.data.frame(readRDS(pa_path)$machinery)
+stopifnot(all(c("gene", "arm", "lfc_wt_time", "padj_wt_time", "lfc_myc_time",
+                "padj_myc_time", "lfc_interaction") %in% names(m)))
+
+# =============================================================================
+# the roster
+# =============================================================================
+# Script 42's `machinery` is a mixed table -- death machinery, biogenesis TFs and
+# OXPHOS blot targets in one object -- so the death arm is selected by its own
+# `arm` labels rather than by a list re-typed here. Everything that is a trigger,
+# an effector, a brake or an execution step; nothing that is biogenesis or OXPHOS.
+DEATH <- "BH3-only|effector|brake|execution|apoptosome|IAP"
+d <- m[grepl(DEATH, m$arm), ]
+d$sig <- !is.na(d$padj_myc_time) & d$padj_myc_time < 0.05
+# BAX IS NOT RINGED (author, 2026-09-21, reason corrected the same day). The ring
+# marks significance on the Myc+ ARM, and for Bax that is not the contrast any
+# claim rests on: what the text says about Bax concerns its interaction. So no
+# ring, its name in the plain ink, and no padj. This is NOT about pre-specification
+# -- exploratory values are shown elsewhere, labelled as such.
+UNMARKED <- "Bax"
+d$ring <- ifelse(d$gene %in% UNMARKED, "unmarked", ifelse(d$sig, "sig", "ns"))
+d$sensor <- grepl("BH3-only", d$arm)
+stopifnot(nrow(d) >= 12L, "Bbc3" %in% d$gene, "Bcl2l1" %in% d$gene)
+
+g <- function(x, col) d[[col]][d$gene == x]
+# The claim, asserted so a re-run cannot flip it silently: Bbc3 is flat in the
+# wild-type window and significantly down under Myc, and it is the only BH3-only
+# sensor that is.
+sens_sig <- d$gene[d$sensor & d$sig & d$lfc_myc_time < 0]
+# The sensors the claim's item names beside Bbc3 -- every BH3-only sensor on the
+# roster except Bbc3 and Bmf, which has an item of its own. Asserted against the
+# roster (2026-09-21): until then the item also named Bik, which script 42's
+# roster has never carried, so sprintf() returned character(0) and the whole
+# item -- the panel's claim -- had been missing from every rendered legend since
+# the panel was built. panel_legend() now stops on an item like that.
+OTHER_SENSORS <- c("Bcl2l11", "Bid", "Pmaip1")
+stopifnot(setequal(OTHER_SENSORS, setdiff(d$gene[d$sensor], c("Bbc3", "Bmf"))))
+stopifnot(identical(sens_sig, "Bbc3"),
+          g("Bbc3", "padj_wt_time") > 0.5, g("Bbc3", "padj_myc_time") < 0.05,
+          g("Bcl2l1", "padj_wt_time") > 0.5, g("Bcl2l1", "padj_myc_time") > 0.5,
+          # and Bmf is the developmental one: significant on BOTH timelines
+          g("Bmf", "padj_wt_time") < 0.05, g("Bmf", "padj_myc_time") < 0.05)
+
+# =============================================================================
+# the panel
+# =============================================================================
+LIM <- c(-1, 1) * max(abs(c(d$lfc_wt_time, d$lfc_myc_time))) * 1.08
+fx  <- (d$lfc_wt_time  - LIM[1]) / diff(LIM)
+fy  <- (d$lfc_myc_time - LIM[1]) / diff(LIM)
+
+# Where the three pieces of furniture go, checked in panel fractions rather than
+# eyeballed. Bmf sets the limits at +/-1.02, so the other seventeen transcripts
+# occupy the middle third and the outer thirds are genuinely empty: the diagonal's
+# label goes to the BOTTOM of the line and the quadrant note to the bottom RIGHT
+# (author, 2026-08-09), and the two keys keep the top left.
+stopifnot(
+  !any(fx < 0.36),                                  # the label's run and the keys
+  !any(fx > 0.60 & fy < 0.12))                      # the quadrant note's strip
+
+# The fill is the VERTICAL axis here -- what the Myc+ gland does -- because that
+# is the axis the sentence is about. Symmetric about zero, white pinned to zero.
+CLIM <- c(-1, 1) * max(abs(d$lfc_myc_time))
+
+p <- ggplot2::ggplot(d, ggplot2::aes(lfc_wt_time, lfc_myc_time)) +
+  two_timeline_base(LIM, diag_at = 0.15,
+                    quadrant = "below the line = lost under MYC",
+                    quadrant_at = c(0.99, 0.02), quadrant_hjust = 1) +
+  # Significance moves from the SHAPE to the RING, so that every transcript can
+  # carry the ramp: an open shape has no fill, and with only four significant
+  # points the old encoding would have left the colour on four of eighteen.
+  ggplot2::geom_point(ggplot2::aes(fill = lfc_myc_time, colour = ring),
+                      shape = 21, size = 1.9, stroke = 0.45) +
+  # The gene NAME carries the significance too (author, 2026-08-09), in the
+  # declared significance ink. Passed as a per-row constant in the plot data's own
+  # order rather than as an aesthetic, so the panel does not grow a third key.
+  ggrepel::geom_text_repel(ggplot2::aes(label = gene), size = 1.7,
+                           colour = ifelse(d$ring == "sig", unname(sig_cols[["sig"]]), "grey15"),
+                           fontface = "italic", seed = 6,
+                           max.overlaps = Inf, min.segment.length = 0,
+                           segment.size = 0.2, segment.colour = "grey60",
+                           box.padding = 0.30, point.padding = 0.20) +
+  heat_fill(CLIM, name = "6>12W_myc", breaks = c(-0.8, 0, 0.8)) +
+  ggplot2::scale_colour_manual(values = c(sig = "grey10", ns = "grey72",
+                                          unmarked = "transparent"),
+                               breaks = c("sig", "ns"),
+                               labels = c("padj < 0.05 under Myc", "n.s."),
+                               name = NULL) +
+  ggplot2::labs(x = "wild-type 6>12W  (log2FC)", y = "Myc+ 6>12W  (log2FC)") +
+  # THE BAR IS VERTICAL (author, 2026-08-09), laid the same way as the y axis it
+  # repeats -- the mirror of Fig. 2F (alt), whose fill is the x axis and whose bar
+  # is horizontal. The WIDE key (the rings, with its long padj label) takes the top
+  # row where there is room; the NARROW bar hangs below it down the empty left
+  # edge.
+  ggplot2::guides(
+    colour = ggplot2::guide_legend(order = 1, direction = "horizontal",
+      override.aes = list(size = 1.7, fill = "grey92")),
+    fill = ggplot2::guide_colourbar(
+      direction = "vertical", order = 2,
+      barwidth = ggplot2::unit(2, "mm"), barheight = ggplot2::unit(15, "mm"),
+      ticks.colour = "grey30", frame.colour = "grey30", frame.linewidth = 0.2,
+      title.position = "top", title.hjust = 0)) +
+  theme_panel(base_size = 6) +
+  # Both keys inside, top left: nothing rises under Myc while falling in
+  # development, so the wedge above the diagonal on the left cannot be occupied --
+  # and here the whole left third is empty, asserted above.
+  ggplot2::theme(
+    legend.position        = "inside",
+    legend.position.inside = c(0.01, 0.98),
+    legend.justification   = c(0, 1),
+    legend.box             = "vertical",
+    legend.box.just        = "left",
+    legend.box.spacing     = ggplot2::unit(0, "mm"),
+    legend.background      = ggplot2::element_blank(),
+    # theme_classic puts axis.text at rel(0.8) of base_size; a key sized from
+    # base_size would print larger than the axis it repeats.
+    legend.title           = ggplot2::element_text(size = 5.2,
+                               margin = ggplot2::margin(b = 0.5, unit = "mm")),
+    legend.text            = ggplot2::element_text(size = 4.8),
+    legend.margin          = ggplot2::margin(0, 0, 0.5, 0, "mm"),
+    legend.key.size        = ggplot2::unit(2.4, "mm"),
+    legend.spacing.y       = ggplot2::unit(0.3, "mm"),
+    plot.margin            = ggplot2::margin(1.5, 2.5, 1, 1.5, "mm"))
+
+# =============================================================================
+# the legend text (never drawn)
+# =============================================================================
+say <- function(x, nm = x)
+  sprintf("%s %+.3f in development (padj %.2f) and %+.3f under Myc (padj %.3f)",
+          nm, g(x, "lfc_wt_time"), g(x, "padj_wt_time"),
+          g(x, "lfc_myc_time"), g(x, "padj_myc_time"))
+# Bax without its padj (UNMARKED, above)
+say_pos <- function(x) sprintf("%s %+.3f in development and %+.3f under Myc", x,
+                               g(x, "lfc_wt_time"), g(x, "lfc_myc_time"))
+
+LEGEND <- panel_legend(
+  slot = "Fig. 2G (alt)",
+  what = paste0(
+    "The death machinery on both timelines at once: how each transcript changes ",
+    "across the wild-type window on the horizontal axis, and across the same ",
+    "window in the Myc+ gland on the vertical. The dashed diagonal is what a ",
+    "gene would do under development alone. Dark rings mark transcripts significant on ",
+    "the Myc timeline; Bax is drawn without one, because its change on the Myc ",
+    "timeline is not the contrast any claim about it rests on."),
+  detail = c(
+    sprintf("n = 6 per group; %d transcripts, selected from script 42's curated roster by its own arm labels (BH3-only triggers, effectors, brakes, execution steps). Raw (unshrunken) DESeq2 log2 fold changes; adjusted p-values are IHW (independent hypothesis weighting, a weighted Benjamini-Hochberg), genome-wide.",
+            nrow(d)),
+    sprintf("THE CLAIM, AND THE SCRIPT ASSERTS IT: %s -- and it is the ONLY BH3-only sensor that is flat in development and significantly down under Myc. The other sensors do not do it: %s.",
+            say("Bbc3"),
+            paste(vapply(OTHER_SENSORS, say, character(1)), collapse = "; ")),
+    sprintf("BCL-XL DOES NOT MOVE ON EITHER TIMELINE: %s. So the reversal of the PUMA:Bcl-xL ratio that Fig. 2G reports is entirely its numerator, which is what makes the ratio worth quoting as a PUMA result rather than a balance result.",
+            say("Bcl2l1")),
+    sprintf("AND THE PANEL CARRIES ITS OWN NEGATIVE CONTROL: %s. Bmf is the one death transcript the window itself moves, and it moves in BOTH genotypes by nearly the same amount -- it sits on the diagonal. A gene on the diagonal is developmental; Bbc3 is as far off it as anything here.",
+            say("Bmf")),
+    sprintf("ONE HONEST QUALIFIER, VISIBLE ON THE PANEL: %s -- unringed and without its padj, because no claim rests on Bax's Myc-timeline change. Bax is an EFFECTOR, not a BH3-only sensor, so \"specific to Bbc3\" is true as the sentence writes it -- but the sentence should say \"among the BH3-only sensors\", because a reader can see Bax in the same quadrant.",
+            say_pos("Bax")),
+    sprintf("The interaction terms rank the same way: Bbc3 %+.3f, Bax %+.3f, Bid %+.3f, Bak1 %+.3f, against Bcl2l1 %+.3f and Bmf %+.3f.",
+            g("Bbc3", "lfc_interaction"), g("Bax", "lfc_interaction"),
+            g("Bid", "lfc_interaction"), g("Bak1", "lfc_interaction"),
+            g("Bcl2l1", "lfc_interaction"), g("Bmf", "lfc_interaction"))),
+  bounds = c(
+    "BATCH = TIMEPOINT, and it bites BOTH axes: each coordinate is a temporal contrast and is DESCRIBED, not claimed. What is batch-CLEAN is the vertical distance from the diagonal, which is the interaction, because genotype is balanced within each extraction batch. Read the panel down from the line, not along the axes.",
+    sprintf("The adjusted p-values are genome-wide, so a gene that is significant here is significant against the whole transcriptome and not against this roster. Rings mark %d transcripts at padj < 0.05 on the Myc timeline (%s); Bax is left unringed, for the reason above.",
+            sum(d$ring == "sig"), paste(sort(d$gene[d$ring == "sig"]), collapse = ", ")),
+    "A TRANSCRIPT IS NOT AN APOPTOTIC STATE. How close a mitochondrion sits to the apoptotic threshold is a property of its protein complement; BH3 profiling is the measurement, and this panel is a reason to do it rather than a substitute.",
+    "Several of these transcripts are lowly expressed (Bid 148, Bbc3 152, Birc5 150 mean counts), so a real half-log2 effect could be missed in either timeline.",
+    "This panel and Fig. 2G are two readings of the same event, not two results: Fig. 2G draws the pro:anti ratios, this one draws their members against development."),
+  source = c(
+    "Script 42's saved object -- $machinery, the curated death roster with all four contrasts and their adjusted p-values",
+    "The grammar: two_timeline_base() in figures/panels/_panel_common.R, shared with Figs. 2F (alt), 2H+I (alt) and S2D (alt)"))
+
+save_panel_p(p, "fig2_death_two_timelines_alt", height = 76)
+
+# =============================================================================
+# SANDBOX -- run line-by-line in Positron; skipped by source()
+# =============================================================================
+if (FALSE) {
+
+  print(p)
+  print(LEGEND)
+
+  ## the drawn roster, ranked by what the Myc timeline does
+  d[order(d$lfc_myc_time),
+    c("gene", "arm", "baseMean", "lfc_wt_time", "padj_wt_time", "lfc_myc_time",
+      "padj_myc_time", "lfc_interaction")] |>
+    print(row.names = FALSE, digits = 3)
+
+  ## the BH3-only sensors alone -- the sentence's actual scope
+  d[d$sensor, c("gene", "lfc_wt_time", "lfc_myc_time", "padj_myc_time")] |>
+    print(row.names = FALSE, digits = 3)
+
+  ## what the same roster does on the GENOTYPE axis, which is Fig. 2G's ruler
+  d[, c("gene", "lfc_myc_6W", "padj_myc_6W", "lfc_myc_12W")] |>
+    (\(x) x[order(-x$lfc_myc_6W), ])() |> print(row.names = FALSE, digits = 3)
+}

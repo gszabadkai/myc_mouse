@@ -1,0 +1,9 @@
+/.quarto/
+**/*.quarto_ipynb
+# rendered build artifacts (source-only repo; regenerate with `quarto render`)
+/*.html
+# any depth, so a render of paper/archive/*.qmd does not leave an untracked
+# *_files/ directory behind (the repo root's *.html rule already covers the HTML)
+*_files/
+/_freeze/
+Icon?

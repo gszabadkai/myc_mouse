@@ -1,166 +1,903 @@
-RNAseq 6w vs 12w +/- MMTV-MYC mouse merged data June-September 2024
+# MMTV-Myc Mouse Timecourse Analysis
 
-# First attempt
-k693_rerun_analysis_GS.R --> analysis with interaction myc-status vs timepoint
-
-  - coldata setup: 
-
-from: data/FULL.DAT.COL.DATA.txt
-columns:
-- sample
-- group
-- myc_status
-- timepoint
-- prefix
-- suffix
-- numeric_part
-- alphabetical_part
-
-- counts: cts
-- issue?: 12W has about half total counts comapred to 6W
-
-- dds: design = ~ timepoint * myc_status) #this expands to ~ timepoint + myc_status + timepoint:myc_status
-  
-- coverage: 19K genes >10 counts
-  
-- issue?: data are noisy - none of the variance stabilising transformations, followed by distance measures or PCA ("log2(x + 1)", "vst", "rlog") reveal grouping by the actual experimental groups
-PC1 and 2 top genes hint to immune cells...
-  
-- further exploration with variancePartition: only small part of the variation is explained by any of the parameters: see coldata: (1|myc_status) + (1|timepoint) + (1|numeric_part) + (1|alphabetical_part) + (1|myc_status) + (1|timepoint) (1|prefix) (1|suffix)
-
-- moving on for DGE anyway: 
-
-- altogether this analysis provides a list, using the interaction terms to create lists of genes whihc are significant at 6W and 12W. The genes are used in Gprofiler, but it is is difficult to interpret the changes.
-
-- I have also tried a Cytoscpae analysis to visualise the gene lists, but it is not yet completed and/or informative.
-
-- Conclusion: this file is used as the base of the second analysis where both the interactiion and group-based design is used to create gene lists, to understand the difference in the Myc effect between 6W and 12W timepoints.
-
-# Second attempt
-Myc_timecourse_analysis_GS.R and the sandbox version, later updated to:
-
-# MYC-Dependent Temporal Transcriptome Analysis in MMTV tumour derived epithelial cells
-
-This repository contains the analysis pipeline and results for a transcriptomic study comparing MYC-positive and MYC-negative samples across two timepoints (6 weeks and 12 weeks). It uses RNA-seq data processed with DESeq2 to identify MYC-dependent expression programs and their temporal changes, with visualizations based on gene set heatmaps.
-
----
-
-## 📁 Project Structure
-
-<pre>
-myc-temporal-analysis/
-├── data/                      # Raw input files (counts, metadata, gene sets)
-├── results/                  # RDS results files (LFCs, annotations)
-├── outputs/heatmaps_int/     # Heatmaps generated from interaction design
-├── scripts/                  # Modular R scripts used for pipeline
-├── functions/                # Utility functions (heatmap generation, etc.)
-├── 00_setup_packages.R       # Package loading and environment setup
-├── run_all_scripts.R         # Wrapper to run full pipeline
-└── README.md                 # This file
-</pre>
-
----
-
-## 🔬 Analysis Overview
+This project investigates the effect of the **Myc oncogene** in early breast tumourigenesis using a mouse model. Myc is selectively and constitutively expressed in breast epithelial cells using the MMTV promoter.
 
 ### Experimental Design
-- 4 experimental conditions:
-  - Timepoints: 6W vs 12W
-  - Genotype: MYC-positive vs MYC-negative
-- 6 biological replicates per group
 
-### DESeq2 Designs
-1. **Interaction model**: `~ timepoint * myc_status`
-2. **Group-based design**: 4-level `group` factor with contrast `"12W_pos vs 6W_pos"`
+- **Model**: MMTV-Myc transgenic mice
+- **Groups**: 4 experimental groups (n=6 per group)
+  - `6W_neg`: 6 weeks, Myc negative (control)
+  - `6W_pos`: 6 weeks, Myc positive
+  - `12W_neg`: 12 weeks, Myc negative (control)
+  - `12W_pos`: 12 weeks, Myc positive
+- **Total samples**: 24
+- **Data type**: Bulk RNAseq
 
-### Gene Sets Used
-- 🧬 [MitoCarta 3.0](https://www.broadinstitute.org/mitocarta) mitochondrial pathways
-- 🔬 MYC signature gene sets (`.gmx` format, converted to mouse orthologs)
-- 📄 Felsher integrative MYC target list
+### Research Questions
 
----
-
-## Implemented Features
-
-- DESeq2 pipeline with `ashr` shrinkage and `IHW` p-value filtering
-- Classification of MYC effect over time:
-  - `direct_Myc_reduction/increase`
-  - `baseline_driven_reduction/increase`
-  - `no_change`
-- Heatmap generation:
-  - Log2FC matrix with annotations
-  - Z-scaled group expression heatmaps
-  - Per-gene annotations:
-    - MYC temporal classification
-    - Group-based significance
-- Modular structure with individual scripts for:
-  - Data loading
-  - Model fitting
-  - LFC classification
-  - Heatmap generation
-  - QC exploration
+1. What is the transcriptional effect of Myc expression in breast epithelial cells?
+2. How does the Myc effect evolve between 6 and 12 weeks?
+3. Which pathways and gene sets are affected by Myc expression?
 
 ---
 
-## Output Preview
+## Analysis Workflow
 
-Each gene set generates:
-- One PDF per heatmap type (shrunk and raw)
-- Row-annotated by MYC classification and group-level DE
-- OXPHOS subunits additionally annotated by complex and mtDNA encoding
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `00_setup_packages.R` | Load/install required R packages |
+| `01_load_data.R` | Load count data, create DESeq2 object, load gene sets |
+| `02_qc.R` | Quality control: PCA, sample distances, variance transforms |
+| `03_deseq_results_qc.R` | DESeq2 results extraction (raw + shrunken LFCs) with IHW, MA plots |
+| `04_fgsea_pathway_analysis.R` | fGSEA pathway analysis using Wald statistic ranking |
+| `05_fgsea_visualisation.R` | fGSEA visualisation: dot plots, bar charts, enrichment plots |
+| `06_fgsea_cross_sectional.R` | Cross-sectional fGSEA: Myc+ vs Myc- at each timepoint |
+| `07_fgsea_xs_visualisation.R` | Cross-sectional fGSEA visualisation and NES correlation plots |
+| `08_mitoPPS_analysis.R` | MitoPPS: mitochondrial pathway prioritisation scores (Monzel et al. 2025) |
+| `09_mitoPPS_vs_fgsea_comparison.R` | Compare fGSEA and mitoPPS across all MitoCarta pathways and four contrasts |
+| `10_interaction_fgsea_mitopps.R` | fGSEA on interaction Wald statistics; compare with mitoPPS interaction |
+| `11_interaction_gene_characterisation.R` | Gene-level dissection of interaction genes: direction, g:Profiler enrichment, leading edge overlap, selection vs remodelling |
+| `12_cell_death_pathway_analysis.R` | fGSEA on 15 regulated cell death modalities (Tang et al. 2024) across 5 contrasts |
+
+### Directory Structure
+
+> Only files tracked on the `new-analysis` branch are shown.
+> `results/` and `outputs/` are gitignored (generated at runtime by the scripts).
+
+```
+myc_mouse/
+├── data/
+│   ├── coldata.csv                        # Sample metadata
+│   ├── FULL.DAT.csv                       # Raw count matrix
+│   ├── FULL.DAT_copy.csv                 # Copy of raw count matrix
+│   ├── FULL.DAT.COL.DATA.txt             # Column metadata
+│   ├── OXPHOS_subunits.csv                # OXPHOS subunit gene list
+│   ├── mitocarta_pathways.csv             # MitoCarta gene sets (CSV)
+│   ├── mitocarta_pathways.xlsx            # MitoCarta gene sets (Excel)
+│   ├── Mouse.MitoCarta3.0.xls            # MitoCarta3.0 mouse (Broad)
+│   ├── Mouse_MitoCarta3_0.xls            # MitoCarta3.0 mouse (alt format)
+│   ├── Human_MitoCarta3_0.xls            # MitoCarta3.0 human
+│   ├── myc_signature_genesets.gmx         # MYC signature gene sets (Felsher)
+│   ├── felsher_integrative_signature.csv  # Felsher integrative MYC signature
+│   ├── cell_death_genes_consolidated.csv  # Cell death gene list
+│   ├── cell-death/                        # Tang et al. (2024) cell death gene sets
+│   │   ├── Apoptosis.csv
+│   │   ├── Ferroptosis.csv
+│   │   ├── Necroptosis.csv
+│   │   ├── Pyroptosis.csv
+│   │   └── ... (15 CSVs total)
+│   └── signature_go_mouse_cells.xlsx      # GO signature gene sets (mouse)
+├── scripts/                               # New-analysis pipeline (00-12)
+│   ├── 00_setup_packages.R
+│   ├── 01_load_data.R
+│   ├── 02_qc.R
+│   ├── 03_deseq_results_qc.R
+│   ├── 04_fgsea_pathway_analysis.R
+│   ├── 05_fgsea_visualisation.R
+│   ├── 06_fgsea_cross_sectional.R
+│   ├── 07_fgsea_xs_visualisation.R
+│   ├── 08_mitoPPS_analysis.R
+│   ├── 09_mitoPPS_vs_fgsea_comparison.R
+│   ├── 10_interaction_fgsea_mitopps.R
+│   ├── 11_interaction_gene_characterisation.R
+│   └── 12_cell_death_pathway_analysis.R
+├── functions/
+│   └── generate_heatmap.R                 # Heatmap generation utility
+├── external/
+│   └── mitotyping/                        # Monzel et al. (2025) mitoPPS reference
+│       ├── Code/                          # Figure reproduction scripts
+│       ├── Data/                          # Original and processed datasets
+│       ├── main.R
+│       ├── SOURCE.md
+│       └── README.txt
+├── results/                               # [gitignored] generated by scripts
+│   ├── dds_int.rds, dds_int_run.rds       # DESeq2 objects
+│   ├── interaction_results.rds            # Interaction model results
+│   ├── fgsea_results.rds                  # fGSEA results (temporal)
+│   ├── fgsea_xs_results.rds              # fGSEA results (cross-sectional)
+│   ├── mitopps_scores.rds                 # mitoPPS scores + annotations
+│   ├── mitopps_fgsea_comparison.rds       # fGSEA vs mitoPPS (script 09)
+│   ├── interaction_fgsea_mitopps.rds      # Interaction comparison (script 10)
+│   ├── interaction_gene_characterisation.rds  # Interaction gene analysis (script 11)
+│   └── cell_death_fgsea.rds               # Cell death fGSEA (script 12)
+├── outputs/                               # [gitignored] generated by scripts
+│   ├── qc/                                # QC plots (PCA, distances, variance)
+│   ├── deseq_qc/                          # MA plots, extended QC, results CSV
+│   ├── fgsea/                             # fGSEA dot/bar/enrichment plots
+│   ├── fgsea_cross_sectional/             # Cross-sectional fGSEA visualisations
+│   ├── mitopps/                           # mitoPPS PCA, heatmaps, dotplots
+│   ├── mitopps_fgsea/                     # fGSEA vs mitoPPS comparison plots
+│   ├── interaction_analysis/              # Interaction fGSEA + mitoPPS + gene characterisation plots
+│   ├── cell_death/                        # Cell death fGSEA plots and tables
+│   └── heatmaps_int/                      # Per-pathway heatmaps (raw + shrunk LFC)
+├── MYC_mouse_analysis_summary_before_revision_20251002.md
+├── NES_paradox_explanation.md
+├── myc_mouse.Rproj
+├── myc_mouse.code-workspace
+├── .gitignore
+└── README.md
+```
 
 ---
 
-## Setup
 
-Required R packages (auto-installed in `00_setup_packages.R`):
-- `DESeq2`, `apeglm`, `ashr`, `IHW`
-- `ComplexHeatmap`, `circlize`, `ggplot2`, `biomaRt`, `edgeR`, etc.
+## QC Summary
 
-Run full pipeline:
+### Library Size (Total Counts)
+
+| Group | Mean Counts | SD | Min | Max |
+|-------|-------------|-----|-----|-----|
+| 6W_neg | 22.6M | 2.5M | 18.8M | 25.3M |
+| 6W_pos | 23.8M | 3.3M | 19.7M | 29.0M |
+| 12W_neg | 12.9M | 1.8M | 10.2M | 14.7M |
+| 12W_pos | 13.5M | 2.6M | 9.9M | 16.1M |
+
+**Note**: 6W samples have approximately 2x more reads than 12W samples. This is a technical/batch effect that DESeq2's size factor normalization addresses.
+
+### Size Factors
+
+| Group | Mean | SD |
+|-------|------|-----|
+| 6W_neg | 1.30 | 0.25 |
+| 6W_pos | 1.29 | 0.24 |
+| 12W_neg | 0.81 | 0.21 |
+| 12W_pos | 0.83 | 0.20 |
+
+Size factors reflect the library size differences between timepoints. Within-group variation is modest, indicating consistent library preparation.
+
+### PCA Analysis
+
+- **PC1 (36%)**: Captures timepoint effect (6W vs 12W)
+- **PC2 (14%)**: Captures Myc status effect, particularly at 12W
+
+Key observations:
+- **12W_pos** separates clearly from other groups on PC2, suggesting a stronger Myc transcriptional effect at 12 weeks
+- **6W_pos** clusters tightly, with modest separation from 6W_neg
+- **6W_neg and 12W_neg** (controls) show considerable overlap across timepoints
+- No major outliers requiring removal
+
+### Sample Distance Heatmap
+
+- Samples cluster primarily by timepoint
+- 12W_pos samples show more internal variability
+- No obvious outliers
+
+---
+
+## QC Conclusions
+
+1. **Data quality is acceptable** — no major outliers, size factors are reasonable
+2. **Strong timepoint effect** — 6W vs 12W is the dominant source of variation (driven partly by library size differences)
+3. **Myc effect visible at 12W** — 12W_pos separates from 12W_neg on PC2, suggesting Myc-driven transcriptional changes become more pronounced over time
+4. **Interaction model is appropriate** — the Myc effect appears to differ between timepoints, supporting the `~ timepoint * myc_status` design
+5. **Group-based comparisons also warranted** — direct 12W_pos vs 6W_pos comparison will capture progressive Myc effects
+
+---
+
+## DESeq2 Results and QC
+
+### Analysis Scripts
+
+| Script | Description |
+|--------|-------------|
+| `03_deseq_results_qc.R` | Generate DESeq2 results (raw + shrunken LFCs) with IHW filtering, produce MA plots |
+
+### Results Summary
+
+Results were extracted from two model types:
+
+1. **Interaction model** (`~ timepoint * myc_status`): Tests main effects and interaction
+2. **Group model** (`~ group`): Direct pairwise comparisons between groups
+
+**IHW** (Independent Hypothesis Weighting) was used for p-value adjustment, using mean expression as the covariate.
+
+### Summary Statistics (padj < 0.1)
+
+| Contrast | Significant | Up | Down |
+|----------|-------------|-----|------|
+| Myc effect at 6W | 2,777 | 1,955 | 822 |
+| Myc effect at 12W | 239 | 193 | 46 |
+| Timepoint effect (Myc−) | 1,867 | 950 | 917 |
+| Timepoint effect (Myc+) | 2,623 | 1,078 | 1,545 |
+| Interaction (Myc × Time) | 0 | 0 | 0 |
+| Group: 12W_neg vs 6W_neg | 1,869 | 952 | 917 |
+| Group: 12W_pos vs 6W_pos | 2,619 | 1,081 | 1,538 |
+
+### Key Observations
+
+1. **Strong Myc effect at 6W** (2,777 genes), but **weak at 12W** (239 genes) in the interaction model
+2. **Interaction term yields 0 significant genes** — no detectable differential Myc effect between timepoints
+3. **Timepoint effect (Myc−) ≈ Group 12W_neg vs 6W_neg** — as expected, these are equivalent comparisons (1,867 vs 1,869 genes, near-identical)
+4. **Timepoint effect (Myc+) ≈ Group 12W_pos vs 6W_pos** — also equivalent (2,623 vs 2,619 genes)
+
+### MA Plot QC Findings
+
+- **Raw vs shrunken LFCs**: `ashr` shrinkage is well-behaved for main effects
+- **Interaction term**: Raw results show variance, but shrinkage collapses LFCs to near-zero, explaining the lack of significant hits
+- **Low-count genes**: Appropriately shrunk toward zero, especially at 12W where library sizes are smaller
+
+---
+
+## Extended QC: Understanding the Interaction Term
+
+### The Puzzle
+
+A key puzzle emerges from the results:
+
+- **No significant interactions** (0 genes at padj < 0.1)
+- **Yet ~2,600 genes differ between 12W_pos and 6W_pos**
+
+If so many genes change over time in Myc+ samples, why doesn't the interaction term detect differential Myc effects?
+
+### Clarification: DESeq2 Normalization Handles Library Size
+
+DESeq2's size factors correctly account for the ~2x library size difference between 6W and 12W samples. The group comparisons (e.g., 12W_pos vs 6W_pos) are **not confounded** by library size—they capture true biological differences (developmental changes, tumour progression) plus any residual technical variation beyond what size factors address.
+
+### Resolution: Timepoint Effects Are Highly Correlated
+
+We investigated the overlap between timepoint effects in Myc+ and Myc− samples:
+
+| Metric | Value |
+|--------|-------|
+| Significant in Myc+ (timepoint effect) | 2,623 |
+| Significant in Myc− (timepoint effect) | 1,867 |
+| **Overlap** | **961** (51% of Myc−) |
+| Unique to Myc+ | 1,662 |
+| Unique to Myc− | 906 |
+
+**LFC correlations:**
+- Genes significant in both: r = **0.96** (near-perfect)
+- All genes significant in either: r = **0.74**
+
+This explains the lack of interaction: genes changing over time follow **the same direction and similar magnitude** in both Myc+ and Myc− samples. The interaction term (difference-of-differences) is therefore close to zero.
+
+### Interaction P-value Distribution
+
+The interaction term p-value histogram is **near-uniform**, indicating no enrichment of true signal:
+
+- Minimum padj: **0.16** (no genes below 0.1)
+- Genes with p < 0.05: **~900** (expected by chance: ~925)
+
+However, for the 1,662 genes "unique to Myc+ timepoint effect":
+- **357 have interaction p < 0.05** (expected by chance: ~83)
+- **0 survive FDR correction** (padj < 0.1)
+
+This suggests a **weak signal** exists (more than expected by chance), but effect sizes are too small and/or variance too high for reliable detection after multiple testing correction.
+
+---
+
+## Interpretation: Interaction Term vs Group Comparisons
+
+Understanding the difference between the interaction term and the group comparisons is critical for this analysis.
+
+### What the Interaction Term Tests
+
+The interaction term (`timepoint12W.myc_statuspos`) asks:
+
+> **"Does the Myc effect differ between 6W and 12W?"**
+
+Mathematically:
+```
+Interaction = (Myc effect at 12W) − (Myc effect at 6W)
+            = (12W_pos − 12W_neg) − (6W_pos − 6W_neg)
+```
+
+A significant interaction would mean that Myc activates (or represses) a gene **differently** depending on the timepoint. For example:
+- A gene upregulated 4-fold by Myc at 6W but only 1.5-fold at 12W → negative interaction
+- A gene unchanged by Myc at 6W but strongly repressed at 12W → negative interaction
+
+**Result**: No significant interactions detected. This means the **Myc transcriptional program is stable between timepoints** — genes affected by Myc at 6W are affected similarly at 12W.
+
+### What the Group Comparison Tests
+
+The comparison `12W_pos vs 6W_pos` asks:
+
+> **"What genes differ between Myc+ samples at 12W versus 6W?"**
+
+This is a **simple difference**, capturing:
+1. **Developmental/tissue changes** that occur from 6W to 12W
+2. **Tumour progression** effects in Myc+ samples
+3. Any combination of the above
+
+Critically, this comparison does **not** tell us whether observed changes are Myc-specific or would occur anyway in Myc− controls.
+
+**Result**: 2,619 significant genes. This is similar to the timepoint effect in Myc+ samples (2,623 genes), confirming equivalence.
+
+### Key Insight: Most Timepoint Changes Are Shared
+
+The group comparisons reveal that:
+- **12W_neg vs 6W_neg**: 1,869 genes (developmental baseline)
+- **12W_pos vs 6W_pos**: 2,619 genes
+
+The ~750 additional genes in the Myc+ comparison could reflect:
+1. Myc-specific temporal dynamics (true interaction signal, too weak to detect)
+2. Power differences (Myc+ comparison may have slightly different variance)
+3. Borderline genes just crossing significance in one comparison
+
+The **high correlation** (r = 0.74–0.96) between Myc+ and Myc− timepoint effects confirms that most of these changes are **shared developmental effects**, not Myc-specific.
+
+### Summary Table: Which Comparison to Use
+
+| Biological Question | Comparison to Use |
+|---------------------|-------------------|
+| Does Myc change gene X expression? | Myc effect at 6W or 12W |
+| Does Myc affect gene X differently over time? | Interaction term |
+| How do Myc+ tumours change from 6W to 12W? | Group: 12W_pos vs 6W_pos |
+| Is a change Myc-specific vs developmental? | Compare 12W_pos/6W_pos to 12W_neg/6W_neg |
+| What's the baseline developmental effect? | Timepoint effect (Myc−) or Group: 12W_neg vs 6W_neg |
+
+### Biological Conclusions
+
+1. **The Myc transcriptional program is largely stable between 6W and 12W**
+   - No significant interactions = the Myc effect doesn't change dramatically over time
+   
+2. **Timepoint effects are predominantly developmental**
+   - Most genes changing from 6W to 12W do so similarly in both Myc+ and Myc− samples
+   
+3. **Genes "unique" to Myc+ timepoint are likely borderline cases**
+   - Not true Myc-specific temporal dynamics, but genes near the significance threshold
+
+### Practical Recommendations
+
+1. **Use the GROUP MODEL for clear pairwise comparisons**
+2. **Reserve the interaction term for hypothesis-driven checks** on specific candidate genes
+3. **Consider relaxed thresholds (padj < 0.2)** for exploratory interaction analysis if needed
+4. **Interpret timepoint differences cautiously** — most are shared between Myc+ and Myc−
+
+---
+
+## fGSEA Pathway Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `04_fgsea_pathway_analysis.R` | Gene set enrichment analysis for Myc+ vs Myc- progression |
+
+### Strategy
+
+Given the lack of significant interaction term hits, we use a comparative fGSEA approach:
+
+1. **Run fGSEA on 12W_pos vs 6W_pos** (Q1: How do Myc+ tumours change over time?)
+2. **Run fGSEA on 12W_neg vs 6W_neg** (Q3: What's the baseline developmental effect?)
+3. **Compare enrichment between comparisons** (Q2: Which changes are Myc-specific?)
+
+### Ranking Metric: Wald Statistic
+
+We use the **Wald statistic** (`stat` column from DESeq2) for ranking genes in fGSEA:
+
+```
+Wald = log2FoldChange / lfcSE
+```
+
+**Why Wald over sign(LFC) × -log10(p)?**
+
+| Metric | Wald statistic | sign(LFC) × -log10(p) |
+|--------|----------------|------------------------|
+| Source | Single model quantity | Derived from LFC + pvalue |
+| Properties | Already signed, incorporates effect size and precision | Amplifies extreme values |
+| Correlation | — | r = 0.95 with Wald |
+
+Empirical comparison showed:
+- **Wald detected 11 additional pathways** (44 vs 33 significant in Myc+)
+- **No pathways lost** — all sign(LFC) × -log10(p) hits also significant with Wald
+- Higher sensitivity for pathways with moderate but consistent effects
+
+### Gene Sets Analysed (89 total)
+
+| Source | Sets | Description |
+|--------|------|-------------|
+| MitoCarta 3.0 | 22 | Mitochondrial pathways |
+| MYC signatures | 17 | Felsher et al. (2022) + others |
+| Apoptosis | 2 | Pro/anti-apoptotic genes |
+| MSigDB Hallmark | 50 | Canonical pathway collection |
+
+### Output
+
+Results saved to `results/fgsea_results.rds` containing:
+- Individual fGSEA results for Myc+ and Myc- comparisons
+- Combined comparison table with pathway classification
+- Ranked gene lists
+
+### Interpretation Notes
+
+#### Temporal vs cross-sectional comparisons
+
+The fGSEA results reflect **changes over time within each genotype** (12W vs 6W), 
+not differences between Myc+ and Myc- at any given timepoint. A pathway classified 
+as "Myc+ specific" shows significant temporal change only in Myc+ tumours, but 
+this doesn't confirm the pathway differs between genotypes at 12W.
+
+| Observation | What it means | What it doesn't mean |
+|-------------|---------------|----------------------|
+| Negative NES in both genotypes | Both decrease over time | Nothing about absolute levels at 12W |
+| "Myc+ specific" | Significant change only in Myc+ | Not necessarily direct Myc regulation |
+| "Opposite effects" | Genotypes diverge over time | Could be direct or indirect |
+
+#### MYC target signatures decrease despite stable Myc mRNA
+
+All MYC target gene sets show significant negative enrichment in Myc+ tumours 
+(12W vs 6W), suggesting reduced transcriptional output from Myc over time. 
+However, **Myc mRNA itself shows no significant change** (log2FC = -0.10, 
+padj = 0.76), implying:
+
+- Post-transcriptional regulation (protein stability, localisation, modification)
+- Cofactor limitation (Max, Miz1, etc.)
+- Chromatin accessibility changes
+- Negative feedback from Myc targets
+
+#### Limitations
+
+These results identify pathways with differential temporal dynamics between 
+genotypes but cannot determine:
+
+- Absolute pathway activity levels at either timepoint
+- Whether "Myc+ specific" effects reflect direct Myc regulation
+- Causal relationships between Myc and pathway changes
+
+To address these limitations, additional analyses could include:
+- Myc+ vs Myc- fGSEA at each timepoint (requires genotype contrasts)
+- Leading edge analysis of MYC signatures
+- Expression analysis of Myc cofactors and regulators
+
+---
+
+## Cross-Sectional fGSEA Analysis
+
+### Scripts
+
+| Script | Description |
+|--------|-------------|
+| `06_fgsea_cross_sectional.R` | fGSEA on Myc+ vs Myc- contrasts at 6W and 12W separately |
+| `07_fgsea_xs_visualisation.R` | Visualisation of cross-sectional results and combined NES correlation plots |
+
+### Strategy
+
+The cross-sectional analysis complements the temporal analysis by asking a different question:
+
+- **Temporal** (scripts 04–05): How do pathways change *over time* within each genotype?
+- **Cross-sectional** (scripts 06–07): How do pathways differ *between genotypes* at each timepoint?
+
+fGSEA is run on two contrasts:
+1. **Myc+ vs Myc- at 6W** (early Myc effect)
+2. **Myc+ vs Myc- at 12W** (late Myc effect)
+
+Results are classified into categories: Stable (significant at both timepoints), 6W only (lost by 12W), 12W only (gained by 12W), Reversed, or Not significant.
+
+### Output
+
+Results saved to `results/fgsea_xs_results.rds` containing:
+- Individual fGSEA results for 6W and 12W cross-sectional contrasts
+- Combined comparison table with pathway classification
+- Pathway subsets (MYC, MitoCarta, Hallmark)
+
+### NES Correlation Plots
+
+Four plots combine information from the temporal and cross-sectional analyses to characterise the relationship between developmental and Myc-driven pathway changes.
+
+#### Plot 1: NES Correlation — Maintenance of the Myc Effect (`xs_nes_correlation.pdf`)
+
+- **X-axis**: Developmental baseline effect (NES: Myc- 12W vs 6W)
+- **Y-axis**: Change in cross-sectional Myc effect over time (NES₁₂W − NES₆W from Myc+ vs Myc-)
+- **Size**: -log10(padj) of the most significant comparison across all four contrasts
+- **Colour**: Developmental contribution (1/ΔNES where ΔNES = NES_pos − NES_neg from temporal)
+
+Interpretation: Pathways in the upper half *gain* Myc enrichment between 6W and 12W; pathways in the lower half *lose* it. The colour indicates whether the temporal difference between Myc+ and Myc- is large (near zero, grey) or small (saturated colour, meaning development drives a similar trajectory in both genotypes).
+
+#### Plot 2: Developmental Contribution (`xs_dev_contribution.pdf`)
+
+- **X-axis**: Developmental baseline effect (NES: Myc- 12W vs 6W)
+- **Y-axis**: Developmental contribution (1/[NES_pos − NES_neg])
+- **Size**: -log10(padj)
+- **Colour**: Myc+ temporal trajectory (NES: Myc+ 12W vs 6W)
+
+Interpretation: Pathways far from y = 0 have similar temporal trajectories in both genotypes (small ΔNES → large 1/ΔNES), suggesting development rather than Myc drives the change. Pathways near y = 0 have large Myc-specific temporal effects. The colour shows the direction of change in Myc+ cells.
+
+#### Plot 3: Temporal NES — Myc- vs Myc+ (`xs_nes_temporal_comparison.pdf`)
+
+- **X-axis**: NES (Myc- 12W vs 6W) — developmental trajectory
+- **Y-axis**: NES (Myc+ 12W vs 6W) — Myc+ trajectory
+- **Size**: -log10(padj)
+- **Colour**: Pathway category (MitoCarta, MYC Signature, Hallmark)
+
+Interpretation: Points on the diagonal have identical temporal trajectories in both genotypes. The deviation from the diagonal represents the Myc-specific component of temporal change. Key observations:
+
+- Most pathways cluster near the diagonal, confirming that developmental effects dominate temporal changes (consistent with the non-significant interaction term from DESeq2)
+- MitoCarta pathways (red) and MYC signatures (blue) tend to fall below the diagonal — both genotypes decline over time, but Myc+ declines more steeply
+- Pathways above the diagonal (e.g., estrogen response, androgen response) are enhanced in Myc+ relative to the developmental trend
+
+#### Plot 4: Cross-Sectional NES — 6W vs 12W (`xs_nes_crosssectional_comparison.pdf`)
+
+- **X-axis**: NES (Myc+ vs Myc- at 6W) — early Myc effect
+- **Y-axis**: NES (Myc+ vs Myc- at 12W) — late Myc effect
+- **Size**: -log10(padj)
+- **Colour**: Pathway category (MitoCarta, MYC Signature, Hallmark)
+
+Interpretation: Points on the diagonal have a stable Myc effect across timepoints. Deviations indicate pathways where the Myc effect changes over time. Key observations:
+
+- The majority of pathways are positive at both timepoints, clustering in the upper-right quadrant — Myc+ cells are enriched for these pathways relative to Myc- at both 6W and 12W
+- MYC signatures (blue) show slightly higher NES at 12W than at 6W (above the diagonal), despite declining in absolute terms over time (Plot 3) — because Myc- cells decline faster
+- Translation, OXPHOS, and mTORC1 signaling are strongly positive at both timepoints, confirming these as robust Myc-driven pathways
+
+### Reconciling Plots 3 and 4: A Key Insight
+
+MYC signature pathways show **negative NES in Plot 3** (both genotypes decline over time) but **positive NES in Plot 4** (Myc+ remains enriched relative to Myc- at both timepoints), with a slight increase at 12W (above the diagonal in Plot 4).
+
+This means: **MYC signatures decline in both genotypes over time, but they decline faster in Myc- than in Myc+.** The Myc transgene does not prevent the developmental decline in MYC pathway activity — it buffers against it. As the Myc- baseline drops further at 12W, the relative enrichment in Myc+ cells actually increases.
+
+This is consistent with the non-significant interaction term: the *absolute* Myc effect (difference-of-differences) is small, but the *relative* Myc effect (Myc+ vs Myc- at each timepoint) is maintained or even slightly enhanced.
+
+---
+
+## Mitochondrial Pathway Prioritisation Score (mitoPPS) Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `08_mitoPPS_analysis.R` | Compute raw MitoPathway scores and mitoPPS, statistical analysis, visualisation |
+
+### Method
+
+MitoPPS was computed following Monzel et al. (2025) (*bioRxiv* 2025.02.03.635951). For each sample, raw MitoPathway scores were calculated as the mean DESeq2-normalised count of member genes for each MitoCarta3.0 pathway (Sheet 4, mouse). MitoPPS was then derived via a three-step pairwise ratio normalisation: (1) all pairwise pathway ratios computed per sample, (2) each ratio corrected by its global mean across samples, (3) corrected ratios averaged per pathway per sample. This normalisation removes both total mitochondrial content and intrinsic scale differences between pathways, so mitoPPS reflects relative mitochondrial resource allocation — which pathways are selectively prioritised — independent of overall mitochondrial abundance. Values centre around 1.0 (dataset average prioritisation), with >1.0 indicating relative up-prioritisation and <1.0 down-prioritisation.
+
+### mtDNA Gene Handling
+
+Mouse mtDNA-encoded genes (13 protein-coding: mt-Nd1–6, mt-Co1–3, mt-Cytb, mt-Atp6, mt-Atp8) are transcribed at orders-of-magnitude higher levels than nuclear-encoded mitochondrial genes. Leaving them in their canonical MitoCarta3.0 pathways (OXPHOS complexes, mitochondrial central dogma) would dominate and distort those pathway scores. Therefore:
+
+1. All mt-* genes are **removed** from their original MitoCarta3.0 pathways
+2. A synthetic pathway **"mtDNA-encoded OXPHOS subunits"** is created containing all detected mt-* genes
+
+This preserves the interpretability of nuclear-encoded pathway scores while retaining the mtDNA-encoded contribution as its own pathway in the mitoPPS framework.
+
+### Additional Curated Pathways
+
+The parent MitoCarta3.0 "Apoptosis" pathway is retained, and two child pathways are added:
+
+- **Apoptosis-PRO** (25 genes): pro-apoptotic factors (Bax, Bak1, Bad, Bid, Casp3/8/9, Cycs, etc.)
+- **Apoptosis-ANTI** (9 genes): anti-apoptotic factors (Bcl2, Bcl2l1, Mcl1, etc.)
+
+### Results
+
+**Gene coverage:** 952 / 1037 MitoCarta genes found in expression data (91.8%), yielding 142 scoreable pathways.
+
+#### Myc Effect
+
+Myc+ samples show significant mitoPPS reprioritisation compared to Myc− at both 6W and 12W timepoints. The effect is highly consistent across timepoints (scatter plot: 6W vs 12W Myc effect), indicating that Myc imposes a stable mitochondrial prioritisation signature rather than a time-dependent one.
+
+| Effect (ANOVA) | Pathways padj < 0.05 | Pathways padj < 0.10 |
+|---|---|---|
+| myc_status | 34 | 49 |
+| timepoint | 7 | 21 |
+| interaction | 0 | 0 |
+
+#### Temporal Effect
+
+No pathways reach significance in the Myc− timecourse (6W→12W), but the Myc+ timecourse shows significant temporal reprioritisation. Critically, the two temporal trajectories are strongly correlated across all pathways (Pearson r = 0.75, p < 2.2e-16, slope = 0.76), indicating that the direction of age-associated mitochondrial reprioritisation is largely shared between Myc− and Myc+. The Myc− effect does not reach significance likely due to higher within-group variance rather than a genuinely absent effect. Myc therefore appears to amplify and stabilise an underlying physiological ageing-associated mitochondrial remodelling programme rather than inducing a novel one.
+
+| Pairwise contrast | Pathways padj < 0.05 | Pathways padj < 0.10 |
+|---|---|---|
+| Myc effect at 12W | 4 | 16 |
+| Myc effect at 6W | 0 | 6 |
+| Temporal in Myc+ | 0 | 9 |
+| Temporal in Myc− | 0 | 0 |
+
+### Heatmap Scaling
+
+Three heatmap variants are produced for mitoPPS, each answering a different question:
+
+| Heatmap | Scaling | Question answered |
+|---|---|---|
+| `heatmap_mitopps.pdf` | Row z-score | How does each pathway's prioritisation change across conditions? |
+| `heatmap_mitopps_col_zscore.pdf` | Column z-score | How are pathways ranked within each condition? (Closest to the mitoPPS concept) |
+| `heatmap_mitopps_unscaled.pdf` | None (log10) | Absolute prioritisation — both between-pathway and between-condition differences preserved |
+
+### Output
+
+Results saved to `results/mitopps_scores.rds` containing per-sample raw and mitoPPS scores, group means, ANOVA and pairwise statistics, pathway annotations, and PCA objects. All figures saved to `outputs/mitopps/`.
+
+---
+
+## fGSEA vs mitoPPS Comparison (MitoCarta Pathways)
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `09_mitoPPS_vs_fgsea_comparison.R` | Systematic comparison of fGSEA enrichment and mitoPPS reprioritisation across all 142 MitoCarta pathways and four contrasts |
+
+### Rationale
+
+fGSEA and mitoPPS measure fundamentally different things. fGSEA detects whether a pathway's genes are enriched at the extremes of a genome-wide differential expression ranking — it captures **absolute transcriptional change relative to the rest of the genome** (proportional change). mitoPPS measures whether a pathway's share of total mitochondrial expression changes — it captures **reallocation within the mitochondrial compartment**, independent of whether total mitochondrial content goes up or down. A pathway can be fGSEA-significant but mitoPPS-stable (it changes, but proportionally with other mitochondrial pathways), or mitoPPS-significant but fGSEA-non-significant (it is selectively reprioritised within mitochondria without standing out genome-wide).
+
+### Correlation Between Metrics
+
+The two metrics are positively correlated across all four contrasts, but the agreement is moderate, confirming they capture overlapping but distinct biology:
+
+| Contrast | Pearson r | p-value |
+|----------|-----------|---------|
+| Myc+ vs Myc− (6W) | 0.52 | 5.0 × 10⁻¹¹ |
+| Myc+ vs Myc− (12W) | 0.52 | 3.1 × 10⁻¹¹ |
+| 12W vs 6W (Myc−) | 0.67 | 1.2 × 10⁻¹⁹ |
+| 12W vs 6W (Myc+) | 0.76 | 1.7 × 10⁻²⁷ |
+
+The temporal contrasts show higher correlation (r = 0.67–0.76) than the cross-sectional Myc effect contrasts (r = 0.52), suggesting that age-associated mitochondrial remodelling involves coordinated changes in both absolute expression and intra-mitochondrial allocation, :::{.callout-warning title="Check: it rather goes the other way no change in NES but increase in mitoPPS"}whereas Myc's effect is more heterogeneous — it can alter the transcriptional level of a pathway without necessarily changing its relative priority within the mitochondrial compartment.:::
+
+### Pathway Classification
+
+Each pathway × contrast combination was classified into five categories based on significance in fGSEA (padj < 0.05) and mitoPPS (pairwise padj < 0.05):
+
+| Category | Myc effect 6W | Myc effect 12W | Temporal Myc− | Temporal Myc+ |
+|----------|---------------|----------------|---------------|---------------|
+| Both: concordant | 21 | 10 | 0 | 3 |
+| Both: discordant | 11 | 6 | 0 | 0 |
+| fGSEA only | 64 | 70 | 10 | 18 |
+| mitoPPS only | 26 | 18 | 0 | 12 |
+| Neither significant | 20 | 38 | 132 | 109 |
+
+**Key observations:**
+
+1. **fGSEA dominates.** The majority of significant pathways are fGSEA-only in the Myc effect contrasts (64–70 pathways), meaning Myc drives bulk transcriptional changes in these pathways without altering their mitochondrial priority.
+
+2. **Concordant pathways decline from 6W to 12W.** 21 pathways show agreement between fGSEA and mitoPPS at 6W, dropping to 10 at 12W. Of the 21 concordant at 6W, 14 switch to fGSEA-only at 12W — they retain bulk transcriptional enrichment but lose selective mitochondrial reprioritisation.
+
+3. **mitoPPS-only pathways also decline.** 26 pathways at 6W show selective mitochondrial reallocation without genome-wide enrichment, dropping to 18 at 12W.
+
+4. **Temporal contrasts are dominated by "neither significant."** Consistent with the ANOVA results (script 08), most pathways do not change significantly over time in either metric. The temporal signal is weaker than the cross-sectional Myc effect.
+
+### Concordant → fGSEA-Only Switches (6W → 12W)
+
+The 14 pathways that lose mitoPPS significance between 6W and 12W while retaining fGSEA significance are particularly informative. Their mitoPPS Δ values decline substantially:
+
+| Pathway | mitoPPS Δ (6W) | mitoPPS Δ (12W) | Decline |
+|---------|----------------|-----------------|---------|
+| Pyruvate metabolism | 0.329 | 0.008 | 98% |
+| Carbohydrate metabolism | 0.113 | 0.016 | 86% |
+| Polycistronic mtRNA processing | 0.115 | 0.025 | 78% |
+| Translation factors | 0.156 | 0.046 | 71% |
+| Mitochondrial central dogma | 0.086 | 0.029 | 66% |
+
+These pathways show that Myc continues to upregulate them at 12W (fGSEA remains significant), but the upregulation is no longer *selective* — it occurs proportionally with other mitochondrial pathways, consistent with a shift from targeted reprioritisation toward general mitochondrial biogenesis.
+
+### Output
+
+Results saved to `results/mitopps_fgsea_comparison.rds`. Full comparison table exported to `outputs/mitopps_fgsea/fgsea_vs_mitopps_full_comparison.csv`. Visualisations saved to `outputs/mitopps_fgsea/`.
+
+---
+
+## Interaction fGSEA and mitoPPS Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `10_interaction_fgsea_mitopps.R` | fGSEA on interaction-term Wald statistics; comparison with mitoPPS interaction |
+
+### Rationale
+
+The DESeq2 interaction term yielded zero individually significant genes (padj < 0.1), suggesting the Myc transcriptional programme is stable between 6W and 12W. However, fGSEA can detect coordinated small shifts across gene sets that fail to reach individual significance. Running fGSEA on the interaction Wald statistics (which rank genes by the magnitude and precision of the difference-of-differences) tests whether the Myc effect changes at the *pathway* level even when no single gene achieves significance.
+
+### Results: Curated Gene Sets
+
+Of 88 curated gene sets (MSigDB Hallmarks + MYC signatures + apoptosis + selected MitoCarta), **52 are significant at padj < 0.05** (55 at padj < 0.10). The interaction p-value histogram shows a strong left-skew, confirming widespread coordinated signal.
+
+**Direction breakdown** of the 52 significant sets:
+
+- **31 with negative NES** (Myc effect weakens at 12W relative to 6W): dominated by mitochondrial and biosynthetic pathways — OXPHOS (NES = −2.22), MYC_TARGETS_V1 (NES = −1.80), mTORC1 signalling, Translation, Carbohydrate metabolism
+- **21 with positive NES** (Myc effect weakens *less* or reverses at 12W): dominated by stromal/inflammatory/developmental pathways — EMT (NES = +2.40), Myogenesis (NES = +2.23), Estrogen response late (NES = +2.16), KRAS signalling up, Coagulation
+
+### Results: MitoCarta Pathways
+
+Of 142 MitoCarta pathways, **40 are significant at padj < 0.05** (55 at padj < 0.10). Strikingly, **all 40 significant pathways have negative interaction NES**, meaning the Myc effect on mitochondrial pathways is uniformly weaker at 12W than at 6W. No mitochondrial pathway shows a strengthening Myc effect over time.
+
+### fGSEA vs mitoPPS: Interaction Comparison
+
+The interaction fGSEA results were compared with mitoPPS interaction scores (difference between Myc effect at 12W and Myc effect at 6W). Of the 142 MitoCarta pathways:
+
+| Category | Count |
+|----------|-------|
+| fGSEA only (transcriptional interaction, stable mitoPPS) | 40 |
+| Neither significant | 102 |
+
+No pathway shows significant interaction in mitoPPS alone or in both metrics simultaneously. This means the fading Myc effect detected by fGSEA is a genome-wide transcriptional phenomenon (genes in these pathways are less strongly induced at 12W) but does not manifest as a change in intra-mitochondrial resource allocation — the *relative priorities* among mitochondrial pathways remain stable even as the absolute Myc-driven upregulation weakens.
+
+### Reconciling with Prior Results
+
+#### Why zero interaction genes but 52 interaction pathways?
+
+fGSEA has greater power to detect small coordinated shifts. The interaction LFCs are modest (~0.1–0.15 log2FC per gene) and individually non-significant, but they are directionally consistent across hundreds of genes within each pathway. For MYC_TARGETS_V1, 82% of pathway genes shift in the same (negative) direction in the interaction; for OXPHOS, 83%.
+
+#### Why does the cross-sectional NES increase while gene-level LFCs decrease?
+
+Cross-sectional fGSEA (script 06) showed NES for MYC_TARGETS_V1 increasing from 2.86 (6W) to 3.62 (12W). This appears contradictory. The resolution: **NES is a rank-based statistic relative to the entire genome, not an absolute measure of fold-change.** The Myc effect on MYC target genes shrinks modestly (~28% mean LFC decline), but the Myc effect on the rest of the genome shrinks even faster. So MYC targets become relatively *more enriched* at the top of the ranked list at 12W, yielding a higher NES despite smaller absolute fold-changes.
+
+#### Myc effect pattern from mitoPPS interaction
+
+The mitoPPS interaction analysis classifies the Myc effect trajectory for each pathway:
+
+| Pattern | Pathways |
+|---------|----------|
+| Amplifying (same direction, magnitude changes) | 116 |
+| Fading (6W active, 12W ≈ 0) | 8 |
+| Stable (minimal interaction) | 8 |
+| Reversing (opposite at 6W vs 12W) | 7 |
+| Emerging (6W ≈ 0, 12W active) | 3 |
+
+The dominance of the "Amplifying" category (116/142) confirms that the Myc effect is directionally preserved across timepoints — pathways up-prioritised by Myc at 6W remain up-prioritised at 12W — but the magnitude of the effect changes (typically fading, as captured by the negative interaction NES).
+
+### Revised Biological Interpretation
+
+The interaction analyses refine but do not contradict the earlier conclusion that the Myc programme is "stable." The refined picture:
+
+1. **The broad Myc transcriptional programme is maintained.** Myc continues to upregulate its targets at 12W relative to controls. The direction of effect is fully preserved.
+
+2. **Gene-level effect sizes genuinely shrink.** The ~15–30% decline in per-gene LFC is too small for any individual gene to reach significance, but it is coordinated across pathways and detected by fGSEA (52/88 curated sets, 40/142 MitoCarta pathways).
+
+3. **Mitochondrial selective prioritisation fades.** At 6W, Myc differentially reprioritises mitochondrial pathways (some gain more than others, visible in mitoPPS). By 12W, the overall mitochondrial upregulation persists but becomes more uniform — closer to general biogenesis than selective targeting. The 14 concordant→fGSEA-only switches demonstrate this directly.
+
+4. **Suppression of non-mitochondrial programmes erodes.** The 21 curated sets with positive interaction NES (EMT, estrogen response, inflammatory signalling, apoptosis) show that Myc's suppression of these programmes weakens at 12W.
+
+5. **The NES-stability paradox resolves.** Cross-sectional NES is stable or increasing because it is rank-relative; the absolute Myc effect fades, but the rest of the transcriptome fades faster. mitoPPS — being an absolute within-compartment measure — reveals the fading selectivity that NES masks.
+
+In summary: early Myc (6W) drives a strong, selective programme where mitochondrial pathways are differentially prioritised and stromal/EMT/inflammatory pathways are actively suppressed. Late Myc (12W) shows the programme persisting but *blurring* — mitochondrial upregulation flattens into general biogenesis, and suppression of alternative programmes erodes. This is consistent with cofactor limitation, chromatin remodelling, or negative feedback diluting Myc's specificity without eliminating its activity.
+
+### Output
+
+Results saved to `results/interaction_fgsea_mitopps.rds`. Tables exported to `outputs/interaction_analysis/fgsea_interaction_curated_all.csv` and `outputs/interaction_analysis/interaction_fgsea_vs_mitopps.csv`. Visualisations saved to `outputs/interaction_analysis/`.
+
+---
+
+## Interaction Gene Characterisation
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `11_interaction_gene_characterisation.R` | Gene-level dissection of the fading Myc effect: direction, enrichment, leading edge overlap, selection vs remodelling |
+
+### Rationale
+
+Script 10 established that the Myc × timepoint interaction is significant at the pathway level (52/88 curated sets, 40/142 MitoCarta pathways) despite zero individually significant interaction genes. Script 11 asks what the ~357 genes driving this signal look like individually — their directional bias, functional enrichment, overlap with fGSEA leading edges, and whether the fading Myc effect on pro-apoptotic genes reflects clonal selection or transcriptional remodelling.
+
+The analysis focuses on genes that are "unique to Myc+": genes with a significant timepoint effect (padj < 0.1) in Myc+ samples but not in Myc− controls, ensuring that the temporal changes analysed are Myc-specific rather than developmental.
+
+### Approach
+
+The script has six analytical parts:
+
+1. **Direction analysis**: Among the ~357 genes with nominal interaction p < 0.05, what fraction have negative interaction LFC (Myc effect weakening at 12W)? Tested with binomial test and visualised with histograms.
+
+2. **Functional enrichment (g:Profiler)**: Two complementary approaches — an ordered query on all unique-to-Myc+ genes ranked by |Wald statistic| (more powerful, uses continuous ranking) and an unordered ORA on the 357 p < 0.05 genes split by direction.
+
+3. **Leading edge overlap**: Hypergeometric test of whether the 357 interaction genes are enriched within the leading edges of the significant fGSEA interaction pathways from script 10.
+
+4. **Selection vs remodelling**: If Bbc3/PUMA (a pro-apoptotic gene) shows a fading Myc effect, is this clonal selection against apoptosis-prone cells or transcriptional remodelling? Selection predicts a coordinated shift across the entire pro-apoptotic module; remodelling predicts isolated gene-level changes. Tested with forest plots (Apoptosis-PRO and Apoptosis-ANTI subgroups), volcano plots (MitoCarta genes, Felsher MYC signature), and one-sample t-tests for group-level shifts.
+
+5. **Three-set comparison**: Parallel analysis of unique-to-Myc−, unique-to-Myc+, and overlapping gene sets. The overlapping set (developmental genes changing in both genotypes) serves as a negative control, while the unique-to-Myc− set tests whether Myc buffers developmental changes that occur in controls. A comparative summary table quantifies interaction signal enrichment, directional bias, and functional themes across all three sets.
+
+### Output
+
+Results saved to `results/interaction_gene_characterisation.rds`. Figures and tables saved to `outputs/interaction_analysis/`, including direction histograms, g:Profiler Manhattan and dot plots, leading edge overlap dot plots, selection-vs-remodelling 4-panel PDFs, forest plots, volcano plots, three-set comparison histograms and volcanos, and summary CSVs.
+
+---
+
+## Cell Death Pathway Analysis
+
+### Script
+
+| Script | Description |
+|--------|-------------|
+| `12_cell_death_pathway_analysis.R` | fGSEA analysis of 15 regulated cell death modalities across 5 DESeq2 contrasts |
+
+### Rationale
+
+If Myc drives early pro-apoptotic signalling that subsequently fades (scripts 10–11), other cell death modalities may also be affected. Using curated gene sets from Tang et al. (2024) covering 15 regulated cell death types, we ask whether 12W Myc+ samples become more resistant or more susceptible to each death modality compared to 6W, and whether these changes are Myc-specific or developmental.
+
+### Reference
+
+Tang et al. (2024) *Comput Struct Biotechnol J*. doi:10.1016/j.csbj.2024.08.012
+
+### Approach
+
+1. **Gene set loading**: 15 cell death gene set CSVs (human gene symbols with functional descriptions) are read from `data/cell-death/`, handling mixed cp1252/UTF-8 encodings defensively.
+
+2. **Ortholog conversion**: Human gene symbols are mapped to mouse orthologs via the shared `ortholog_table`.
+
+3. **Ranked gene lists**: Wald statistics from five DESeq2 contrasts serve as rankings:
+   - Myc+ vs Myc− at 6W (cross-sectional early Myc effect)
+   - Myc+ vs Myc− at 12W (cross-sectional late Myc effect)
+   - 12W vs 6W in Myc− (developmental baseline)
+   - 12W vs 6W in Myc+ (Myc+ temporal progression)
+   - Interaction (timepoint × myc_status)
+
+4. **fGSEA**: Run on all five contrasts for all 15 death modalities.
+
+5. **Leading edge annotation**: Leading edge genes from significant pathways are annotated with pro-death or anti-death roles using keyword heuristics on the source comment field (e.g., "inducer", "inhibitor", "promotes", "suppresses").
+
+6. **Biological interpretation**: For temporal contrasts, the direction of enrichment and the composition of the leading edge (pro- vs anti-death genes) are combined to determine whether 12W samples show increased resistance or susceptibility to each death modality.
+
+### Death Modalities Analysed
+
+The 15 modalities from Tang et al. (2024): Apoptosis, Autophagy-dependent cell death, Ferroptosis, Necroptosis, Pyroptosis, Cuproptosis, Disulfidptosis, Parthanatos, Oxeiptosis, Alkaliptosis, Entotic cell death, NETotic cell death, Lysosome-dependent cell death, MPT-driven necrosis, and Immunogenic cell death.
+
+### Output
+
+Results saved to `results/cell_death_fgsea.rds`. Figures and tables saved to `outputs/cell_death/`, including NES heatmaps, dot plots per contrast, leading edge annotation tables, and an interpretation summary CSV with per-modality resistance/susceptibility verdicts.
+
+---
+
+## Statistical Design
+
+### Interaction Model
 
 ```r
-source("run_all_scripts.R")
+design = ~ timepoint * myc_status
+```
 
-NOTE: this has not been fully implemented yet. Testing on OXPHOS (scripts/07_heatmap_oxphos_annotated.R) currently, not satisfying heatmap structure and annotations
-aims to develop:
+This model tests:
+- Main effect of timepoint (12W vs 6W)
+- Main effect of Myc status (pos vs neg)
+- **Interaction**: whether the Myc effect differs between timepoints
 
-Create: Fig 1 Myc-mito paper: mitochondrial adaptation defines early tumourigenesis and late progression
+### Group-Based Model (planned)
 
+```r
+design = ~ group
+```
 
-- To understand early evolution, looked at timecourse of early myc regulated genes. 
-- Histology of tumours - 6w and 12W, apoptosis and proliferation
-- What do we see at the gene level?
-- What are the gene sets changing most? - pathway analysis
-- gene sets from hocklebbery? - better to define it ourselves, eventually compare to that
-- Clusters of gene sets - mitochondrial most affected
-- While Myc goes on, some mitochondrial genes are reduced - Complex I and Complex IV
-- What is special about Complex I - a lot.
+Allows direct pairwise comparisons (e.g., 12W_pos vs 6W_pos) to capture progressive Myc effects.
 
-- where to get the myc-ER 6 vs 12 in?
-- 
-go to in vitro: MYAZ has the same
 ---
-What to do:
-- Find best way to cluster genes: try clustering to enhance 12to6 downreg (12_6_d geneset) - use old PGT4o or a new Claude4?
-- apoptotic pathway?
-- p19 pathway?
-- separate mtDNA - why LFC does not fit?
-- Pathway analysis
 
+## Gene Sets
 
+The analysis includes curated gene sets for pathway-level interpretation:
 
+- **Mitocarta 3.0**: Mitochondrial pathways (OXPHOS, TCA cycle, FAO, etc.)
+- **MYC signatures**: Multiple gene sets from Felsher et al. (2022)
+- **Apoptosis**: Pro- and anti-apoptotic genes
+- **Regulated cell death** (script 12): 15 death modalities from Tang et al. (2024), sourced as human gene sets with functional annotations and converted to mouse orthologs
 
+Human gene symbols are mapped to mouse orthologs via biomaRt (cached in `results/ortholog_table.rds`).
 
+---
 
+## Requirements
 
+### R Packages
 
+**CRAN:**
+- here, dplyr, tibble, readr, stringr, purrr, magrittr
+- ggplot2, ggstatsplot, pheatmap, RColorBrewer
+- grid, gridExtra, reshape2, ggrepel, gprofiler2
 
+**Bioconductor:**
+- DESeq2, biomaRt, org.Mm.eg.db, AnnotationDbi
+- ComplexHeatmap, EnhancedVolcano, fgsea, msigdbr
+- PoiClaClu, vsn, sva
 
+---
 
+## Usage
 
+```r
+# From the project root directory
+library(here)
 
+# Run scripts in order
+source(here("scripts", "00_setup_packages.R"))
+source(here("scripts", "01_load_data.R"))
+source(here("scripts", "02_qc.R"))
+```
 
+---
 
-  
+## Authors
 
+[Add collaborator information]
+
+## Date
+
+Analysis updated: March 2026

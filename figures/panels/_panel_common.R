@@ -1,0 +1,873 @@
+# =============================================================================
+# _panel_common.R -- shared spine for the panel-by-panel figure layer
+# -----------------------------------------------------------------------------
+# figures/panels/ holds ONE SCRIPT PER PANEL, each built to support a specific
+# sentence of the Results section as it is written. Assembly into numbered
+# manuscript figures happens last, once the narrative fixes the numbering --
+# see figures/panels/PANELS.md for the slug -> slot map.
+#
+# THE PUBLICATION RULE THIS FILE ENFORCES
+#
+# Nature-family figures carry no explanatory information: the panel shows data,
+# axes, units and a minimal key, and everything else belongs in the figure
+# legend. theme_panel() therefore BLANKS title, subtitle and caption, so a panel
+# cannot accidentally acquire explanatory text. The explanation is written into
+# each script as a panel_legend() block, which rebuild_panels.R collects into
+# outputs/figures/panels/legends.md -- that file is the raw material for the
+# legends, not the figure.
+#
+# RELATIONSHIP TO figures/theme_myc.R
+#
+# This file SOURCES theme_myc.R and never edits it, so the four assembled
+# manuscript figures (figure1, figure2, figureS1, figureS2) keep rendering
+# byte-identically. What it adds is (a) the panel theme, (b) the palettes that
+# are currently copy-pasted across a dozen scripts, and (c) a save wrapper that
+# honours myc.fig.nosave and writes to outputs/figures/panels/.
+#
+# CONVENTION every panel script follows
+#
+#   source(here::here("figures", "panels", "_panel_common.R"))
+#   LEGEND <- panel_legend(slot = "Fig. 1B", what = ..., detail = ..., bounds = ...)
+#   ... build `p` ...
+#   save_panel_p(p, "fig1B_myc_teb_proliferation", height = 80)
+#   if (FALSE) { print(p) }        # sandbox, skipped by source()
+#
+# The composite object is ALWAYS named `p`: both rebuild_panels.R and
+# figures/rebuild_manuscript_figures.R locate it by that name to render a dry
+# run through a null device.
+# =============================================================================
+
+source(here::here("figures", "theme_myc.R"))
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) stop("panels need ggplot2")
+
+panel_dir <- here::here("outputs", "figures", "panels")
+
+# --- the panel theme ---------------------------------------------------------
+# base_size 7: these are single- or half-column panels that will later be
+# composed by patchwork, so type is set for the FINAL size, not the preview.
+theme_panel <- function(base_size = 7) {
+  theme_myc(base_size = base_size) +
+    ggplot2::theme(
+      plot.title    = ggplot2::element_blank(),   # the publication rule,
+      plot.subtitle = ggplot2::element_blank(),   # made mechanical
+      plot.caption  = ggplot2::element_blank(),
+      legend.title  = ggplot2::element_text(size = base_size),
+      legend.text   = ggplot2::element_text(size = base_size),
+      legend.key.size = ggplot2::unit(3.2, "mm"),
+      plot.margin   = ggplot2::margin(2, 2, 2, 2, "mm"))
+}
+
+# --- palettes, declared once -------------------------------------------------
+# Every one of these is currently re-declared verbatim in several scripts under
+# figures/ (contrast: fig01b:100, figS1b:109, figS2b:73; verdict: fig03:202,
+# fig04:67, figure2:76; tier: fig02:40, fig03:43, figure1:60 and five more).
+# New panels take them from here. The existing scripts are deliberately left
+# untouched.
+
+# --- the contrast vocabulary (author's naming, 2026-07-30) -------------------
+# Two families, and the figures say which is which by NAME, not by a note on the
+# page: genotype contrasts are the Myc effect measured at one age, development
+# contrasts are the 6->12W trajectory within one genotype. These strings are what
+# gets drawn; the mapping to the DESeq2 slot names lives in the legend blocks.
+contrast_geno <- c("myc_6W", "myc_12W")
+contrast_dev  <- c("6>12W_wt", "6>12W_myc")
+contrast_levels <- c(contrast_geno, contrast_dev)
+
+# Colours: the genotype contrasts take the Myc+ hues, because that is what they
+# measure; the development contrasts take greys, because the trajectory is the
+# background against which the Myc effect is read. Deliberately NOT the WT blue
+# for 6>12W_wt -- that would put a sample colour on a contrast.
+contrast_cols <- c("myc_6W"        = "#D55E00", "myc_12W"   = "#E69F00",
+                   "6>12W_wt"      = "#BDBDBD", "6>12W_myc" = "#7B7B7B",
+                   "6W_wt>12W_myc" = "#1A1A1A")
+
+# THE DIAGONAL, added 2026-08-16 for script 45. `6W_wt>12W_myc` is the young
+# normal gland against the gland at initial tumour expansion -- the only reading
+# in the project that crosses BOTH factors at once. It is exactly the sum of a
+# development contrast and a genotype contrast (script 45 PART A asserts
+# cross == myc_12W + 6>12W_wt gene by gene), so it is neither, and it takes
+# neither vocabulary's ink: near-black, because on the panel that draws it the
+# diagonal is an ENDPOINT sitting at the head of two coloured segments, not a
+# third segment competing with them.
+#
+# DELIBERATELY NOT ADDED TO `contrast_levels`. Several panels build factors on
+# that vector and a fifth level would silently change their ordering; a panel
+# that wants the diagonal names it explicitly.
+contrast_net <- "6W_wt>12W_myc"
+
+verdict_cols  <- c("withdraws" = "#762A83", "at chance" = "grey55",
+                   "rises"     = "#1B7837")
+
+direction_cols <- c(up = "#D6604D", down = "#4393C3")
+
+# The fat-pad progression groups (experimental-cohorts branch, script 49). An
+# ORDERED series, so it takes a sequential ramp rather than the categorical
+# genotype palette -- the reader's job on those panels is to see an order, not to
+# tell four groups apart. Values extend `ms_sequential`'s mid and high with one
+# interpolated step, so it is the same ramp rather than a second scheme; the
+# near-white `low` is unusable for points and is not used. The 6W groups are never
+# drawn on the limb panels and deliberately have no colour here.
+fatpad_group_cols <- c("12WK_POS"     = "#8FA3B0",
+                       "SMALL_TUMOUR" = "#54707F",
+                       "LARGE_TUMOUR" = "#243642")
+fatpad_group_labs <- c("12WK_POS" = "12 weeks", "SMALL_TUMOUR" = "small tumour",
+                       "LARGE_TUMOUR" = "large tumour")
+
+# Ink for TEXT that reports significance. Declared here because
+# figures/fig01_mito_content.R:106 inlines it and this layer must not grow a
+# second copy of the same decision. Two uses, both text:
+#   * a bracket's p-value label on a per-group distribution panel (the original);
+#   * a gene NAME on a per-gene scatter whose padj clears the threshold (author,
+#     2026-08-09, Fig. 2G (alt)).
+# The rule behind it is unchanged and still binds: on a panel where the geometry
+# carries the effect size, significance stays a footnote and never becomes the
+# fill or the area colour of a mark (Fig. 1B's rule). A per-gene scatter is the
+# case where the geometry IS the effect size on both axes, so a secondary mark on
+# the point -- there, the RING -- is annotation rather than the reading.
+sig_cols <- c(sig = "#E41A1C", ns = "grey45")
+
+# MitoPathway Level-1 tiers. KEYED TO THE NAMES THE DATA CARRY -- the seven values
+# of background_vs_myc.rds$ruler$tier, which are mitopps_scores.rds$pathway_tier1_map
+# verbatim. The first version of this vector used abbreviated keys that matched
+# nothing on disk, so a lookup silently returned NA; display shortening belongs in
+# tier_labels, not in the keys. Same principle as group_cols, which keys on the
+# on-disk neg/pos and prints the author's names.
+#
+# NOT USED BY FIG. 1F, deliberately. Four of these hues are the sample palette, and
+# on a page where panel E spends blue on wild type and orange on Myc+, a tier key
+# reusing them invites the reader to see genotype in a tier. 1F names thirteen
+# pathways on its y axis instead, so it needs no tier colour at all. Kept for a
+# panel that draws all 144 at once, where a key is unavoidable -- and such a panel
+# should re-pick these hues away from the sample palette first.
+tier_cols <- c("Protein import, sorting and homeostasis" = "#009E73",
+               "Mitochondrial central dogma"             = "#D55E00",
+               "OXPHOS"                                  = "#E69F00",
+               "Metabolism"                              = "grey72",
+               "Signaling"                               = "#F0E442",
+               "Small molecule transport"                = "#0072B2",
+               "Mitochondrial dynamics and surveillance" = "#56B4E9")
+
+# Display shortenings for the same seven, as figures/fig02_reallocation_ranked.R:43
+# named them. Long MitoCarta names do not fit a single-column axis.
+tier_labels <- c("Protein import, sorting and homeostasis" = "Protein import / homeostasis",
+                 "Mitochondrial central dogma"             = "Central dogma",
+                 "OXPHOS"                                  = "OXPHOS",
+                 "Metabolism"                              = "Metabolism",
+                 "Signaling"                               = "Signaling",
+                 "Small molecule transport"                = "SM transport",
+                 "Mitochondrial dynamics and surveillance" = "Dynamics & surveillance")
+
+# Shorter still, for a FACET STRIP rather than an axis. figures/fig03_background_
+# vs_myc.R:56-58 inlined these for its seven-facet panel A; this is their second
+# use (the compartment-levels panel faceted the same way), so they get declared.
+# `tier_labels` is the axis form and is too long for a ~40 mm strip.
+tier_short <- c("Protein import, sorting and homeostasis" = "Protein import",
+                "Mitochondrial central dogma"             = "Central dogma",
+                "OXPHOS"                                  = "OXPHOS",
+                "Metabolism"                              = "Metabolism",
+                "Signaling"                               = "Signaling",
+                "Mitochondrial dynamics and surveillance" = "Dynamics",
+                "Small molecule transport"                = "SM transport")
+stopifnot(setequal(names(tier_short), names(tier_labels)),
+          setequal(names(tier_cols),  names(tier_labels)))
+
+# Gene-set quantification methods, as tagged in the library provenance table.
+# A single-hue purple ramp, deliberately NOT the genotype palette: across the
+# figure set a reader learns blue = WT and orange-red = Myc+, and reusing those
+# for a methods key would spend them on something that is not a genotype.
+# NOT used in the paper figures -- the author's call (2026-07-30) is that the
+# fGSEA/GSVA routing is minor and belongs in the internal write-up. Kept here for
+# the paper/archive/myc_mito.qmd version of the library panel.
+method_cols <- c("fgsea" = "#54278F", "both" = "#9E9AC8", "gsva" = "#DADAEB")
+
+# Mitochondrial definition of a gene set, three classes, as script 37 defines
+# them (37:445-462) and as the reference figure outputs/pathway_loading/
+# E_library_coverage.pdf draws them. The middle class is the one that matters:
+# the Gray _MITO / _LE_MITO TF lanes ARE MitoCarta subsets by construction, so
+# they are mitochondrial by build rather than by biology and must not be counted
+# as independent mitochondrial coverage.
+mito_class_cols <- c("mitocarta_proper"  = "#D73027",
+                     "construction_MITO" = "#FC8D59",
+                     "non_mito"          = "#4575B4")
+mito_class_labels <- c("mitocarta_proper"  = "MitoCarta",
+                       "construction_MITO" = "curated (with mitochondria)",
+                       "non_mito"          = "non-mitochondrial")
+
+# The rule itself, so the three panels that need it (the library composition, the
+# axis loadings and the enrichment ranking) cannot each grow their own copy.
+# Verbatim script 37 (37:445-462); `category` is the library's category_primary.
+# Sets outside the library -- the fresh MSigDB Hallmark comparators in the fGSEA
+# ranking -- fall through to non_mito, which is a naming rule, not a judgement:
+# say so wherever they are drawn.
+mito_class3 <- function(set, category) {
+  category  <- ifelse(is.na(category), "", category)
+  name_mito <- grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set)
+  mito_defined <- category == "MitoCarta" | name_mito |
+    (category == "Metabolism" & grepl("OXPHOS|KREBS|TCA|ELECTRON|RESPIRAT", set))
+  ifelse(category == "MitoCarta", "mitocarta_proper",
+    ifelse(name_mito, "construction_MITO",
+      ifelse(mito_defined, "mitocarta_proper", "non_mito")))
+}
+
+# --- THE manuscript diverging fill -------------------------------------------
+# Author's specification (2026-07-30), to be used for every diverging quantity in
+# the manuscript: deep espresso brown at the negative extreme, stark white at
+# zero, crisp mint green at the positive extreme. Deliberately not blue-red --
+# blue and orange-red carry genotype meaning everywhere else in the figure set,
+# so a blue-red fill would invite the reader to see genotype in it.
+ms_diverging <- c(neg = "#4A3525", zero = "#FAFAFA", pos = "#2A8A6D")
+
+# Signed tick labels, with the author's rule that zero is written "0" and never
+# "0.0" or "+0.0". %+g drops trailing zeros, so 3 -> "+3" and 1.5 -> "+1.5".
+lab_signed <- function(x) ifelse(x == 0, "0", sprintf("%+g", x))
+
+# WHITE IS PINNED TO ZERO, AND THE TWO SIDES ARE SCALED SEPARATELY. `limits` may
+# be one number (symmetric, +/- that) or two (the observed range). The asymmetric
+# form matters whenever the data are lopsided: on a +3.0 / -1.7 range a symmetric
+# ramp leaves every negative value in the first third of the brown, where it is
+# indistinguishable from zero, so the fill stops carrying magnitude on that side.
+# Pinning white to zero and rescaling each arm keeps the sign unambiguous and
+# spends the whole ramp -- at the cost that equal ink no longer means equal
+# magnitude ACROSS the sign change. That trade is only acceptable where a
+# quantitative axis carries the magnitude anyway; say so in the legend block.
+heat_fill <- function(limits, name = NULL, breaks = ggplot2::waiver()) {
+  if (length(limits) == 1L) limits <- c(-abs(limits), abs(limits))
+  stopifnot(length(limits) == 2L, limits[1] < 0, limits[2] > 0)
+  ggplot2::scale_fill_gradientn(
+    colours = unname(ms_diverging[c("neg", "zero", "pos")]),
+    values  = scales::rescale(c(limits[1], 0, limits[2])),
+    limits  = limits, oob = scales::squish, name = name,
+    breaks  = breaks, labels = lab_signed)
+}
+
+# Ink that stays legible on that ramp. The brown end goes dark fast and the mint
+# end stays mid-tone, so the switch is asymmetric: white ink earlier on negative
+# fills than on positive ones.
+ink_on_fill <- function(x, limit) {
+  ifelse(x < -0.45 * limit | x > 0.75 * limit, "white", "grey10")
+}
+
+# --- THE manuscript sequential fill -------------------------------------------
+# Added 2026-08-16, the project's first declared SEQUENTIAL ramp, for quantities
+# that have a low end and a high end but no meaningful zero -- expression level
+# being the case that forced it (the OXPHOS subunit heatmap encodes each gene's
+# absolute abundance as the WEIGHT beside its signed change).
+#
+# It must not borrow `ms_diverging`: a diverging ramp on an unsigned quantity
+# invents a midpoint the data does not have, and on a page where the same brown
+# and mint mean "down" and "up" it would read as sign. Single-hue slate, chosen
+# away from every categorical palette in this file -- not the genotype blue and
+# orange, not the tier hues, not the purple of `method_cols` -- so a reader never
+# has to ask whether a grey-blue cell is a group, a tier or a level.
+ms_sequential <- c(low = "#F2F4F6", mid = "#8FA3B0", high = "#243642")
+
+# `limits` is the observed range on the quantity's own scale (log10 counts, say);
+# values outside are squished rather than dropped, as heat_fill does.
+level_fill <- function(limits, name = NULL, breaks = ggplot2::waiver(),
+                       labels = ggplot2::waiver()) {
+  stopifnot(length(limits) == 2L, limits[1] < limits[2])
+  ggplot2::scale_fill_gradientn(
+    colours = unname(ms_sequential[c("low", "mid", "high")]),
+    limits  = limits, oob = scales::squish, name = name,
+    breaks  = breaks, labels = labels)
+}
+
+# Ink for text on the sequential ramp. One threshold, not two: the ramp is
+# monotone in darkness, so the switch is a single crossing.
+ink_on_level <- function(x, limits) {
+  ifelse(x > limits[1] + 0.62 * diff(limits), "white", "grey10")
+}
+
+# --- per-sample composites and the design contrasts --------------------------
+# Both live here because fig1B and fig1C plot the same composites through
+# different lenses and MUST NOT be allowed to drift apart.
+
+# Pooled within-group SD: the project's standardisation convention (scripts/26:335).
+# Not cosmetic -- a difference-of-two-means axis such as TEB minus ductal has ~1.7x
+# the raw spread of a single composite for arithmetic reasons alone, so a shared
+# raw axis would manufacture contrast.
+wsd_of <- function(x, g) sqrt(mean(tapply(x, g, stats::var)))
+
+# Mean GSVA score over a set of rows = the composite. One line, but naming it
+# keeps every panel using the same definition.
+composite_of <- function(scores, sets) {
+  sets <- intersect(sets, rownames(scores))
+  stopifnot(length(sets) > 0L)
+  colMeans(scores[sets, , drop = FALSE])
+}
+
+# The four drawn contrasts plus the interaction, standardised by the programme's
+# own within-group SD. Fitting idiom is script 27's (27:103-106) and the figure
+# layer's own (fig01_mito_content.R:82-84): each contrast is an ordinary least
+# squares fit on the relevant subset, so the two genotype gaps and the two
+# trajectories are estimated the same way rather than read off one pooled model.
+contrast_table <- function(y, timepoint, myc_status, group) {
+  stopifnot(length(y) == length(timepoint), length(y) == length(myc_status),
+            length(y) == length(group))
+  d <- data.frame(y = as.numeric(y),
+                  tp = factor(as.character(timepoint), levels = c("6W", "12W")),
+                  myc = factor(as.character(myc_status), levels = c("neg", "pos")))
+  cf <- function(form, sub, term) {
+    stats::coef(summary(stats::lm(form, data = d[sub, , drop = FALSE])))[term, ]
+  }
+  g6  <- cf(y ~ myc, d$tp  == "6W",  "mycpos")
+  g12 <- cf(y ~ myc, d$tp  == "12W", "mycpos")
+  twt <- cf(y ~ tp,  d$myc == "neg", "tp12W")
+  tmp <- cf(y ~ tp,  d$myc == "pos", "tp12W")
+  int <- cf(y ~ tp * myc, rep(TRUE, nrow(d)), "tp12W:mycpos")
+  w   <- wsd_of(d$y, group)
+  data.frame(
+    contrast = c(contrast_levels, "interaction"),
+    effect = c(g6[1], g12[1], twt[1], tmp[1], int[1]) / w,
+    p      = c(g6[4], g12[4], twt[4], tmp[4], int[4]),
+    within_sd = w, row.names = NULL, stringsAsFactors = FALSE)
+}
+
+# --- comparison brackets over a per-group panel -------------------------------
+# The idiom figures/fig01_mito_content.R:69-103 established: a horizontal bar with
+# two short end ticks and its label above it, spanning the groups it compares.
+# Declared here so the panels that use it cannot each grow their own geometry.
+#
+# WHAT THE CALLER OWNS, and must: the x positions. They follow the order the panel
+# DRAWS, and that order follows the TEST -- genotype-major (both wild-type boxes,
+# then both Myc+) where the contrast is a genotype main effect, age-major where
+# the contrasts are within-age gaps. There is no default that is right for both.
+#
+#   comps  a data.frame with x1, x2, level (integer, stacks the bars upward) and
+#          lab (the string drawn above the bar)
+#   yr     the range of the DRAWN data in that panel, on the drawn scale
+#
+# Additive on whatever scale is drawn, so it is correct on a log axis as well as a
+# linear one. Returns comps with y, y_lab, tick, xmid added, plus attr "headroom"
+# -- the y a geom_blank must reserve, because a geom_text has no data extent and a
+# free scale would otherwise clip the topmost label.
+bracket_frame <- function(comps, yr, pad = 0.09, step = 0.10, tick = 0.022) {
+  stopifnot(all(c("x1", "x2", "level", "lab") %in% names(comps)), length(yr) == 2L)
+  span <- diff(yr)
+  comps$y     <- yr[2] + span * (pad + step * (comps$level - 1))
+  comps$y_lab <- comps$y + span * 0.012
+  comps$tick  <- span * tick
+  comps$xmid  <- (comps$x1 + comps$x2) / 2
+  structure(comps, headroom = max(comps$y) + span * 0.075)
+}
+
+# The three layers the frame draws. Kept together because a bracket drawn without
+# its ticks reads as a rule across the panel rather than as a comparison.
+bracket_layers <- function(brk, size = 1.75, linewidth = 0.22) {
+  list(
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x1, xend = x2, y = y, yend = y, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x1, xend = x1, y = y, yend = y - tick, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_segment(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = x2, xend = x2, y = y, yend = y - tick, colour = col),
+      linewidth = linewidth),
+    ggplot2::geom_text(data = brk, inherit.aes = FALSE,
+      ggplot2::aes(x = xmid, y = y_lab, label = lab, colour = col),
+      vjust = 0, size = size))
+}
+
+# --- the two-timeline plane ---------------------------------------------------
+# THE GRAMMAR FIGURE 2's ALTERNATIVES SHARE (author's choice, 2026-08-09). One set
+# of axes, learned once and reused: x is what the WILD-TYPE gland does between six
+# and twelve weeks, y is what the Myc+ gland does over the same window.
+#
+# The identity line is DEVELOPMENT ALONE. A point on it changed exactly as the
+# normal gland did; the vertical distance BELOW it is the Myc-specific term. That
+# reading is exact rather than approximate: script 40's ruler satisfies
+# c_tp = c_tn + c_int and p_tp = p_tn + p_int to the last bit, so a drop from the
+# line IS the interaction. Every panel using this asserts that identity.
+#
+# COORD_EQUAL IS NOT COSMETIC. Both axes carry the same quantity in the same
+# units, so equal scaling is the honest framing -- and it pins the identity line
+# at exactly 45 degrees, which is what lets a label lie along it without computing
+# the panel's aspect. Fig. 2G had to measure that angle by hand; here it is free.
+#
+# `lim` is one symmetric pair for BOTH axes. Callers that draw two rulers with
+# different ranges should build two plots and combine them, not facet: a facet
+# with free scales cannot keep coord_equal honest.
+#
+# `band` (added 2026-09-21, script 54) draws the DECLARED on-the-diagonal
+# threshold as two faint dotted lines, y = x +/- band. It is the magnitude half of
+# the rule fixed before the numbers were read (|interaction| < 0.20 AND raw
+# p > 0.05), so a panel that draws it shows the rule rather than a threshold
+# chosen to fit. Off by default: the three callers that predate it are unchanged.
+two_timeline_base <- function(lim, diag_label = "development alone",
+                              diag_at = 0.30, quadrant = NULL,
+                              quadrant_at = c(0.98, 0.03), quadrant_hjust = 1,
+                              band = NULL) {
+  stopifnot(length(lim) == 2L, lim[1] < lim[2],
+            is.null(band) || (length(band) == 1L && band > 0))
+  at <- function(f) lim[1] + diff(lim) * f
+  out <- list(
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85"),
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85"))
+  if (!is.null(band))
+    out <- c(out, list(ggplot2::geom_abline(slope = 1, intercept = c(-band, band),
+                                            linetype = "13", linewidth = 0.3,
+                                            colour = "grey62")))
+  out <- c(out, list(
+    ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "22",
+                         linewidth = 0.35, colour = "grey45")))
+  if (!is.null(diag_label))
+    out <- c(out, list(ggplot2::annotate(
+      "text", x = at(diag_at), y = at(diag_at), label = diag_label,
+      angle = 45, hjust = 0, vjust = -0.5, size = 1.65, colour = "grey45")))
+  # `quadrant_hjust` was declared and then ignored here (hjust was hard-wired to
+  # 1), so a caller asking for a centred note silently got a right-aligned one.
+  # Both existing callers therefore pass 1 explicitly, which is what they render
+  # today; nothing moves as a result of the fix.
+  if (!is.null(quadrant))
+    out <- c(out, list(ggplot2::annotate(
+      "text", x = at(quadrant_at[1]), y = at(quadrant_at[2]), label = quadrant,
+      hjust = quadrant_hjust, vjust = 0, size = 1.65, colour = "grey35",
+      fontface = "italic")))
+  c(out, list(
+    ggplot2::scale_x_continuous(labels = lab_signed),
+    ggplot2::scale_y_continuous(labels = lab_signed),
+    ggplot2::coord_equal(xlim = lim, ylim = lim, expand = FALSE)))
+}
+
+# The two poles of the manuscript ramp, spent categorically. Figs. 1G/1H already
+# do this for OXPHOS (mint) against the Myc signatures (espresso); the two-timeline
+# panels reuse the same mint for the arms that RISE in development and the same
+# espresso for the respiratory arm that falls, so a reader who has met Figure 1
+# has met these. Neither is a sample colour. Flag it in the legend block, as 1H
+# does, rather than leaving it to be noticed.
+pole_cols <- c(down = unname(ms_diverging[["neg"]]),
+               up   = unname(ms_diverging[["pos"]]),
+               other = "grey72")
+
+# --- the shared frame for the two content-ruler planes ------------------------
+# The arms (plane_arms_content.R) and the four genes (plane_four_genes.R) are in
+# the same units -- a log2 fold change, averaged over a set or not -- and the
+# author asked for them on IDENTICAL axes, so the limits are computed here, once,
+# from everything either panel draws: both arms' coordinates, the arms' null bars,
+# and the genes. Script 54 stores a first version as `plane_limits`; the null bars
+# reach slightly past it, so this is the one both panels use, asserted no smaller.
+plane_content_lim <- function(tv) {
+  ac <- as.data.frame(tv$arms_content)
+  an <- as.data.frame(tv$arm_null)
+  dr <- as.data.frame(tv$arm_diagonal)
+  fg <- as.data.frame(tv$four_genes)
+  keep <- ac$arm %in% dr$arm[dr$draw]
+  k    <- match(ac$arm[keep], an$arm)
+  stopifnot(!anyNA(k))
+  bars <- c(ac$c_wt[keep] + an$null_int_lo[k], ac$c_wt[keep] + an$null_int_hi[k])
+  v    <- c(ac$c_wt[keep], ac$c_myc[keep], bars, fg$wt_lfc, fg$myc_lfc)
+  lim  <- c(-1, 1) * max(abs(v)) * 1.06
+  stopifnot(lim[2] >= max(tv$plane_limits) - 1e-12)
+  lim
+}
+
+# --- the coupling, both fits on one scale -------------------------------------
+# Declared here, 2026-09-21 (author's ruling 7), because TWO panels draw it --
+# Fig. 2I and part B of Fig. 2H+I (alt) -- and the earlier versions of both drew
+# an unadjusted fit beside the adjusted model's p. One builder, so the two cannot
+# drift apart again.
+#
+# Reads script 54's object ONLY, and draws what it holds:
+#   left   unadjusted: OLS within each genotype, identical to ratio ~ genotype * axis
+#   right  the pre-specified model ratio ~ genotype * axis + epithelial + immune,
+#          as partial residuals, so the line through each genotype's points IS
+#          that model's slope (script 54 asserts it; so does this)
+# Both axes are z-scores over the 24 animals, so the halves share one scale and a
+# slope of 1 lies at 45 degrees in both. The numbers on the page are each half's
+# own interaction, from that half's own fit, with its parametric and its
+# permutation p side by side.
+coupling_two_fits <- function(tv, key = TRUE) {
+  pd <- as.data.frame(tv$coupling_panel)
+  ln <- as.data.frame(tv$coupling_lines)
+  cf <- as.data.frame(tv$coupling_fits)
+  ix <- as.data.frame(tv$coupling_interaction)
+  pm <- as.data.frame(tv$coupling_perm)
+  stopifnot(nrow(pd) == 24L, nrow(ln) == 4L, all(table(pd$genotype) == 12L),
+            setequal(ln$fit, c("unadjusted", "adjusted")))
+  sl  <- function(fit, g) cf$slope[cf$axis == "ox_ppd" & cf$fit == fit & cf$genotype == g]
+  dr  <- function(fit, g) ln$slope[ln$fit == fit & ln$genotype == g]
+  i_u <- ix[ix$axis == "ox_ppd" & ix$covariates == "none", ]
+  i_a <- ix[ix$axis == "ox_ppd" & ix$covariates == "epi + imm", ]
+  FU  <- "U unadjusted, within genotype"
+  FP  <- "P pooled, shared covariates: epi + imm"
+  # the drawn lines ARE the reported fits, and their difference IS each half's
+  # interaction -- in code, so a re-run of script 54 cannot leave the page behind
+  stopifnot(abs(dr("unadjusted", "neg") - sl(FU, "neg")) < 1e-10,
+            abs(dr("unadjusted", "pos") - sl(FU, "pos")) < 1e-10,
+            abs(dr("adjusted", "neg")   - sl(FP, "neg")) < 1e-10,
+            abs(dr("adjusted", "pos")   - sl(FP, "pos")) < 1e-10,
+            abs((dr("unadjusted", "pos") - dr("unadjusted", "neg")) - i_u$interaction) < 1e-10,
+            abs((dr("adjusted", "pos")   - dr("adjusted", "neg"))   - i_a$interaction) < 1e-10)
+
+  FITS <- c(unadjusted = "unadjusted", adjusted = "adjusted: epithelial + immune")
+  long <- rbind(
+    data.frame(pd[, c("group", "genotype", "x")], y = pd$y_unadjusted, fit = "unadjusted"),
+    data.frame(pd[, c("group", "genotype", "x")], y = pd$y_adjusted,   fit = "adjusted"))
+  long$fit   <- factor(FITS[long$fit], levels = FITS)
+  long$group <- factor(long$group, levels = names(group_cols))
+
+  # each line over its own genotype's x range: a line extrapolated past the
+  # animals it was fitted to claims more than it has
+  xr  <- tapply(pd$x, pd$genotype, range)
+  seg <- do.call(rbind, lapply(seq_len(nrow(ln)), function(i) {
+    x <- xr[[ln$genotype[i]]]
+    data.frame(fit = FITS[[ln$fit[i]]], genotype = ln$genotype[i],
+               x = x[1], xend = x[2],
+               y = ln$intercept[i] + ln$slope[i] * x[1],
+               yend = ln$intercept[i] + ln$slope[i] * x[2])
+  }))
+  seg$fit <- factor(seg$fit, levels = FITS)
+
+  pad <- function(r) r + c(-1, 1) * diff(r) * 0.06
+  XL  <- pad(range(pd$x))
+  YL  <- pad(range(c(long$y, seg$y, seg$yend)))
+
+  # each half's interaction with BOTH of its p-values, side by side (author,
+  # 2026-09-21): the parametric p alone is anti-conservative at n = 24 and the
+  # permutation p alone hides the discrepancy; the two together are the impasse
+  # the legends describe. Two lines need more room than an empty corner reliably
+  # has, so the shared frame gets a band of its own above every point.
+  pp <- function(cv) pm$p_emp[pm$axis == "ox_ppd" & pm$covariates == cv]
+  stopifnot(length(pp("none")) == 1L, length(pp("epi + imm")) == 1L)
+  lab_of <- function(i, pe)
+    sprintf("difference in slope %+.2f\np %.4f parametric, %.3f permutation",
+            i$interaction, i$p, pe)
+  lab <- data.frame(fit = factor(FITS, levels = FITS),
+                    label = c(lab_of(i_u, pp("none")), lab_of(i_a, pp("epi + imm"))))
+  top   <- YL[2]
+  YL[2] <- YL[2] + diff(YL) * 0.17
+  stopifnot(max(c(long$y, seg$y, seg$yend)) < top)
+  lab$x <- XL[1] + diff(XL) * 0.02
+  lab$y <- YL[2] - diff(YL) * 0.01
+
+  ggplot2::ggplot(long, ggplot2::aes(x, y)) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.25, colour = "grey85") +
+    ggplot2::geom_vline(xintercept = 0, linewidth = 0.25, colour = "grey85") +
+    ggplot2::geom_segment(data = seg, inherit.aes = FALSE,
+                          ggplot2::aes(x = x, xend = xend, y = y, yend = yend,
+                                       colour = genotype), linewidth = 0.5) +
+    ggplot2::geom_point(ggplot2::aes(fill = group), shape = 21, size = 1.5,
+                        stroke = 0.25, colour = "grey25") +
+    ggplot2::geom_text(data = lab, inherit.aes = FALSE,
+                       ggplot2::aes(x = x, y = y, label = label),
+                       hjust = 0, vjust = 1, lineheight = 0.95,
+                       size = 1.75, colour = "grey20") +
+    ggplot2::scale_colour_manual(values = geno_cols, guide = "none") +
+    ggplot2::scale_fill_manual(values = group_cols, labels = group_labels,
+                               breaks = names(group_cols), name = NULL,
+                               guide = if (key) "legend" else "none") +
+    ggplot2::facet_wrap(~ fit, nrow = 1) +
+    ggplot2::scale_x_continuous(labels = lab_signed) +
+    ggplot2::scale_y_continuous(labels = lab_signed) +
+    ggplot2::coord_fixed(ratio = 1, xlim = XL, ylim = YL, expand = FALSE) +
+    ggplot2::labs(x = "OXPHOS mitoPPS, per animal  (z)",
+                  y = "PUMA:Bcl-xL  (log2 ratio, z)") +
+    ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1,
+                                                 override.aes = list(size = 1.7))) +
+    theme_panel(base_size = 6) +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(face = "plain", size = 5.6, hjust = 0,
+                                         margin = ggplot2::margin(0, 0, 1, 0, "mm")),
+      strip.clip = "off",
+      panel.spacing.x = ggplot2::unit(3, "mm"),
+      legend.position = if (key) "bottom" else "none",
+      legend.key.size = ggplot2::unit(2.6, "mm"),
+      legend.margin   = ggplot2::margin(-1.5, 0, 0, 0, "mm"),
+      plot.margin     = ggplot2::margin(1.5, 2.5, 0.5, 1.5, "mm"))
+}
+
+# --- the dominant pathway axis -----------------------------------------------
+# Figs. 1C and 1D are the sample scores and the per-set loadings of ONE principal
+# component analysis, so they must not each compute it. results/pathway_loading.rds
+# saves the per-set loadings and the variance percentages but NOT the score matrix
+# or the sample scores, so this rebuilds them -- verbatim script 37 PART 2 and
+# PART A2 (37:103-122, 37:221-222) -- and then proves the rebuild against the
+# analysis of record before returning anything.
+#
+# The quantifier is the LINEAR mean gene-wise z-score, not GSVA: script 36 made it
+# the method of record because its correlation IS average cross-gene covariance.
+# GSVA gives the same picture more weakly (PC1 68% against 77%).
+#
+# Deterministic -- no RNG, no permutation -- so a re-run cannot drift; what could
+# drift is the input, and that is what the assertions catch.
+pathway_axis <- function(gsva_path = here::here("results", "gsva_scores.rds"),
+                         ref_path  = here::here("results", "pathway_loading.rds")) {
+  require_fresher_than(ref_path)
+  gs <- readRDS(gsva_path)
+  pl <- readRDS(ref_path)
+
+  M_gsva <- gs$scores
+  expr   <- gs$expr_mat[, colnames(M_gsva), drop = FALSE]      # VST, genes x samples
+  sets   <- rownames(M_gsva)
+  pw     <- gs$pathways[intersect(names(gs$pathways), sets)]
+  stopifnot(identical(as.character(gs$sample_meta$sample), colnames(M_gsva)))
+
+  zg <- t(scale(t(expr)))
+  zg <- zg[is.finite(rowSums(zg)), , drop = FALSE]
+  M  <- t(vapply(sets, function(s) {
+    g <- intersect(pw[[s]], rownames(zg))
+    if (length(g) < 5L) rep(NA_real_, ncol(zg)) else colMeans(zg[g, , drop = FALSE])
+  }, numeric(ncol(zg))))
+  # a set counts only if it is scored in BOTH matrices, so the universe matches
+  keep <- intersect(rownames(M)[stats::complete.cases(M)],
+                    rownames(M_gsva)[stats::complete.cases(M_gsva)])
+  M <- M[keep, , drop = FALSE]
+
+  pc  <- stats::prcomp(t(M), center = TRUE, scale. = FALSE)
+  vfr <- pc$sdev^2 / sum(pc$sdev^2)
+  gm  <- colMeans(M)                                   # per-sample global mean
+  sc  <- pc$x
+  # orient PC1 to track the global mean, so "high" means "high everywhere"
+  if (suppressWarnings(stats::cor(sc[, 1], gm)) < 0) sc[, 1] <- -sc[, 1]
+  lam <- stats::setNames(as.numeric(suppressWarnings(stats::cor(t(M), sc[, 1]))),
+                         rownames(M))
+
+  # --- prove the rebuild against script 37 ------------------------------------
+  ref_v <- pl$sample_pca_var[pl$sample_pca_var$space == "pathway_scores_884", ]
+  mito  <- intersect(gs$set_meta$set_name[gs$set_meta$category_primary == "MitoCarta"], keep)
+  ox    <- grep("OXPHOS|COMPLEX_[IV]|_SUBUNITS|ASSEMBLY_FACTORS|ELECTRON_CARRIERS|CRISTAE",
+                mito, value = TRUE)
+  ox_gate <- suppressWarnings(stats::cor(colMeans(M[ox, , drop = FALSE]), gm))
+  lm_ref  <- pl$loading_movement
+  conc    <- suppressWarnings(stats::cor(lam[lm_ref$set], lm_ref$lambda_design))
+  stopifnot(
+    length(keep) == pl$n_sets,                                    # 885 sets
+    nrow(ref_v) == 1L,
+    max(abs(100 * vfr[1:3] -
+            c(ref_v$pc1_pct, ref_v$pc2_pct, ref_v$pc3_pct))) < 1e-6,
+    abs(ox_gate - pl$ox_gate) < 1e-6,
+    # the raw axis and script 37's design-RESIDUAL axis are different objects;
+    # this is a concordance floor, not an identity (observed 0.968)
+    conc >= 0.9)
+
+  list(M = M, scores = sc, var_frac = vfr, loading = lam, global_mean = gm,
+       ox_gate = ox_gate, concordance_with_residual_axis = conc,
+       sample_meta = gs$sample_meta, set_meta = gs$set_meta, ref = pl)
+}
+
+# --- programme grouping for the enrichment ranking ---------------------------
+# Fig. S1C's y axis. Declared here rather than inline because it IS an encoding:
+# it decides what the reader sees as "a programme", and the sentence it supports
+# names the tiers. Two rules keep it honest.
+#
+# (1) OXPHOS and mitochondrial biogenesis are split by script 37's OWN patterns
+#     (37:137-138), so the panel and the loading analysis mean the same thing by
+#     the words.
+# (2) Every set whose membership is MitoCarta intersected with something else --
+#     the Gray _MITO TF lanes, and the biogenesis-discrimination and
+#     biogenesis x apoptosis constructs -- goes into ONE row, because they are
+#     mitochondrial by build and cannot be evidence that a mitochondrial
+#     programme was independently detected. Hiding them would flatter the result;
+#     spreading them across the other rows would inflate every one of them.
+#
+# `category` is the fGSEA table's category column (the GMT file stem, e.g.
+# "01_mitocarta", plus "hallmark_msigdb"), which is what the consumer has.
+# Row names are the author's (2026-07-31). Two of them lean on the colour key
+# rather than saying it twice: "curated mitochondrial" is the by-construction
+# block, and the key that colours it says "mitochondrial by construction".
+programme_levels <- c(
+  "curated mitochondrial", "mitochondrial biogenesis", "OXPHOS", "TCA cycle",
+  "mitochondrial metabolism & dynamics", "Myc signatures", "E2F / cell cycle",
+  "biosynthetic metabolism", "metabolism, other", "apoptosis",
+  "TF target sets", "mammary development", "MSigDB Hallmarks")
+
+programme_group <- function(set, category) {
+  OX   <- "OXPHOS|COMPLEX_[IV]|_SUBUNITS|ASSEMBLY_FACTORS|ELECTRON_CARRIERS|CRISTAE"
+  BIOG <- "RIBOSOME|CENTRAL_DOGMA|MT_TRNA|MT_RRNA|MTRNA|MTDNA|IMPORT|TRANSLATION"
+  BIOSYN <- paste0("NUCLEOTIDE|PURINE|PYRIMIDINE|AMINO|SER_GLY|BCAA|ONE_CARBON|",
+                   "PPP|PENTOSE|POLYAMINE|CHOLESTEROL|MEVALONATE|LIPID|FATTY|GLYCOLYSIS")
+  constructed <- grepl("_MITO$|_MITO_|MITO_NU|^MITO_|CORE_MITO", set) |
+    category %in% c("07_biogenesis_discrimination",
+                    "09_biogenesis_apoptosis_intersections")
+  g <- ifelse(
+    constructed, "curated mitochondrial",
+    ifelse(category == "01_mitocarta",
+           ifelse(grepl(BIOG, set), "mitochondrial biogenesis",
+                  ifelse(grepl(OX, set), "OXPHOS",
+                         "mitochondrial metabolism & dynamics")),
+    ifelse(category == "04_metabolism",
+           ifelse(grepl("OXPHOS|ELECTRON|RESPIRAT", set), "OXPHOS",
+                  ifelse(grepl("KREBS|_TCA", set), "TCA cycle",
+                         ifelse(grepl(BIOSYN, set), "biosynthetic metabolism",
+                                "metabolism, other"))),
+    ifelse(category == "02_myc_signatures",      "Myc signatures",
+    ifelse(category == "05_proliferation",       "E2F / cell cycle",
+    ifelse(category == "06_tf_targets",          "TF target sets",
+    ifelse(category == "03_mammary_development", "mammary development",
+    ifelse(category == "08_apoptosis",           "apoptosis",
+    ifelse(category == "hallmark_msigdb",        "MSigDB Hallmarks",
+           NA_character_)))))))))
+  factor(g, levels = programme_levels)
+}
+
+# --- export ------------------------------------------------------------------
+# Wraps theme_myc.R's save_panel() so a panel script never needs to know the
+# output directory, and so myc.fig.nosave is honoured in ONE place rather than
+# being re-implemented as an `if` in every script.
+save_panel_p <- function(plot, slug,
+                         width = fig_w[["single"]], height = 70, units = "mm") {
+  stopifnot(is.character(slug), length(slug) == 1L, nzchar(slug))
+  # myc.fig.capture: record the DESIGNED size and write nothing. Each panel names
+  # its size in its own save_panel_p() call and nowhere else, so anything that has
+  # to lay panels out at true size -- panels_to_pdf.R -- must read it from here
+  # rather than keep a second copy that can drift. The registry lives in the
+  # global environment because rebuild_panels.R sources each script into a child
+  # of it, so a registry local to this file would be a fresh one per panel.
+  if (isTRUE(getOption("myc.fig.capture"))) {
+    reg <- get0(".myc_panel_sizes", envir = globalenv(), ifnotfound = NULL)
+    if (is.null(reg)) {
+      reg <- new.env(parent = emptyenv())
+      assign(".myc_panel_sizes", reg, envir = globalenv())
+    }
+    assign(slug, list(width = width, height = height, units = units), envir = reg)
+    return(invisible(NULL))
+  }
+  if (isTRUE(getOption("myc.fig.nosave"))) {
+    message("myc.fig.nosave = TRUE -- not writing ", slug, ".pdf")
+    return(invisible(NULL))
+  }
+  if (!dir.exists(panel_dir)) dir.create(panel_dir, recursive = TRUE)
+  save_panel(plot, file.path(panel_dir, paste0(slug, ".pdf")),
+             width = width, height = height, units = units)
+}
+
+# --- the legend block --------------------------------------------------------
+# Everything the panel is NOT allowed to say on the page. Four fields, because
+# four things have to survive the trip to the legend:
+#   what   -- one sentence naming what is plotted (the legend's first line)
+#   detail -- n, units, the test, thresholds, what any error bar is
+#   bounds -- the caveat that must travel with the claim (batch = timepoint,
+#             n=6 power floor, a circularity, whatever applies). Not optional in
+#             this project: most of its numbers carry one.
+#   source -- the results/*.rds objects and script the numbers came from
+#
+# EVERY ITEM MUST ARRIVE (added 2026-09-21, after Fig. 2G's rebuild lost one
+# without an error). An item built by sprintf() or paste() from a zero-length
+# value -- a column that is not there, a filter that matched nothing, a table
+# ranked before the column was added -- evaluates to character(0), and c() drops
+# it before this function ever sees the vector. The block is then one item short
+# and nothing fails. The VALUE cannot show that an item went missing, so the
+# check reads the CALL: when `detail`, `bounds` or `source` is written as c(...),
+# each argument is evaluated on its own, in the caller's frame, and must give at
+# least one string, none of them empty or NA. The one exemption is an argument
+# written as `if (...) ...`: a NULL from that is an item left out on purpose,
+# and the condition says so in the code. A field passed as a ready-made vector
+# (a name, or through do.call) can only be checked on its value.
+#
+# A zero-length value INSIDE an item -- paste0("slope ", sprintf("%.2f",
+# numeric(0))) -- still gives a string and is not caught: that is a different
+# failure, and the fix for it is the number's own assertion.
+legend_items_ok <- function(ex, field, slot, env) {
+  if (!is.call(ex) || !identical(ex[[1L]], as.name("c"))) return(invisible(TRUE))
+  args <- as.list(ex)[-1L]
+  for (i in seq_along(args)) {
+    a <- args[[i]]
+    v <- eval(a, env)
+    if (is.null(v) && is.call(a) && identical(a[[1L]], as.name("if"))) next
+    vanished <- is.null(v) || length(v) == 0L
+    what_is <-
+      if (is.null(v))              "NULL"
+      else if (length(v) == 0L)    paste0(class(v)[1L], "(0)")
+      else if (!is.character(v))   paste("a", class(v)[1L], "rather than text")
+      else if (anyNA(v))           "NA"
+      else if (!all(nzchar(v)))    "an empty string"
+      else NA_character_
+    if (!is.na(what_is))
+      stop(sprintf(paste0(
+        "panel_legend(\"%s\"): item %d of `%s` evaluated to %s. %s The item:\n  %s"),
+        slot, i, field, what_is,
+        if (vanished) paste(
+          "c() drops a zero-length item without an error, so it would have vanished",
+          "from the legend. The usual cause is sprintf() or paste() of a zero-length",
+          "value -- a missing column or an empty filter.")
+        else "A legend item must be non-empty text.",
+        substr(deparse1(a), 1L, 160L)), call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+panel_legend <- function(slot, what, detail, bounds, source = NULL) {
+  env <- parent.frame()
+  legend_items_ok(substitute(detail), "detail", slot, env)
+  legend_items_ok(substitute(bounds), "bounds", slot, env)
+  legend_items_ok(substitute(source), "source", slot, env)
+  full <- function(x) is.character(x) && !anyNA(x) && all(nzchar(x))
+  stopifnot(is.character(slot),   length(slot)   == 1L,
+            full(what),           length(what)   == 1L,
+            full(detail),         length(detail) >= 1L,
+            full(bounds),         length(bounds) >= 1L,
+            is.null(source) || full(source))
+  structure(list(slot = slot, what = what, detail = detail,
+                 bounds = bounds, source = source),
+            class = "panel_legend")
+}
+
+# Markdown rendering, used by rebuild_panels.R to build legends.md.
+legend_md <- function(x, slug = NULL) {
+  stopifnot(inherits(x, "panel_legend"))
+  bul <- function(v) paste0("- ", v, collapse = "\n")
+  c(paste0("### ", x$slot, if (!is.null(slug)) paste0("  (`", slug, "`)") else ""),
+    "", x$what, "",
+    "**Detail.**", bul(x$detail), "",
+    "**Bounds.**", bul(x$bounds), "",
+    if (!is.null(x$source)) c("**Source.**", bul(x$source), "") else NULL)
+}
+
+# Panel filenames stopped carrying the slot letter on 2026-07-31, so name order is
+# no longer figure order; legends.md is ordered by the slot each block declares
+# instead. Main figures before supplementary, then number, then letter -- the
+# order a reader meets them in.
+slug_slot_order <- function(slugs, legends) {
+  slot <- vapply(slugs, function(s) legends[[s]]$slot, character(1))
+  key  <- gsub("[^A-Z0-9]", "", toupper(slot))          # "Fig. S1A" -> "FIGS1A"
+  supp <- grepl("^FIGS", key)
+  rest <- sub("^FIGS?", "", key)
+  num  <- suppressWarnings(as.integer(sub("^([0-9]+).*$", "\\1", rest)))
+  let  <- sub("^[0-9]+", "", rest)
+  slugs[order(supp, num, let, slugs)]
+}
+
+print.panel_legend <- function(x, ...) {
+  cat("\n", strrep("-", 74), "\n", sep = "")
+  cat(paste(legend_md(x), collapse = "\n"), "\n", sep = "")
+  cat(strrep("-", 74), "\n\n", sep = "")
+  invisible(x)
+}
+
+# --- freshness guard ---------------------------------------------------------
+# results/gsva_scores.rds was rebuilt 2026-07-24 with the gene-symbol reconciler
+# (docs/2026-07-24_symbol_reconciliation.md). Anything downstream of it that
+# predates that rebuild is stale, and a stale panel is worse than a missing one
+# because it looks finished. Panels that read a derived GSVA object call this.
+require_fresher_than <- function(path, reference = here::here("results", "gsva_scores.rds")) {
+  if (!file.exists(path)) {
+    stop(basename(path), " is missing -- re-source its producing script (see PANELS.md)",
+         call. = FALSE)
+  }
+  if (file.exists(reference) && file.mtime(path) < file.mtime(reference)) {
+    stop(basename(path), " (", format(file.mtime(path), "%Y-%m-%d"), ") is OLDER than ",
+         basename(reference), " (", format(file.mtime(reference), "%Y-%m-%d"), ").\n",
+         "  It was built before the gene-symbol reconciliation. Re-source, in order:\n",
+         "    scripts/17_gsva_overview.R -> scripts/26_dev_program_myc_integration.R\n",
+         "    scripts/27_myc_endogenous_amplification.R",
+         call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+# =============================================================================
+# SANDBOX -- run line-by-line in Positron; skipped by source()
+# =============================================================================
+if (FALSE) {
+
+  ## what the legend block looks like
+  panel_legend(slot = "Fig. 9Z", what = "A demonstration panel.",
+               detail = c("n = 24.", "Bars are SE."),
+               bounds = "Nothing is claimed here.") |> print()
+
+  ## dry run of every panel
+  options(myc.fig.nosave = TRUE)
+  source(here::here("figures", "panels", "rebuild_panels.R"))
+}
