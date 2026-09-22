@@ -1111,3 +1111,18 @@ there.
   **Commit per signed-off change; do not push without a word.**
 - **Check every claim against the data before drawing it,** and say when a sentence in the
   cut does not survive -- add it to the `PANELS.md` list rather than softening it silently.
+
+---
+
+## 10. Follow-up threads, after the manuscript
+
+- **What reshapes mitochondrial priorities in high-mitochondria human tumours** (MYC-high
+  against ER-high): `docs/2026-09-22_mitochondrial_priorities_followup.md`. Untestable at
+  n = 21, not refuted. A follow-up needs about 116 both-forks tumours.
+- **Esr1**, from the FOXO3 dilution test (2026-09-22): the only gene in the FOXO3 target set
+  with a raw interaction p below 0.05 (+0.813, raw p 0.036, IHW 1.00).
+  - MYC represses it at 6W (-0.813) and not at 12W; most of that is the global fade (7.7th
+    percentile of script 44's departure scan).
+  - Flagged, not pursued: `docs/2026-09-21_two_timeline_verification.md` section 10.3.
+  - In TCGA the ESR1-high and MYC-high high-mitochondria groups overlap (21 tumours), and ESR1
+    is inversely associated with the MYC score within them (follow-up note, section 3.1).
