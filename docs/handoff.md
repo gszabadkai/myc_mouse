@@ -16,6 +16,8 @@ relates-to:
 
 # Handoff -- restart from here
 
+**2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
+
 Read this file first. Sections 1 to 3b are current as of **2026-09-21, late evening**.
 Sections 3c to 3f and 4 to 9 are carried over from the 2026-09-10 handoff. Where today's work
 supersedes something in them, that is marked in place.

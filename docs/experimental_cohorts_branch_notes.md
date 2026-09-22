@@ -12,6 +12,8 @@ relates-to:
 
 # `experimental-cohorts` — branch notes
 
+**2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
+
 Holds the two mouse datasets that are **not** part of the 6W/12W purified-MEC pipeline:
 the orthotopic Bcl-xL / PGC1a tumour series, and the fat-pad progression timeline.
 

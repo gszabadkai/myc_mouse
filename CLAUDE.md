@@ -3,6 +3,8 @@
 Rules and context for Claude Code sessions in this repo. Read this first, then the
 plan: `docs/myc_mouse_finalisation_plan.md`.
 
+**2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
+
 ## What this repo is
 
 Bulk RNA-seq of **purified mammary epithelial cells (MECs)** from MMTV-Myc transgenic
