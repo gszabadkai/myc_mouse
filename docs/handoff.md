@@ -1,14 +1,17 @@
 ---
-date: 2026-09-22
-tags: [project/myc_mouse, handoff, main, figure-1, figure-2, foxo3, verification, human, follow-up]
+date: 2026-10-09
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, verification]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
-  - docs/2026-09-21_two_timeline_verification.md       (READ FIRST -- script 54, the rulings of record, the four rates; sections 9-10 are the 2026-09-22 Foxo3 record)
+  - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
+  - figures/natmetab/_style.R                           (the style; figures/natmetab/_style_selftest.R must pass after any edit)
+  - Google Doc 11.8.26_MK_Myc_Paper, tabs "Nat metab version" and "fig plans" (Drive id 1M-kEC1d_VJmbTG-SyYYfykZ3F1_aEiDtu0xtwFaPtJo)
+  - docs/2026-09-21_two_timeline_verification.md       (script 54, the rulings of record, the four rates; sections 9-10 are the 2026-09-22 Foxo3 record)
   - docs/2026-09-22_mitochondrial_priorities_followup.md (parked human follow-up; section 10 below)
-  - figures/panels/PANELS.md                            (the manifest of record; from "The Figure-1 verification pass" on)
+  - figures/panels/PANELS.md                            (the OLD layer's manifest: the August long-form version, kept as the record)
   - scripts/54_two_timeline_verification.R              (writes results/two_timeline_verification.rds)
   - scripts/47_biogenesis_axis_and_the_developmental_oxphos_decline.R (PART I: the FOXO3 target programme)
-  - docs/2026-09-10_orthotopic_escape_series.md         (scripts 52 and 53)
+  - docs/2026-09-10_orthotopic_escape_series.md         (scripts 52 and 53; Fig. 3k-m will redraw script 53's three panels)
   - docs/experimental_cohorts_branch_notes.md           (the retired branch's notes; its cohort rule still holds)
   - docs/2026-09-09_orthotopic_identity_correction.md   (voids the conclusions of scripts 50 and 51)
   - docs/2026-09-02_myc_oxphos_priming_gate_model.md    (the gate model)
@@ -18,20 +21,15 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-09-22: work continues on `main` from `b7253f7`; `experimental-cohorts` is retired and identical to `main`.**
+**2026-10-09: the paper goes to Nature Metabolism as a Letter. Its panels are being built in a
+new, separate layer, `figures/natmetab/`, one panel at a time. The style is written and tested;
+no panel is built yet.**
 
-Read this file first. Sections 1 to 3 are current as of **2026-09-22, end of day**. Section 3a
-is the 2026-09-21 evening session. Sections 3b to 3g and 4 to 9 are carried over, and where
-today's work supersedes something in them, it is marked in place. Section 10 holds the threads
-parked for after the manuscript.
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-09**. Section 3 is the
+2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
+Section 10 holds the threads parked for after the manuscript.
 
-**Nothing from today is waiting on a ruling.**
-- **The FOXO3 question is closed.** The author ruled that Figure 1's Foxo3-to-PUMA link is
-  transcript-level and stays there: the activity step was tested three ways and none supports
-  it. It is a measured negative (3.5; the verification note, section 10).
-- **The afternoon's human analyses are parked** as a follow-up for after the manuscript
-  (3.6 to 3.8, section 10).
-- Start with section 2.
+**Waiting on the author: the three Fig. 1b questions (2a.5).** Nothing else blocks.
 
 ---
 
@@ -39,16 +37,18 @@ parked for after the manuscript.
 
 | | |
 |---|---|
-| checkout | `main`, tracking `origin/main`. **It is the only branch**, local and remote |
-| HEAD | this handoff's commit, on top of `8114213` ("Follow-up note: subtype as the subject, not the confound") |
-| pushed | everything through `8114213`. **This handoff's commit is local only:** push when the author says so |
-| branches | every other branch was deleted on 2026-09-22 (3.1). Five are tagged `archive/*`: `analysis-exploratory`, `BlockA-revision-step-by-step`, `new-analysis`, `paper-figures`, `paper-final`. `experimental-cohorts` was not tagged; its tip `20104a3` is an ancestor of `main`. The other tags are `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction`. All eight tags are on the remote |
-| scripts | 49 to 54, all run; nothing new this session. 52 and 53 are the orthotopic escape series (53's PDF is `outputs/orthotopic/53_escape_dose.pdf`); 54 is the Figure-1 verification. **The next number is 55** |
-| results | **no object was written this session.** All were fresh by the rule as of 2026-09-21: Task D's re-sources (3b; the note's section 7), and 33 and 42 at 16:29 UTC. Checked today: script 47's object (2026-08-18) postdates `334ebab`. Script 23's object (2026-07-17) postdates its last commit, but predates `gsva_scores.rds` and `mitopps_scores.rds` (07-24) and `gsva_overview.rds` (07-29) |
-| panels | still 28 manuscript slots. **Fig. 2G's ruling-4 rebuild is COMPLETE** (`fea4d60`, 2026-09-21, signed off; 3a.1). The 16 August panel, which drew the retired 0.487 line, has not been the committed one since. **Do not rebuild it.** **Fig. 2H's legend gained a bound** (3.2). **`legends.md` was regenerated** at 2026-09-22 11:44 by a real `rebuild_panels.R` run, 28 of 28 ok (3.4) |
-| repo | `/Users/gs/code/myc_mouse`, off Drive since 2026-09-21 (`50a5638`). `.git` holds no Icon stubs; the six working-tree stubs under `data/` are gitignored |
-| scratch | none in the repo. This session's computations ran as read-only R in the session scratchpad. The documents carry the code: 3.3 here, the verification note's 10.4, and the follow-up note's appendix |
-| human arm | **read-only inputs today:** `../myc_human_validation` (frozen at `d3ac60e`) and `../myc_human_exploratory`. Nothing was written to either. Two read-only `gh` fetches went into the scratchpad: the upstream Menegollo TCGA fork scripts, and the gene-set library's human bicluster workbook (the follow-up note, section 8) |
+| checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
+| HEAD | this handoff's commit, on top of `2cdd00e` ("A clean figure layer for the Nature Metabolism panels") |
+| pushed | everything, this handoff included (the author asked for the push, 2026-10-09) |
+| branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
+| scripts | no numbered script was added or changed. **The next number is still 55** |
+| results | **no object was written.** This session's analysis checks were read-only (2a.3). The freshness notes of 2026-09-22 (all fresh by the rule; script 23's object predates `gsva_scores.rds`) are in the previous state table: `git show 5cb2092:docs/handoff.md`, section 1 |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (14 of 14 pass) and `FIGURE_RULES.md`. **No panel script yet.** Panels write to `outputs/natmetab/<Fig>/<Fig><letter>_<name>.pdf` |
+| old figure layer | `figures/panels/` (28 slots, the August long-form version) is **untouched and kept as the record.** Its slot map, `panel_legend()` blocks and `rebuild_panels.R` are **not** used for the Letter (author's ruling, 2a.2) |
+| outputs | `outputs/natmetab/_demo/` holds a demonstration of the style (Myc mRNA, not a panel of record) and the author's Illustrator test exports, `Untitled-1.*`. `outputs/` is gitignored |
+| text | **the cut has happened**, as the Nat Metab version (2a.1). Section 6's procedure is superseded (2a.2) |
+| repo | `/Users/gs/code/myc_mouse`, off Drive |
+| human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory`, which has no figure layer |
 
 **Untracked, and staying that way:**
 - the six `.txt` session exports at the repo root;
@@ -56,29 +56,162 @@ parked for after the manuscript.
 - `docs/library_reference/2026-08-22_consensus_myc_double_hit_thread.md`;
 - `docs/2026-08-27_human_validation_plan.md`.
 
-**THE TEXT CUT HAS STILL NOT HAPPENED**, as far as the repo records. Nothing here blocks it
-or depends on it.
-
 ---
 
 ## 2. Do this first
 
-1. **Still waiting from 2026-09-21: the seven-gene table** (3a.3). The author's suggestions for
-   what to build from it have not come, and nothing has been built.
-2. **Open, and the author's call: Fig. 2G (alt)'s restored claim item** (3a.2). Since today's
-   rebuild it is in `legends.md`, so it can be reviewed there.
-3. **Offered, not done: the isoform caveat in Fig. S2D (alt)'s legend.** The legend carries
-   Cdkn2a's low-count caveat, but not the fact that a gene-level count cannot separate p19Arf
-   from p16Ink4a (note section 9.3). This is the author's call.
-4. **Standing from 2026-09-10: the orthotopic conclusions of scripts 50 and 51 are void.**
-   Read `docs/2026-09-09_orthotopic_identity_correction.md` before touching that dataset;
-   3e and section 5 have the detail.
-5. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked
-   human threads (section 10).
+1. **Get the author's answers to the three Fig. 1b questions** (2a.5).
+2. **Build 1b and Extended Data 1a** in `figures/natmetab/`, one script per R piece, through
+   `_style.R`. After any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`.
+3. **Continue the walkthrough, sentence by sentence:**
+   - order: ED 2a,b, then 1d, 1e, 1f with ED 2c,d, ED 2e, 1g, 1h, and 3k-m;
+   - talk through each panel's content with the author before building it, including the five
+     flagged sentences (2a.6);
+   - Fig. 4g-j is open (2a.1).
+4. **Settle the contrast-label scheme** at the first effect panel. A draft is in `FIGURE_RULES.md`.
+5. **Carried items, possibly moot now: ask before acting.**
+   - the seven-gene table (3a.3);
+   - Fig. 2G (alt)'s claim item (3a.2);
+   - the isoform caveat in Fig. S2D (alt);
+   - the void orthotopic conclusions of scripts 50 and 51 (3e), which matter again for Fig. 3k-m.
+6. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
+   threads (section 10).
 
 ---
 
-## 3. What happened this session (2026-09-22)
+## 2a. What happened this session (2026-10-09)
+
+Two commits, both pushed: `2cdd00e`, the figure layer (2a.4), and this handoff.
+
+### 2a.1 The paper is now a Nature Metabolism Letter
+
+- **Source of record:** the Google Doc `11.8.26_MK_Myc_Paper` (Drive id
+  `1M-kEC1d_VJmbTG-SyYYfykZ3F1_aEiDtu0xtwFaPtJo`), tab **"Nat metab version"**, edited 2026-10-09.
+  - Title: *Mitochondrial respiration constrains MYC-driven mammary tumourigenesis*. Four figures.
+  - The **"fig plans"** tab lists Figs. 2-4 panel by panel, mostly bench panels. **3k-m are marked
+    "script 52, analysed, no panel". Its Fig. 1 table is empty.**
+  - "CURRENT VERSION", the tab PANELS.md names, is the previous long form.
+  - Reading it: the Doc is ~260k characters, so the Drive connector spills it to a JSON file; take
+    `.fileContent` with jq. This session read the current tabs in full and only searched the three
+    old drafts (OLD, OLD 2, Version 1 with figures).
+- **Letter limits** (nature.com, 2026-10-09):
+  - 2-4 display items; up to 10 Extended Data figures, one page each;
+  - up to 40 references and 2,500 words; no headings;
+  - a referenced introductory paragraph of up to 200 words instead of an abstract. The draft's
+    abstract runs ~330 words; that is not a figure matter and was flagged once.
+- **Figure specifications:**
+  - 89 or 183 mm wide, at most 170 mm tall;
+  - 5-7 pt Helvetica or Arial, panel letters 8 pt bold lowercase, no coloured text;
+  - editable, embedded fonts in the final files.
+- **The repo panels the text cites**, mapped from its sentences. The empty Fig. 1 table in "fig
+  plans" can be filled from this once agreed:
+
+| new slot | what the text cites it for | built in the OLD layer as |
+|---|---|---|
+| 1b, RNA-seq part | programme at half amplitude, same shape; Myc transcript steady (the western is bench) | `fig1_rescaled_not_reshaped` (old 1G), `figS1_myc_transcript_stable` (old S1E) |
+| ED 1a | the MYC/MAX/MXD transcripts | `figS1_myc_network` (old S1F) |
+| 1d | mitochondrial content +21-27% | `fig1_mito_content` (old 1E) |
+| 1e | mitoPPS: OXPHOS at 6W, demoted on both timelines; catabolic arms gain | `fig1_reallocation_ranked` (old 1F, MYC effect only); the timelines are in `plane_arms_mitopps` or `fig2_wt_mito_contraction` (old 2F) |
+| 1f | OXPHOS falls >5x proliferation against matched sets; Bax, Bbc3, Bcl2l1, Foxo3 | `plane_arms_content` and `plane_four_genes` (unslotted; built 2026-09-21 for this paragraph) |
+| 1g | apoptosis ratios; PUMA:Bcl-xL | `fig2_priming_ratios` (old 2G, the ruling-4 rebuild) |
+| 1h | PUMA drops only under MYC | probably `fig2_oxphos_puma_coupling` (old 2I); unconfirmed |
+| ED 2a-e | design; the mitochondrial axis; total abundance; the adult programme | old S1A, old 1C, `fig1_compartment_levels`, old S2B |
+| 3k-m | the escape series | script 53's panels A-C, an analysis figure; to be redrawn in the new layer |
+| 4g-j | TCGA, SCAN-B, the chemotherapy cohorts, METABRIC | `../myc_human_exploratory`; no figure layer |
+
+The old panels are **content references only**. Every Nat Metab panel is a new script in the new
+layer.
+
+### 2a.2 The author's rulings on the figure layer
+
+All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
+- **Panel by panel.** R makes single panels at their final printed size. The author assembles each
+  figure in Illustrator with blots, images and Prism graphs, placing panels at 100%. Panel letters
+  go on in Illustrator.
+- **Start clean.** A new folder; no `panel_legend()`; no rebuild runner. `figures/panels/` stays
+  untouched as the record, so section 6's retirement procedure does not apply. Stay on `main`. PDFs
+  go in the repo under `outputs/natmetab/<Fig>/`.
+- **Type:** Helvetica throughout (R, Prism, Illustrator), 6-7 pt. **Nothing under 5 pt, even for
+  the initial submission.** Black text only.
+- **Axes:** the y axis starts at 0 whenever an x axis is drawn, so magnitudes get no log axes. Both
+  ends of an axis sit on a drawn tick.
+- **P values:** exact, from the analysis of record, never computed by the plot, with an italic
+  capital *P*. DESeq2 values are IHW-adjusted, and the legends say so.
+- **Labels:** "WT / 6W" and "MYC+ / 12W" (MYC+, as in the text). Contrast labels are pending.
+- **Goal:** at the end of the figure sessions, turn `FIGURE_RULES.md` and `_style.R` into a GS-lab
+  figure skill.
+
+### 2a.3 What was checked, and what was ruled out
+
+- **The July font problem was spacing, not resolution** (commit a58fa1c). Re-checked on R 4.6.1:
+  `cairo_pdf` embeds the font but collapses word spaces at 5-7 pt in Apple's viewers, while base
+  `pdf()` is clean.
+  - So panels use base `pdf()` with Helvetica, not embedded; Illustrator embeds the font on save.
+  - Ghostscript, which is not installed, is not needed.
+- **Dead end:** writing "Arial" from base `pdf()` by renaming Helvetica's metric files. Apple's
+  viewers draw it in Times.
+- **ggpubr is used only for `geom_bracket()`.** Its `stat_compare_means()` tests the plotted points:
+  Wilcoxon by default, which cannot go below P = 0.0022 at 6 against 6, so it would contradict
+  DESeq2. **ggstatsplot** is not used, for the same reason. **data-to-viz** is the checklist for
+  chart forms.
+- **P's case:** Nature's written guides are silent. One published Nat Metab paper prints an italic
+  capital *P* 48 times and lowercase never: house style.
+- **Skills:** 38 personal skills in `~/.claude/skills/` (installed 2026-07-22). They are optional,
+  and their `cairo_pdf` advice is overridden here. No third-party Nature-figure skill improves on
+  this layer: `nature-figure` exports with `cairo_pdf`.
+- **Numbers read for 1b** (read-only):
+  - *Myc*, MYC+ against WT: +1.68 at 6W and +1.82 at 12W (IHW P 2.7e-17 and 2.1e-20).
+  - *Myc*, 6W to 12W: -0.10 in MYC+ (P 0.76), -0.25 in WT (P 0.48).
+  - The programme across 2,648 genes: slope 0.49, R2 0.51.
+  - Across the 143 MitoPathways: slope 0.552, R2 0.801. The R2 is at the 100th percentile of 500
+    matched shuffles and the slope at the 87th. Tier slopes run 0.52-0.83.
+  - Library-wide NES, 6W against 12W: 866 sets, Spearman 0.933.
+
+### 2a.4 What was written: `2cdd00e`
+
+`figures/natmetab/` holds three files.
+- **`_style.R`:** the theme, palettes, P formatting, brackets, tick-ending axes, and `save_panel()`
+  with its checks.
+- **`_style_selftest.R`:** 14 checks. A correct panel passes, and nine broken panels are each
+  refused.
+- **`FIGURE_RULES.md`:** the rules, with reasons.
+
+The self-test caught two bugs before the commit: an argument passed to the wrong function, and an
+axis check that accepted an ending on an undrawn minor tick.
+
+### 2a.5 Fig. 1b: three questions for the author
+
+1. **The lane order of the MYC western**, so that the mRNA panel can match it.
+2. **"Without selective repression of specific target gene sets":** the LFC scatter covers
+   MitoPathways only. Three options:
+   - (a) the text says "mitochondrial pathways";
+   - (b) add the library-wide NES ranking (866 sets, Spearman 0.93) as an Extended Data panel;
+   - (c) draw a new scatter of every library set's mean MYC effect, 12W against 6W, with the MYC
+     target sets marked. This needs a numbered script (55), run first.
+
+   Claude leans to (c) if MYC targets in general are meant.
+3. **The programme panel:** both halves (genes and pathways, about 89 x 45 mm) in 1b, or one half in
+   1b and the other in Extended Data.
+
+### 2a.6 Five sentences that do not match the data, for the walkthrough
+
+1. **ED 2a,b** says the MECs were "purified from the tumours". They came from 6- and 12-week glands.
+2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`):
+   - OXPHOS subunits' MYC effect is +0.112 at 6W (padj 0.27, not significant) and still +0.069 at
+     12W, so it is not inverted. What falls is the change across the window: -0.109 in WT and
+     -0.153 in MYC+.
+   - Glycine cleavage does not gain priority across the window (+0.045 WT, -0.156 MYC+). It rises
+     only on the content ruler, in WT (+0.240).
+3. **1f**, "Foxo3 ... most distinct among all evaluated genes": the panel draws four genes. By the
+   2026-09-21 ruling, Foxo3 is first of script 44's 26 by P and |z|, and fifth by size.
+4. **1f,g**, "shifting distinctly the PUMA/BCL-XL ratio": the ruling-4 2G shows it as the largest of
+   nine departures, inside the 95% prediction interval, and reports no verdict.
+5. **1h**, if it is the coupling panel: the impasse ruling stands (permutation P 0.026 unadjusted,
+   0.085 adjusted), so the panel asserts nothing.
+
+---
+
+## 3. What happened on 2026-09-22
 
 Seven commits, all pushed: `dd58b8d`, `d3d7f3b`, `1a43f04`, `b881522` (this handoff's first
 version), `8e4dd96`, `531d531` and `8114213`. This handoff's update is local.
@@ -1248,6 +1381,9 @@ there.
 ---
 
 ## 9. Working rules, verbatim
+
+**For the Nat Metab panels, `figures/natmetab/FIGURE_RULES.md` replaces the panel bullets
+below** (`theme_panel()`, `panel_legend()`, `_panel_common.R` belong to the old layer).
 
 - **Option A:** Claude Code writes `scripts/`, `figures/`, `paper/`; the author runs the
   numbered scripts in Positron. Running a panel to verify is fine and expected.
