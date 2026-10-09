@@ -18,9 +18,11 @@
 #
 # FORM: many values in a few groups, two conditions -> one point per set
 #   (data-to-viz, "Too many distributions": one row per programme, not per set;
-#   "Order your data": rows by the 6-week median). No colour: the rows already say
-#   what is mitochondrial. The POINTS carry the result -- the shape of each row at
-#   the two ages -- so they are drawn large enough to read.
+#   "Order your data": rows by the 6-week median). Colour is the age, in ED 1a's
+#   colours (MYC+ vs WT at 6W and at 12W), so the two panels read the same way;
+#   the facet titles name the ages, so no key is drawn. The POINTS carry the
+#   result -- the shape of each row at the two ages -- so they are drawn large
+#   enough to read.
 # NO CENTRAL VALUE IS DRAWN BY DEFAULT (SHOW_MEDIAN). The lower five rows are
 #   bimodal, with sets enriched in both directions, so a median or mean sits inside
 #   one mode or between them and moves with the balance of membership, not with the
@@ -87,12 +89,13 @@ SHOW_MEDIAN <- FALSE   # TRUE: a thin grey tick at each row's median
 
 p <- ggplot(dat, aes(NES, programme)) +
   geom_vline(xintercept = 0, linewidth = NM_LINE, colour = box_line) +
-  ggbeeswarm::geom_quasirandom(orientation = "y", width = 0.33, size = 0.85,
-                               alpha = 0.5, stroke = 0, colour = "grey15") +
+  ggbeeswarm::geom_quasirandom(aes(colour = contrast), orientation = "y", width = 0.33,
+                               size = 0.85, alpha = 0.55, stroke = 0) +
   (if (SHOW_MEDIAN)
     geom_segment(data = med, aes(x = NES, xend = NES, y = yi - 0.38, yend = yi + 0.38),
                  inherit.aes = FALSE, linewidth = 0.3, colour = "grey45")) +
   facet_wrap(~ contrast, nrow = 1, labeller = as_labeller(contrast_labels)) +
+  scale_colour_manual(values = contrast_cols, guide = "none") +
   scale_x_nm(step = 2, top = max(dat$NES), bottom = min(dat$NES), minor = TRUE,
              labels = lab_signed) +
   labs(x = "Normalized enrichment score", y = NULL) +
