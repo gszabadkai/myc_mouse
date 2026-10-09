@@ -1,5 +1,5 @@
 ---
-date: 2026-10-09
+date: 2026-10-10
 tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, verification]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
@@ -21,15 +21,15 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-09: the paper goes to Nature Metabolism as a Letter. Its panels are being built in a
-new, separate layer, `figures/natmetab/`, one panel at a time. The style is written and tested;
-no panel is built yet.**
+**2026-10-10: Fig. 1b and Extended Data Fig. 1a-c are built in `figures/natmetab/` and pushed.
+Next is ED Fig. 2a,b, on the author's instructions, which are still to come.**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-09**. Section 3 is the
-2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
-Section 10 holds the threads parked for after the manuscript.
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-10**. Section 2b is the
+2026-10-09 session, which started the Nat Metab layer. Section 3 is the 2026-09-22 session and 3a
+the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over. Section 10 holds the threads
+parked for after the manuscript.
 
-**Waiting on the author: the three Fig. 1b questions (2a.5).** Nothing else blocks.
+**Waiting on the author: instructions for ED Fig. 2a,b.** The author is re-reading that paragraph.
 
 ---
 
@@ -38,17 +38,17 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `2cdd00e` ("A clean figure layer for the Nature Metabolism panels") |
-| pushed | everything, this handoff included (the author asked for the push, 2026-10-09) |
+| HEAD | this handoff's commit, on top of `880e466` ("ED 1c takes ED 1a's colours") |
+| pushed | everything through `880e466`. **This handoff's commit is local**: push when the author says so |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | no numbered script was added or changed. **The next number is still 55** |
-| results | **no object was written.** This session's analysis checks were read-only (2a.3). The freshness notes of 2026-09-22 (all fresh by the rule; script 23's object predates `gsva_scores.rds`) are in the previous state table: `git show 5cb2092:docs/handoff.md`, section 1 |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (14 of 14 pass) and `FIGURE_RULES.md`. **No panel script yet.** Panels write to `outputs/natmetab/<Fig>/<Fig><letter>_<name>.pdf` |
-| old figure layer | `figures/panels/` (28 slots, the August long-form version) is **untouched and kept as the record.** Its slot map, `panel_legend()` blocks and `rebuild_panels.R` are **not** used for the Letter (author's ruling, 2a.2) |
-| outputs | `outputs/natmetab/_demo/` holds a demonstration of the style (Myc mRNA, not a panel of record) and the author's Illustrator test exports, `Untitled-1.*`. `outputs/` is gitignored |
-| text | **the cut has happened**, as the Nat Metab version (2a.1). Section 6's procedure is superseded (2a.2) |
+| results | **no object was written.** The panels read existing objects only. The freshness notes of 2026-09-22 are in `git show 5cb2092:docs/handoff.md`, section 1 |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (14 of 14 pass), `FIGURE_RULES.md`, and **four panel scripts** (2a.2). PDFs are in `outputs/natmetab/Fig1/` and `outputs/natmetab/EDFig1/` |
+| old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
+| outputs | `outputs/natmetab/_demo/` still holds the style demonstration and the author's Illustrator test exports, `Untitled-1.*`. `outputs/` is gitignored |
+| text | the author has updated the Doc for the rearranged panels (2a.1) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
-| human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory`, which has no figure layer |
+| human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
 **Untracked, and staying that way:**
 - the six `.txt` session exports at the repo root;
@@ -60,15 +60,23 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Get the author's answers to the three Fig. 1b questions** (2a.5).
-2. **Build 1b and Extended Data 1a** in `figures/natmetab/`, one script per R piece, through
-   `_style.R`. After any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`.
-3. **Continue the walkthrough, sentence by sentence:**
-   - order: ED 2a,b, then 1d, 1e, 1f with ED 2c,d, ED 2e, 1g, 1h, and 3k-m;
-   - talk through each panel's content with the author before building it, including the five
-     flagged sentences (2a.6);
-   - Fig. 4g-j is open (2a.1).
-4. **Settle the contrast-label scheme** at the first effect panel. A draft is in `FIGURE_RULES.md`.
+1. **Wait for the author's instructions on ED Fig. 2a,b.** The paragraph carries a flagged
+   sentence: the text says the cells were "purified from the tumours", but they came from 6- and
+   12-week glands (2b.6, item 1).
+2. **Then continue the walkthrough, sentence by sentence:**
+   - order: 1d, 1e, 1f with ED 2c,d, ED 2e, 1g, 1h, and 3k-m;
+   - talk through each panel's content with the author before building it;
+   - the flagged sentences for 1e, 1f, 1g and 1h are 2b.6, items 2 to 5;
+   - Fig. 4g-j is open (2b.1).
+3. **Fix the development-contrast labels and colours** when the first panel needs them (1e or
+   1f). The draft label is "12W vs 6W, MYC+"; see `FIGURE_RULES.md`, Labels.
+4. **How each panel is built:**
+   - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
+     `save_panel()`, which refuses a panel that breaks a rule;
+   - render the PDF with `qlmanage` and look at it, because the checks cannot see clipped or
+     colliding labels (2a.4);
+   - each script prints the numbers its legend needs;
+   - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`.
 5. **Carried items, possibly moot now: ask before acting.**
    - the seven-gene table (3a.3);
    - Fig. 2G (alt)'s claim item (3a.2);
@@ -79,11 +87,97 @@ Section 10 holds the threads parked for after the manuscript.
 
 ---
 
-## 2a. What happened this session (2026-10-09)
+## 2a. What happened this session (2026-10-10)
 
-Two commits, both pushed: `2cdd00e`, the figure layer (2a.4), and this handoff.
+Three commits: `b01da95` and `880e466`, both pushed, and this handoff, which is local.
 
-### 2a.1 The paper is now a Nature Metabolism Letter
+### 2a.1 The author rearranged Fig. 1b and Extended Data Fig. 1
+
+| slot | content | from the old layer |
+|---|---|---|
+| Fig. 1b | *Myc* mRNA per animal, beside the MYC western | S1E (the style demo) |
+| ED 1a | the MYC/MAX/MXD network | S1F |
+| ED 1b | MYC effect at 12W against 6W, MYC-responsive genes only; no MitoCarta facet | 1G, gene half |
+| ED 1c | NES of every gene set at 6W and 12W, by programme | 1D |
+
+- **This settled the three Fig. 1b questions** of 2b.5:
+  - the blot lane order: the demo is used as is, age-major;
+  - "target gene sets": ED 1c, the library-wide NES;
+  - the programme panel: genes only, in ED 1b.
+- **The author has updated the text:** the amplitude sentence now cites ED 1b,c, and the MYCER^T2
+  model, previously cited as "ED Fig. 1b", has another letter.
+
+### 2a.2 What was built
+
+| slot | script | PDF (mm) |
+|---|---|---|
+| Fig. 1b | `fig1b_myc_transcript.R` | `Fig1/Fig1b_myc_transcript.pdf` (48 x 56) |
+| ED 1a | `edfig1a_myc_network.R` | `EDFig1/EDFig1a_myc_network.pdf` (80 x 64) |
+| ED 1b | `edfig1b_myc_effect_rescaled.R` | `EDFig1/EDFig1b_myc_effect_rescaled.pdf` (58 x 58) |
+| ED 1c | `edfig1c_nes_by_programme.R` | `EDFig1/EDFig1c_nes_by_programme.pdf` (112 x 80) |
+
+All four pass every check, and the author signed them off.
+- **Fig. 1b:** DESeq2 IHW-adjusted P passed in. The script asserts that the drawn group means give
+  DESeq2's log2 fold changes to within 0.1.
+- **ED 1a:**
+  - 6W and 12W are offset vertically, each with a 95% interval (log2FC +/- 1.96 SE). The old
+    panel showed +/-1 SE at 6W only.
+  - It shows the MYC+ vs WT gap at each age. Claude offered to draw the 6W-to-12W change within
+    MYC+ instead, to match the text's word "fall"; the author did not take it up. The smallest
+    interaction P is 0.83.
+- **ED 1b:**
+  - slope 0.487, asserted to be script 44's rate;
+  - R2 0.513 (squared Pearson);
+  - 22 genes outside +/-3 log2 are not drawn but enter every number, and the legend says so.
+- **ED 1c:**
+  - points coloured by age, in ED 1a's colours;
+  - no median and no gridlines;
+  - Spearman 0.933 across 866 sets between the ages.
+
+### 2a.3 Decisions and findings, all recorded in `FIGURE_RULES.md`
+
+- **Genotype-effect labels and colours:** "MYC+ vs WT, 6W" in `#D55E00` and "MYC+ vs WT, 12W" in
+  `#E69F00`, as `contrast_cols` and `contrast_labels` in `_style.R`.
+- **Intervals are 95% and unadjusted.** In ED 1a three intervals exclude 0 although no adjusted P
+  passes, and the legend must say so:
+
+| gene | age | raw P | IHW-adjusted P |
+|---|---|---|---|
+| *Mxi1* | 6W | 0.020 | 0.096 |
+| *Mlx* | 6W | 0.039 | 0.16 |
+| *Mlxip* | 12W | 0.001 | 0.061 |
+
+- **No median or mean on a row that has sets on both sides of zero.**
+  - In ED 1c the Apoptosis median goes +0.74 to -0.94, and its mean +0.17 to -0.35.
+  - The means of three more rows change sign: TF target sets, MSigDB Hallmarks and Mammary
+    development.
+  - The shape barely moves. Apoptosis has 8 negative sets of 19 at 6W and 13 at 12W.
+  - The author chose larger points and no median.
+- **A correction to the old Fig. 1D legend.** Five Apoptosis sets change sign, and the old legend
+  said none of them is significant at either age. In fact TANG_NECROPTOSIS reaches a
+  within-category BH P of 0.033 at 12W (NES -1.53); the other four are not significant.
+  - Suggested legend sentence: "At 12 weeks, 5 of the 19 apoptosis sets change sign (NES +0.6 to
+    +0.9 at 6 weeks; -0.9 to -1.5 at 12 weeks). Four are not significant at either age;
+    TANG_NECROPTOSIS reaches a within-category adjusted P of 0.033 at 12 weeks."
+- **A display window that hides points** is allowed only if every number uses all points and the
+  legend gives the count.
+
+### 2a.4 Style changes, and a lesson
+
+- **`_style.R`:** gained `contrast_cols` and `contrast_labels`, and a 2.5 mm right margin. Labels
+  at the end of an axis overhang it by half their width, and "+3" and "+4" were being clipped. The
+  self-test still passes 14 of 14.
+- **The checks cannot see layout.** Clipped end labels, and ED 1c's "+4" running into the next
+  facet's "-4" (now 6 mm apart), were caught only by rendering the PDF and looking at it. Render
+  every panel before calling it done.
+
+---
+
+## 2b. What happened on 2026-10-09
+
+Two commits, both pushed: `2cdd00e`, the figure layer (2b.4), and that day's handoff, `df9390d`.
+
+### 2b.1 The paper is now a Nature Metabolism Letter
 
 - **Source of record:** the Google Doc `11.8.26_MK_Myc_Paper` (Drive id
   `1M-kEC1d_VJmbTG-SyYYfykZ3F1_aEiDtu0xtwFaPtJo`), tab **"Nat metab version"**, edited 2026-10-09.
@@ -122,7 +216,7 @@ Two commits, both pushed: `2cdd00e`, the figure layer (2a.4), and this handoff.
 The old panels are **content references only**. Every Nat Metab panel is a new script in the new
 layer.
 
-### 2a.2 The author's rulings on the figure layer
+### 2b.2 The author's rulings on the figure layer
 
 All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Panel by panel.** R makes single panels at their final printed size. The author assembles each
@@ -141,7 +235,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Goal:** at the end of the figure sessions, turn `FIGURE_RULES.md` and `_style.R` into a GS-lab
   figure skill.
 
-### 2a.3 What was checked, and what was ruled out
+### 2b.3 What was checked, and what was ruled out
 
 - **The July font problem was spacing, not resolution** (commit a58fa1c). Re-checked on R 4.6.1:
   `cairo_pdf` embeds the font but collapses word spaces at 5-7 pt in Apple's viewers, while base
@@ -167,7 +261,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
     matched shuffles and the slope at the 87th. Tier slopes run 0.52-0.83.
   - Library-wide NES, 6W against 12W: 866 sets, Spearman 0.933.
 
-### 2a.4 What was written: `2cdd00e`
+### 2b.4 What was written: `2cdd00e`
 
 `figures/natmetab/` holds three files.
 - **`_style.R`:** the theme, palettes, P formatting, brackets, tick-ending axes, and `save_panel()`
@@ -179,7 +273,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 The self-test caught two bugs before the commit: an argument passed to the wrong function, and an
 axis check that accepted an ending on an undrawn minor tick.
 
-### 2a.5 Fig. 1b: three questions for the author
+### 2b.5 Fig. 1b: three questions for the author (settled 2026-10-10, 2a.1)
 
 1. **The lane order of the MYC western**, so that the mRNA panel can match it.
 2. **"Without selective repression of specific target gene sets":** the LFC scatter covers
@@ -193,7 +287,7 @@ axis check that accepted an ending on an undrawn minor tick.
 3. **The programme panel:** both halves (genes and pathways, about 89 x 45 mm) in 1b, or one half in
    1b and the other in Extended Data.
 
-### 2a.6 Five sentences that do not match the data, for the walkthrough
+### 2b.6 Five sentences that do not match the data, for the walkthrough
 
 1. **ED 2a,b** says the MECs were "purified from the tumours". They came from 6- and 12-week glands.
 2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`):
