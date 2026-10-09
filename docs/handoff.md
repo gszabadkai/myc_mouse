@@ -39,7 +39,7 @@ parked for after the manuscript.
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
 | HEAD | this handoff's commit, on top of `880e466` ("ED 1c takes ED 1a's colours") |
-| pushed | everything through `880e466`. **This handoff's commit is local**: push when the author says so |
+| pushed | everything, this handoff included (the author asked for the push, 2026-10-10) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | no numbered script was added or changed. **The next number is still 55** |
 | results | **no object was written.** The panels read existing objects only. The freshness notes of 2026-09-22 are in `git show 5cb2092:docs/handoff.md`, section 1 |
@@ -89,7 +89,7 @@ parked for after the manuscript.
 
 ## 2a. What happened this session (2026-10-10)
 
-Three commits: `b01da95` and `880e466`, both pushed, and this handoff, which is local.
+Three commits, all pushed: `b01da95`, `880e466` and this handoff.
 
 ### 2a.1 The author rearranged Fig. 1b and Extended Data Fig. 1
 
