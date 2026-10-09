@@ -69,6 +69,9 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   Wald test".
 - Brackets are drawn with `ggpubr::geom_bracket()` through `brackets()` in the style file. That is
   the only use of ggpubr.
+- **Intervals** on effects are 95% (log2FC +/- 1.96 SE, Wald), at every age drawn. They are
+  unadjusted, so where an interval excludes 0 but no adjusted P passes, the legend says so (ED 1a:
+  *Mxi1*, *Mlx*, *Mlxip*).
 
 ## Showing data
 
@@ -76,6 +79,13 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   n = 6.
 - The chart form is checked against data-to-viz (https://www.data-to-viz.com/) and its caveats.
   Each script's header notes the caveats checked.
+- **No single central value on a group with values in both directions.** A median or mean of a
+  bimodal group sits inside one mode or between them and moves with the balance of membership, not
+  with the shape. On ED 1c the Apoptosis median went +0.74 -> -0.94 and the means of three more rows
+  changed sign, while the shape barely moved (2026-10-10). Draw the points large enough to carry
+  the result instead.
+- **A display window that hides points** (ED 1b, +/-3 log2) is allowed only if every number is
+  computed on all points and the legend gives the count left out.
 
 ## Colour
 
@@ -90,6 +100,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Fills** are the hue at 28% over white, as solid colours, so Prism uses identical values.
 - **Neutrals:** box outlines and medians are `#595959`; axes are black.
 - **Genotype alone:** WT `#0072B2`, MYC+ `#D55E00`.
+- **Genotype effects** take the MYC+ hue of their age: "MYC+ vs WT, 6W" `#D55E00`, "MYC+ vs WT,
+  12W" `#E69F00` (`contrast_cols` in the style file).
 - **Diverging fills:** `#4A3525` (espresso) to `#FAFAFA` (white, pinned at zero) to `#2A8A6D`
   (mint). Not blue-red, which would read as genotype.
 - **Unsigned levels:** `#F2F4F6` to `#8FA3B0` to `#243642`.
@@ -99,11 +111,21 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 ## Labels
 
 - **Groups:** two lines, "WT / 6W" and "MYC+ / 12W". MYC+ matches the manuscript text.
-- **Contrasts (effects):** to be fixed at the first effect panel. Draft: "MYC+ vs WT, 6W" for a
-  genotype effect, and "12W vs 6W, MYC+" for change across the window.
+- **Contrasts (effects):** what is compared, then where. Genotype effects: "MYC+ vs WT, 6W" and
+  "MYC+ vs WT, 12W" (in use from ED 1a-c). Change across the window, still a draft: "12W vs 6W,
+  MYC+".
+- Gene symbols on axes are italic; set and programme names are not. Row labels start with a
+  capital (Nature lettering).
+
+## Built (2026-10-10)
+
+| slot | script | content |
+|---|---|---|
+| Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal, beside the MYC western |
+| ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals |
+| ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49 |
+| ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme |
 
 ## Pending
 
-- The contrast-label scheme.
-- Fig. 1b: the order of the MYC blot lanes; the "target gene sets" option (a, b or c); one or both
-  halves of the programme panel.
+- The development-contrast labels and colours (first needed at Fig. 1e/f).

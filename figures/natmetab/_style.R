@@ -72,6 +72,13 @@ geno_cols    <- c(neg = "#0072B2", pos = "#D55E00")   # the 6W pair of group_col
 geno_labels  <- c(neg = "WT", pos = "MYC+")
 box_line     <- "#595959"                             # box outlines and medians
 
+# Effects (contrasts) are labelled by what is compared, then where. The genotype
+# effects take the MYC+ hues of their age, because that is what they measure.
+# Development contrasts get their labels and colours when the first panel needs them.
+contrast_cols   <- c(myc_6W = "#D55E00", myc_12W = "#E69F00")
+contrast_labels <- c(myc_6W = "MYC+ vs WT, 6W", myc_12W = "MYC+ vs WT, 12W")
+stopifnot(identical(unname(contrast_cols), unname(group_cols[c("6W_pos", "12W_pos")])))
+
 # The order follows the test: age-major when the comparisons are within-age gaps,
 # genotype-major when the comparison is a genotype main effect.
 order_by_age  <- c("6W_neg", "6W_pos", "12W_neg", "12W_pos")
@@ -218,7 +225,7 @@ theme_nm <- function(legend = "none") {
       plot.title        = ggplot2::element_blank(),
       plot.subtitle     = ggplot2::element_blank(),
       plot.caption      = ggplot2::element_blank(),
-      plot.margin       = ggplot2::margin(1, 1, 1, 1, "mm"))
+      plot.margin       = ggplot2::margin(1, 2.5, 1, 1, "mm"))  # right: end labels overhang the axis
 }
 
 # --- the checks ------------------------------------------------------------------
