@@ -343,6 +343,12 @@ Source: `$coupling_timepoint`.
 
 ## 7. Task D: the paragraph's numbers behind asserts
 
+**2026-10-10: the content asserts are removed (author).** The text now quotes "20-33%,
+depending on the module" (the genotype effect across Fig. 1d's four modules), not the
+mass-marker 21-27%. The 27 (script 32) and the 21 (script 33) asserts are deleted, and the new
+range is asserted in `figures/natmetab/fig1d_mito_content.R`, where it is computed. The rows
+below are the record of what was checked until then.
+
 Task D applies the principle of commit 97348a8: a number copied between documents is never checked, and a number in a stopifnot is checked every run.
 - **Where the numbers live.** Each writer script now DECLARES the numbers the Figure-1 closing paragraph quotes, in a `PART 0 (TEXT)` block before anything is computed, and ASSERTS them where they are computed.
 - **Precision.** Each is checked at the precision the paragraph quotes it.

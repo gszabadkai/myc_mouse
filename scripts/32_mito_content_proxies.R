@@ -135,21 +135,9 @@ if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
 group_levels <- c("6W_neg", "6W_pos", "12W_neg", "12W_pos")
 geno_cols    <- c(neg = "#4575B4", pos = "#D73027")
 
-# =============================================================================
-# PART 0 (TEXT): THE NUMBER THE MANUSCRIPT PARAGRAPH QUOTES
-# -----------------------------------------------------------------------------
-# Task D, 2026-09-21. The principle of commit 97348a8: a number copied between
-# documents is never checked; a number in a stopifnot is checked every run. So the
-# number is DECLARED here, before anything is computed, and ASSERTED in PART 3,
-# where it is computed.
-#
-# The Figure-1 closing paragraph quotes mitochondrial content as "21-27%". This
-# script writes the UPPER end: the genotype effect on the chaperone-free
-# mass-marker share (share_nomt), +26.5%, which the paragraph rounds to 27.
-# The LOWER end, +21.1%, is the same effect adjusted for prep-stress and
-# contamination. Script 33 writes it (`genotype_untouched$adj_pct`), not this
-# script, so it cannot be asserted here.
-TEXT_CONTENT_UPPER_PCT <- 27
+# PART 0 (TEXT) removed 2026-10-10 (author): the text no longer quotes the mass-marker
+# effect. It quotes "20-33%" across four modules, asserted in
+# figures/natmetab/fig1d_mito_content.R, where that range is computed.
 
 # =============================================================================
 # PART 1: LOAD + SAMPLE METADATA + IDENTIFIER MAP
@@ -392,12 +380,6 @@ share_stats <- purrr::map_dfr(names(panel_ens), function(p) {
 }) |>
   dplyr::left_join(panel_roster[, c("panel", "tag", "n_genes")], by = "panel")
 
-# PART 0 (TEXT) assert: the paragraph's upper end, at the precision it quotes it
-mass_pct <- 100 * (2^share_stats$geno_beta[share_stats$panel == "MASS_MARKERS_NOCHAP" &
-                                           share_stats$denominator == "share_nomt"] - 1)
-stopifnot(length(mass_pct) == 1L, round(mass_pct) == TEXT_CONTENT_UPPER_PCT)
-message(sprintf("32 PART 0 (TEXT): mass-marker content effect %+.2f%% -> the paragraph's %d%%",
-                mass_pct, TEXT_CONTENT_UPPER_PCT))
 
 # =============================================================================
 # PART 3b: GENE-LEVEL GUARD ON THE mtDNA MACHINERY SETS
