@@ -96,5 +96,26 @@ expect_refused("a log axis under a drawn x axis", "has no 0", p)
 
 expect_refused("a panel taller than the page", "over the 170 mm page", good(), height = 180)
 
+# --- stacked parts: each part is checked on its own ----------------------------------
+strip <- function(size = pt(6)) {
+  ggplot(d, aes(y, group)) + geom_point(size = 0.6) +
+    annotate("text", x = 1, y = 1, label = "x", size = size) +
+    scale_x_nm(step = 4, top = 16) + theme_nm()
+}
+expect_ok("a stack of good parts passes and draws", {
+  old <- options(natmetab.dry_run = TRUE)
+  on.exit(options(old))
+  suppressMessages(save_panel(stack_parts(good(), strip(), heights = c(3, 1),
+                                          collect_guides = TRUE),
+                              "Fig1", "z", "selftest_stack", 50, 60))
+})
+res <- tryCatch({ save_panel(stack_parts(good(), strip(size = pt(4)), heights = c(3, 1)),
+                             "Fig1", "z", "selftest_stack", 50, 60); "not refused" },
+                error = function(e) conditionMessage(e))
+pass <- grepl("text at 4.00 pt", res)
+cat(sprintf("[%s] refuses a stack with one bad part\n", if (pass) "PASS" else "FAIL"))
+if (!pass) { cat("       got:", res, "\n"); n_fail <- n_fail + 1L }
+
+
 cat(if (n_fail == 0L) "\nall checks behave as specified\n" else sprintf("\n%d FAILED\n", n_fail))
 if (n_fail > 0L) stop("style self-test failed", call. = FALSE)

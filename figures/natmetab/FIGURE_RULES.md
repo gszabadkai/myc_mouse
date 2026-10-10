@@ -86,6 +86,10 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   the result instead.
 - **A display window that hides points** (ED 1b, +/-3 log2) is allowed only if every number is
   computed on all points and the legend gives the count left out.
+- **A panel may be stacked parts in one PDF** (`stack_parts()`): each part is checked on its own,
+  and `collect_guides = TRUE` gives one shared key (Fig. 1d).
+- **A number the text quotes is asserted where it is computed** (the Task D principle), e.g. Fig.
+  1d's "20-33%".
 
 ## Colour
 
@@ -125,6 +129,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 | ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals |
 | ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49 |
 | ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme |
+| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key |
 
 ## Pending
 

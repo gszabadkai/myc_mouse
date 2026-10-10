@@ -25,7 +25,7 @@
 #                                      # write nothing
 # =============================================================================
 
-for (pkg in c("ggplot2", "ggpubr", "here", "scales")) {
+for (pkg in c("ggplot2", "ggpubr", "here", "scales", "patchwork")) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     stop("figures/natmetab needs the '", pkg, "' package", call. = FALSE)
   }
@@ -68,6 +68,7 @@ local({
 
 group_labels <- c("6W_neg" = "WT\n6W",   "12W_neg" = "WT\n12W",
                   "6W_pos" = "MYC+\n6W", "12W_pos" = "MYC+\n12W")
+group_keys   <- sub("\n", " ", group_labels)          # one line, for keys and legends
 geno_cols    <- c(neg = "#0072B2", pos = "#D55E00")   # the 6W pair of group_cols
 geno_labels  <- c(neg = "WT", pos = "MYC+")
 box_line     <- "#595959"                             # box outlines and medians
@@ -155,14 +156,24 @@ fmt_p <- function(p) {
 #   base   y of the lowest bracket, on the drawn scale (just above the data)
 #   step   vertical distance between stacked brackets; also the room left above
 #          the top label
+#   base and step may be one value, or one per bracket -- for facets that each
+#   have their own y scale (comps then carries the facet column).
+#   group1/group2 may also be numeric x positions, e.g. 1.5 and 3.5 to span the
+#   two WT boxes against the two MYC+ boxes.
 #
 # Returns the layer, with attr "top": the y the axis must reach so the top label
 # is not clipped. Pass it on: scale_y_nm(step = ..., top = attr(br, "top")).
+# attr "tops" gives the same per bracket, for per-facet scales.
 brackets <- function(comps, base, step) {
   stopifnot(is.data.frame(comps), all(c("group1", "group2", "p") %in% names(comps)),
-            nrow(comps) >= 1L, is.numeric(base), length(base) == 1L,
-            is.numeric(step), length(step) == 1L, step > 0)
-  if (is.null(comps$level)) comps$level <- seq_len(nrow(comps))
+            nrow(comps) >= 1L, is.numeric(base), length(base) %in% c(1L, nrow(comps)),
+            is.numeric(step), length(step) %in% c(1L, nrow(comps)), all(step > 0))
+  # Default stacking: by row order when all brackets share one base; level 1 each
+  # when every bracket has its own base (one per facet), or they would be stacked
+  # across facets as if they shared a panel.
+  if (is.null(comps$level)) {
+    comps$level <- if (length(base) > 1L) 1 else seq_len(nrow(comps))
+  }
   comps$y.position <- base + (comps$level - 1) * step
   comps$label <- fmt_p(comps$p)
   layer <- ggpubr::geom_bracket(
@@ -171,7 +182,8 @@ brackets <- function(comps, base, step) {
                            y.position = y.position, label = label),
     type = "expression", label.size = pt(NM_TXT), linewidth = NM_LINE,
     tip.length = 0.012, vjust = -0.15, colour = "black", family = NM_FONT)
-  structure(list(layer), top = max(comps$y.position) + 0.9 * step)
+  tops <- comps$y.position + 0.9 * step
+  structure(list(layer), top = max(tops), tops = tops)
 }
 
 # --- axes that end on ticks -----------------------------------------------------
@@ -329,6 +341,29 @@ check_panel <- function(p, width, height) {
   invisible(TRUE)
 }
 
+# --- panels made of stacked parts -------------------------------------------------
+# A panel can be two or more plots stacked vertically, e.g. a histogram over a
+# strip of points that shares its x axis. Pass save_panel() stack_parts(...):
+# every part is checked on its own, then patchwork stacks them and aligns their
+# panels. Give the parts the same x scale (scale_x_nm with the same arguments)
+# when they share an x axis; patchwork aligns panel edges, not scales.
+# collect_guides = TRUE gathers the parts' keys into one shared key at the bottom.
+stack_parts <- function(..., heights = NULL, collect_guides = FALSE) {
+  parts <- list(...)
+  stopifnot(length(parts) >= 2L, all(vapply(parts, inherits, logical(1), "ggplot")),
+            is.null(heights) || length(heights) == length(parts))
+  if (is.null(heights)) heights <- rep(1, length(parts))
+  structure(list(parts = parts, heights = heights, collect = isTRUE(collect_guides)),
+            class = "nm_stack")
+}
+
+.nm_drawable <- function(p) {
+  if (!inherits(p, "nm_stack")) return(p)
+  if (!p$collect) return(patchwork::wrap_plots(p$parts, ncol = 1, heights = p$heights))
+  patchwork::wrap_plots(p$parts, ncol = 1, heights = p$heights, guides = "collect") &
+    ggplot2::theme(legend.position = "bottom")
+}
+
 # --- export ----------------------------------------------------------------------
 # Base pdf() with Helvetica: one of the standard PDF fonts, referenced rather than
 # embedded. Illustrator supplies the Mac's Helvetica, keeps the text editable and
@@ -343,7 +378,12 @@ check_panel <- function(p, width, height) {
 save_panel <- function(p, fig, panel, name, width, height, dir = NULL) {
   stopifnot(grepl("^(Fig[1-4]|EDFig([1-9]|10))$", fig), grepl("^[a-z]$", panel),
             grepl("^[a-z0-9_]+$", name), is.numeric(width), is.numeric(height))
-  check_panel(p, width, height)
+  if (inherits(p, "nm_stack")) {
+    for (part in p$parts) check_panel(part, width, height)
+  } else {
+    check_panel(p, width, height)
+  }
+  p <- .nm_drawable(p)
   if (is.null(dir)) dir <- here::here("outputs", "natmetab", fig)
   file <- file.path(dir, sprintf("%s%s_%s.pdf", fig, panel, name))
   if (isTRUE(getOption("natmetab.dry_run"))) {
