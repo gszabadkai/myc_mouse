@@ -1,6 +1,6 @@
 ---
-date: 2026-10-10
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, verification]
+date: 2026-10-11
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, verification]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,15 +21,17 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-10: Fig. 1b and Extended Data Fig. 1a-c are built in `figures/natmetab/` and pushed.
-Next is ED Fig. 2a,b, on the author's instructions, which are still to come.**
+**2026-10-11: Fig. 1d-f and Extended Data Fig. 2d-g are built in `figures/natmetab/` and pushed,
+and the author approved the paragraph they illustrate (2a.2). Next is ED Fig. 2a-c, on the
+author's instructions, which are still to come.**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-10**. Section 2b is the
-2026-10-09 session, which started the Nat Metab layer. Section 3 is the 2026-09-22 session and 3a
-the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over. Section 10 holds the threads
-parked for after the manuscript.
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-11**. Section 2b is the
+2026-10-10 session (Fig. 1b and ED Fig. 1) and 2c the 2026-10-09 session, which started the Nat
+Metab layer. Section 3 is the 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g
+and 4 to 9 are carried over. Section 10 holds the threads parked for after the manuscript.
 
-**Waiting on the author: instructions for ED Fig. 2a,b.** The author is re-reading that paragraph.
+**Waiting on the author: instructions for ED Fig. 2a-c** (design; the mitochondrial axis; total
+abundance).
 
 ---
 
@@ -38,15 +40,15 @@ parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `880e466` ("ED 1c takes ED 1a's colours") |
-| pushed | everything, this handoff included (the author asked for the push, 2026-10-10) |
+| HEAD | this handoff's commit, on top of `f5dd876` (the window panels) |
+| pushed | everything, this handoff included (the author asked for the push, 2026-10-11) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
-| scripts | no numbered script was added or changed. **The next number is still 55** |
-| results | **no object was written.** The panels read existing objects only. The freshness notes of 2026-09-22 are in `git show 5cb2092:docs/handoff.md`, section 1 |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (14 of 14 pass), `FIGURE_RULES.md`, and **four panel scripts** (2a.2). PDFs are in `outputs/natmetab/Fig1/` and `outputs/natmetab/EDFig1/` |
+| scripts | no numbered script was added. `08c0dda` removed the 21-27% asserts from scripts 32 and 33; the text now says 20-33%, asserted in Fig. 1d. **The next number is still 55** |
+| results | **no object was written.** The panels read existing objects only |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (18 of 18 pass), `FIGURE_RULES.md`, and **eleven panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2d-g. PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/` |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/natmetab/_demo/` still holds the style demonstration and the author's Illustrator test exports, `Untitled-1.*`. `outputs/` is gitignored |
-| text | the author has updated the Doc for the rearranged panels (2a.1) |
+| outputs | `outputs/` is gitignored; `outputs/natmetab/_demo/` still holds the style demo and the author's Illustrator test exports |
+| text | the author approved the Fig. 1d-f paragraph on 2026-10-11 (2a.2); check that the Doc carries it |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
@@ -60,38 +62,158 @@ parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Wait for the author's instructions on ED Fig. 2a,b.** The paragraph carries a flagged
-   sentence: the text says the cells were "purified from the tumours", but they came from 6- and
-   12-week glands (2b.6, item 1).
-2. **Then continue the walkthrough, sentence by sentence:**
-   - order: 1d, 1e, 1f with ED 2c,d, ED 2e, 1g, 1h, and 3k-m;
-   - talk through each panel's content with the author before building it;
-   - the flagged sentences for 1e, 1f, 1g and 1h are 2b.6, items 2 to 5;
-   - Fig. 4g-j is open (2b.1).
-3. **Fix the development-contrast labels and colours** when the first panel needs them (1e or
-   1f). The draft label is "12W vs 6W, MYC+"; see `FIGURE_RULES.md`, Labels.
-4. **How each panel is built:**
+1. **Wait for the author's instructions on ED Fig. 2a-c**: design, the mitochondrial axis and
+   total abundance (old S1A, old 1C, `fig1_compartment_levels`). Two constraints:
+   - the text says the MECs were "purified from the tumours"; they came from 6- and 12-week glands
+     (2c.6, item 1);
+   - ED 2d-g take 128 mm of the 170-mm page, so **a-c have 42 mm of height** (2a.5).
+2. **Then 1g, 1h and 3k-m**, sentence by sentence, talking each panel through with the author
+   before building it. The flagged sentences are 2c.6, items 3 to 5. Fig. 4g-j is open (2c.1).
+3. **Fig. 1's page is 8 mm over** (178 of 170 mm; 2a.5). Settle it when g and h are sized: the top
+   row, f, or g/h.
+4. **When legends are written:** every script prints its legend's numbers. Fig. 1f's legend must
+   say that expression is tested in ED 2e, that priority changes are given as ranks and none
+   passes BH (2a.4), that each window coincides with an extraction batch, and that the OXPHOS
+   protein decline is Fig. 1b.
+5. **How each panel is built:**
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
-   - render the PDF with `qlmanage` and look at it, because the checks cannot see clipped or
-     colliding labels (2a.4);
-   - each script prints the numbers its legend needs;
-   - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`.
-5. **Carried items, possibly moot now: ask before acting.**
+   - preview the PDF with Quick Look (`qlmanage -t -s 2000`) and look at it: the checks cannot see
+     clipped or colliding labels, and poppler's `pdftoppm` draws the italic *P* upright (2a.6);
+   - a number the text quotes is asserted in the script that computes it;
+   - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
+     panel under `options(natmetab.dry_run = TRUE)` (all 11 pass).
+6. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
+   figure skill.
+7. **Carried items, possibly moot now: ask before acting.**
    - the seven-gene table (3a.3);
    - Fig. 2G (alt)'s claim item (3a.2);
    - the isoform caveat in Fig. S2D (alt);
    - the void orthotopic conclusions of scripts 50 and 51 (3e), which matter again for Fig. 3k-m.
-6. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
+8. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
    threads (section 10).
 
 ---
 
-## 2a. What happened this session (2026-10-10)
+## 2a. What happened this session (2026-10-10 evening to 2026-10-11)
 
-Three commits, all pushed: `b01da95`, `880e466` and this handoff.
+Three commits, all pushed: `a22a149` (Fig. 1d), `08c0dda` (the 21-27% asserts removed) and
+`f5dd876` (Fig. 1e-f and ED 2d-g), plus this handoff.
 
-### 2a.1 The author rearranged Fig. 1b and Extended Data Fig. 1
+### 2a.1 What was built
+
+| slot | script | PDF (mm) | content |
+|---|---|---|---|
+| Fig. 1d | `fig1d_mito_content.R` | 100 x 66 | four module shares, every animal, over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, one key; "20-33%" asserted |
+| Fig. 1e | `fig1e_myc_reallocation.R` | 83 x 66 | mitoPPS MYC effect at 6W and 12W (12W smaller): 10 rows chosen by rule (significant at 6W, same sign at 12W) plus OXPHOS subunits |
+| Fig. 1f | `fig1f_window_reallocation.R` | 100 x 56 | 12W vs 6W in WT and MYC+ (MYC+ smaller), expression and priority side by side; TEB and proliferation above six mitochondrial arms |
+| ED 2d | `edfig2d_myc_reallocation_ages.R` | 62 x 62 | MYC effect at 12W against 6W over 143 pathways: slope 0.64, R2 0.79, r 0.89; Fig. 1e's rows black, unnamed |
+| ED 2e | `edfig2e_window_matched_controls.R` | 95 x 66 | 9 programmes against 2,000 expression-matched sets in both windows (MYC+ smaller); below, OXPHOS minus proliferation, ribosome and nucleotide metabolism, paired, WT: P < 0.0005, 0.0005, 0.0085 |
+| ED 2f | `edfig2f_window_two_rulers.R` | 88 x 66 | expression against priority over 143 pathways: r 0.79 (WT), 0.86 (MYC+) |
+| ED 2g | `edfig2g_window_independent.R` | 120 x 62 | WT window against MYC's 6W effect, r -0.02; MYC+ window against WT window, r 0.69 |
+
+ED Fig. 2 starts at d on the author's numbering; a-c are design, the mitochondrial axis and total
+abundance (2c.1's slot map). Each script prints its legend's numbers.
+
+### 2a.2 The paragraph of record (author, 2026-10-11)
+
+> Within the nuclear-encoded mitochondrial transcriptome, scored as pairwise ratios of pathways
+> independent of its overall size (mitoPPS19), MYC promoted biogenesis and biosynthetic pathways
+> and demoted mitochondrial dynamics, surveillance and signalling, in the same pattern at both ages
+> (Fig. 1e, ED Fig. 2d). The pubertal-adult transition, by contrast, reshaped the compartment
+> independently of MYC (ED Fig. 2g). Between 6 and 12 weeks, OXPHOS subunit expression fell in both
+> the WT and the MYC+ gland, further than all 2,000 expression-matched gene sets, and OXPHOS
+> subunits lost more priority than nine in ten mitochondrial pathways, while the carnitine shuttle
+> and fatty acid oxidation, which feed electrons to the respiratory chain, ranked among the largest
+> gains (Fig. 1f, ED Fig. 2e,f). In the WT gland, OXPHOS subunits fell further than the
+> proliferative signature (mean log2 fold change -0.25 versus -0.05), although the terminal end bud
+> programme regressed and the mitochondrial share of the transcriptome did not fall (Fig. 1d,f; ED
+> Fig. 2e); they also declined at the protein level (Fig. 1b). The adult gland thus withdraws from
+> respiration far more than from proliferation.
+
+**Asserted where computed:**
+- **Fig. 1f:**
+  - 2,000 draws (`NSET` in scripts 43 and 54) and OXPHOS at the 0th percentile in both windows;
+  - OXPHOS losing more priority than at least 90% of the 143 pathways, in both windows;
+  - the carnitine shuttle and fatty acid oxidation in the top fifth of gains, in both windows;
+  - -0.25 and -0.05 to two decimals;
+  - the paired OXPHOS-minus-proliferation test, and TEB below all matched sets.
+- **Fig. 1d:** the WT nuclear MitoCarta share does not fall across the window (+17.6%, Welch on
+  log2 share, P = 0.078).
+- **ED 2g:** |r| < 0.1 between the window and MYC's effect, which "independently of MYC" rests on.
+
+### 2a.3 The author's rulings
+
+- **Fig. 1d:** no histogram; both parts in one PDF with one key; the text says 20-33%; 66 mm tall.
+- **"Fell further than all 2,000 matched sets"**, with no multiplier.
+- **The OXPHOS western is in Fig. 1b**, and the paragraph cites it for the protein-level decline.
+- **Development contrasts:** "12W vs 6W, WT" in `#0072B2` and "12W vs 6W, MYC+" in `#D55E00`
+  (`geno_cols` with `dev_labels`).
+- **Size marks the leading contrast.** Fig. 1e draws 12W smaller than 6W; Fig. 1f and ED 2e draw
+  MYC+ smaller than WT, the gland's own programme. ED 1a and ED 1c stay equal, because they compare
+  6W and 12W directly.
+- **Fig. 1f keeps filled dots** and draws no open ones: there is no test of record on priority
+  (2a.4).
+
+### 2a.4 Findings that changed the text
+
+- **Priority across the window is not significant per pathway.** Script 08's Welch test passes BH
+  for 0 of 144 pathways in WT (10 in MYC+):
+
+| pathway | WT change | P | adjusted P | rank of 143 (WT, MYC+) |
+|---|---|---|---|---|
+| OXPHOS subunits | -0.109 | 0.12 | 0.46 | 14th, 13th lowest |
+| carnitine shuttle | +0.289 | 0.011 | 0.16 | 2nd, 3rd highest |
+| fatty acid oxidation | +0.144 | 0.030 | 0.25 | 8th, 25th highest |
+
+  No priority null exists, so the paragraph states ranks.
+- **Expression is the tested half.** OXPHOS subunits fall below all 2,000 matched sets in both
+  windows (scripts 43 and 54), and below proliferation in the paired test (WT).
+- **-0.26 was wrong:** the WT OXPHOS value is -0.2548, so -0.25.
+- **Proliferation's own fall is beyond the matched 95%** (1.3-1.7th percentile). So the closing
+  sentence says "far more than from proliferation", not "while sustaining proliferation".
+- **The multiplier was dropped** because it depends on the weighting: about 5.4x unweighted and
+  2.8x expression-weighted. The fall is not the five tissue-restricted COX paralogs (-0.226 without
+  them), and 69 of the 87 subunits fall.
+- **Retired from the old sentences** (2c.6, item 2):
+  - "completely inverted": MYC's OXPHOS effect stays positive at both ages;
+  - glycine cleavage: it gains no priority across the window;
+  - "constant": now "did not fall".
+
+### 2a.5 Page budget (183 x 170 mm)
+
+- **ED Fig. 2:** d + g fill one row (182 x 62) and e + f the next (183 x 66), leaving 42 mm for
+  a-c.
+- **Fig. 1:** three rows:
+  - d (100) beside e (83), 66 mm;
+  - f (100) beside g/h (83), 56 mm;
+  - a 56-mm top row (b's height).
+  
+  That is 178 mm, 8 mm over.
+
+### 2a.6 Style changes and lessons, all in `FIGURE_RULES.md`
+
+- **Axis breaks are rounded to 10 decimals** in `.nm_axis()`. An unrounded 0.4000000000000001
+  fell outside an axis ending at 0.4, and ggplot dropped that tick (Fig. 1f). A self-test case
+  covers it.
+- **`stack_parts()` takes `ncol` and `widths`** for parts side by side (Fig. 1f, ED 2g).
+- **Patchwork laid out the shared key with `theme_get()` at 11 pt.** The helper now gives it the
+  panel theme and no outer margin, and `theme_nm()` keeps keys tight. All 11 panels were
+  re-rendered after the change.
+- **Base `pdf()` draws the ASCII hyphen as a minus.** So labels write "1C", not "1-C", while
+  "OXPHOS - proliferation" prints a true minus (ED 2e).
+- **Preview with Quick Look, not `pdftoppm`,** which draws Helvetica-Oblique upright.
+- **Labels on scatters:** give the `ggrepel` layer every point, the unnamed ones with an empty
+  label. ED 2d's eleven names did not fit at 62 mm, so its points are black and the legend names
+  them.
+
+---
+
+## 2b. What happened on 2026-10-10
+
+Four commits, all pushed: `b01da95`, `880e466`, and that day's handoff, `931e0a9` and `7505b39`.
+
+### 2b.1 The author rearranged Fig. 1b and Extended Data Fig. 1
 
 | slot | content | from the old layer |
 |---|---|---|
@@ -100,14 +222,14 @@ Three commits, all pushed: `b01da95`, `880e466` and this handoff.
 | ED 1b | MYC effect at 12W against 6W, MYC-responsive genes only; no MitoCarta facet | 1G, gene half |
 | ED 1c | NES of every gene set at 6W and 12W, by programme | 1D |
 
-- **This settled the three Fig. 1b questions** of 2b.5:
+- **This settled the three Fig. 1b questions** of 2c.5:
   - the blot lane order: the demo is used as is, age-major;
   - "target gene sets": ED 1c, the library-wide NES;
   - the programme panel: genes only, in ED 1b.
 - **The author has updated the text:** the amplitude sentence now cites ED 1b,c, and the MYCER^T2
   model, previously cited as "ED Fig. 1b", has another letter.
 
-### 2a.2 What was built
+### 2b.2 What was built
 
 | slot | script | PDF (mm) |
 |---|---|---|
@@ -134,7 +256,7 @@ All four pass every check, and the author signed them off.
   - no median and no gridlines;
   - Spearman 0.933 across 866 sets between the ages.
 
-### 2a.3 Decisions and findings, all recorded in `FIGURE_RULES.md`
+### 2b.3 Decisions and findings, all recorded in `FIGURE_RULES.md`
 
 - **Genotype-effect labels and colours:** "MYC+ vs WT, 6W" in `#D55E00` and "MYC+ vs WT, 12W" in
   `#E69F00`, as `contrast_cols` and `contrast_labels` in `_style.R`.
@@ -162,7 +284,7 @@ All four pass every check, and the author signed them off.
 - **A display window that hides points** is allowed only if every number uses all points and the
   legend gives the count.
 
-### 2a.4 Style changes, and a lesson
+### 2b.4 Style changes, and a lesson
 
 - **`_style.R`:** gained `contrast_cols` and `contrast_labels`, and a 2.5 mm right margin. Labels
   at the end of an axis overhang it by half their width, and "+3" and "+4" were being clipped. The
@@ -173,11 +295,11 @@ All four pass every check, and the author signed them off.
 
 ---
 
-## 2b. What happened on 2026-10-09
+## 2c. What happened on 2026-10-09
 
-Two commits, both pushed: `2cdd00e`, the figure layer (2b.4), and that day's handoff, `df9390d`.
+Two commits, both pushed: `2cdd00e`, the figure layer (2c.4), and that day's handoff, `df9390d`.
 
-### 2b.1 The paper is now a Nature Metabolism Letter
+### 2c.1 The paper is now a Nature Metabolism Letter
 
 - **Source of record:** the Google Doc `11.8.26_MK_Myc_Paper` (Drive id
   `1M-kEC1d_VJmbTG-SyYYfykZ3F1_aEiDtu0xtwFaPtJo`), tab **"Nat metab version"**, edited 2026-10-09.
@@ -216,7 +338,7 @@ Two commits, both pushed: `2cdd00e`, the figure layer (2b.4), and that day's han
 The old panels are **content references only**. Every Nat Metab panel is a new script in the new
 layer.
 
-### 2b.2 The author's rulings on the figure layer
+### 2c.2 The author's rulings on the figure layer
 
 All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Panel by panel.** R makes single panels at their final printed size. The author assembles each
@@ -235,7 +357,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Goal:** at the end of the figure sessions, turn `FIGURE_RULES.md` and `_style.R` into a GS-lab
   figure skill.
 
-### 2b.3 What was checked, and what was ruled out
+### 2c.3 What was checked, and what was ruled out
 
 - **The July font problem was spacing, not resolution** (commit a58fa1c). Re-checked on R 4.6.1:
   `cairo_pdf` embeds the font but collapses word spaces at 5-7 pt in Apple's viewers, while base
@@ -261,7 +383,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
     matched shuffles and the slope at the 87th. Tier slopes run 0.52-0.83.
   - Library-wide NES, 6W against 12W: 866 sets, Spearman 0.933.
 
-### 2b.4 What was written: `2cdd00e`
+### 2c.4 What was written: `2cdd00e`
 
 `figures/natmetab/` holds three files.
 - **`_style.R`:** the theme, palettes, P formatting, brackets, tick-ending axes, and `save_panel()`
@@ -273,7 +395,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 The self-test caught two bugs before the commit: an argument passed to the wrong function, and an
 axis check that accepted an ending on an undrawn minor tick.
 
-### 2b.5 Fig. 1b: three questions for the author (settled 2026-10-10, 2a.1)
+### 2c.5 Fig. 1b: three questions for the author (settled 2026-10-10, 2b.1)
 
 1. **The lane order of the MYC western**, so that the mRNA panel can match it.
 2. **"Without selective repression of specific target gene sets":** the LFC scatter covers
@@ -287,16 +409,17 @@ axis check that accepted an ending on an undrawn minor tick.
 3. **The programme panel:** both halves (genes and pathways, about 89 x 45 mm) in 1b, or one half in
    1b and the other in Extended Data.
 
-### 2b.6 Five sentences that do not match the data, for the walkthrough
+### 2c.6 Five sentences that do not match the data, for the walkthrough
 
 1. **ED 2a,b** says the MECs were "purified from the tumours". They came from 6- and 12-week glands.
-2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`):
+2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`). *Resolved 2026-10-11 (2a.4).*
    - OXPHOS subunits' MYC effect is +0.112 at 6W (padj 0.27, not significant) and still +0.069 at
      12W, so it is not inverted. What falls is the change across the window: -0.109 in WT and
      -0.153 in MYC+.
    - Glycine cleavage does not gain priority across the window (+0.045 WT, -0.156 MYC+). It rises
      only on the content ruler, in WT (+0.240).
-3. **1f**, "Foxo3 ... most distinct among all evaluated genes": the panel draws four genes. By the
+3. **1f**, "Foxo3 ... most distinct among all evaluated genes" (*2026-10-11: the new 1f does not draw
+   the four genes, so this sentence has no panel yet*): the panel draws four genes. By the
    2026-09-21 ruling, Foxo3 is first of script 44's 26 by P and |z|, and fifth by size.
 4. **1f,g**, "shifting distinctly the PUMA/BCL-XL ratio": the ruling-4 2G shows it as the largest of
    nine departures, inside the 95% prediction interval, and reports no verdict.
