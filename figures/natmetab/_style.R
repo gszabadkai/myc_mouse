@@ -80,6 +80,10 @@ contrast_cols   <- c(myc_6W = "#D55E00", myc_12W = "#E69F00")
 contrast_labels <- c(myc_6W = "MYC+ vs WT, 6W", myc_12W = "MYC+ vs WT, 12W")
 stopifnot(identical(unname(contrast_cols), unname(group_cols[c("6W_pos", "12W_pos")])))
 
+# Development contrasts -- 12W vs 6W within one genotype -- take that genotype's
+# colour (geno_cols, keyed neg/pos) and these labels (author, 2026-10-11).
+dev_labels <- c(neg = "12W vs 6W, WT", pos = "12W vs 6W, MYC+")
+
 # The order follows the test: age-major when the comparisons are within-age gaps,
 # genotype-major when the comparison is a genotype main effect.
 order_by_age  <- c("6W_neg", "6W_pos", "12W_neg", "12W_pos")
@@ -195,11 +199,15 @@ brackets <- function(comps, base, step) {
 .nm_axis <- function(step, top, bottom, minor) {
   stopifnot(is.numeric(step), length(step) == 1L, step > 0, top > bottom)
   unit <- if (minor) step / 2 else step
-  lo <- floor(bottom / unit + 1e-9) * unit
-  hi <- ceiling(top / unit - 1e-9) * unit
+  # Everything is rounded to 10 decimals: in floating point -0.2 + 3 * 0.2 is
+  # 0.4000000000000001, a hair past an axis that ends at 0.4, and ggplot then drops
+  # that end tick as out of range (caught by check_panel on Fig. 1f, 2026-10-11).
+  r  <- function(x) round(x, 10)
+  lo <- r(floor(bottom / unit + 1e-9) * unit)
+  hi <- r(ceiling(top / unit - 1e-9) * unit)
   list(limits = c(lo, hi),
-       breaks = seq(ceiling(lo / step - 1e-9) * step, hi + 1e-9 * step, by = step),
-       minor_breaks = if (minor) seq(lo, hi + 1e-9 * unit, by = unit) else NULL,
+       breaks = r(seq(ceiling(lo / step - 1e-9) * step, hi + 1e-9 * step, by = step)),
+       minor_breaks = if (minor) r(seq(lo, hi + 1e-9 * unit, by = unit)) else NULL,
        guide = ggplot2::guide_axis(minor.ticks = minor))
 }
 
@@ -231,6 +239,9 @@ theme_nm <- function(legend = "none") {
       legend.text       = ggplot2::element_text(size = NM_TXT),
       legend.title      = ggplot2::element_text(size = NM_TXT),
       legend.key.size   = ggplot2::unit(3, "mm"),
+      legend.key.spacing.y = ggplot2::unit(0.4, "mm"),
+      legend.margin     = ggplot2::margin(0, 0, 0, 0),
+      legend.box.spacing = ggplot2::unit(2, "mm"),     # key to plot; the 7-pt default is 2.5 mm
       legend.position   = legend,
       strip.text        = ggplot2::element_text(size = NM_TXT_TITLE),
       strip.background  = ggplot2::element_blank(),
@@ -348,20 +359,31 @@ check_panel <- function(p, width, height) {
 # panels. Give the parts the same x scale (scale_x_nm with the same arguments)
 # when they share an x axis; patchwork aligns panel edges, not scales.
 # collect_guides = TRUE gathers the parts' keys into one shared key at the bottom.
-stack_parts <- function(..., heights = NULL, collect_guides = FALSE) {
+# ncol = 2 (with widths) puts parts side by side instead, e.g. two rulers sharing
+# the same rows.
+stack_parts <- function(..., heights = NULL, widths = NULL, ncol = 1L,
+                        collect_guides = FALSE) {
   parts <- list(...)
   stopifnot(length(parts) >= 2L, all(vapply(parts, inherits, logical(1), "ggplot")),
-            is.null(heights) || length(heights) == length(parts))
-  if (is.null(heights)) heights <- rep(1, length(parts))
-  structure(list(parts = parts, heights = heights, collect = isTRUE(collect_guides)),
+            is.null(heights) || length(heights) == ceiling(length(parts) / ncol),
+            is.null(widths) || length(widths) == ncol)
+  structure(list(parts = parts, heights = heights, widths = widths, ncol = ncol,
+                 collect = isTRUE(collect_guides)),
             class = "nm_stack")
 }
 
 .nm_drawable <- function(p) {
   if (!inherits(p, "nm_stack")) return(p)
-  if (!p$collect) return(patchwork::wrap_plots(p$parts, ncol = 1, heights = p$heights))
-  patchwork::wrap_plots(p$parts, ncol = 1, heights = p$heights, guides = "collect") &
-    ggplot2::theme(legend.position = "bottom")
+  w <- patchwork::wrap_plots(p$parts, ncol = p$ncol, heights = p$heights, widths = p$widths,
+                             guides = if (p$collect) "collect" else "auto")
+  # patchwork lays out the collected key, and a margin around the whole stack, with
+  # its own theme: theme_get() at 11 pt unless one is given. Give it the panel theme
+  # and no outer margin, so the key sits as close as a single plot's would.
+  w <- w + patchwork::plot_annotation(
+    theme = theme_nm(legend = if (p$collect) "bottom" else "none") +
+      ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0)))
+  if (p$collect) w <- w & ggplot2::theme(legend.position = "bottom")
+  w
 }
 
 # --- export ----------------------------------------------------------------------

@@ -44,6 +44,11 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
     viewers collapse the spaces between words (commit a58fa1c; re-checked 2026-10-09).
   - Not "Arial through renamed Helvetica metrics" either: Apple's viewers then draw the text in
     Times.
+- **Base `pdf()` draws the ASCII hyphen as a minus sign.** So labels avoid hyphens ("Folate and 1C
+  metabolism", not "1-C"), and a hyphen is typed only where a minus is meant ("OXPHOS - proliferation"
+  prints as OXPHOS − proliferation, ED 2e).
+- **Preview with Apple's engine** (Quick Look, `qlmanage -t`), not poppler's `pdftoppm`, which
+  draws Helvetica-Oblique upright, so an italic *P* looks lost when it is not (2026-10-11).
 
 ## Axes
 
@@ -57,6 +62,11 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   breaks it does not draw, so ending on one would look tickless. **[checked]**
   `scale_y_nm(minor = TRUE)` draws them halfway between labelled ticks, which trims the empty
   band that rounding up to a major tick leaves.
+- Breaks are rounded to 10 decimals inside the scale helpers: an unrounded 0.4000000000000001
+  fell outside a limit of 0.4 and was dropped (Fig. 1f, 2026-10-11; a self-test case covers it).
+- **Pad the data range by 3-4% before the axis rounds to its end tick**, so a point at the
+  extreme is not cut by the axis end. Choose the pad so that, on facets side by side, the last
+  label of one facet cannot run into the first of the next (ED 2f ends on a minor tick for this).
 
 ## Statistics on panels
 
@@ -87,7 +97,22 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **A display window that hides points** (ED 1b, +/-3 log2) is allowed only if every number is
   computed on all points and the legend gives the count left out.
 - **A panel may be stacked parts in one PDF** (`stack_parts()`): each part is checked on its own,
-  and `collect_guides = TRUE` gives one shared key (Fig. 1d).
+  and `collect_guides = TRUE` gives one shared key (Fig. 1d). Parts side by side use `ncol = 2`
+  (Fig. 1f, ED 2g). Patchwork lays out a shared key with its own theme (11 pt), so the helper gives
+  it the panel theme and no outer margin. Stacked parts that share an x axis get the same
+  `scale_x_nm()` call, so their zero lines align (ED 2e).
+- **Name points on a scatter only where the names fit off the cloud.** A `ggrepel` layer is
+  given every point, the unnamed ones with an empty label, so names keep off all points, not just
+  the named ones. Where names do not fit, the points are marked and the legend names them (ED 2d:
+  eleven names at 62 mm crossed the cloud).
+- **Significance glyphs mean one thing per figure** (author, 2026-10-11). Filled/open is the
+  adjusted *P* of record (Fig. 1e) or the matched-set test (ED 2e), and the key says which. A panel
+  without a test of record keeps its dots filled, draws no open ones, and its legend says where
+  the test is (Fig. 1f: expression in ED 2e; priority as ranks, none passing BH).
+- **Size marks the leading contrast** (author, 2026-10-11). Of two contrasts drawn per row, the one
+  the text leads with is larger (1.6) and the other smaller (about 1.1), and the key shows both
+  sizes: Fig. 1e, 6W over 12W; Fig. 1f and ED 2e, WT over MYC+ (WT is the gland's own programme).
+  A panel that compares the two directly keeps them the same size (ED 1a, ED 1c: 6W against 12W).
 - **A number the text quotes is asserted where it is computed** (the Task D principle), e.g. Fig.
   1d's "20-33%".
 
@@ -106,6 +131,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Genotype alone:** WT `#0072B2`, MYC+ `#D55E00`.
 - **Genotype effects** take the MYC+ hue of their age: "MYC+ vs WT, 6W" `#D55E00`, "MYC+ vs WT,
   12W" `#E69F00` (`contrast_cols` in the style file).
+- **Changes across the window** (12W vs 6W) take the genotype colour: "12W vs 6W, WT" `#0072B2`,
+  "12W vs 6W, MYC+" `#D55E00` (`geno_cols` with `dev_labels`; Fig. 1f, ED 2e-f).
 - **Diverging fills:** `#4A3525` (espresso) to `#FAFAFA` (white, pinned at zero) to `#2A8A6D`
   (mint). Not blue-red, which would read as genotype.
 - **Unsigned levels:** `#F2F4F6` to `#8FA3B0` to `#243642`.
@@ -116,12 +143,13 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 
 - **Groups:** two lines, "WT / 6W" and "MYC+ / 12W". MYC+ matches the manuscript text.
 - **Contrasts (effects):** what is compared, then where. Genotype effects: "MYC+ vs WT, 6W" and
-  "MYC+ vs WT, 12W" (in use from ED 1a-c). Change across the window, still a draft: "12W vs 6W,
-  MYC+".
+  "MYC+ vs WT, 12W" (from ED 1a-c). Change across the window: "12W vs 6W, WT" and "12W vs 6W,
+  MYC+" (from Fig. 1f). Where the key names the contrast, the axis title names only the ruler and
+  its unit ("Expression (log2 fold change)", "Priority (mitoPPS)").
 - Gene symbols on axes are italic; set and programme names are not. Row labels start with a
   capital (Nature lettering).
 
-## Built (2026-10-10)
+## Built
 
 | slot | script | content |
 |---|---|---|
@@ -129,8 +157,19 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 | ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals |
 | ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49 |
 | ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme |
-| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key |
+| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; 100 x 66 |
+| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 83 x 66 |
+| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller), two rulers side by side (expression, priority), TEB and proliferation above the mitochondrial arms; the paragraph's window numbers asserted; 100 x 56 |
+| ED 2d | `edfig2d_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 62 x 62 |
+| ED 2e | `edfig2e_window_matched_controls.R` | window change of 9 programmes against 2,000 expression-matched sets (both genotypes, MYC+ smaller), over the paired OXPHOS-minus-comparator test (WT); 95 x 66 |
+| ED 2f | `edfig2f_window_two_rulers.R` | window, expression against priority, 143 pathways, WT and MYC+ facets; 88 x 66 |
+| ED 2g | `edfig2g_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 120 x 62 |
+
+**Page budget (183 x 170 mm per figure).** ED 2: d + g fill one row (182 x 62) and e + f the next
+(183 x 66), leaving 42 mm for a-c. Fig. 1: d (100) pairs with e (83) in a 66-mm row; f (100) with
+g/h (83) in a 56-mm row; with a 56-mm top row for a-c the page is 178 mm, so 8 mm must still
+come out of the top row, f, or g/h.
 
 ## Pending
 
-- The development-contrast labels and colours (first needed at Fig. 1e/f).
+- Fig. 1 page budget: the last 8 mm (above).

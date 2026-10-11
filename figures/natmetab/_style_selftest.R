@@ -87,6 +87,12 @@ p <- good() + scale_y_continuous()       # ggplot's default padding below 0
 expect_refused("default padding", "does not end on a tick|must start at 0", p)
 
 expect_ok("an axis may end on a drawn minor tick", check_panel(good(minor = TRUE), 50, 50))
+expect_ok("tick-ending axes survive floating point (-0.2 + 3 * 0.2)", {
+  q <- ggplot(data.frame(x = c(-0.17, 0.31), y = c(1, 2)), aes(x, y)) + geom_point() +
+    scale_x_nm(step = 0.2, top = 0.31, bottom = -0.17, minor = TRUE) +
+    scale_y_nm(step = 1, top = 2) + theme_nm()
+  check_panel(q, 50, 50)
+})
 
 p <- good() + scale_y_continuous(limits = c(0, 14), breaks = seq(0, 12, 4), expand = c(0, 0))  # 14: an UNDRAWN minor break
 expect_refused("an axis ending on an undrawn minor break", "does not end on a tick", p)
@@ -108,6 +114,12 @@ expect_ok("a stack of good parts passes and draws", {
   suppressMessages(save_panel(stack_parts(good(), strip(), heights = c(3, 1),
                                           collect_guides = TRUE),
                               "Fig1", "z", "selftest_stack", 50, 60))
+})
+expect_ok("two parts side by side pass and draw", {
+  old <- options(natmetab.dry_run = TRUE)
+  on.exit(options(old))
+  suppressMessages(save_panel(stack_parts(good(), good(), ncol = 2, widths = c(1, 1)),
+                              "Fig1", "z", "selftest_side", 100, 50))
 })
 res <- tryCatch({ save_panel(stack_parts(good(), strip(size = pt(4)), heights = c(3, 1)),
                              "Fig1", "z", "selftest_stack", 50, 60); "not refused" },

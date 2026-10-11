@@ -1,8 +1,10 @@
 # =============================================================================
 # fig1d_mito_content.R -- Fig. 1d: MYC raises mitochondrial content
 # -----------------------------------------------------------------------------
-# The text: "MYC raised mitochondrial content by 21-27%, depending on the modules
-# computed (Fig. 1d)." One PDF, two stacked parts, one shared group key:
+# The text: "MYC raised mitochondrial content by 20-33%, depending on the module
+# (Fig. 1d)", and, across the window, "the mitochondrial share of the transcriptome
+# did not fall (Fig. 1d,f; ED Fig. 2e)". One PDF, two stacked parts, one shared
+# group key:
 #
 #   TOP     each module's share of the nuclear transcriptome, every animal, four
 #           groups, one bracket per module for the genotype main effect. The
@@ -74,6 +76,15 @@ TEXT_CONTENT_PCT <- c(20, 33)
 pct <- 100 * (2^stats[arms, "geno_beta"] - 1)
 stopifnot(identical(round(range(pct)), TEXT_CONTENT_PCT))
 
+# THE TEXT (author, 2026-10-11): in the WT gland "the mitochondrial share of the
+# transcriptome did not fall" between 6 and 12 weeks -- the nuclear MitoCarta
+# module's mean log2 share at 12W is not below that at 6W.
+wt_mc <- shares[shares$panel == "MITOCARTA_NUCLEAR_ENCODED" & shares$myc_status == "neg", ]
+stopifnot(nrow(wt_mc) == 12L)
+wt_window <- stats::t.test(log2(share_nomt) ~ factor(timepoint, levels = c("12W", "6W")),
+                           data = wt_mc)
+stopifnot(diff(rev(wt_window$estimate)) >= 0)
+
 # per-module axis: from 0 to a tick above the bracket's label
 fac_max <- tapply(df$share_nomt, df$panel, max)
 base    <- fac_max * 1.06
@@ -140,7 +151,7 @@ p_bot <- ggplot(eff, aes(lfc, row)) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank())
 
 save_panel(stack_parts(p_top, p_bot, heights = c(3, 1.25), collect_guides = TRUE),
-           fig = "Fig1", panel = "d", name = "mito_content", width = 100, height = 74)
+           fig = "Fig1", panel = "d", name = "mito_content", width = 100, height = 66)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nFig. 1d -- for the legend\n")
@@ -151,6 +162,8 @@ for (a in arms) {
               sub("\n", " ", arm_name[[a]]), stats[a, "n_genes"],
               100 * (2^stats[a, "geno_beta"] - 1), stats[a, "geno_p"], stats[a, "int_p"]))
 }
+cat(sprintf("  WT window, nuclear MitoCarta share 12W vs 6W: %+.1f%% (Welch on log2 share, P = %.2g)\n",
+            100 * (2^diff(rev(wt_window$estimate)) - 1), wt_window$p.value))
 cat(sprintf("  BOTTOM: %d nuclear MitoPathways, one point each; ticks are medians\n", nrow(r143)))
 cat(sprintf("    6W:  median %+.3f, %.1f%% above zero\n", stats::median(r143$c_m6), 100 * mean(r143$c_m6 > 0)))
 cat(sprintf("    12W: median %+.3f, %.1f%% above zero\n", stats::median(r143$c_m12), 100 * mean(r143$c_m12 > 0)))
