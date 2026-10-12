@@ -21,11 +21,14 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-12: Extended Data Fig. 2 is complete in `figures/natmetab/` and pushed: a-c built
-today, d-g renumbered and resized to the 180-mm Extended Data page (2a). Next is Fig. 1g, then
-1h and Fig. 3k-m, each talked through with the author before it is built.**
+**2026-10-12, end of day: Fig. 1g-h are PROPOSED, not yet built. Four proposal panels and three
+page layouts are in `outputs/natmetab/proposals/Fig1_gh_proposals.pdf`, and the author is deciding
+the layout and the form of 1h (2a.10). Committed and pushed: `6cb04f1` (proposals and style) and this
+handoff. Earlier the same day, Extended Data Fig. 2 was completed and pushed (2a.1-2a.6).**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-12**. Section 2b is the
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-12**. Section 2a has two
+parts: Extended Data Fig. 2 in the morning (2a.1-2a.6, pushed) and the Fig. 1g-h proposals in the
+afternoon (2a.7-2a.13, pushed). Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
@@ -38,15 +41,15 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `a927ce8` (ED Fig. 2a-c, the renumbering, the 180-mm resize) |
-| pushed | everything, this handoff included (the author asked for the push, 2026-10-12) |
+| HEAD | this handoff's commit, on top of `6cb04f1` (the Fig. 1g-h proposals in `figures/natmetab/proposals/`, the two `_style.R` switches and `FIGURE_RULES.md`; 2a.10, 2a.12), `ab62730` (the morning's handoff) and `a927ce8` (ED Fig. 2a-c, the renumbering, the 180-mm resize) |
+| pushed | everything, this handoff included (the author asked for the push, 2026-10-12, evening) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | no numbered script was added or changed. **The next number is still 55** |
 | results | **no object was written.** The panels read existing objects only |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run. PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/` |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run (re-run after the 2026-10-12 `_style.R` change: 14 of 14). PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/`. **Plus `proposals/`**: four proposal panels and `page_mock.R`, not panels of record and outside the dry-run set (2a.10) |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The ED 2 PDFs carry the new letters; the four stale-lettered PDFs were deleted |
-| text | **the Doc does not yet carry** the approved Fig. 1d-f paragraph (2b.2) or the ED 2a-c sentence (2a.3); as read on 2026-10-12 it still has the earlier versions. Its ED citations need the new letters (2a.1) |
+| outputs | `outputs/` is gitignored. The ED 2 PDFs carry the new letters; the four stale-lettered PDFs were deleted. `outputs/natmetab/proposals/` holds the four proposal PDFs and `Fig1_gh_proposals.pdf` (4 pages, 2a.10) |
+| text | as read on the afternoon of 2026-10-12, **the Doc now carries the ED 2a-c sentence** (2a.3). It still lacks the approved Fig. 1d-f paragraph (2b.2) and still cites the old ED 2 letters ("ED Fig. 2d", "2e", "2e,f"; see 2a.1). Its Fig. 1g-h paragraph is the author's earlier version; the draft in 2a.9 replaces it "for now" |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
@@ -60,47 +63,61 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Next panel: Fig. 1g** (the priming ratios; old `fig2_priming_ratios`, the ruling-4 rebuild),
-   then **1h** and **Fig. 3k-m**. Talk each through with the author before building it. The
-   flagged sentences are 2d.6, items 3 to 5:
-   - item 3's Foxo3 sentence ("most distinct among all evaluated genes") has no panel since the
-     new 1f; where it goes is open;
-   - item 4, "shifting distinctly the PUMA/BCL-XL ratio": the largest of nine departures, inside
-     the 95% prediction interval, no verdict;
-   - item 5, 1h: the impasse ruling (permutation P 0.026 unadjusted, 0.085 adjusted).
-   Fig. 4g-j is open (2d.1).
-2. **For the author's Doc** (2a.1, 2a.3): the approved Fig. 1d-f paragraph with the new ED
-   letters, the ED 2a-c sentence, and the citation order (ED 2d before 2e).
-3. **Fig. 1's page is 8 mm over** (178 of 170 mm; 2b.5). Settle it when g and h are sized.
-4. **When legends are written:** every script prints its legend's numbers (2a.4 has ED 2a-c's).
+1. **Waiting on the author: three choices on Fig. 1g-h** (2a.10). They are made from
+   `outputs/natmetab/proposals/Fig1_gh_proposals.pdf`:
+   - **the layout:** A (1e to Extended Data), A2 (1d to Extended Data) or B (every panel kept, at
+     5/6 pt), or another arrangement;
+   - **the form of 1h:** every animal (`p1h_puma_members.R`, Claude's recommendation) or the BCL-2
+     plane (`p1h_alt_bcl2_plane.R`, 2G (alt)'s form);
+   - **any change to the panels themselves.**
+2. **Then build them** (2a.11):
+   - move the chosen scripts from `figures/natmetab/proposals/` into `figures/natmetab/` under their
+     final letters, which depend on the layout, and drop `dir =`;
+   - fix what 2a.11 lists, then render, check in Quick Look, and run the self-test and the dry run;
+   - the scripts print the legends' numbers (2a.13).
+   
+   Under A or A2 the panel that leaves needs an Extended Data home. ED 2 is full, so it needs a new
+   ED figure, and the bench ED figures cited in the Doc renumber.
+3. **The coupling stays** (author, 2a.8), so the paragraph needs a sentence for it; a hedged form is
+   in 2a.9. The draft paragraph stands "for now" and is edited once the author has seen the graphs.
+4. **Text below 5 pt** is an open question for the author (2a.8). Nothing is below 5 pt now.
+5. **For the author's Doc** (2a.1, 2b.2): the approved Fig. 1d-f paragraph, and the new ED 2 letters
+   with their citation order (ED 2d before 2e).
+6. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
+   scripts 50 and 51 matter again, 3e). Fig. 4g-j is open (2d.1).
+7. **When legends are written:** every script prints its legend's numbers (2a.4 has ED 2a-c's).
    Fig. 1f's legend must say that expression is tested in ED 2f, that priority changes are ranks
    and none passes BH, that each window coincides with an extraction batch, and that the OXPHOS
    protein decline is Fig. 1b. ED 2c's must say that its class colours are ED 2b's key.
-5. **How each panel is built:**
+8. **How each panel is built:**
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
    - size it for its page: main figures 183 x 170 mm, **Extended Data 180 x 170 mm**, with room for
      the gaps between panels in a row;
    - preview the PDF with Quick Look (`qlmanage -t -s 2000`) and look at it: the checks cannot see
      clipped or colliding labels, and poppler's `pdftoppm` draws the italic *P* upright;
+   - for a choice between designs, show the author rendered proposals and a page mock-up, not a
+     description (2a.8; `figures/natmetab/proposals/page_mock.R`);
    - a number the text quotes is asserted in the script that computes it;
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
      panel under `options(natmetab.dry_run = TRUE)` (all 14 pass).
-6. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
+9. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
-7. **Carried items, possibly moot now: ask before acting.**
+10. **Carried items, possibly moot now: ask before acting.**
    - the seven-gene table (3a.3);
    - Fig. 2G (alt)'s claim item (3a.2);
    - the isoform caveat in Fig. S2D (alt);
    - the void orthotopic conclusions of scripts 50 and 51 (3e), which matter again for Fig. 3k-m.
-8. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
+11. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
    threads (section 10).
 
 ---
 
-## 2a. What happened this session (2026-10-12)
+## 2a. What happened on 2026-10-12
 
-One commit before this handoff, pushed: `a927ce8`.
+- **Morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and that
+  morning's handoff, `ab62730`.
+- **Afternoon, 2a.7-2a.13:** the Fig. 1g-h proposals. Pushed: `6cb04f1`, and this handoff.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -200,6 +217,204 @@ That is 164 mm of height before the gaps between panels.
 - **Mitochondrial classes are slate:** `mito_class_cols` / `mito_class_labels`. The old
   red/orange/blue is out because blue and orange mean genotype.
 - **Self-test:** two new cases; 20 of 20 pass.
+
+### 2a.7 Fig. 1g-h: the request, and the paragraph against the data
+
+**The author's request.** g and h "are interrelated and the basis of the paragraph describing the
+relationship in the transcriptome between pro-, antiapoptotic proteins and OXPHOS ... a fundamental
+part of the paper, where the figure has to be very clear and meaning should be the strongest
+possible."
+- The closest earlier versions are Fig. 2G (alt) (`outputs/figures/panels/fig2_death_two_timelines_alt.pdf`)
+  and Fig. 2H+I (alt). The latter is page 3 of `outputs/figures/panels/Figure2_alternatives.pdf`
+  (16 August); its current render is `fig2_puma_chain_alt.pdf`.
+
+**The Doc's paragraph, checked sentence by sentence** (tab "Nat metab version", read 2026-10-12).
+
+| Doc sentence | what the data say | change |
+|---|---|---|
+| "at 6 weeks MYC shifted the balance toward pro-apoptotic factors" | All nine BCL-2 pro:anti ratios rise under MYC at 6W: median +0.49 log2, five at *P* < 0.01 | Holds |
+| "the pro-apoptotic pathway was progressively suppressed" | There are only two ages. And not the whole pathway: *Bmf* rises about 2-fold in both genotypes; *Bcl2l11* and *Pmaip1* rise slightly | Name the genes; drop "progressively" |
+| "both *Bax* and *Bbc3* declined compared to the normal gland" | *Bbc3*: −0.48 in MYC+ (IHW *P* 0.016), +0.06 in WT; interaction *P* 0.0081 (pre-specified). *Bax*: −0.38 in MYC+ but also −0.15 in WT; interaction *P* 0.12 (exploratory) | *Bbc3* holds; *Bax* "fell in both, more in MYC+" |
+| "the steepest drop was in *Bbc3*" | True within the BCL-2 family (*Bax* −0.38, *Bid* −0.36). False across script 42's wider roster: *Htra2* −0.67, *Birc5* −0.93 | "Of the BCL-2 family" |
+| "shifting distinctly the PUMA/BCL-XL ratio" | It goes from +0.67 to −0.06, losing its whole shift, while the other eight keep 0.43 of theirs. It is the largest departure of the nine, but inside the 95% band (2d.6, item 4) | Drop "distinctly" |
+| *Foxo3* "most distinct ... among all evaluated genes" | First of script 44's 26 apoptosis-related genes by interaction \|z\| (2.68; *Bbc3* 2.65). Genome-wide IHW *P* is 1.0. Exploratory | "Of the 26 we examined"; no *P* in the text |
+| "the resulting drop in PUMA ... indicating" | OXPHOS falls in both genotypes (Fig. 1f), *Bbc3* only in MYC+. Nothing here tests cause | Cite 1f; drop "resulting"; "suggesting" |
+
+**Three facts behind the design.**
+1. **The Doc's own citations already match the design.** It cites g for the 6-week balance (the
+   nine ratios) and h for *Bax*, *Bbc3*, *Bcl2l1* and *Foxo3* (gene level). 2G (alt) draws no
+   6-week effect, so it cannot carry g's sentence; its content went into h instead.
+2. **The 6W PUMA:BCL-XL shift is 62% BCL-XL falling** (3a.3). "MYC shifted the balance" is
+   accurate, and h shows BCL-XL lower in MYC+ at 6W.
+3. **The coupling's MYC+ slope is largely the 6W-12W group difference.** It goes from +0.56 to
+   +0.26 (*P* 0.38) with age in the model (verification note, section 5). This is why Claude
+   suggested Extended Data for it. The author keeps it (2a.8).
+
+The 2d.6 flags are addressed by the proposals: item 3 (*Foxo3*) is drawn in 1h, item 4
+("distinctly") is dropped from the draft, and item 5 (the coupling impasse) prints both fits and
+both *P* pairs.
+
+### 2a.8 The author's rulings and questions (afternoon)
+
+- **"I need to see your proposals, difficult to make decisions just by reading them."**
+  - Proposals are now rendered at their printed size and shown on page mock-ups.
+  - This is a rule in `FIGURE_RULES.md` and a memory.
+- **Keep the coupling**, "that is an important part, even if only a suggestion".
+- **Keep the draft paragraph for now** (2a.9), to be edited once the graphs have been seen.
+- **Character size.** The author asked whether Claude was working at the minimum size. For the
+  initial submission, characters "throughout the figure can be smaller" if that gets more
+  convincing content in.
+  - Claude's answer: the panels are at the house sizes (6 pt labels, 7 pt titles), and Layout B
+    shows the whole figure at 5/6 pt.
+  - The mock-ups show that panel area, not type, is the limit.
+  - Below 5 pt was not done. It reverses the 2026-10-09 rule ("nothing under 5 pt, even for the
+    initial submission"), and Nature requires 5 pt at acceptance.
+  - **Open: the author's word.**
+
+### 2a.9 The draft paragraph (accepted for now), and a sentence for the coupling
+
+> At 6 weeks, MYC raised all nine pro- to anti-apoptotic transcript ratios of the BCL-2 family
+> (Fig. 1g). By 12 weeks, MYC shifted the other eight by less than half as much, but no longer
+> shifted the PUMA:BCL-XL ratio at all (Fig. 1g). The change was in PUMA. Of the BCL-2 family,
+> *Bbc3* fell furthest between 6 and 12 weeks in the MYC+ gland and did not change in the WT
+> gland, whereas *Bcl2l1* changed in neither (Fig. 1h). *Bax* fell in both, more in the MYC+
+> gland. *Foxo3*, a p53-independent activator of PUMA, rose across the window in the WT gland but
+> not in the MYC+ gland, separating the genotypes more sharply than any of the 26
+> apoptosis-related genes we examined (Fig. 1h). OXPHOS was deprioritised in both genotypes
+> (Fig. 1f), yet PUMA fell only in the presence of MYC. This suggests that the developmental
+> withdrawal of respiration permits, rather than causes, the loss of PUMA. Together, these
+> findings suggested that MYC-dependent apoptosis via PUMA relies on high mitochondrial
+> respiration, a state withdrawn between puberty and adulthood.
+
+**A sentence for the coupling.** Not yet offered to the author.
+
+> Across individual glands, the relation between OXPHOS priority and the PUMA:BCL-XL ratio
+> differed between the genotypes: positive in MYC+ glands, negative or absent in WT glands.
+
+- WT is negative when unadjusted (−0.61, *P* 0.053) and absent when adjusted (+0.05).
+- "Only where MYC was present" stays withdrawn (3b).
+- The legend carries both fits, both *P* pairs and section 5's age caveat.
+
+Every number in the draft is asserted in a proposal script (2a.10).
+
+### 2a.10 What was built: four proposal panels and three page layouts
+
+The scripts are in `figures/natmetab/proposals/`; the PDFs are in `outputs/natmetab/proposals/`.
+
+| proposal | script | PDF (mm) | content |
+|---|---|---|---|
+| 1g | `p1g_bcl2_balance.R` | `Fig1g_bcl2_balance.pdf` (56 x 56) | the ruling-4 2G redrawn from script 54: the nine ratios, MYC+ vs WT at 6W against 12W; the line through the other eight (slope 0.43) and its 95% band in full. Grey = the eight that fit the line; black = *Bbc3:Bcl2l1*. It was open in the old panel, but open means "not significant" in Fig. 1e |
+| 1h | `p1h_puma_members.R` | `Fig1h_puma_members.pdf` (72 x 62) | *Bbc3* and *Bcl2l1* on top, *Bax* and *Foxo3* below, every animal over a box, genotype-major. Lower brackets: 12W vs 6W in each genotype (DESeq2, IHW-adjusted *P*). Upper bracket: the difference between the two (interaction, raw *P*). The 6W *Bbc3* difference is not bracketed (*P* 0.064, 3a.3) |
+| 1h, alternative | `p1h_alt_bcl2_plane.R` | `Fig1h_alt_bcl2_plane.pdf` (60 x 60) | 2G (alt)'s plane: the BCL-2 family plus *Foxo3*, 12W vs 6W in WT against MYC+. Dashed = the same change in both; dotted = 0.20 either side (the declared threshold); black = the four genes the text names |
+| coupling | `p1i_coupling.R` | `Fig1i_coupling.pdf` (62 x 56) | script 54's two fits, unadjusted and adjusted for epithelial and immune content, one line per genotype; each half prints the slope difference, *P* and permutation *P* |
+
+**The page mock-ups.** `page_mock.R` builds `Fig1_gh_proposals.pdf`.
+- **How it works:** it sources every panel script as a dry run with `natmetab.capture`, and places
+  each panel at its printed size on an A4 sheet.
+- **What it shows:** the 183 x 170 mm page is outlined, and the bench row a-c is a grey placeholder
+  50-52 mm tall.
+- **Re-run it** after any change: `Rscript figures/natmetab/proposals/page_mock.R`.
+
+| page | layout | letters after c | verdict |
+|---|---|---|---|
+| 1 | **A**: 1e to Extended Data. Row 2: d (100) + the window panel (80). Row 3: ratios / genes / coupling at 50 / 70 / 57 | d, e window, f ratios, g genes, h coupling | reads; the window panel's two x axes collide at 80 mm (fixable) |
+| 2 | **A2**: 1d to Extended Data. Row 2: 1e (80) + the window panel at its own 100 | d reallocation, e window, f, g, h | **the only layout where every panel keeps its own design at house size** |
+| 3 | **B**: every panel kept, 5/6 pt. Row 2: d / e / f at 66 / 55 / 56. Row 3: 52 / 70 / 55 | d-i, coupling = i | d-f too narrow: e and f's labels collide and their data are squeezed; they would need redesigning, not shrinking |
+| 4 | the four proposals at 100%, house size | | |
+
+**The page arithmetic.** The bench row (about 50 mm), two panel rows (about 55 mm each) and the
+gaps fill the 170 mm. Six panels therefore need two rows of three, so either one panel leaves
+(A, A2) or all six narrow (B).
+
+**Asserted in the proposal scripts**, so a re-run that changes any of these stops the panel:
+- **1g:**
+  - the drawn line and band are script 54's;
+  - all nine 6W shifts are above 0, and the slope is below 0.5;
+  - PUMA:BCL-XL's 12W effect is within 0.1 of 0;
+  - PUMA:BCL-XL is the largest departure, below the line and inside the band.
+- **1h:**
+  - the values are script 54's `$four_genes`, and the drawn group means are within 0.1 of DESeq2;
+  - *Bbc3*: IHW *P* below 0.05 in MYC+ and above 0.5 in WT; interaction raw *P* below 0.01;
+  - *Bcl2l1*: IHW *P* above 0.5 in both;
+  - *Bax*: IHW *P* below 0.05 in MYC+, falling less than *Bbc3*;
+  - *Foxo3*: IHW *P* below 0.05 in WT and above 0.5 in MYC+;
+  - *Bbc3* falls furthest of the BCL-2 family in MYC+ (script 42);
+  - *Foxo3* has the largest |interaction z| of script 44's 26.
+- **Alternative 1h:** the values are script 42's `$machinery`.
+- **Coupling:**
+  - the drawn lines are the reported fits, and their differences are the interactions;
+  - the impasse holds: the unadjusted permutation *P* is below 0.05 and the adjusted one is not.
+
+### 2a.11 Before a proposal becomes a panel of record
+
+- **Move it** into `figures/natmetab/` under its final letter, which depends on the layout. Drop
+  `dir =`, and give it the house legend printout and a SANDBOX block.
+- **Layout A only:** the window panel at 80 mm needs a coarser x step.
+- **1h:** the group labels are at 5 pt, because at 6 pt "MYC+ 6W" and "MYC+ 12W" touch at 72 mm.
+  Keep 5 pt or widen the panel.
+- **Alternative 1h:** the *Pmaip1* label sits beside *Bcl2l1*'s square.
+- **1g:** the author could restore the 6-week significance marks (five of the nine have unadjusted
+  *P* < 0.01). Ruling 4 removed them, and that is reversible on the author's word. If restored,
+  the adjustment comes from script 54, not the panel.
+- **The panel that leaves** under A (1e) or A2 (1d) needs an Extended Data home, and its sentence
+  needs the new citation.
+
+### 2a.12 Style changes (in `6cb04f1`)
+
+- **`_style.R`:**
+  - `NM_TXT` and `NM_TXT_TITLE` now read `natmetab.txt` and `natmetab.txt_title`. The defaults are
+    6 and 7, the 5-pt floor is unchanged, and the title is asserted at 7 pt or less.
+  - Under `natmetab.capture`, `save_panel()` keeps the drawable panel in `.nm_captured`.
+  - The self-test passes 20 of 20, and all 14 panels pass a dry run.
+- **`FIGURE_RULES.md`:**
+  - the soft hyphen: `"­"` prints a true hyphen from base `pdf()`, so "BCL-XL" prints
+    correctly;
+  - the two switches;
+  - "show options, don't describe them";
+  - the proposals;
+  - the two pending items (the layout, and text below 5 pt).
+
+### 2a.13 Numbers for the legends (printed by the proposal scripts)
+
+- **1g:**
+  - Line over the other eight: slope 0.429 (SE 0.137).
+  - PUMA:BCL-XL: +0.674 to −0.061; residual −0.350 (−1.58 SD); 95% prediction interval −0.276
+    to +0.855.
+  - The six-week *P* values (per-animal OLS, script 42):
+
+    | ratio | *P* |
+    |---|---|
+    | *Bax:Bcl2l1* | 0.00012 |
+    | *Bid:Bcl2l1* | 0.0036 |
+    | *Bak1:Bcl2l1* | 0.0052 |
+    | *Bax:Mcl1* | 0.0059 |
+    | *Bbc3:Bcl2l1* | 0.0089 |
+    | *Bbc3:Mcl1* | 0.12 |
+    | *Bmf:Bcl2l1* | 0.40 |
+    | *Bcl2l11:Bcl2l1* | 0.46 |
+    | *Pmaip1:Bcl2l1* | 0.71 |
+
+- **1h:** DESeq2 Wald test on raw (unshrunken) MLE log2 fold changes. The 12W-vs-6W changes carry
+  IHW-adjusted *P*; the interaction carries raw *P*.
+
+  | gene | WT | MYC+ | interaction | licence |
+  |---|---|---|---|---|
+  | *Bbc3* | +0.062 (*P* 0.88) | −0.479 (*P* 0.016) | −0.541 (SE 0.204), *P* 0.0081 | pre-specified |
+  | *Bcl2l1* | −0.107 (0.79) | +0.073 (0.83) | +0.179, *P* 0.40 | the pair's denominator |
+  | *Bax* | −0.145 (0.49) | −0.376 (0.0077) | −0.231, *P* 0.12 | exploratory |
+  | *Foxo3* | +0.473 (0.0078) | −0.013 (0.98) | −0.486, *P* 0.0074 | exploratory |
+
+  - The BCL-2 family across the MYC+ window, in order: *Bbc3* −0.48, *Bax* −0.38, *Bid* −0.36,
+    *Bak1* −0.28, *Mcl1* +0.03, *Bcl2l1* +0.07, *Pmaip1* +0.21, *Bcl2l11* +0.22, *Bcl2* +0.34,
+    *Bmf* +0.84.
+  - Outside the family (script 42's roster): *Htra2* −0.67, *Birc5* −0.93.
+  - *Foxo3*'s |interaction z| is 2.68, first of the 26 (*Bbc3* 2.65).
+- **Coupling:**
+
+  | fit | WT slope | MYC+ slope | difference | *P* | permutation *P* |
+  |---|---|---|---|---|---|
+  | unadjusted | −0.61 | +0.56 | +1.17 | 0.0046 | 0.026 |
+  | adjusted | +0.05 | +0.83 | +0.78 | 0.0052 | 0.085 |
 
 ---
 
@@ -536,6 +751,11 @@ axis check that accepted an ending on an undrawn minor tick.
    nine departures, inside the 95% prediction interval, and reports no verdict.
 5. **1h**, if it is the coupling panel: the impasse ruling stands (permutation P 0.026 unadjusted,
    0.085 adjusted), so the panel asserts nothing.
+
+*Items 3-5 are addressed by the 2026-10-12 proposals (2a.7):*
+- *Foxo3* is drawn in 1h;
+- "distinctly" is dropped from the draft paragraph;
+- the coupling prints both fits and both P pairs.
 
 ---
 
