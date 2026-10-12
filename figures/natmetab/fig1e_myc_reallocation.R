@@ -6,12 +6,12 @@
 # pairwise ratios of pathways independent of its overall size (mitoPPS), MYC
 # promoted biogenesis and biosynthetic pathways and demoted mitochondrial
 # dynamics, surveillance and signalling, in the same pattern at both ages
-# (Fig. 1e, ED Fig. 2d)."
+# (Fig. 1e, ED Fig. 2e)."
 #
 # THE ROWS are chosen by a rule, not by eye: every row except OXPHOS subunits
 # is significant at 6W (BH-adjusted P < 0.05) and keeps its sign at 12W (both
 # asserted). OXPHOS subunits is drawn as the reference for Fig. 1f: MYC does
-# not demote OXPHOS -- the window does. ED Fig. 2d draws all 143 pathways.
+# not demote OXPHOS -- the window does. ED Fig. 2e draws all 143 pathways.
 #
 # FORM: ranked effects, two conditions -> a dot plot, 6W and 12W per row joined
 #   by a line (data-to-viz, "Order your data"; "The Moire effect": dots, not

@@ -1,10 +1,10 @@
 # =============================================================================
-# edfig2d_myc_reallocation_ages.R -- Extended Data Fig. 2d: MYC re-weights the
+# edfig2e_myc_reallocation_ages.R -- Extended Data Fig. 2e: MYC re-weights the
 # compartment in the same pattern at both ages, over all 143 MitoPathways
 # -----------------------------------------------------------------------------
 # The text: "MYC promoted biogenesis and biosynthetic pathways and demoted
 # mitochondrial dynamics, surveillance and signalling, in the same pattern at both
-# ages (Fig. 1e, ED Fig. 2d)." Fig. 1e draws eleven rows; this is all of them.
+# ages (Fig. 1e, ED Fig. 2e)." Fig. 1e draws eleven rows; this is all of them.
 # It is ED Fig. 1b's grammar on the priority ruler: the 12-week effect against the
 # 6-week effect, one point per pathway.
 #
@@ -15,10 +15,11 @@
 # FORM: two signed effects per pathway -> scatter on equal axes; Fig. 1e's eleven
 #   rows drawn in black, the rest grey. Not named: see the note at fig1e_rows.
 #
-# SIZE: 62 x 62 mm, so that ED 2d and ED 2g's two scatters fill one 183-mm row.
+# SIZE: 60 x 60 mm, so that ED 2d's two scatters (114 mm) and ED 2e fill one
+# 180-mm Extended Data row.
 #
 # Reads:  results/background_vs_myc.rds (script 40: $ruler, $regressions)
-# Output: outputs/natmetab/EDFig2/EDFig2d_myc_reallocation_ages.pdf
+# Output: outputs/natmetab/EDFig2/EDFig2e_myc_reallocation_ages.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -67,10 +68,10 @@ p <- ggplot(r143, aes(p_m6, p_m12)) +
   labs(x = "MYC+ vs WT, 6W (mitoPPS)", y = "MYC+ vs WT, 12W (mitoPPS)") +
   theme_nm()
 
-save_panel(p, fig = "EDFig2", panel = "d", name = "myc_reallocation_ages", width = 62, height = 62)
+save_panel(p, fig = "EDFig2", panel = "e", name = "myc_reallocation_ages", width = 60, height = 60)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
-cat("\nED Fig. 2d -- for the legend\n")
+cat("\nED Fig. 2e -- for the legend\n")
 cat(sprintf("  %d nuclear MitoPathways; mitoPPS, MYC+ vs WT; n = 6 mice per group\n", nrow(r143)))
 cat(sprintf("  solid line: lm(12W ~ 6W), slope %.3f, intercept %+.3f, R2 %.3f; r = %.2f; dashed: equal effect\n",
             stats::coef(fit)[2], stats::coef(fit)[1], summary(fit)$r.squared, stats::cor(r143$p_m6, r143$p_m12)))

@@ -1,11 +1,11 @@
 # =============================================================================
-# edfig2e_window_matched_controls.R -- Extended Data Fig. 2e: across the window,
+# edfig2f_window_matched_controls.R -- Extended Data Fig. 2f: across the window,
 # OXPHOS falls further than comparably expressed genes, and further than
 # proliferation
 # -----------------------------------------------------------------------------
 # The text: "In the WT gland, OXPHOS subunits fell further than all 2,000
 # expression-matched gene sets, whereas the proliferative signature fell only
-# slightly ... (ED Fig. 2e)." Two stacked parts, one PDF:
+# slightly ... (ED Fig. 2f)." Two stacked parts, one PDF:
 #
 #   TOP     each programme's 12W vs 6W change in both genotypes, against 2,000
 #           random gene sets of the same size drawn from the same expression
@@ -16,7 +16,8 @@
 #           each comparator, against the same difference between paired matched
 #           sets redrawn together (grey tick: the paired-null median).
 #
-# One x axis for both parts. SIZE: 95 x 66 mm, beside ED 2f (88 mm) in one row.
+# One x axis for both parts. SIZE: 92 x 64 mm, beside ED 2g (84 mm) in one
+# 180-mm Extended Data row.
 #
 # WHY TWO SCRIPTS' NULLS. Script 54 ran the matched draws for both windows on the
 # same seed, so the top part uses it throughout; the paired comparison exists only
@@ -28,7 +29,7 @@
 #
 # Reads:  results/two_timeline_verification.rds    (script 54: $arm_null)
 #         results/substrate_specificity_tradeoff.rds (script 43: $paired_null)
-# Output: outputs/natmetab/EDFig2/EDFig2e_window_matched_controls.pdf
+# Output: outputs/natmetab/EDFig2/EDFig2f_window_matched_controls.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -110,10 +111,10 @@ p_bot <- ggplot(pn, aes(observed_diff, label)) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank())
 
 save_panel(stack_parts(p_top, p_bot, heights = c(nlevels(top$label), nrow(pn)), collect_guides = TRUE),
-           fig = "EDFig2", panel = "e", name = "window_matched_controls", width = 95, height = 66)
+           fig = "EDFig2", panel = "f", name = "window_matched_controls", width = 92, height = 64)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
-cat("\nED Fig. 2e -- for the legend\n")
+cat("\nED Fig. 2f -- for the legend\n")
 cat("  TOP: set-average raw log2 fold change, 12W vs 6W; 2,000 random sets of the same size\n")
 cat("  from the same expression ventiles per programme (script 54); percentile of the observed value:\n")
 for (i in order(an$obs_wt)) cat(sprintf("    %-32s WT %+.3f (pct %.1f)   MYC+ %+.3f (pct %.1f)\n",

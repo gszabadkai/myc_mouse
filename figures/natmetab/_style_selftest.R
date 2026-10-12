@@ -87,6 +87,13 @@ p <- good() + scale_y_continuous()       # ggplot's default padding below 0
 expect_refused("default padding", "does not end on a tick|must start at 0", p)
 
 expect_ok("an axis may end on a drawn minor tick", check_panel(good(minor = TRUE), 50, 50))
+expect_ok("a schematic with no drawn axes need not end on ticks", check_panel(
+  ggplot(data.frame(x = c(0.3, 4.7), y = c(0.2, 2.9)), aes(x, y)) + geom_point() +
+    theme_void(base_family = NM_FONT), 50, 40))
+expect_refused("an Extended Data panel wider than 180 mm", "over the 180 mm page", {
+  old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
+  suppressMessages(save_panel(good(), "EDFig2", "z", "selftest_wide", 182, 50))
+})
 expect_ok("tick-ending axes survive floating point (-0.2 + 3 * 0.2)", {
   q <- ggplot(data.frame(x = c(-0.17, 0.31), y = c(1, 2)), aes(x, y)) + geom_point() +
     scale_x_nm(step = 0.2, top = 0.31, bottom = -0.17, minor = TRUE) +

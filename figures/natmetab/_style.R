@@ -42,6 +42,7 @@ NM_TXT       <- 6            # pt; tick labels, keys, on-panel labels, P values
 NM_TXT_TITLE <- 7            # pt; axis titles and strips (Nature's maximum)
 NM_LINE      <- 0.25         # ggplot linewidth: axes, ticks, brackets, box outlines
 NM_MAX_W     <- 183          # mm; double column
+NM_ED_MAX_W  <- 180          # mm; Extended Data page width (Nature research figure guide)
 NM_MAX_H     <- 170          # mm; tallest Nature figure that leaves room for a legend
 nm_widths    <- c(single = 89, double = 183)
 
@@ -98,6 +99,16 @@ stopifnot(setequal(names(group_labels), names(group_cols)),
 # asymmetric form only where an axis carries the magnitude, and show the bar.
 div_cols <- c(neg = "#4A3525", zero = "#FAFAFA", pos = "#2A8A6D")
 seq_cols <- c(low = "#F2F4F6", mid = "#8FA3B0", high = "#243642")  # unsigned levels
+
+# Mitochondrial class of a gene set (ED 2b-c), script 37's three classes. Slate,
+# darker = more mitochondrial; not a hue, because blue and orange mean genotype.
+# The middle class is mitochondrial BY CONSTRUCTION: transcription-factor target
+# sets intersected with MitoCarta. Labels avoid hyphens (base pdf() draws a minus).
+mito_class_cols   <- c(mitocarta_proper = "#243642", construction_MITO = "#8FA3B0",
+                       non_mito = "#D3DADF")
+mito_class_labels <- c(mitocarta_proper = "MitoCarta",
+                       construction_MITO = "Curated (with mitochondria)",
+                       non_mito = "Not mitochondrial")
 
 scale_fill_div <- function(limits, name = NULL, ...) {
   if (length(limits) == 1L) limits <- c(-abs(limits), abs(limits))
@@ -273,12 +284,12 @@ theme_nm <- function(legend = "none") {
   all(apply(rgb, 2, function(v) diff(range(v)) == 0))
 }
 
-check_panel <- function(p, width, height) {
+check_panel <- function(p, width, height, max_w = NM_MAX_W) {
   errs <- character(0)
   add <- function(...) errs <<- c(errs, sprintf(...))
 
-  # page size
-  if (width > NM_MAX_W)  add("width %g mm is over the %g mm page", width, NM_MAX_W)
+  # page size (Extended Data pages are 180 mm wide, main figures 183)
+  if (width > max_w)  add("width %g mm is over the %g mm page", width, max_w)
   if (height > NM_MAX_H) add("height %g mm is over the %g mm page", height, NM_MAX_H)
 
   # theme text: size, colour, font
@@ -313,8 +324,10 @@ check_panel <- function(p, width, height) {
   }
 
   # axes: both ends on a tick; y from 0 (or spanning 0) whenever an x axis is drawn
-  x_drawn <- !all(vapply(c("axis.text.x.bottom", "axis.line.x.bottom"), function(e)
-    inherits(ggplot2::calc_element(e, thm), "element_blank"), logical(1)))
+  drawn <- function(ax) !all(vapply(sprintf(c("axis.text.%s", "axis.line.%s"),
+                                            if (ax == "x") "x.bottom" else "y.left"),
+    function(e) inherits(ggplot2::calc_element(e, thm), "element_blank"), logical(1)))
+  x_drawn <- drawn("x")
   yv <- unlist(lapply(b$data, function(d)
     unlist(d[intersect(names(d), c("y", "ymin", "ymax", "lower", "upper", "middle"))],
            use.names = FALSE)), use.names = FALSE)
@@ -323,6 +336,7 @@ check_panel <- function(p, width, height) {
     for (ax in c("x", "y")) {
       v <- pp[[ax]]
       if (is.null(v) || v$is_discrete()) next
+      if (!drawn(ax)) next          # an undrawn axis (a schematic) has no ticks to end on
       r <- v$continuous_range
       ticks <- stats::na.omit(c(v$get_breaks(),
                                 if (.nm_minor_drawn(p, v, ax)) v$get_breaks_minor()))
@@ -400,10 +414,11 @@ stack_parts <- function(..., heights = NULL, widths = NULL, ncol = 1L,
 save_panel <- function(p, fig, panel, name, width, height, dir = NULL) {
   stopifnot(grepl("^(Fig[1-4]|EDFig([1-9]|10))$", fig), grepl("^[a-z]$", panel),
             grepl("^[a-z0-9_]+$", name), is.numeric(width), is.numeric(height))
+  max_w <- if (grepl("^EDFig", fig)) NM_ED_MAX_W else NM_MAX_W
   if (inherits(p, "nm_stack")) {
-    for (part in p$parts) check_panel(part, width, height)
+    for (part in p$parts) check_panel(part, width, height, max_w)
   } else {
-    check_panel(p, width, height)
+    check_panel(p, width, height, max_w)
   }
   p <- .nm_drawable(p)
   if (is.null(dir)) dir <- here::here("outputs", "natmetab", fig)

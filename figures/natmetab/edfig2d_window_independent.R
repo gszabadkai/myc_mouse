@@ -1,9 +1,9 @@
 # =============================================================================
-# edfig2g_window_independent.R -- Extended Data Fig. 2g: the window's
+# edfig2d_window_independent.R -- Extended Data Fig. 2d: the window's
 # re-weighting is the gland's own; the MYC+ gland follows it
 # -----------------------------------------------------------------------------
 # The text: "The pubertal-adult transition, by contrast, reshaped the compartment
-# independently of MYC (ED Fig. 2g)". Two scatters side by side, one PDF, all 143
+# independently of MYC (ED Fig. 2d)". Two scatters side by side, one PDF, all 143
 # MitoPathways on the priority ruler (mitoPPS):
 #
 #   LEFT   the WT window against MYC's effect at 6W: unrelated (r near 0), so
@@ -12,9 +12,10 @@
 #          MYC+ gland follows the gland's own programme. Dashed: equal change.
 #
 # FORM: two signed quantities per pathway -> scatters on equal axes, r printed.
+# SIZE: 114 x 60 mm, beside ED 2e (60 mm) in one 180-mm Extended Data row.
 #
 # Reads:  results/background_vs_myc.rds (script 40: $ruler)
-# Output: outputs/natmetab/EDFig2/EDFig2g_window_independent.pdf
+# Output: outputs/natmetab/EDFig2/EDFig2d_window_independent.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -53,10 +54,10 @@ p_right <- panel_xy(r143$p_tn, r143$p_tp, "12W vs 6W, WT (mitoPPS)", "12W vs 6W,
                     identity = TRUE)
 
 save_panel(stack_parts(p_left, p_right, ncol = 2, widths = c(1, 1)),
-           fig = "EDFig2", panel = "g", name = "window_independent", width = 120, height = 62)
+           fig = "EDFig2", panel = "d", name = "window_independent", width = 114, height = 60)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
-cat("\nED Fig. 2g -- for the legend\n")
+cat("\nED Fig. 2d -- for the legend\n")
 cat(sprintf("  %d nuclear MitoPathways, mitoPPS; n = 6 mice per group\n", nrow(r143)))
 cat(sprintf("  left:  r(MYC+ vs WT at 6W, WT window) = %.2f\n", stats::cor(r143$p_m6, r143$p_tn)))
 cat(sprintf("  right: r(WT window, MYC+ window) = %.2f; dashed: equal change\n",

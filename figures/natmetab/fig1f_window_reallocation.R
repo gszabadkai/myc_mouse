@@ -5,9 +5,9 @@
 # The text: "between 6 and 12 weeks, both the WT and the MYC+ gland demoted
 # OXPHOS in priority and in expression, while fatty acid oxidation and the
 # carnitine shuttle, which supply NADH to the respiratory chain, gained priority
-# (Fig. 1f, ED Fig. 2f). In the WT gland, OXPHOS subunits fell further than all
+# (Fig. 1f, ED Fig. 2g). In the WT gland, OXPHOS subunits fell further than all
 # 2,000 expression-matched gene sets, whereas the proliferative signature fell
-# only slightly ... (Fig. 1d,f; ED Fig. 2e)".
+# only slightly ... (Fig. 1d,f; ED Fig. 2f)".
 #
 # ONE PANEL, TWO RULERS SHARING ROWS (one PDF, side by side):
 #   left   EXPRESSION: the set-average raw log2 fold change, 12W vs 6W
@@ -24,7 +24,7 @@
 #
 # FORM: signed changes, two conditions -> dot plot, the pair joined by a line
 #   (data-to-viz, "Order your data"). No significance encoding: the
-#   matched-control test of expression is ED Fig. 2e; priority has no matched null,
+#   matched-control test of expression is ED Fig. 2f; priority has no matched null,
 #   and no window change passes script 08's per-pathway test in WT (0 of 144), so
 #   the legend gives priority as ranks among the 143 (printed below).
 #

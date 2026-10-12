@@ -1,10 +1,10 @@
 # =============================================================================
-# edfig2f_window_two_rulers.R -- Extended Data Fig. 2f: across the window, every
+# edfig2g_window_two_rulers.R -- Extended Data Fig. 2g: across the window, every
 # MitoPathway's change in expression against its change in priority
 # -----------------------------------------------------------------------------
 # The text: "both the WT and the MYC+ gland demoted OXPHOS in priority and in
 # expression, while fatty acid oxidation and the carnitine shuttle ... gained
-# priority (Fig. 1f, ED Fig. 2f)." Fig. 1f draws six pathways; this is all 143,
+# priority (Fig. 1f, ED Fig. 2g)." Fig. 1f draws six pathways; this is all 143,
 # one facet per genotype. Lower left: falls on both rulers; upper right: gains on
 # both.
 #
@@ -12,10 +12,10 @@
 #   both axes (data-to-viz, "Consistency between charts": the genotype colours of
 #   Fig. 1f). Named: the three pathways the sentence names.
 #
-# SIZE: 88 x 66 mm, beside ED 2e (95 mm) in one row.
+# SIZE: 84 x 64 mm, beside ED 2f (92 mm) in one 180-mm Extended Data row.
 #
 # Reads:  results/background_vs_myc.rds (script 40: $ruler)
-# Output: outputs/natmetab/EDFig2/EDFig2f_window_two_rulers.pdf
+# Output: outputs/natmetab/EDFig2/EDFig2g_window_two_rulers.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -66,10 +66,10 @@ p <- ggplot(d, aes(x, y)) +
   theme_nm() +
   theme(strip.text = element_text(size = NM_TXT), panel.spacing.x = unit(4, "mm"))
 
-save_panel(p, fig = "EDFig2", panel = "f", name = "window_two_rulers", width = 88, height = 66)
+save_panel(p, fig = "EDFig2", panel = "g", name = "window_two_rulers", width = 84, height = 64)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
-cat("\nED Fig. 2f -- for the legend\n")
+cat("\nED Fig. 2g -- for the legend\n")
 cat(sprintf("  %d nuclear MitoPathways; expression = set-average raw log2 fold change; priority = mitoPPS\n",
             nrow(r143)))
 cat(sprintf("  r(expression, priority): WT window %.2f, MYC+ window %.2f\n", rr[1], rr[2]))
