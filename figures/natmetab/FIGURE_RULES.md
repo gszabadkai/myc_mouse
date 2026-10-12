@@ -18,6 +18,17 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   `EDFig10`. Two R pieces of one panel share the letter and differ by name.
 - **Content first:** each panel is discussed before it is built, including any sentence the data
   do not support.
+- **Show options, don't describe them** (author, 2026-10-12: "difficult to make decisions just by
+  reading them"). Proposals are real scripts drawn at their printed size, kept in
+  `figures/natmetab/proposals/` (outside the dry-run set) and saved to
+  `outputs/natmetab/proposals/`; a page mock-up places them with the figure's other panels on the
+  183 x 170 mm page (`proposals/page_mock.R`). A proposal moves into `figures/natmetab/` under its
+  final letter once chosen.
+- **Two switches in `_style.R` for mock-ups**, both off by default:
+  - `options(natmetab.txt = 5, natmetab.txt_title = 6)`, set before a figure's panels are sourced,
+    draws them one point smaller. The 5-pt floor does not move.
+  - `options(natmetab.capture = TRUE)` makes `save_panel()` keep the checked, drawable panel in
+    `.nm_captured`, so a page mock-up can take each panel exactly as its script saves it.
 
 ## Page (Nature)
 
@@ -50,6 +61,9 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Base `pdf()` draws the ASCII hyphen as a minus sign.** So labels avoid hyphens ("Folate and 1C
   metabolism", not "1-C"), and a hyphen is typed only where a minus is meant ("OXPHOS - proliferation"
   prints as OXPHOS − proliferation, ED 2f).
+- **For a true hyphen, write the Latin-1 soft hyphen `"­"`**: base `pdf()` prints it as a
+  hyphen ("BCL­XL" prints BCL-XL; checked in Quick Look, 2026-10-12). Use it wherever a label
+  needs one (protein names, "Pro-apoptotic").
 - **Preview with Apple's engine** (Quick Look, `qlmanage -t`), not poppler's `pdftoppm`, which
   draws Helvetica-Oblique upright, so an italic *P* looks lost when it is not (2026-10-11).
 
@@ -184,6 +198,17 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 g/h (83) in a 56-mm row; with a 56-mm top row for a-c the page is 178 mm, so 8 mm must still
 come out of the top row, f, or g/h.
 
+**Proposals, not yet of record** (2026-10-12; `figures/natmetab/proposals/`): Fig. 1g (the nine
+BCL-2 ratios, 56 x 56), 1h (four genes in every gland, 72 x 62; or the alternative BCL-2 plane, 60 x
+60) and the coupling (62 x 56). Shown on three page layouts in
+`outputs/natmetab/proposals/Fig1_gh_proposals.pdf`; the handoff (2a.7-2a.13) has the details.
+
 ## Pending
 
-- Fig. 1 page budget: the last 8 mm (above).
+- Fig. 1 page budget: now the author's choice of layout for g, h and the coupling (A: 1e to
+  Extended Data; A2: 1d to Extended Data; B: every panel kept at 5/6 pt, d-f squeezed). The
+  2026-10-12 mock-ups show that six panels need two rows of three, so either one panel leaves or
+  all six narrow.
+- Text size below 5 pt: raised by the author for the initial submission (2026-10-12); not done,
+  because it reverses the 2026-10-09 rule, Nature requires 5 pt at acceptance, and the mock-ups show
+  that area, not type, is the limit. Awaiting the author's word.

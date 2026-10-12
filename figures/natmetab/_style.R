@@ -38,8 +38,12 @@ suppressPackageStartupMessages(library(ggplot2))
 # --- type, lines, page -------------------------------------------------------
 NM_FONT      <- "Helvetica"  # throughout: R panels, Prism graphs, Illustrator labels
 NM_TXT_MIN   <- 5            # pt; the floor -- nothing on a panel may be smaller
-NM_TXT       <- 6            # pt; tick labels, keys, on-panel labels, P values
-NM_TXT_TITLE <- 7            # pt; axis titles and strips (Nature's maximum)
+# The two working sizes can be set for a whole figure before its panels are sourced,
+# e.g. options(natmetab.txt = 5, natmetab.txt_title = 6) to try a figure one point
+# smaller (2026-10-12, Fig. 1 page mock-ups). The floor above does not move.
+NM_TXT       <- getOption("natmetab.txt", 6)        # pt; tick labels, keys, on-panel labels, P values
+NM_TXT_TITLE <- getOption("natmetab.txt_title", 7)  # pt; axis titles and strips (Nature's maximum)
+stopifnot(NM_TXT >= NM_TXT_MIN, NM_TXT_TITLE >= NM_TXT, NM_TXT_TITLE <= 7)
 NM_LINE      <- 0.25         # ggplot linewidth: axes, ticks, brackets, box outlines
 NM_MAX_W     <- 183          # mm; double column
 NM_ED_MAX_W  <- 180          # mm; Extended Data page width (Nature research figure guide)
@@ -421,6 +425,9 @@ save_panel <- function(p, fig, panel, name, width, height, dir = NULL) {
     check_panel(p, width, height, max_w)
   }
   p <- .nm_drawable(p)
+  # options(natmetab.capture = TRUE) keeps the checked, drawable panel in
+  # .nm_captured (global), for assembling page mock-ups from the panel scripts.
+  if (isTRUE(getOption("natmetab.capture"))) assign(".nm_captured", p, envir = globalenv())
   if (is.null(dir)) dir <- here::here("outputs", "natmetab", fig)
   file <- file.path(dir, sprintf("%s%s_%s.pdf", fig, panel, name))
   if (isTRUE(getOption("natmetab.dry_run"))) {
