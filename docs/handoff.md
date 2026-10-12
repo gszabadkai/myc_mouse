@@ -1,5 +1,5 @@
 ---
-date: 2026-10-11
+date: 2026-10-12
 tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, verification]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
@@ -21,17 +21,15 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-11: Fig. 1d-f and Extended Data Fig. 2d-g are built in `figures/natmetab/` and pushed,
-and the author approved the paragraph they illustrate (2a.2). Next is ED Fig. 2a-c, on the
-author's instructions, which are still to come.**
+**2026-10-12: Extended Data Fig. 2 is complete in `figures/natmetab/` and pushed: a-c built
+today, d-g renumbered and resized to the 180-mm Extended Data page (2a). Next is Fig. 1g, then
+1h and Fig. 3k-m, each talked through with the author before it is built.**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-11**. Section 2b is the
-2026-10-10 session (Fig. 1b and ED Fig. 1) and 2c the 2026-10-09 session, which started the Nat
-Metab layer. Section 3 is the 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g
-and 4 to 9 are carried over. Section 10 holds the threads parked for after the manuscript.
-
-**Waiting on the author: instructions for ED Fig. 2a-c** (design; the mitochondrial axis; total
-abundance).
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-12**. Section 2b is the
+2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
+and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
+2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
+Section 10 holds the threads parked for after the manuscript.
 
 ---
 
@@ -40,15 +38,15 @@ abundance).
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `f5dd876` (the window panels) |
-| pushed | everything, this handoff included (the author asked for the push, 2026-10-11) |
+| HEAD | this handoff's commit, on top of `a927ce8` (ED Fig. 2a-c, the renumbering, the 180-mm resize) |
+| pushed | everything, this handoff included (the author asked for the push, 2026-10-12) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
-| scripts | no numbered script was added. `08c0dda` removed the 21-27% asserts from scripts 32 and 33; the text now says 20-33%, asserted in Fig. 1d. **The next number is still 55** |
+| scripts | no numbered script was added or changed. **The next number is still 55** |
 | results | **no object was written.** The panels read existing objects only |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (18 of 18 pass), `FIGURE_RULES.md`, and **eleven panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2d-g. PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/` |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run. PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/` |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored; `outputs/natmetab/_demo/` still holds the style demo and the author's Illustrator test exports |
-| text | the author approved the Fig. 1d-f paragraph on 2026-10-11 (2a.2); check that the Doc carries it |
+| outputs | `outputs/` is gitignored. The ED 2 PDFs carry the new letters; the four stale-lettered PDFs were deleted |
+| text | **the Doc does not yet carry** the approved Fig. 1d-f paragraph (2b.2) or the ED 2a-c sentence (2a.3); as read on 2026-10-12 it still has the earlier versions. Its ED citations need the new letters (2a.1) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
@@ -62,27 +60,32 @@ abundance).
 
 ## 2. Do this first
 
-1. **Wait for the author's instructions on ED Fig. 2a-c**: design, the mitochondrial axis and
-   total abundance (old S1A, old 1C, `fig1_compartment_levels`). Two constraints:
-   - the text says the MECs were "purified from the tumours"; they came from 6- and 12-week glands
-     (2c.6, item 1);
-   - ED 2d-g take 128 mm of the 170-mm page, so **a-c have 42 mm of height** (2a.5).
-2. **Then 1g, 1h and 3k-m**, sentence by sentence, talking each panel through with the author
-   before building it. The flagged sentences are 2c.6, items 3 to 5. Fig. 4g-j is open (2c.1).
-3. **Fig. 1's page is 8 mm over** (178 of 170 mm; 2a.5). Settle it when g and h are sized: the top
-   row, f, or g/h.
-4. **When legends are written:** every script prints its legend's numbers. Fig. 1f's legend must
-   say that expression is tested in ED 2e, that priority changes are given as ranks and none
-   passes BH (2a.4), that each window coincides with an extraction batch, and that the OXPHOS
-   protein decline is Fig. 1b.
+1. **Next panel: Fig. 1g** (the priming ratios; old `fig2_priming_ratios`, the ruling-4 rebuild),
+   then **1h** and **Fig. 3k-m**. Talk each through with the author before building it. The
+   flagged sentences are 2d.6, items 3 to 5:
+   - item 3's Foxo3 sentence ("most distinct among all evaluated genes") has no panel since the
+     new 1f; where it goes is open;
+   - item 4, "shifting distinctly the PUMA/BCL-XL ratio": the largest of nine departures, inside
+     the 95% prediction interval, no verdict;
+   - item 5, 1h: the impasse ruling (permutation P 0.026 unadjusted, 0.085 adjusted).
+   Fig. 4g-j is open (2d.1).
+2. **For the author's Doc** (2a.1, 2a.3): the approved Fig. 1d-f paragraph with the new ED
+   letters, the ED 2a-c sentence, and the citation order (ED 2d before 2e).
+3. **Fig. 1's page is 8 mm over** (178 of 170 mm; 2b.5). Settle it when g and h are sized.
+4. **When legends are written:** every script prints its legend's numbers (2a.4 has ED 2a-c's).
+   Fig. 1f's legend must say that expression is tested in ED 2f, that priority changes are ranks
+   and none passes BH, that each window coincides with an extraction batch, and that the OXPHOS
+   protein decline is Fig. 1b. ED 2c's must say that its class colours are ED 2b's key.
 5. **How each panel is built:**
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
+   - size it for its page: main figures 183 x 170 mm, **Extended Data 180 x 170 mm**, with room for
+     the gaps between panels in a row;
    - preview the PDF with Quick Look (`qlmanage -t -s 2000`) and look at it: the checks cannot see
-     clipped or colliding labels, and poppler's `pdftoppm` draws the italic *P* upright (2a.6);
+     clipped or colliding labels, and poppler's `pdftoppm` draws the italic *P* upright;
    - a number the text quotes is asserted in the script that computes it;
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
-     panel under `options(natmetab.dry_run = TRUE)` (all 11 pass).
+     panel under `options(natmetab.dry_run = TRUE)` (all 14 pass).
 6. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
 7. **Carried items, possibly moot now: ask before acting.**
@@ -95,12 +98,120 @@ abundance).
 
 ---
 
-## 2a. What happened this session (2026-10-10 evening to 2026-10-11)
+## 2a. What happened this session (2026-10-12)
+
+One commit before this handoff, pushed: `a927ce8`.
+
+### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
+
+The text cites the independence panel first, so it moved to the front of the window panels.
+Scripts renamed with `git mv`; cross-references, the rules file and the PDFs updated.
+
+| old | new | script |
+|---|---|---|
+| 2g | **2d** | `edfig2d_window_independent.R` |
+| 2d | **2e** | `edfig2e_myc_reallocation_ages.R` |
+| 2e | **2f** | `edfig2f_window_matched_controls.R` |
+| 2f | **2g** | `edfig2g_window_two_rulers.R` |
+
+Citations in the approved paragraph (2b.2) change accordingly:
+- "(Fig. 1e, ED Fig. 2d)" becomes **2e**;
+- "(ED Fig. 2g)" becomes **2d**;
+- "(Fig. 1f, ED Fig. 2e,f)" becomes **2f,g**;
+- "(Fig. 1d,f; ED Fig. 2e)" becomes **2f**.
+
+For citation order, the "independently of MYC" sentence (2d) must come before the
+MYC-at-both-ages sentence (2e).
+
+### 2a.2 ED Fig. 2a-c built (from the old S1A, S1B, and 1C + S1C)
+
+| slot | script | PDF (mm) | content |
+|---|---|---|---|
+| ED 2a | `edfig2a_design.R` | 46 x 40 | the 2 x 2 design, n = 6 per group (asserted); arrows for the four contrasts and the interaction, in each contrast's own colour, so the panel is also the colour key; text black |
+| ED 2b | `edfig2b_geneset_library.R` | 58 x 40 | the 986-set library by category, filled by mitochondrial class in slate; script 37's classification re-derived over the whole library and asserted identical on the shared sets |
+| ED 2c | `edfig2c_pathway_axis.R` | 72 x 40 | the pathway-level PCA (equal units, no broken axis; ringed group means) beside the ranked absolute PC1 loadings with OXPHOS, E2F targets and glutathione named; script 37's PCA rebuilt and asserted (885 sets, PC1-3 %, OXPHOS gate, concordance >= 0.9) |
+
+- **Ported, not sourced:** `pathway_axis()` and `mito_class3()` from the old
+  `_panel_common.R` are copied into the scripts that need them; the new layer does not source the
+  old one.
+- **ED 2c names three sets, not four.** The human breast-cancer MYC bicluster (MB2, 0.98, as high
+  as OXPHOS) did not fit at 30 mm; the script prints it for the legend.
+- **ED 2c's loading curve has no class key:** it uses ED 2b's, so the two sit side by side.
+
+### 2a.3 The ED 2a-c sentence (approved with the plan, 2026-10-12)
+
+The Doc's version: "...we explored the timeline of the MMTV-MYC-induced transcriptome of MECs
+purified from the tumours, which was dominated by a mitochondria-driven trend (ED Fig. 2a,b,c)".
+Three problems:
+1. **"Purified from the tumours":** the cells came from 6- and 12-week glands.
+2. **"Timeline":** PC1 is a genotype axis, not an age axis (2a.4).
+3. **"Mitochondria-driven":** a loading is co-variation, not cause; the axis is common-mode; the
+   top is mitochondrial by construction.
+
+The replacement:
+> ...we profiled MECs purified from 6- and 12-week glands. Across 885 gene sets, a single axis
+> carried 77% of the variance; it separated MYC+ from WT glands at both ages and was led by
+> mitochondrial gene sets (ED Fig. 2a-c).
+
+**Asserted in `edfig2c_pathway_axis.R`:** 885 sets, PC1 rounds to 77%, MYC+ above WT and Welch
+P < 0.05 at each age, and no non-mitochondrial set in the top 50.
+
+### 2a.4 Numbers for the ED 2a-c legends (printed by the scripts)
+
+- **Design:** each age was extracted as one batch, so the 12W vs 6W changes coincide with batch;
+  the genotype effects and the interaction are within batch.
+- **Library:** 986 sets in 9 categories; set size median 46 genes (5-1253):
+  - MitoCarta 133;
+  - curated (TF target sets intersected with MitoCarta) 260;
+  - not mitochondrial 593.
+  
+  885 are scored per sample by GSVA, and 817 are fGSEA-eligible.
+- **PCA:** PC1 76.5%, PC2 8.0%, PC3 4.3%.
+  - `PC1 ~ age + genotype`: genotype P = 0.00067, age P = 0.19; interaction P = 0.43.
+  - Within age (Welch): 6W P = 0.022, 12W P = 0.012.
+  - Group means: WT 6W -8.4, MYC+ 6W +15.2, WT 12W -11.2, MYC+ 12W +4.4.
+- **The bounds:**
+  - r(PC1, mean of all sets) = 0.981; 79% of loadings one-signed; median |loading| 0.88;
+  - top 50: 47 curated (by construction), 3 MitoCarta;
+  - median |loading| by class: MitoCarta 0.90, curated 0.98, not mitochondrial 0.61;
+  - MB2 0.98 (rank 156); glutathione 0.67 (rank 585); OXPHOS 0.98 (rank 114); E2F 0.87 (rank 450).
+
+### 2a.5 The Extended Data page is 180 mm wide
+
+**Nature's research figure guide gives 180 x 170 mm for Extended Data.** The 183 mm used before
+is the main-figure width. So ED 2d-g were resized: 2d 114 x 60, 2e 60 x 60, 2f 92 x 64 and
+2g 84 x 64.
+
+ED 2 now runs in three rows:
+
+| row | panels | width | height |
+|---|---|---|---|
+| 1 | a + b + c | 176 mm | 40 mm |
+| 2 | d + e | 174 mm | 60 mm |
+| 3 | f + g | 176 mm | 64 mm |
+
+That is 164 mm of height before the gaps between panels.
+
+### 2a.6 Style changes, all in `FIGURE_RULES.md`
+
+- **`save_panel()` refuses an `EDFig` panel wider than 180 mm** (`NM_ED_MAX_W`).
+- **The tick-end check applies to drawn axes only,** so a schematic (ED 2a, canvas in
+  millimetres) passes.
+- **Mitochondrial classes are slate:** `mito_class_cols` / `mito_class_labels`. The old
+  red/orange/blue is out because blue and orange mean genotype.
+- **Self-test:** two new cases; 20 of 20 pass.
+
+---
+
+## 2b. What happened on 2026-10-10 evening to 2026-10-11
+
+*ED Fig. 2 letters in this section are the ones in use until 2026-10-12. Renumbered since (2a.1):
+2d is now 2e, 2e is now 2f, 2f is now 2g, and 2g is now 2d.*
 
 Three commits, all pushed: `a22a149` (Fig. 1d), `08c0dda` (the 21-27% asserts removed) and
-`f5dd876` (Fig. 1e-f and ED 2d-g), plus this handoff.
+`f5dd876` (Fig. 1e-f and ED 2d-g), plus that day's handoff, `babd188`.
 
-### 2a.1 What was built
+### 2b.1 What was built
 
 | slot | script | PDF (mm) | content |
 |---|---|---|---|
@@ -113,9 +224,9 @@ Three commits, all pushed: `a22a149` (Fig. 1d), `08c0dda` (the 21-27% asserts re
 | ED 2g | `edfig2g_window_independent.R` | 120 x 62 | WT window against MYC's 6W effect, r -0.02; MYC+ window against WT window, r 0.69 |
 
 ED Fig. 2 starts at d on the author's numbering; a-c are design, the mitochondrial axis and total
-abundance (2c.1's slot map). Each script prints its legend's numbers.
+abundance (2d.1's slot map). Each script prints its legend's numbers.
 
-### 2a.2 The paragraph of record (author, 2026-10-11)
+### 2b.2 The paragraph of record (author, 2026-10-11)
 
 > Within the nuclear-encoded mitochondrial transcriptome, scored as pairwise ratios of pathways
 > independent of its overall size (mitoPPS19), MYC promoted biogenesis and biosynthetic pathways
@@ -142,7 +253,7 @@ abundance (2c.1's slot map). Each script prints its legend's numbers.
   log2 share, P = 0.078).
 - **ED 2g:** |r| < 0.1 between the window and MYC's effect, which "independently of MYC" rests on.
 
-### 2a.3 The author's rulings
+### 2b.3 The author's rulings
 
 - **Fig. 1d:** no histogram; both parts in one PDF with one key; the text says 20-33%; 66 mm tall.
 - **"Fell further than all 2,000 matched sets"**, with no multiplier.
@@ -153,9 +264,9 @@ abundance (2c.1's slot map). Each script prints its legend's numbers.
   MYC+ smaller than WT, the gland's own programme. ED 1a and ED 1c stay equal, because they compare
   6W and 12W directly.
 - **Fig. 1f keeps filled dots** and draws no open ones: there is no test of record on priority
-  (2a.4).
+  (2b.4).
 
-### 2a.4 Findings that changed the text
+### 2b.4 Findings that changed the text
 
 - **Priority across the window is not significant per pathway.** Script 08's Welch test passes BH
   for 0 of 144 pathways in WT (10 in MYC+):
@@ -175,12 +286,12 @@ abundance (2c.1's slot map). Each script prints its legend's numbers.
 - **The multiplier was dropped** because it depends on the weighting: about 5.4x unweighted and
   2.8x expression-weighted. The fall is not the five tissue-restricted COX paralogs (-0.226 without
   them), and 69 of the 87 subunits fall.
-- **Retired from the old sentences** (2c.6, item 2):
+- **Retired from the old sentences** (2d.6, item 2):
   - "completely inverted": MYC's OXPHOS effect stays positive at both ages;
   - glycine cleavage: it gains no priority across the window;
   - "constant": now "did not fall".
 
-### 2a.5 Page budget (183 x 170 mm)
+### 2b.5 Page budget (183 x 170 mm)
 
 - **ED Fig. 2:** d + g fill one row (182 x 62) and e + f the next (183 x 66), leaving 42 mm for
   a-c.
@@ -191,7 +302,7 @@ abundance (2c.1's slot map). Each script prints its legend's numbers.
   
   That is 178 mm, 8 mm over.
 
-### 2a.6 Style changes and lessons, all in `FIGURE_RULES.md`
+### 2b.6 Style changes and lessons, all in `FIGURE_RULES.md`
 
 - **Axis breaks are rounded to 10 decimals** in `.nm_axis()`. An unrounded 0.4000000000000001
   fell outside an axis ending at 0.4, and ggplot dropped that tick (Fig. 1f). A self-test case
@@ -209,11 +320,11 @@ abundance (2c.1's slot map). Each script prints its legend's numbers.
 
 ---
 
-## 2b. What happened on 2026-10-10
+## 2c. What happened on 2026-10-10
 
 Four commits, all pushed: `b01da95`, `880e466`, and that day's handoff, `931e0a9` and `7505b39`.
 
-### 2b.1 The author rearranged Fig. 1b and Extended Data Fig. 1
+### 2c.1 The author rearranged Fig. 1b and Extended Data Fig. 1
 
 | slot | content | from the old layer |
 |---|---|---|
@@ -222,14 +333,14 @@ Four commits, all pushed: `b01da95`, `880e466`, and that day's handoff, `931e0a9
 | ED 1b | MYC effect at 12W against 6W, MYC-responsive genes only; no MitoCarta facet | 1G, gene half |
 | ED 1c | NES of every gene set at 6W and 12W, by programme | 1D |
 
-- **This settled the three Fig. 1b questions** of 2c.5:
+- **This settled the three Fig. 1b questions** of 2d.5:
   - the blot lane order: the demo is used as is, age-major;
   - "target gene sets": ED 1c, the library-wide NES;
   - the programme panel: genes only, in ED 1b.
 - **The author has updated the text:** the amplitude sentence now cites ED 1b,c, and the MYCER^T2
   model, previously cited as "ED Fig. 1b", has another letter.
 
-### 2b.2 What was built
+### 2c.2 What was built
 
 | slot | script | PDF (mm) |
 |---|---|---|
@@ -256,7 +367,7 @@ All four pass every check, and the author signed them off.
   - no median and no gridlines;
   - Spearman 0.933 across 866 sets between the ages.
 
-### 2b.3 Decisions and findings, all recorded in `FIGURE_RULES.md`
+### 2c.3 Decisions and findings, all recorded in `FIGURE_RULES.md`
 
 - **Genotype-effect labels and colours:** "MYC+ vs WT, 6W" in `#D55E00` and "MYC+ vs WT, 12W" in
   `#E69F00`, as `contrast_cols` and `contrast_labels` in `_style.R`.
@@ -284,7 +395,7 @@ All four pass every check, and the author signed them off.
 - **A display window that hides points** is allowed only if every number uses all points and the
   legend gives the count.
 
-### 2b.4 Style changes, and a lesson
+### 2c.4 Style changes, and a lesson
 
 - **`_style.R`:** gained `contrast_cols` and `contrast_labels`, and a 2.5 mm right margin. Labels
   at the end of an axis overhang it by half their width, and "+3" and "+4" were being clipped. The
@@ -295,11 +406,11 @@ All four pass every check, and the author signed them off.
 
 ---
 
-## 2c. What happened on 2026-10-09
+## 2d. What happened on 2026-10-09
 
-Two commits, both pushed: `2cdd00e`, the figure layer (2c.4), and that day's handoff, `df9390d`.
+Two commits, both pushed: `2cdd00e`, the figure layer (2d.4), and that day's handoff, `df9390d`.
 
-### 2c.1 The paper is now a Nature Metabolism Letter
+### 2d.1 The paper is now a Nature Metabolism Letter
 
 - **Source of record:** the Google Doc `11.8.26_MK_Myc_Paper` (Drive id
   `1M-kEC1d_VJmbTG-SyYYfykZ3F1_aEiDtu0xtwFaPtJo`), tab **"Nat metab version"**, edited 2026-10-09.
@@ -338,7 +449,7 @@ Two commits, both pushed: `2cdd00e`, the figure layer (2c.4), and that day's han
 The old panels are **content references only**. Every Nat Metab panel is a new script in the new
 layer.
 
-### 2c.2 The author's rulings on the figure layer
+### 2d.2 The author's rulings on the figure layer
 
 All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Panel by panel.** R makes single panels at their final printed size. The author assembles each
@@ -357,7 +468,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 - **Goal:** at the end of the figure sessions, turn `FIGURE_RULES.md` and `_style.R` into a GS-lab
   figure skill.
 
-### 2c.3 What was checked, and what was ruled out
+### 2d.3 What was checked, and what was ruled out
 
 - **The July font problem was spacing, not resolution** (commit a58fa1c). Re-checked on R 4.6.1:
   `cairo_pdf` embeds the font but collapses word spaces at 5-7 pt in Apple's viewers, while base
@@ -383,7 +494,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
     matched shuffles and the slope at the 87th. Tier slopes run 0.52-0.83.
   - Library-wide NES, 6W against 12W: 866 sets, Spearman 0.933.
 
-### 2c.4 What was written: `2cdd00e`
+### 2d.4 What was written: `2cdd00e`
 
 `figures/natmetab/` holds three files.
 - **`_style.R`:** the theme, palettes, P formatting, brackets, tick-ending axes, and `save_panel()`
@@ -395,7 +506,7 @@ All of these are recorded, with reasons, in `figures/natmetab/FIGURE_RULES.md`.
 The self-test caught two bugs before the commit: an argument passed to the wrong function, and an
 axis check that accepted an ending on an undrawn minor tick.
 
-### 2c.5 Fig. 1b: three questions for the author (settled 2026-10-10, 2b.1)
+### 2d.5 Fig. 1b: three questions for the author (settled 2026-10-10, 2c.1)
 
 1. **The lane order of the MYC western**, so that the mRNA panel can match it.
 2. **"Without selective repression of specific target gene sets":** the LFC scatter covers
@@ -409,10 +520,10 @@ axis check that accepted an ending on an undrawn minor tick.
 3. **The programme panel:** both halves (genes and pathways, about 89 x 45 mm) in 1b, or one half in
    1b and the other in Extended Data.
 
-### 2c.6 Five sentences that do not match the data, for the walkthrough
+### 2d.6 Five sentences that do not match the data, for the walkthrough
 
-1. **ED 2a,b** says the MECs were "purified from the tumours". They came from 6- and 12-week glands.
-2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`). *Resolved 2026-10-11 (2a.4).*
+1. **ED 2a,b** says the MECs were "purified from the tumours". They came from 6- and 12-week glands. *Resolved 2026-10-12 (2a.3).*
+2. **1e** (the mitoPPS ruler, `background_vs_myc.rds$ruler`). *Resolved 2026-10-11 (2b.4).*
    - OXPHOS subunits' MYC effect is +0.112 at 6W (padj 0.27, not significant) and still +0.069 at
      12W, so it is not inverted. What falls is the change across the window: -0.109 in WT and
      -0.153 in MYC+.
