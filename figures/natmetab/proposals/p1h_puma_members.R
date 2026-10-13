@@ -1,5 +1,6 @@
 # =============================================================================
-# PROPOSAL -- Fig. 1h: PUMA, BCL-XL, BAX and FOXO3 transcripts in every gland
+# PROPOSAL -- Fig. 1h: PUMA, BCL-XL, BAX and FOXO3 transcripts in every gland, with
+# BMF as the developmental control
 # -----------------------------------------------------------------------------
 # 2H+I (alt) part A's per-animal form, with 2G (alt)'s content for the four genes
 # the text names. Every animal over a box (as Fig. 1b), groups genotype-major so
@@ -12,6 +13,12 @@
 # Each age was one extraction batch, so each lower bracket coincides with batch;
 # the upper bracket is within batch.
 # Not bracketed on purpose: the 6W genotype difference for Bbc3 (P 0.064; 3a.3).
+#
+# BMF IS THE DEVELOPMENTAL CONTROL (author, 2026-10-13). Its ratio to BCL-XL falls
+# nearly as far below the eight-ratio line as PUMA's, but the gene rises about
+# two-fold across the window in BOTH genotypes and its interaction is inside the
+# declared 0.20 (on the diagonal, script 54's rule): a developmental change MYC
+# barely modifies, where Bbc3 is flat in WT and falls only under MYC.
 #
 # Reads: results/dds_int_run.rds, results/interaction_results.rds (script 03);
 #        results/two_timeline_verification.rds (script 54, $four_genes: cross-check);
@@ -27,12 +34,13 @@ dds <- readRDS(here::here("results", "dds_int_run.rds"))
 ir  <- readRDS(here::here("results", "interaction_results.rds"))
 fg  <- as.data.frame(readRDS(here::here("results", "two_timeline_verification.rds"))$four_genes)
 
-GENES <- c("Bbc3", "Bcl2l1", "Bax", "Foxo3")
+GENES <- c("Bbc3", "Bcl2l1", "Bax", "Bmf", "Foxo3")
+FOUR  <- c("Bbc3", "Bcl2l1", "Bax", "Foxo3")             # script 54's $four_genes
 # "\u00ad" (Latin-1 soft hyphen) prints as a true hyphen from base pdf(); the ASCII
 # hyphen prints as a minus sign (FIGURE_RULES.md)
-PROT  <- c(Bbc3 = "PUMA", Bcl2l1 = "BCL\u00adXL", Bax = "BAX", Foxo3 = "FOXO3")
+PROT  <- c(Bbc3 = "PUMA", Bcl2l1 = "BCL\u00adXL", Bax = "BAX", Bmf = "BMF", Foxo3 = "FOXO3")
 ens   <- vapply(GENES, function(g) recon_to_ensembl(g, rownames(dds)), character(1))
-stopifnot(identical(unname(ens), fg$ensembl[match(GENES, fg$gene)]))
+stopifnot(identical(unname(ens[FOUR]), fg$ensembl[match(FOUR, fg$gene)]))
 
 cd  <- as.data.frame(colData(dds))
 grp <- factor(paste(cd$timepoint, cd$myc_status, sep = "_"), levels = order_by_geno)
@@ -46,10 +54,10 @@ S <- data.frame(gene = GENES,
                 my_lfc = st("timepoint_pos_raw", "log2FoldChange"), my_padj = st("timepoint_pos_raw", "padj"),
                 in_lfc = st("interaction_raw", "log2FoldChange"),  in_p   = st("interaction_raw", "pvalue"),
                 in_se  = st("interaction_raw", "lfcSE"))
-k <- match(GENES, fg$gene)
-stopifnot(max(abs(S$wt_lfc - fg$wt_lfc[k])) < 1e-9, max(abs(S$my_lfc - fg$myc_lfc[k])) < 1e-9,
-          max(abs(S$in_lfc - fg$int_lfc[k])) < 1e-9, max(abs(S$in_p - fg$int_p[k])) < 1e-12,
-          max(abs(S$wt_padj - fg$wt_padj_ihw[k])) < 1e-9, max(abs(S$my_padj - fg$myc_padj_ihw[k])) < 1e-9)
+S4 <- S[match(FOUR, S$gene), ]; k <- match(FOUR, fg$gene)
+stopifnot(max(abs(S4$wt_lfc - fg$wt_lfc[k])) < 1e-9, max(abs(S4$my_lfc - fg$myc_lfc[k])) < 1e-9,
+          max(abs(S4$in_lfc - fg$int_lfc[k])) < 1e-9, max(abs(S4$in_p - fg$int_p[k])) < 1e-12,
+          max(abs(S4$wt_padj - fg$wt_padj_ihw[k])) < 1e-9, max(abs(S4$my_padj - fg$myc_padj_ihw[k])) < 1e-9)
 
 # the drawn group means give the reported changes (as Fig. 1b)
 gm <- t(apply(Y, 1, function(v) tapply(v, grp, mean)))
@@ -67,6 +75,13 @@ m  <- as.data.frame(readRDS(here::here("results", "priming_arm_teb.rds"))$machin
 FAMILY <- c("Bax", "Bak1", "Bid", "Bbc3", "Bcl2l11", "Bmf", "Pmaip1", "Bcl2l1", "Mcl1", "Bcl2")
 fam <- m[match(FAMILY, m$gene), ]
 stopifnot(!anyNA(fam$gene), fam$gene[which.min(fam$lfc_myc_time)] == "Bbc3")
+# Bmf, the developmental control: the same values as script 42's table, up in both
+# genotypes (IHW P < 0.05 each) and on the diagonal by script 54's declared rule
+# (|interaction| < 0.20 and raw P > 0.05)
+mb <- m[m$gene == "Bmf", ]
+stopifnot(abs(mb$lfc_wt_time - g("Bmf", "wt_lfc")) < 1e-9, abs(mb$lfc_myc_time - g("Bmf", "my_lfc")) < 1e-9,
+          g("Bmf", "wt_lfc") > 0, g("Bmf", "wt_padj") < 0.05, g("Bmf", "my_lfc") > 0, g("Bmf", "my_padj") < 0.05,
+          abs(g("Bmf", "in_lfc")) < 0.20, g("Bmf", "in_p") > 0.05)
 # "Foxo3 ... separating the genotypes more sharply than any of the 26" (script 44's set)
 mg  <- as.data.frame(readRDS(here::here("results", "collapse_module_ownership.rds"))$mech_genes)
 e26 <- vapply(mg$gene, function(x) recon_to_ensembl(x, rownames(dds)), character(1))
@@ -81,21 +96,26 @@ nice_step <- function(top) {
 }
 # Bracket spacing is set in millimetres of the printed part, so a P label clears the
 # bracket above it whatever the gene's scale: PLOT_MM is the data area's height.
-PANEL_W <- 72; PANEL_H <- 62
-PLOT_MM <- c(top = 22, bottom = 18)
+PANEL_W <- 96; PANEL_H <- 64
+PLOT_MM <- c(top = 19, bottom = 19)
 STEP_MM <- 3.4
 part <- function(gene, left, bottom) {
   d   <- data.frame(group = grp, y = Y[ens[[gene]], ])
   d$lab <- sprintf('italic("%s")~"(%s)"', gene, PROT[[gene]])
   top <- max(d$y)
+  # A P below 0.001 prints with an exponent and is too wide to sit beside its
+  # neighbour, so the two lower brackets are staggered for that gene (Bmf).
+  pw   <- c(g(gene, "wt_padj"), g(gene, "my_padj"))
+  wide <- any(pw < 0.001)
+  nlev <- if (wide) 3 else 2
   fr  <- STEP_MM / PLOT_MM[[if (bottom) "bottom" else "top"]]
-  T0  <- 1.04 * top / (1 - 2 * fr - 0.03)
+  T0  <- 1.04 * top / (1 - nlev * fr - 0.03)
   stp <- fr * T0
   win <- data.frame(group1 = c("6W_neg", "6W_pos"), group2 = c("12W_neg", "12W_pos"),
-                    p = c(g(gene, "wt_padj"), g(gene, "my_padj")), level = 1)
+                    p = pw, level = if (wide) c(1, 2) else c(1, 1))
   br1 <- brackets(win, base = 1.04 * top, step = stp)
   br2 <- brackets(data.frame(group1 = 1.5, group2 = 3.5, p = g(gene, "in_p"), level = 1),
-                  base = 1.04 * top + stp, step = stp)
+                  base = 1.04 * top + (nlev - 1) * stp, step = stp)
   ggplot(d, aes(group, y)) +
     geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.62,
                  colour = box_line, linewidth = NM_LINE) +
@@ -107,14 +127,16 @@ part <- function(gene, left, bottom) {
     scale_x_discrete(labels = group_labels) +
     scale_y_nm(step = nice_step(attr(br2, "top")), top = attr(br2, "top"), minor = TRUE) +
     labs(x = NULL, y = if (left) "Normalized counts" else NULL) +
+    coord_cartesian(clip = "off") +          # a wide P label may overhang the y axis
     theme_nm() +
     # group labels at the floor (5 pt): at 6 pt "MYC+ 6W" and "MYC+ 12W" touch at this width
     theme(axis.text.x = if (bottom) element_text(size = NM_TXT_MIN, lineheight = 0.85) else element_blank(),
           strip.text = element_text(size = NM_TXT_TITLE, margin = margin(0, 0, 0.5, 0, "mm")),
           plot.margin = margin(0.5, 1.5, 0.5, 0.5, "mm"))
 }
-p <- stack_parts(part("Bbc3", TRUE, FALSE), part("Bcl2l1", FALSE, FALSE),
-                 part("Bax", TRUE, TRUE),   part("Foxo3", FALSE, TRUE), ncol = 2)
+# row 1: the PUMA:BCL-XL pair and BAX; row 2: BMF (the developmental control) and FOXO3
+p <- stack_parts(part("Bbc3", TRUE, TRUE), part("Bcl2l1", FALSE, TRUE), part("Bax", FALSE, TRUE),
+                 part("Bmf", TRUE, TRUE),  part("Foxo3", FALSE, TRUE), ncol = 3)
 
 save_panel(p, fig = "Fig1", panel = "h", name = "puma_members", width = PANEL_W, height = PANEL_H,
            dir = here::here("outputs", "natmetab", "proposals"))

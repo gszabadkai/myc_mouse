@@ -98,6 +98,11 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   Wald test".
 - Brackets are drawn with `ggpubr::geom_bracket()` through `brackets()` in the style file. That is
   the only use of ggpubr.
+- **Bracket spacing is set in millimetres of the printed panel**, not as a fraction of the data,
+  so a label clears the bracket above it whatever the scale (about 3.4 mm per level at 6 pt).
+- **A *P* below 0.001 prints with an exponent and is about 16 mm wide at 6 pt.** Stagger it with
+  its neighbour rather than shrinking the type, and let it overhang the y axis
+  (`coord_cartesian(clip = "off")`) rather than be clipped (Fig. 1h proposal, *Bmf*, 2026-10-13).
 - **Intervals** on effects are 95% (log2FC +/- 1.96 SE, Wald), at every age drawn. They are
   unadjusted, so where an interval excludes 0 but no adjusted P passes, the legend says so (ED 1a:
   *Mxi1*, *Mlx*, *Mlxip*).
@@ -198,10 +203,20 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 g/h (83) in a 56-mm row; with a 56-mm top row for a-c the page is 178 mm, so 8 mm must still
 come out of the top row, f, or g/h.
 
-**Proposals, not yet of record** (2026-10-12; `figures/natmetab/proposals/`): Fig. 1g (the nine
-BCL-2 ratios, 56 x 56), 1h (four genes in every gland, 72 x 62; or the alternative BCL-2 plane, 60 x
-60) and the coupling (62 x 56). Shown on three page layouts in
-`outputs/natmetab/proposals/Fig1_gh_proposals.pdf`; the handoff (2a.7-2a.13) has the details.
+**Proposals, not yet of record** (`figures/natmetab/proposals/`; the handoff, 2a.7-2a.22, has the
+details):
+
+| proposal | script | size (mm) |
+|---|---|---|
+| 1g, the plane | `p1g_bcl2_balance.R`: the nine BCL-2 ratios, 6W against 12W | 56 x 56 |
+| 1g, the three steps | `p1g_alt_ratio_rows.R`: one row per ratio (tilt, common shrink, observed) | 62 x 58 |
+| 1h, every animal | `p1h_puma_members.R`: *Bbc3*, *Bcl2l1*, *Bax*, *Bmf* (developmental control), *Foxo3* | 96 x 64 |
+| 1h, the plane | `p1h_alt_bcl2_plane.R`: the BCL-2 family and *Foxo3* on both timelines | 60 x 60 |
+| ranking | `p_fade_ranking.R`: apoptotic genes by departure from MYC's fade (letter open) | 62 x 60; 66 x 86 |
+| coupling | `p1i_coupling.R`: both fits, both *P* pairs | 62 x 56 |
+
+Sheets: `page_mock.R` (three page layouts, 2026-10-12, built with the four-gene 1h),
+`sheet_1g_compare.R` (the two 1g forms side by side), and the ranking's own sheet.
 
 ## Pending
 
