@@ -21,14 +21,17 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-12, end of day: Fig. 1g-h are PROPOSED, not yet built. Four proposal panels and three
-page layouts are in `outputs/natmetab/proposals/Fig1_gh_proposals.pdf`, and the author is deciding
-the layout and the form of 1h (2a.10). Committed and pushed: `6cb04f1` (proposals and style) and this
-handoff. Earlier the same day, Extended Data Fig. 2 was completed and pushed (2a.1-2a.6).**
+**2026-10-13, end of day: Fig. 1g-h are still PROPOSED, not built. Today the argument was made
+precise -- a pro-death tilt at 6W, its common shrink with MYC's fade, and an added effect, PUMA
+(2a.16) -- and three proposals were added or changed: the three-step ratio rows, a ranking of the
+apoptotic genes by departure from the fade, and Bmf in 1h as the developmental control (2a.17-2a.19).
+Htra2, Bmf and Apaf1 were each weighed against Bbc3 (2a.15, 2a.19, 2a.20). The author will come back
+to finalise (2a.21). Everything is committed and pushed: `8bde9c4` and this handoff.**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-12**. Section 2a has two
-parts: Extended Data Fig. 2 in the morning (2a.1-2a.6, pushed) and the Fig. 1g-h proposals in the
-afternoon (2a.7-2a.13, pushed). Section 2b is the
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-13**. Section 2a has three
+parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
+(2026-10-12, afternoon, 2a.7-2a.13), and the arguments and proposals of 2026-10-13 (2a.14-2a.22).
+All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
@@ -41,12 +44,12 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `6cb04f1` (the Fig. 1g-h proposals in `figures/natmetab/proposals/`, the two `_style.R` switches and `FIGURE_RULES.md`; 2a.10, 2a.12), `ab62730` (the morning's handoff) and `a927ce8` (ED Fig. 2a-c, the renumbering, the 180-mm resize) |
-| pushed | everything, this handoff included (the author asked for the push, 2026-10-12, evening) |
+| HEAD | this handoff's commit, on top of `8bde9c4` (2026-10-13: the ratio rows, the fade ranking, Bmf in 1h, `FIGURE_RULES.md`), `9fd2b16` (the 2026-10-12 handoff), `6cb04f1` (the first proposals and the two `_style.R` switches) and `a927ce8` (ED Fig. 2a-c) |
+| pushed | everything, this handoff included (the author asked, 2026-10-13) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | no numbered script was added or changed. **The next number is still 55** |
 | results | **no object was written.** The panels read existing objects only |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run (re-run after the 2026-10-12 `_style.R` change: 14 of 14). PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/`. **Plus `proposals/`**: four proposal panels and `page_mock.R`, not panels of record and outside the dry-run set (2a.10) |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run (re-run after the 2026-10-12 `_style.R` change: 14 of 14). PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/`. **Plus `proposals/`**: six proposal panels and two sheets (`page_mock.R`, `sheet_1g_compare.R`), not panels of record and outside the dry-run set (2a.10, 2a.17-2a.19) |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
 | outputs | `outputs/` is gitignored. The ED 2 PDFs carry the new letters; the four stale-lettered PDFs were deleted. `outputs/natmetab/proposals/` holds the four proposal PDFs and `Fig1_gh_proposals.pdf` (4 pages, 2a.10) |
 | text | as read on the afternoon of 2026-10-12, **the Doc now carries the ED 2a-c sentence** (2a.3). It still lacks the approved Fig. 1d-f paragraph (2b.2) and still cites the old ED 2 letters ("ED Fig. 2d", "2e", "2e,f"; see 2a.1). Its Fig. 1g-h paragraph is the author's earlier version; the draft in 2a.9 replaces it "for now" |
@@ -63,13 +66,20 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Waiting on the author: three choices on Fig. 1g-h** (2a.10). They are made from
-   `outputs/natmetab/proposals/Fig1_gh_proposals.pdf`:
-   - **the layout:** A (1e to Extended Data), A2 (1d to Extended Data) or B (every panel kept, at
-     5/6 pt), or another arrangement;
-   - **the form of 1h:** every animal (`p1h_puma_members.R`, Claude's recommendation) or the BCL-2
-     plane (`p1h_alt_bcl2_plane.R`, 2G (alt)'s form);
-   - **any change to the panels themselves.**
+1. **Waiting on the author: finalising Fig. 1g-h** (2a.21). The author said "I will continue with
+   ideas what to add". What is on the table:
+   - **the panel set:** which of the proposals carry the three steps. Claude's suggested pairing is
+     the three-step ratio rows (`p1g_alt_ratio_rows.R`) plus the fade ranking (`p_fade_ranking.R`),
+     with the five-gene per-animal panel (`p1h_puma_members.R`) and the coupling (`p1i_coupling.R`,
+     kept by the author);
+   - **the layout:** A, A2 or B (2a.10), which has to be redone for the chosen set; `page_mock.R`
+     still places the four-gene 1h and must be resized before it is re-run;
+   - **Apaf1:** how to present it (2a.20);
+   - **the paragraph:** a revision along the three steps is suggested in 2a.21, not yet seen by the
+     author.
+   
+   The sheets to look at are in `outputs/natmetab/proposals/`: `Fig1g_compare_sheet.pdf`,
+   `Fig1_fade_ranking_sheet.pdf`, `Fig1h_puma_members.pdf`, and the 2026-10-12 `Fig1_gh_proposals.pdf`.
 2. **Then build them** (2a.11):
    - move the chosen scripts from `figures/natmetab/proposals/` into `figures/natmetab/` under their
      final letters, which depend on the layout, and drop `dir =`;
@@ -79,7 +89,11 @@ Section 10 holds the threads parked for after the manuscript.
    Under A or A2 the panel that leaves needs an Extended Data home. ED 2 is full, so it needs a new
    ED figure, and the bench ED figures cited in the Doc renumber.
 3. **The coupling stays** (author, 2a.8), so the paragraph needs a sentence for it; a hedged form is
-   in 2a.9. The draft paragraph stands "for now" and is edited once the author has seen the graphs.
+   in 2a.9. The draft paragraph (2a.9) stands "for now", and 2a.21 suggests how today's framing
+   would change it.
+   - **Before the ranking becomes a panel of record**, the departures of the genes MYC did not move
+     at 6W (computed in the proposal script) must come from a numbered script (55), run by the
+     author (2a.17).
 4. **Text below 5 pt** is an open question for the author (2a.8). Nothing is below 5 pt now.
 5. **For the author's Doc** (2a.1, 2b.2): the approved Fig. 1d-f paragraph, and the new ED 2 letters
    with their citation order (ED 2d before 2e).
@@ -113,11 +127,14 @@ Section 10 holds the threads parked for after the manuscript.
 
 ---
 
-## 2a. What happened on 2026-10-12
+## 2a. What happened on 2026-10-12 and 2026-10-13
 
-- **Morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and that
-  morning's handoff, `ab62730`.
-- **Afternoon, 2a.7-2a.13:** the Fig. 1g-h proposals. Pushed: `6cb04f1`, and this handoff.
+- **2026-10-12, morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and
+  that morning's handoff, `ab62730`.
+- **2026-10-12, afternoon, 2a.7-2a.13:** the first Fig. 1g-h proposals. Pushed: `6cb04f1` and
+  `9fd2b16`.
+- **2026-10-13, 2a.14-2a.22:** the arguments behind Fig. 1g-h, and three more proposals. Pushed:
+  `8bde9c4`, and this handoff.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -415,6 +432,299 @@ gaps fill the 170 mm. Six panels therefore need two rows of three, so either one
   |---|---|---|---|---|---|
   | unadjusted | −0.61 | +0.56 | +1.17 | 0.0046 | 0.026 |
   | adjusted | +0.05 | +0.83 | +0.78 | 0.0052 | 0.085 |
+
+### 2026-10-13: the arguments behind Fig. 1g-h
+
+### 2a.14 The day, in order
+
+1. **Htra2:** why it is not the cause, though it falls further than *Bbc3* along the MYC+
+   timeline (2a.15).
+2. **The balance, made precise:** a pro-death tilt at 6W, its common shrink with MYC's fade, and
+   an added effect (2a.16).
+3. **A new proposal:** the apoptotic genes ranked by their departure from the fade (2a.17).
+4. **A new proposal:** the three steps as rows, set beside the 1g plane (2a.18).
+5. ***Bbc3* against *Bmf*:** and *Bmf* added to 1h as the developmental control (2a.19).
+6. ***Apaf1*** (2a.20).
+7. **Where Fig. 1g-h stands**, with a suggested paragraph (2a.21). The numbers checked today are
+   in 2a.22.
+
+### 2a.15 Htra2 is the internal control (script 42, `single_gene_null`)
+
+**The question** (author): *Htra2* falls further than *Bbc3* along the MYC+ timeline (−0.67
+against −0.48), so why is it not the cause of the 12W shift?
+
+**The argument was already in the repo.** It is in script 42 (`single_gene_null` and its closing
+note) and in `docs/2026-07-25_death_narrative_dose_vs_competence.md`, section 3, point 4.
+- **The reasoning:** MYC's whole programme fades, so a gene MYC induced strongly at 6W must fall a
+  lot anyway.
+- **The test:** each gene's loss is sign(LFC6) x (LFC6 − LFC12), compared with genes matched on
+  both baseMean and the size of the 6W effect.
+
+| gene | MYC effect 6W → 12W | loss | matched genes lose (median) | percentile | empirical *P* |
+|---|---|---|---|---|---|
+| *Htra2* | +1.49 → +0.94 | 0.546 | 0.598 | **36.8** | 0.63 |
+| *Bbc3* | +0.26 → −0.28 | 0.541 | 0.116 | **94.6** | 0.054 |
+| *Bax* | +0.48 → +0.25 | 0.231 | 0.217 | 51.4 | 0.49 |
+| *Bcl2l1* | −0.42 → −0.24 | 0.179 | 0.243 | 34.6 | 0.65 |
+
+- **The two losses are the same size but mean opposite things.** *Htra2* loses slightly less than
+  genes it is matched to; *Bbc3* loses about four times as much, enough to change sign.
+- **Script 44's departure scan agrees.** *Htra2* is at the 87.5th percentile: it keeps 0.63 of its
+  6W effect, against the overall 0.487. *Bbc3* is at the 3.7th and *Foxo3* at the 0.9th.
+- ***Htra2* is still raised at 12W:** +0.94 log2 above WT (IHW *P* 0.012). The adult MYC+ gland
+  still carries more of it than the WT gland does.
+- **Consequence:** "steepest drop" is the wrong measure, and the right one is the departure from
+  the fade. On the raw MYC+ timeline *Htra2* (−0.67) and *Birc5* (−0.93) fall further than
+  *Bbc3*, so "the steepest drop was in *Bbc3*" must go (2a.7).
+
+### 2a.16 The balance, made precise: tilt, common shrink, added effect
+
+**The author's question:** "If both pro and anti-apoptotic shrinks by the same factor the balance
+would not change, I assume?"
+
+**The answer.** What fades is MYC's *effect* on each gene (MYC+ minus WT), not the levels. When
+every effect halves, the MYC+ gland moves halfway back toward WT on every gene, and the ratio moves
+halfway back too.
+
+| | 6W | 12W |
+|---|---|---|
+| *Bax*, MYC+ vs WT | +0.48 | +0.25 (about half) |
+| *Bcl2l1*, MYC+ vs WT | −0.42 | −0.24 (about half) |
+| *Bax:Bcl2l1* | **+0.90** | **+0.50** (the tilt halves) |
+
+A common fade preserves the composition of the balance, not its size: every ratio keeps the same
+fraction of its tilt. This is "rescaled, not reshaped", which the text already says of the whole
+MYC programme (ED 1b,c).
+
+**The three-step argument** (agreed, 2026-10-13):
+1. **MYC builds a pro-death tilt at 6W.** All nine ratios rise: median +0.49 log2, five at
+   *P* < 0.01.
+2. **The tilt shrinks with MYC's overall fade.** The other eight ratios keep 0.43 of their tilt (the
+   1g line). This is the dose part, consistent with MYC protein halving (Fig. 1b).
+3. **On top of the shrink, PUMA:BCL-XL loses all of its tilt:** +0.67 to −0.06, against +0.29
+   expected.
+   - At the gene level, *Bbc3* departs from the fade (+0.26 to −0.28), while *Bcl2l1* fades
+     normally (−0.42 to −0.24).
+   - Fig. 1c fits this: at constant MYC dose (MYCER^T2) the adult gland still loses the apoptotic
+     response, so something beyond dose is expected, and the PUMA departure is the transcriptomic
+     candidate.
+
+**Two expected-shrink values, never mixed:**
+- 0.43 for ratios: script 54's line through the other eight.
+- 0.487 for genes: script 44's rate, fitted over the genes MYC moves.
+
+These are two of the "four rates" (3b; the verification note, section 8).
+
+### 2a.17 New proposal: the fade ranking (`p_fade_ranking.R`)
+
+**The author's idea.** "rank the proapoptotic and antiapoptotic proteins according to their
+relative change compared to the timeline ... I guess on this plot Bbc3 should sit at the end."
+
+**The measure.**
+- It is script 44's departure, (LFC12 − 0.487 x LFC6) / sqrt(SE12² + 0.487² SE6²), re-signed by
+  function. Positive means toward survival: a pro-apoptotic transcript lower, or an
+  anti-apoptotic one higher, at 12W than the fade predicts.
+- For script 44's reporting set it equals sign(LFC6) x `z_resid` (asserted).
+
+**The band:** the central 95% of the same quantity over the 8,774 MYC-responsive genes
+(|z| < 1.73).
+
+**The rosters, declared before plotting:**
+- **BCL-2 family:** the anti-apoptotic members, the effectors and the BH3-only proteins, at
+  baseMean 20 or more. That leaves 16 genes; *Hrk*, *Bcl2a1d* and *Bcl2l10* fall below the floor.
+- **Downstream:** script 42's eight execution and IAP genes.
+
+| group | toward survival → toward death (z) |
+|---|---|
+| BCL-2 family | ***Bbc3* +2.49** (outside the band), *Bmf* +1.31, *Bcl2l11* +1.01, *Bak1* +0.76, *Bid* +0.49, *Bcl2l2* +0.11, *Bok* −0.10, *Bax* −0.15, *Bcl2a1b* −0.18, *Bcl2l1* −0.21, *Pmaip1* −0.23, *Bik* −0.55, *Bad* −0.55, *Bcl2* −0.81, *Bcl2a1a* −0.95, *Mcl1* −1.16 |
+| downstream | ***Apaf1* +2.14** (outside), *Diablo* +0.88, *Casp9* +0.83, *Casp3* +0.04, *Birc5* −0.38, *Xiap* −0.55, *Cycs* −0.84, *Htra2* −0.86 |
+
+**Caveats:**
+- **Grey genes:** for genes MYC did not move at 6W (*Bcl2l2*, *Bok*, *Pmaip1*, *Bad*, *Bcl2a1a*,
+  *Mcl1*, *Diablo*, *Casp9*, *Casp3*), the departure is computed in the proposal script. **It must
+  move to a numbered script before the panel is final.**
+- ***Bcl2a1a/b*** are A1 paralogs expressed mostly in immune cells, so their signal may come from
+  residual immune cells.
+- ***Bbc3* is nominal.** By |z| it is more extreme than 99.3% of the 8,774 genes, but 64 are more
+  extreme still; its licence is pre-specification. The band marks "unusual", not "significant".
+
+**Outputs:** `Fig1x_fade_ranking_bcl2.pdf` (62 x 60), `Fig1x_fade_ranking_all.pdf` (66 x 86) and
+`Fig1_fade_ranking_sheet.pdf`. The letter is open ("x").
+
+### 2a.18 New proposal: the three steps as rows (`p1g_alt_ratio_rows.R`), beside the plane
+
+**What each row draws:**
+- the 6W tilt (large orange dot);
+- 0.43 x the tilt, the common shrink (black tick);
+- the line's 95% prediction interval (grey bar, the same as the plane's band);
+- the 12W value (small amber dot).
+
+*Bbc3:Bcl2l1* is in bold because it was not used to fit the line.
+`sheet_1g_compare.R` writes `Fig1g_compare_sheet.pdf`, the plane and the rows side by side at 100%.
+
+| ratio | 6W | expected 12W | 12W | departure |
+|---|---|---|---|---|
+| *Bid:Bcl2l1* | +0.95 | +0.41 | +0.40 | −0.01 |
+| *Bax:Bcl2l1* | +0.90 | +0.39 | +0.50 | +0.11 |
+| *Bak1:Bcl2l1* | +0.69 | +0.30 | +0.18 | −0.11 |
+| ***Bbc3:Bcl2l1*** | +0.67 | +0.29 | −0.06 | **−0.35** (inside its bar) |
+| *Bax:Mcl1* | +0.49 | +0.21 | +0.41 | +0.20 |
+| *Bbc3:Mcl1* | +0.26 | +0.11 | −0.15 | −0.26 |
+| *Bmf:Bcl2l1* | +0.24 | +0.10 | −0.20 | −0.31 |
+| *Pmaip1:Bcl2l1* | +0.19 | +0.08 | +0.39 | +0.31 |
+| *Bcl2l11:Bcl2l1* | +0.17 | +0.07 | −0.08 | −0.15 |
+
+**Claude's read:**
+- **The rows are easier to read than the plane,** because each step has its own mark.
+- **At the ratio level PUMA:BCL-XL is the largest departure, not a lone one.** *Bmf:Bcl2l1* falls
+  almost as far, and *Pmaip1* overshoots.
+- **Both PUMA ratios fall short,** against both denominators.
+- **PUMA stands out cleanly only at the gene level,** so the rows pair with the ranking.
+
+### 2a.19 *Bbc3* against *Bmf*; *Bmf* added to 1h as the developmental control
+
+**The author's question:** "what makes Bbc3 a better candidate for the added effect compared to
+Bmf?"
+
+| | *Bbc3* (PUMA) | *Bmf* |
+|---|---|---|
+| 12W vs 6W, WT | +0.06 (IHW *P* 0.88) | **+1.02** (*P* 0.0002) |
+| 12W vs 6W, MYC+ | **−0.48** (*P* 0.016) | **+0.84** (*P* 0.003) |
+| interaction | −0.54 (raw *P* 0.0081) | −0.19 (*P* 0.54) |
+| MYC+ vs WT, 6W → 12W | +0.26 → −0.28 (changes sign) | −0.24 → −0.43 (below WT at both ages) |
+| its ratio's 6W tilt | +0.67 (*P* 0.0089) | +0.24 (*P* 0.40) |
+| departure from the fade, \|z\| percentile of 8,774 | 2.49 (99.3rd) | 1.31 (88th) |
+
+**What separates them:**
+1. **MYC-specific against developmental.**
+   - *Bmf* roughly doubles across the window in both genotypes and sits on the diagonal. 2G (alt)
+     already used it as its developmental control.
+   - In the MYC+ gland *Bmf* rises, which is toward death. Its ratio falls short only because it
+     rose a little less than in WT.
+2. **A tilt to lose.** PUMA:BCL-XL starts with a real tilt; Bmf:BCL-XL barely has one, because MYC
+   slightly lowers *Bmf* at 6W. *Bmf:Bcl2l1* is also one of the eight ratios the line is fitted
+   to, so its shortfall is partly built in. PUMA:BCL-XL's is a prediction.
+3. **At the gene level only *Bbc3* is outside the band.**
+4. **Both PUMA ratios fall short:** −0.35 against BCL-XL and −0.26 against MCL-1. *Bmf* is paired
+   only with BCL-XL.
+5. **The prior.** *Bbc3* was pre-specified from the PGC-1α experiments, and the bench figures follow
+   PUMA. Context, not evidence: BMF is best known as the BH3-only sensor of detachment (anoikis),
+   which fits a developmental rise.
+
+**What cuts the other way:**
+- At 12W, *Bmf* is lower in MYC+ than in WT (−0.43, raw *P* 0.045), as *Bbc3* is (−0.28,
+  *P* 0.059). The difference is the trajectory.
+- *Bbc3*'s own 6W induction is not significant (*P* 0.064), and 62% of PUMA:BCL-XL's tilt is BCL-XL
+  falling.
+- *Bbc3*'s interaction is nominal (IHW *P* 0.84 genome-wide).
+
+**Done** (author's request): *Bmf* is in `p1h_puma_members.R` as the developmental control.
+- The panel has five genes at 96 x 64 mm. Row 1: *Bbc3*, *Bcl2l1*, *Bax*. Row 2: *Bmf*, *Foxo3*.
+- **Asserted:** *Bmf* is up in both genotypes (IHW *P* < 0.05 each), and on the diagonal by script
+  54's rule (|interaction| < 0.20, raw *P* > 0.05).
+- **Layout:** its brackets are staggered, because a *P* with an exponent is too wide to sit beside
+  its neighbour (`FIGURE_RULES.md`).
+
+### 2a.20 *Apaf1*
+
+**No argument specific to *Apaf1* is recorded anywhere in the repo.** The author recalled one. The
+search covered the docs, the scripts, the old panels and the session exports. The nearest reasoning
+is general:
+- **Script 17's module scan (July):** "death is primed but execution is held down". MYC lowers the
+  caspase/apoptosome, cytochrome-c and SMAC/XIAP modules at 6W.
+- **Fig. S2C:** the WT window does not move the death machinery.
+
+The gene-specific internal-control argument is *Htra2*'s (2a.15).
+
+**The case now** (checked against the current objects):
+1. **It barely changes in the MYC+ gland:** −0.11 across the window (IHW *P* 0.60); interaction
+   −0.13 (raw *P* 0.39).
+   - Its departure from the fade (z +2.14) comes from *failing to fade*. The fade predicted its 6W
+     repression (−0.24) would halve to −0.12; it went to −0.37 instead.
+   - *Bbc3*, by contrast, actually falls (−0.48, *P* 0.016).
+2. **It was already lower under MYC at 6W** (−0.24, IHW *P* 0.092), when MYC+ glands show the most
+   apoptosis. Low APAF1 did not stop death then.
+3. **Its module moves the other way.**
+
+   | module (script 17) | MYC+ vs WT, 6W → 12W | interaction |
+   |---|---|---|
+   | caspase/apoptosome (Reactome, 6 genes) | −0.55 → −0.29 | +0.26 (*P* 0.28) |
+   | cytochrome-c release | −0.41 → −0.15 | +0.26 |
+   | SMAC/XIAP | −0.45 → −0.20 | +0.25 |
+
+   All three move toward death, not survival, so *Apaf1* does not represent its module.
+4. **It acts after the decision point.** APAF1 works after cytochrome c release. The release is set
+   by the BCL-2 balance, which is where the bench experiments act: BCL-xL rescue, and PGC-1α
+   inducing PUMA.
+
+**Literature, from memory; verify before citing.** In Myc-driven mouse lymphoma, losing Apaf-1 or
+caspase-9 did not accelerate tumour formation (Scott et al., *J Cell Biol* 2004). Losing PUMA did
+(Hemann et al., *PNAS* 2004; Garrison et al., *Mol Cell Biol* 2008; Michalak et al., *Cell Death
+Differ* 2009). These are lymphoma studies, not mammary.
+
+**Caveat.** On the author's own fade logic *Apaf1* counts, because ending up lower than the fade
+predicts is a departure. Claude's suggestion is to keep it visible in the ranking, with a legend
+note that it departs by failing to fade, not by falling.
+
+### 2a.21 Where Fig. 1g-h stands
+
+**The argument is agreed** (2a.16). The author will come back to finalise, and "will continue with
+ideas what to add".
+
+**The candidates:**
+- **1g:** the plane (`p1g_bcl2_balance.R`) or the three-step rows (`p1g_alt_ratio_rows.R`).
+- **The added effect at gene level:** the fade ranking (`p_fade_ranking.R`), the BCL-2 family alone
+  or with the downstream genes.
+- **1h:** five genes in every gland (`p1h_puma_members.R`) or the BCL-2 plane
+  (`p1h_alt_bcl2_plane.R`).
+- **The coupling** (`p1i_coupling.R`, kept by the author).
+
+**Claude's suggested set:** the rows, then the ranking, then the five-gene panel, then the coupling.
+That puts the tilt and the shrink first, then which gene departs, then the animals behind it, then
+the link to OXPHOS.
+
+**The page.**
+- This set exceeds even yesterday's layouts (2a.10), so the layout has to be redone for the chosen
+  set.
+- **`page_mock.R` still places the four-gene 1h at 70 x 54 mm.** Resize it before re-running, or
+  the five-gene panel is squeezed.
+
+**A suggested paragraph along the three steps.** It is not yet seen by the author, and it keeps
+2a.9's wording where it can. Fig. 1x is the ranking, with its letter open.
+
+> At 6 weeks, MYC raised all nine pro- to anti-apoptotic transcript ratios of the BCL-2 family
+> (Fig. 1g). By 12 weeks, as the MYC programme faded to about half its amplitude (ED Fig. 1b), MYC
+> shifted eight of these ratios by less than half as much, but no longer shifted the PUMA:BCL-XL
+> ratio at all (Fig. 1g). The difference lay in PUMA. Of the BCL-2 family, only *Bbc3* departed from
+> MYC's overall fade beyond the range of 95% of MYC-responsive genes (Fig. 1x). It fell between 6
+> and 12 weeks in the MYC+ gland and not in the WT gland, whereas *Bcl2l1* changed in neither and
+> *Bmf* rose in both (Fig. 1h). *Foxo3*, a p53-independent activator of PUMA, rose across the window
+> in the WT gland but not in the MYC+ gland, separating the genotypes more sharply than any of the
+> 26 apoptosis-related genes we examined (Fig. 1h). OXPHOS was deprioritised in both genotypes
+> (Fig. 1f), yet PUMA fell only in the presence of MYC, suggesting that the developmental
+> withdrawal of respiration permits, rather than causes, the loss of PUMA. [The coupling sentence,
+> 2a.9.] Together, these findings suggested that MYC-dependent apoptosis via PUMA relies on high
+> mitochondrial respiration, a state withdrawn between puberty and adulthood.
+
+- **If the ranking shows the downstream genes,** an optional clause: "among the genes acting
+  downstream of the BCL-2 family, only *Apaf1* also departed, by keeping its repression rather than
+  losing it".
+- **Every number in the paragraph is asserted** in the proposal scripts (2a.10, 2a.17-2a.19).
+
+### 2a.22 Checked today against the saved objects (read-only; no object written)
+
+- **Script 42, `$single_gene_null` and `$machinery`:** the *Htra2* control (2a.15); *Apaf1* and
+  *Bmf* on all contrasts.
+- **Script 44, `$collapse_genes` and `$mech_genes`:**
+  - the fade rate 0.4872;
+  - the band: the 95th percentile of |departure z| is 1.73;
+  - percentiles: *Bbc3* 0.51 (aligned) and 99.3 (|z|), *Bmf* 88.2 (|z|).
+- **Script 17, `gsva_overview.rds$coef_table`:** the three execution modules (2a.20).
+- **Script 54, `$ratios` and `$ratio_line`:** the rows (2a.18).
+- **Script 03, `interaction_results.rds`:**
+  - *Apaf1* interaction raw *P* 0.39;
+  - *Bmf*: 6W −0.243 (SE 0.215), 12W −0.431 (raw *P* 0.045), interaction −0.188 (SE 0.304,
+    *P* 0.54).
 
 ---
 
