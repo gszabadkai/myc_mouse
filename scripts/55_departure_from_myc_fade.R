@@ -44,6 +44,13 @@
 #   unmoved      |z| over the expressed genes MYC did not move (|LFC6| < 0.2)
 # Each gene gets the percentile of its |z| within its own reference, and is
 # "outside" when |z| exceeds that reference's 95th percentile.
+# THE 99% LINE (author, 2026-10-14): ED 3b-c draw the 99th percentile of |z| over the
+# RESPONSIVE genes as dashed lines labelled P = 0.01, so every gene also gets
+# p_emp_resp -- the fraction of the 8,774 responsive genes whose |z| is at least as
+# large (two-sided, empirical) -- and outside_99 (|z| beyond that line). This is the
+# P the lines and ED 3c's labels show. It is smaller than the nominal p_norm,
+# because departures among MYC-responsive genes are narrower than a standard normal
+# (95% within +/-1.73, not +/-1.96).
 #
 # THE ROSTERS, declared here before any number is read:
 #   BCL-2 family    the anti-apoptotic members, the effectors and the BH3-only
@@ -82,6 +89,7 @@ LFC6_FLOOR <- 0.2    # script 44: "MYC moved it at 6W"
 PADJ6      <- 0.1    # script 44's ranking set, used here only to re-derive the rate
 ALPHA      <- 0.05   # nominal threshold for the panel labels (raw p)
 BAND_Q     <- 0.95   # a gene is outside when |z| exceeds this quantile of its reference
+BAND_Q99   <- 0.99   # the line ED 3b-c draw (empirical P = 0.01 against the responsive genes)
 
 # =============================================================================
 # PART 0 (TEXT): the numbers quoted, declared before anything is computed
@@ -89,6 +97,9 @@ BAND_Q     <- 0.95   # a gene is outside when |z| exceeds this quantile of its r
 TEXT <- list(
   rate3              = 0.487,                    # the fade rate, to three decimals
   band_responsive    = 1.73,                     # 95th percentile of |z|, two decimals
+  band99_responsive  = 2.38,                     # 99th percentile of |z|, two decimals
+  outside99_bcl2     = "Bbc3",                   # beyond the 99% line, BCL-2 family
+  outside99_regulators = c("Bbc3", "Eda2r", "Foxo3", "Zmat3"),  # beyond it, PUMA regulators
   bcl2_outside       = "Bbc3",                   # the only BCL-2 family member outside
   downstream_outside = "Apaf1",                  # the only downstream gene outside
   regulators_p05     = c("Bbc3", "Eda2r", "Foxo3", "Zmat3"),  # raw interaction p < 0.05
@@ -167,17 +178,27 @@ message("55 PART C: the reference bands")
 band <- genes |>
   dplyr::group_by(reference) |>
   dplyr::summarise(n = dplyr::n(), q_abs_z = unname(stats::quantile(abs(z), BAND_Q)),
+                   q99_abs_z = unname(stats::quantile(abs(z), BAND_Q99)),
                    q025 = unname(stats::quantile(z, 0.025)), q975 = unname(stats::quantile(z, 0.975)),
                    .groups = "drop")
 BAND <- stats::setNames(band$q_abs_z, band$reference)
-stopifnot(round(BAND[["responsive"]], 2) == TEXT$band_responsive)
+BAND99_RESP <- band$q99_abs_z[band$reference == "responsive"]
+stopifnot(round(BAND[["responsive"]], 2) == TEXT$band_responsive,
+          round(BAND99_RESP, 2) == TEXT$band99_responsive)
 
 ref_abs <- split(abs(genes$z), genes$reference)
 genes <- genes |>
   dplyr::mutate(
     pct_abs_z = vapply(seq_len(dplyr::n()), function(i)
       100 * mean(ref_abs[[reference[i]]] < abs(z[i])), numeric(1)),
-    outside_band = abs(z) > BAND[reference])
+    outside_band = abs(z) > BAND[reference],
+    # against the responsive genes for every gene: the reference of the drawn line
+    p_emp_resp   = vapply(abs(z), function(a) mean(ref_abs[["responsive"]] >= a), numeric(1)),
+    outside_99   = abs(z) > BAND99_RESP)
+# the line and the P agree, to one gene: the quantile interpolates between order statistics
+n_resp <- length(ref_abs[["responsive"]])
+stopifnot(all(genes$p_emp_resp[genes$outside_99] <= 0.01 + 1 / n_resp),
+          all(genes$p_emp_resp[!genes$outside_99] >= 0.01))
 
 # =============================================================================
 # PART D: THE ROSTERS
@@ -247,6 +268,9 @@ stopifnot(
   identical(sort(rosters$gene[rosters$roster == "BCL-2 family" & !is.na(rosters$dropped)]),
             sort(c("Hrk", "Bcl2a1d", "Bcl2l10"))),
   identical(fam$gene[fam$outside_band], TEXT$bcl2_outside),
+  identical(fam$gene[fam$outside_99], TEXT$outside99_bcl2),
+  identical(sort(rg$gene[rg$outside_99]), sort(TEXT$outside99_regulators)),
+  !any(dn$outside_99),
   fam$gene[which.max(fam$z_function)] == "Bbc3",
   identical(dn$gene[dn$outside_band], TEXT$downstream_outside),
   identical(sort(rg$gene[rg$int_p < ALPHA]), sort(TEXT$regulators_p05)),
@@ -268,6 +292,11 @@ notes <- c(
           BAND[["unmoved"]], band$n[band$reference == "unmoved"]),
   "THE DECOMPOSITION, for the genes argued over on 2026-10-13/14:",
   paste0("  ", vapply(c("Bbc3", "Htra2", "Bax", "Bcl2l1", "Bmf", "Apaf1"), dec, character(1))),
+  sprintf("THE 99%% LINE (ED 3b-c): |z| = %.2f over the responsive genes (%.2f unmoved); beyond it, empirical P < 0.01:",
+          BAND99_RESP, band$q99_abs_z[band$reference == "unmoved"]),
+  sprintf("  %s", paste(sprintf("%s P %.4f", rg$gene[rg$outside_99], rg$p_emp_resp[rg$outside_99]), collapse = "; ")),
+  sprintf("  (nominal p_norm for the same genes: %s)",
+          paste(sprintf("%s %.3f", rg$gene[rg$outside_99], rg$p_norm[rg$outside_99]), collapse = "; ")),
   sprintf("BCL-2 FAMILY: %s alone outside its band (z %+.2f toward survival).",
           TEXT$bcl2_outside, fam$z_function[fam$gene == "Bbc3"]),
   sprintf("DOWNSTREAM: %s alone outside (z %+.2f toward survival): its 6W repression deepened at 12W instead of fading.",
@@ -276,14 +305,15 @@ notes <- c(
           nrow(rg), ALPHA, paste(sort(TEXT$regulators_p05), collapse = ", ")),
   "  Bbc3 and Foxo3 depart BELOW the fade; the two p53 targets Zmat3 and Eda2r depart ABOVE it,",
   "  through a fall in the WT gland with the MYC+ gland flat. Label all four (author, 2026-10-14).",
-  "SCOPE: n = 6 per group; p_norm is nominal; the bands describe what an ordinary gene does,",
-  "they are not a test. Bbc3's licence is pre-specification; Foxo3, Zmat3 and Eda2r are exploratory.")
+  "SCOPE: n = 6 per group; p_norm is nominal. The 95% bands describe what an ordinary gene does;",
+  "the 99% line is drawn as an empirical P = 0.01 -- a rank among the MYC-responsive genes, not a",
+  "test of each gene's own noise. Bbc3's licence is pre-specification; Foxo3, Zmat3 and Eda2r are exploratory.")
 cat(paste(notes, collapse = "\n"), "\n")
 
 out <- list(
   genes = genes, band = band, rosters = rosters,
   defs = list(rate = RATE, bm_floor = BM_FLOOR, lfc6_floor = LFC6_FLOOR, alpha = ALPHA,
-              band_q = BAND_Q, roster_bcl2 = ROSTER_BCL2, roster_down = ROSTER_DOWN,
+              band_q = BAND_Q, band_q99 = BAND_Q99, roster_bcl2 = ROSTER_BCL2, roster_down = ROSTER_DOWN,
               roster_regulators = ROSTER_REG, text = TEXT),
   analysis_date = Sys.Date(), notes = notes)
 

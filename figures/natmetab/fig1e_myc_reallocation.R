@@ -19,8 +19,8 @@
 #   significant, an open one is not. The 12W point is smaller: 6W is the effect
 #   the rows are chosen on, 12W the same pattern at lower amplitude.
 #
-# SIZE: 83 mm wide, so that it sits beside a 100-mm panel (Fig. 1d or 1f) on the
-#   183-mm page.
+# SIZE: 80 mm wide, so that it sits beside a 100-mm panel (Fig. 1d or 1f) with a
+#   3-mm gap on the 183-mm page (83 until 2026-10-14, which left no gap).
 #
 # STATISTICS: script 08's Welch t-test on per-animal mitoPPS scores, 6 vs 6 mice,
 #   BH-adjusted across the MitoPathways within each contrast; carried into
@@ -100,7 +100,7 @@ p <- ggplot(long, aes(eff, label_n)) +
         legend.spacing.y = unit(0, "mm"),
         legend.margin = margin(0, 0, 0, 0))
 
-save_panel(p, fig = "Fig1", panel = "e", name = "myc_reallocation", width = 83, height = 66)
+save_panel(p, fig = "Fig1", panel = "e", name = "myc_reallocation", width = 80, height = 66)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 r143 <- ruler[!ruler$is_mtdna, ]

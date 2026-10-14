@@ -70,7 +70,9 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
   scale_y_nm(step = 1, top = YL[2], bottom = YL[1], minor = TRUE, labels = lab_signed) +
   coord_equal() +
   labs(x = "OXPHOS priority (mitoPPS, z score)",
-       y = expression(italic("Bbc3:Bcl2l1") ~ "(adjusted, z score)")) +
+       # "adjusted for immune content", as ED 3d (author, 2026-10-14): "adjusted" alone, and
+       # "epithelial content", read as adjusting for the MECs themselves
+       y = expression(atop(italic("Bbc3:Bcl2l1") ~ "(z score),", "adjusted for immune content"))) +
   guides(fill = guide_legend(order = 1, nrow = 2, override.aes = list(size = 1.5)),
          colour = guide_legend(order = 2, nrow = 2), linetype = guide_legend(order = 2, nrow = 2),
          linewidth = guide_legend(order = 2, nrow = 2)) +
@@ -78,10 +80,12 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
   theme(legend.key.size = unit(2.4, "mm"), legend.key.width = unit(4, "mm"),
         legend.box = "horizontal")
 
-save_panel(p, fig = "Fig1", panel = "i", name = "coupling_adjusted", width = 80, height = 64,
+save_panel(p, fig = "Fig1", panel = "i", name = "coupling_adjusted", width = 80, height = 60,
            dir = here::here("outputs", "natmetab", "proposals"))
 
-cat(sprintf("\n1i -- for the legend: pooled model with shared epithelial and immune covariates;\n"))
+cat(sprintf("\n1i -- for the legend: adjusted for immune content -- the pooled model's shared covariates are\n"))
+cat(sprintf("  script 42's immune and epithelial marker scores, which estimate each unsorted prep's\n"))
+cat(sprintf("  non-epithelial share (the immune score carries most of the change);\n"))
 cat(sprintf("  slopes WT %+.2f, MYC+ %+.2f; difference %+.2f (SE %.2f), P = %.2g parametric, %.3f against the\n",
             sl("neg"), sl("pos"), i_a$interaction, i_a$se, i_a$p, p_perm))
 cat(sprintf("  within-age permutation null (5,000 draws; null median %+.2f); MYC+ R2 of the drawn points %.2f\n",

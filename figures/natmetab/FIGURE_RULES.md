@@ -196,7 +196,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 | ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49 |
 | ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme |
 | Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; 100 x 66 |
-| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 83 x 66 |
+| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 (83 until 2026-10-14) |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller), two rulers side by side (expression, priority), TEB and proliferation above the mitochondrial arms; the paragraph's window numbers asserted; 100 x 56 |
 | ED 2a | `edfig2a_design.R` | the 2 x 2 design, n = 6 per group, arrows in the contrast colours; 46 x 40 |
 | ED 2b | `edfig2b_geneset_library.R` | the 986-set library by category, filled by mitochondrial class (purple against grey, 2026-10-14); 58 x 40 |

@@ -82,7 +82,7 @@ p <- ggplot(d, aes(group, gene, fill = z)) +
         panel.spacing.y = unit(0.8, "mm"),
         legend.title = element_text(size = NM_TXT, lineheight = 0.9))
 
-save_panel(p, fig = "Fig1", panel = "g", name = "heatmap", width = 80, height = 60,
+save_panel(p, fig = "Fig1", panel = "g", name = "heatmap", width = 80, height = 56,
            dir = here::here("outputs", "natmetab", "proposals"))
 
 cat("\n1g heatmap -- for the legend: VST expression, z-scored per gene over 24 animals; group means\n")

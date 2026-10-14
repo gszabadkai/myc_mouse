@@ -71,7 +71,7 @@ p <- ggplot(long, aes(x, row)) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
         legend.key.size = unit(2.4, "mm"))
 
-save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 84, height = 56,
+save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 100, height = 60,
            dir = here::here("outputs", "natmetab", "proposals"))
 
 cat(sprintf("\n1h -- for the legend: the 6W points are scaled by the common shrink %.3f (SE %.3f), the line\n",
