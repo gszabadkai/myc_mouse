@@ -1,36 +1,31 @@
 # =============================================================================
-# edfig2c_pathway_axis.R -- Extended Data Fig. 2c: one axis carries most of the
-# variance across gene sets; it separates the genotypes and mitochondrial sets
-# lead it
+# edfig2c_pathway_axis.R -- Extended Data Fig. 2c: the pathway-level PCA, PC1
+# broken for the one far animal, beside the ranked loadings
 # -----------------------------------------------------------------------------
-# The text (suggested 2026-10-12): "Across 885 gene sets, a single axis carried
-# 77% of the variance; it separated MYC+ from WT glands at both ages and was led
-# by mitochondrial gene sets (ED Fig. 2a-c)." From the old Fig. 1C (the PCA) and
-# Fig. S1C (its loadings), one PDF, two parts side by side:
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
+# It replaces the 2026-10-12 narrow version, retired/edfig2c_pathway_axis.R.
 #
-#   LEFT   the 24 animals on PC1 and PC2 of the pathway-level PCA, equal units on
-#          both axes, so the flatness is the 77% against 8%. Ringed: group means.
-#   RIGHT  every gene set's absolute loading on PC1, ranked, in the mitochondrial
-#          classes of ED 2b (same colours; ED 2b carries the key).
+# Wider, with a broken PC1 axis (author,
+# 2026-10-14: "the PC plot is really crammed into a little space with
+# unproportionately large fonts ... the x axis can be broken for the outlier point
+# and the panel should be wider", as the old Fig. 1C did)
+# -----------------------------------------------------------------------------
+# The same content and the same asserts as the retired narrow version. Three parts side by
+# side: the 24 animals on PC1 and PC2 with the axis broken between the main cloud
+# and the one 6W MYC+ animal far out on PC1 (it stays in every number); then the
+# ranked absolute PC1 loadings.
 #
-# THE PCA is script 37's: the linear mean gene-wise z-score per set (885 sets
-# scored in both matrices), PCA across the 24 samples. Rebuilt here and asserted
-# against results/pathway_loading.rds (the rebuild of the old layer's
-# pathway_axis(), without its freshness check).
+# UNITS: the two PCA parts share one y scale and their data areas are FIXED in
+# millimetres at the same millimetres per unit on PC1 and PC2, so the cloud has
+# equal units -- the flatness is the 77% against the 8%. The loadings take the rest
+# of the width.
 #
-# WHAT BOUNDS "LED BY MITOCHONDRIAL SETS" (all printed below, none drawn):
-#   - loading is co-variation, not cause (script 37's enrichment verdict);
-#   - the axis is common-mode: r 0.98 with the mean of all 885 scores, 79% of
-#     sets load one way, median |loading| 0.88;
-#   - 47 of the top 50 are transcription-factor target sets intersected with
-#     MitoCarta, mitochondrial by construction;
-#   - non-mitochondrial growth programmes reach 0.98 (the labelled human
-#     breast-cancer MYC bicluster), and glutathione, a redox set, loads 0.67.
-# PC1 is a genotype axis, not an age axis: batch = age, so this is the reading
-# that survives.
+# 2026-10-14 (author): lower ("could be done with reduced height"), the classes
+# coloured mitochondrial against not (mito_class_cols, purple against grey), and
+# more sets named at the top: MYC (Felsher), MYC V1 and proliferation beside E2F.
 #
-# Reads:  results/gsva_scores.rds     (script 15: VST matrix, gene sets, sample sheet)
-#         results/pathway_loading.rds (script 37: assertions, mitochondrial classes)
+# Reads:  results/gsva_scores.rds     (script 15)
+#         results/pathway_loading.rds (script 37)
 # Output: outputs/natmetab/EDFig2/EDFig2c_pathway_axis.pdf
 # =============================================================================
 
@@ -72,31 +67,69 @@ stopifnot(length(keep) == pl$n_sets, nrow(ref_v) == 1L,
           abs(ox_gate - pl$ox_gate) < 1e-6,
           conc >= 0.9)                    # script 37 ranks on its design-residual axis
 
-# --- LEFT: the animals ---------------------------------------------------------------
+# --- LEFT: the animals, PC1 broken between the cloud and the one far animal ----------
 sm  <- gs$sample_meta
 pts <- data.frame(PC1 = sc[, 1], PC2 = sc[, 2],
                   group = factor(as.character(sm$group), levels = order_by_age))
 stopifnot(nrow(pts) == 24L, !anyNA(pts$group))
 cen <- stats::aggregate(cbind(PC1, PC2) ~ group, pts, mean)
 
-xpad <- 0.03 * diff(range(pts$PC1)); ypad <- 0.06 * diff(range(pts$PC2))
-p_pca <- ggplot(pts, aes(PC1, PC2, colour = group)) +
-  geom_hline(yintercept = 0, linewidth = NM_LINE, colour = "grey85") +
-  geom_vline(xintercept = 0, linewidth = NM_LINE, colour = "grey85") +
-  geom_point(size = 0.9, stroke = 0) +
-  geom_point(data = cen, aes(fill = group), shape = 21, size = 2, colour = "black",
-             stroke = 0.4, show.legend = FALSE) +
-  scale_colour_manual(values = group_cols, labels = group_keys, name = NULL) +
-  scale_fill_manual(values = group_cols, guide = "none") +
-  scale_x_nm(step = 20, top = max(pts$PC1) + xpad, bottom = min(pts$PC1) - xpad,
-             minor = TRUE, labels = lab_signed) +
-  scale_y_nm(step = 10, top = max(pts$PC2) + ypad, bottom = min(pts$PC2) - ypad,
-             minor = TRUE, labels = lab_signed) +
-  coord_equal() +
+far  <- which.max(pts$PC1)
+gap  <- sort(pts$PC1, decreasing = TRUE)[1:2]
+stopifnot(gap[1] > 35, gap[2] < 25,                          # one animal, alone, far out
+          as.character(pts$group[far]) == "6W_pos",
+          all(cen$PC1 < gap[2] + 1))                          # every group mean in the cloud
+ypad <- 0.06 * diff(range(pts$PC2))
+YLO <- min(pts$PC2) - ypad; YHI <- max(pts$PC2) + ypad
+MAIN <- c(min(pts$PC1[-far]) - 1.5, gap[2] + 1.5)
+OUTR <- c(floor(gap[1]) - 2, floor(gap[1]) + 2)              # a 4-unit window around it
+
+pca_part <- function(d, xlim, main) {
+  ggplot(d, aes(PC1, PC2, colour = group)) +
+    geom_hline(yintercept = 0, linewidth = NM_LINE, colour = "grey85") +
+    (if (main) geom_vline(xintercept = 0, linewidth = NM_LINE, colour = "grey85")) +
+    geom_point(size = 1.1, stroke = 0) +
+    (if (main) geom_point(data = cen, aes(fill = group), shape = 21, size = 2.4,
+                          colour = "black", stroke = 0.4, show.legend = FALSE)) +
+    scale_colour_manual(values = group_cols, labels = group_keys, name = NULL, drop = FALSE) +
+    scale_fill_manual(values = group_cols, guide = "none") +
+    scale_y_nm(step = 10, top = YHI, bottom = YLO, minor = TRUE, labels = lab_signed) +
+    coord_cartesian(clip = "off")
+}
+# the break mark: two short parallel diagonals across the x axis line, drawn in panel
+# coordinates (npc) so the axis limits cannot drop them; `at` = 0 (left end) or 1 (right)
+brk <- function(at) {
+  mm <- function(v) grid::unit(v, "mm")
+  g <- grid::segmentsGrob(x0 = grid::unit(at, "npc") + mm(c(-1.1, -0.3)),
+                          x1 = grid::unit(at, "npc") + mm(c(-0.3, 0.5)),
+                          y0 = grid::unit(0, "npc") - mm(1), y1 = grid::unit(0, "npc") + mm(1),
+                          gp = grid::gpar(lwd = NM_LINE * ggplot2::.pt, col = "black"))
+  annotation_custom(g, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf)
+}
+p_main <- pca_part(pts[-far, ], MAIN, TRUE) +
+  scale_x_nm(step = 10, top = MAIN[2], bottom = MAIN[1], minor = TRUE, labels = lab_signed) +
   labs(x = sprintf("PC1 (%.0f%%)", 100 * vfr[1]), y = sprintf("PC2 (%.0f%%)", 100 * vfr[2])) +
-  guides(colour = guide_legend(nrow = 2, override.aes = list(size = 1.5))) +
+  guides(colour = guide_legend(nrow = 1, override.aes = list(size = 1.5))) +
   theme_nm(legend = "top") +
-  theme(legend.key.spacing.x = unit(0.5, "mm"))
+  theme(legend.key.spacing.x = unit(1, "mm"), plot.margin = margin(1, 0.5, 1, 1, "mm"))
+xr_main <- layer_scales(p_main)$x$get_limits()[2]
+p_main <- p_main + brk(1)
+p_far <- pca_part(pts[far, , drop = FALSE], OUTR, FALSE) +
+  scale_x_continuous(limits = OUTR, breaks = c(OUTR[1], round(gap[1]), OUTR[2]),
+                     labels = c("", sprintf("+%d", round(gap[1])), ""), expand = c(0, 0)) +
+  labs(x = NULL, y = NULL) +
+  theme_nm() +
+  theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.text.y = element_blank(), plot.margin = margin(1, 3, 1, 0.5, "mm"))
+# (one break mark, on the main part, is enough)
+# Equal units: the data area is PANEL_H_MM tall for the PC2 span, and each PCA part
+# is as wide as its PC1 span at the same millimetres per unit.
+PANEL_H_MM <- 30
+span_y  <- diff(.nm_axis(10, YHI, YLO, TRUE)$limits)
+mm_unit <- PANEL_H_MM / span_y
+W_MAIN_MM <- diff(layer_scales(p_main)$x$get_limits()) * mm_unit
+W_FAR_MM  <- diff(OUTR) * mm_unit
+stopifnot(W_MAIN_MM > 40, W_MAIN_MM < 80)
 
 # --- RIGHT: what the axis is made of --------------------------------------------------
 cls <- as.data.frame(pl$mito_classification)
@@ -107,24 +140,34 @@ ld$rank   <- seq_len(nrow(ld))
 ld$class3 <- factor(ld$class3, levels = names(mito_class_cols))
 stopifnot(nrow(ld) == length(keep), !anyNA(ld$class3))
 
-# Three named sets: OXPHOS, the E2F targets (a growth programme), and glutathione,
-# the redox control (the legend says so). Four did not fit at 30 mm (tried
-# 2026-10-12): the non-mitochondrial programme that loads as high as OXPHOS (the
-# human breast-cancer MYC bicluster, 0.98) is given in the legend instead.
-# Labels go where the curve leaves room: OXPHOS below it, E2F above it, and
-# glutathione right-aligned under its own point, so its leader drops onto the end
-# of the word and the word stays clear of the OXPHOS leader on the left.
-# Positions are data units: lx/ly the label's anchor, hj its justification.
+# Named sets (author, 2026-10-14: "label more gene sets, I'd also add MYC (Felsher),
+# MYC v1, proliferation (although E2F is already there)"):
+#   OXPHOS          MitoCarta's OXPHOS, the mitochondrial programme the text names
+#   MYC (Felsher)   the Felsher integrative MYC signature
+#   MYC V1          MYC_UP.V1_UP (MSigDB C6). The library has no Hallmark MYC
+#                   targets V1, only V2 (rank 334, 0.93; the legend can say so)
+#   Cell cycle      Reactome's cell cycle, the proliferation programme beside E2F
+#   E2F targets     Hallmark E2F
+#   Glutathione     the redox control (the legend says so)
+# The non-mitochondrial programme that loads as high as OXPHOS (the human
+# breast-cancer MYC bicluster, 0.98) stays in the legend.
+# LAYOUT: a staircase under the curve. Each label sits left of its own leader, and
+# the further right a set ranks the lower its label, so no label crosses a leader.
+# Glutathione's label goes up and right, above the falling end of the curve.
 lab <- data.frame(
-  set   = c("MITOCARTA_OXPHOS", "PROLIF_E2F_HALLMARK", "GS_METAB_GLUTATHIONE"),
-  label = c("OXPHOS", "E2F targets", "Glutathione"),
-  ly    = c(0.40, 0.95, 0.54),
-  hj    = c(0, 0, 1),
-  ye    = c(0.40, 0.95, 0.58),        # where the leader stops: glutathione's on the word
+  set   = c("MITOCARTA_OXPHOS", "MYC_felsher_integrative_signature", "MYC_MYC_UP.V1_UP",
+            "PROLIF_CELL_CYCLE_REACTOME", "PROLIF_E2F_HALLMARK", "GS_METAB_GLUTATHIONE"),
+  label = c("OXPHOS", "MYC (Felsher)", "MYC V1", "Cell cycle", "E2F targets", "Glutathione"),
+  ly    = c(0.78, 0.64, 0.50, 0.36, 0.22, 0.80),
+  hj    = c(1, 1, 1, 1, 1, 0),
   stringsAsFactors = FALSE)
 lab <- merge(lab, ld, by = "set")
-lab$lx <- ifelse(lab$hj == 0, lab$rank + 18, lab$rank + 25)
-stopifnot(nrow(lab) == 3L)
+lab <- lab[order(lab$rank), ]
+lab$ye <- lab$ly                                  # the leader stops at its label
+lab$lx <- ifelse(lab$hj == 1, lab$rank - 8, lab$rank + 8)
+stopifnot(nrow(lab) == 6L,
+          all(diff(lab$ly[lab$hj == 1]) < 0),     # further right, lower: no crossings
+          all(lab$abs_load[lab$hj == 1] > lab$ly[lab$hj == 1] + 0.05))
 
 p_load <- ggplot(ld, aes(rank, abs_load)) +
   geom_point(aes(colour = class3), size = 0.7, stroke = 0) +
@@ -134,7 +177,7 @@ p_load <- ggplot(ld, aes(rank, abs_load)) +
   geom_text(data = lab, aes(x = lx, y = ly, label = label, hjust = hj), vjust = 0.5,
             lineheight = 0.85, size = pt(NM_TXT), family = NM_FONT) +
   scale_colour_manual(values = mito_class_cols, guide = "none") +
-  scale_x_nm(step = 400, top = nrow(ld), bottom = 0, minor = TRUE, labels = lab_num) +
+  scale_x_nm(step = 200, top = nrow(ld), bottom = 0, minor = TRUE, labels = lab_num) +   # ends at 900
   scale_y_nm(step = 0.5, top = 1, minor = TRUE, labels = lab_num) +
   labs(x = "Gene sets, ranked", y = "PC1 loading (absolute)") +
   theme_nm()
@@ -151,41 +194,14 @@ stopifnot(nrow(M) == 885L, round(100 * vfr[1]) == 77,
           all(sep_p < 0.05), gm1[["6W pos"]] > gm1[["6W neg"]], gm1[["12W pos"]] > gm1[["12W neg"]],
           all(ld$class3[1:50] != "non_mito"))
 
-save_panel(stack_parts(p_pca, p_load, ncol = 2, widths = c(1.15, 1)),
-           fig = "EDFig2", panel = "c", name = "pathway_axis", width = 72, height = 40)
+save_panel(stack_parts(p_main, p_far, p_load, ncol = 3,
+                       widths = grid::unit(c(W_MAIN_MM, W_FAR_MM, 1), c("mm", "mm", "null")),
+                       heights = grid::unit(PANEL_H_MM, "mm")),
+           fig = "EDFig2", panel = "c", name = "pathway_axis", width = 176, height = 46)
 
-# --- numbers for the legend and the text (printed, never drawn) -------------------
-fit <- function(f) stats::coef(summary(stats::lm(f, data = data.frame(
-  PC1 = pts$PC1, age = factor(sm$timepoint, levels = c("6W", "12W")),
-  genotype = factor(sm$myc_status, levels = c("neg", "pos"))))))
-add <- fit(PC1 ~ age + genotype); int <- fit(PC1 ~ age * genotype)
-per_age <- vapply(c("6W", "12W"), function(a) {
-  k <- sm$timepoint == a
-  stats::t.test(pts$PC1[k & sm$myc_status == "pos"], pts$PC1[k & sm$myc_status == "neg"])$p.value
-}, numeric(1))
-gmean <- tapply(pts$PC1, pts$group, mean)
-top50 <- table(ld$class3[1:50])
-cat("\nED Fig. 2c -- for the legend\n")
-cat(sprintf("  %d gene sets, each the mean gene-wise z-score per sample (script 37); PCA over 24 animals\n", nrow(M)))
-cat(sprintf("  PC1 %.1f%%, PC2 %.1f%%, PC3 %.1f%% of the variance\n", 100 * vfr[1], 100 * vfr[2], 100 * vfr[3]))
-cat(sprintf("  PC1 ~ age + genotype: genotype P = %.2g, age P = %.2g; interaction P = %.2g\n",
-            add["genotypepos", 4], add["age12W", 4], int["age12W:genotypepos", 4]))
-cat(sprintf("  MYC+ vs WT within age (Welch): 6W P = %.2g, 12W P = %.2g\n", per_age[["6W"]], per_age[["12W"]]))
-cat(sprintf("  group means on PC1: %s\n", paste(sprintf("%s %+.1f", group_keys[names(gmean)], gmean), collapse = ", ")))
-cat(sprintf("  the axis is common-mode: r(PC1, mean of all sets) = %.3f; %.0f%% of loadings one-signed; median |loading| %.2f\n",
-            stats::cor(pts$PC1, gm), 100 * mean(lam > 0), stats::median(ld$abs_load)))
-cat(sprintf("  top 50 by |loading|: %s\n", paste(sprintf("%s %d", names(top50), top50), collapse = ", ")))
-cat(sprintf("  median |loading| by class: %s\n",
-            paste(sprintf("%s %.2f", levels(ld$class3), tapply(ld$abs_load, ld$class3, stats::median)), collapse = ", ")))
-cat("  named: ", paste(sprintf("%s rank %d, %.2f", lab$set, lab$rank, lab$abs_load), collapse = "; "), "\n")
-mb2 <- ld[ld$set == "METABRIC_MB2_HI_CV_GROUP1", ]
-cat(sprintf("  not named, for the legend: the human breast-cancer MYC bicluster (MB2) loads %.2f\n    (rank %d), as high as OXPHOS\n", mb2$abs_load, mb2$rank))
-cat("  loading is co-variation, not cause; batch = age, and PC1 is a genotype axis\n")
+cat("\nED 2c -- named sets (rank of", nrow(ld), "by |PC1 loading|):\n")
+for (i in seq_len(nrow(lab))) cat(sprintf("  %-16s %-40s rank %3d  loading %.3f  %s\n", lab$label[i],
+                                          lab$set[i], lab$rank[i], lab$abs_load[i], lab$class3[i]))
+cat(sprintf("  top 100 by class: %s\n", paste(names(table(ld$class3[1:100])), table(ld$class3[1:100]),
+                                                sep = " ", collapse = ", ")))
 
-# =============================================================================
-# SANDBOX -- run line-by-line in Positron; skipped by source()
-# =============================================================================
-if (FALSE) {
-  print(.nm_drawable(stack_parts(p_pca, p_load, ncol = 2, widths = c(1.15, 1))))
-  head(ld, 20)
-}

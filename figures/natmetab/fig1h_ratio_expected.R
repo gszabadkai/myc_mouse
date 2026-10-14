@@ -1,7 +1,8 @@
 # =============================================================================
-# PROPOSAL -- Fig. 1h: each BCL-2 ratio's 12-week MYC effect, expected from the
-# common shrink against observed
+# fig1h_ratio_expected.R -- Fig. 1h: each BCL-2 ratio's 12-week MYC effect,
+# expected from the common shrink against observed
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The author's plan (2026-10-14): "Notably, the steepest drop was in Bbc3,
 # decreasing the PUMA/BCL-XL ratio" -- the simplified form of the three-step rows:
 # the two points of each row are aligned with the common shrink, so the gap
@@ -20,6 +21,7 @@
 # gene-level fade of script 55 (0.49); the legend must name which one it is.
 #
 # Reads: results/two_timeline_verification.rds (script 54: $ratios, $ratio_line)
+# Output: outputs/natmetab/Fig1/Fig1h_ratio_expected.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -71,8 +73,7 @@ p <- ggplot(long, aes(x, row)) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
         legend.key.size = unit(2.4, "mm"))
 
-save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 100, height = 60,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 100, height = 60)
 
 cat(sprintf("\n1h -- for the legend: the 6W points are scaled by the common shrink %.3f (SE %.3f), the line\n",
             SLOPE, L8$slope_se))

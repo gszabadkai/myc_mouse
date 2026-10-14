@@ -1,6 +1,7 @@
 # =============================================================================
-# PROPOSAL -- Fig. 1g: the BCL-2 family in the four groups (heatmap)
+# fig1g_bcl2_heatmap.R -- Fig. 1g: the BCL-2 family in the four groups (heatmap)
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The author's plan (2026-10-14): "While at 6 weeks MYC shifted the balance in the
 # transcriptome toward pro-apoptotic factors, at 12 weeks MYC-driven pro-apoptotic
 # pathways were suppressed: expression of both ... declined compared to the
@@ -25,6 +26,7 @@
 #
 # Reads: results/gsva_scores.rds (script 15: $expr_mat, VST; $sample_meta)
 #        results/departure_from_myc_fade.rds (script 55: the roster and roles)
+# Output: outputs/natmetab/Fig1/Fig1g_bcl2_heatmap.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -82,8 +84,7 @@ p <- ggplot(d, aes(group, gene, fill = z)) +
         panel.spacing.y = unit(0.8, "mm"),
         legend.title = element_text(size = NM_TXT, lineheight = 0.9))
 
-save_panel(p, fig = "Fig1", panel = "g", name = "heatmap", width = 80, height = 56,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "Fig1", panel = "g", name = "bcl2_heatmap", width = 80, height = 56)
 
 cat("\n1g heatmap -- for the legend: VST expression, z-scored per gene over 24 animals; group means\n")
 print(round(MZ[ord, ], 2))

@@ -1,3 +1,5 @@
+# RETIRED 2026-10-14 -- folded into Fig. 1f (fig1f_window_reallocation.R). Kept for the record;
+# not a panel, and outside the dry-run set.
 # =============================================================================
 # edfig2f_window_matched_controls.R -- Extended Data Fig. 2f: across the window,
 # OXPHOS falls further than comparably expressed genes, and further than

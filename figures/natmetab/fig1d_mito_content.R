@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # The text: "MYC raised mitochondrial content by 20-33%, depending on the module
 # (Fig. 1d)", and, across the window, "the mitochondrial share of the transcriptome
-# did not fall (Fig. 1d,f; ED Fig. 2f)". One PDF, two stacked parts, one shared
+# did not fall (Fig. 1d,f)". One PDF, two stacked parts, one shared
 # group key:
 #
 #   TOP     each module's share of the nuclear transcriptome, every animal, four

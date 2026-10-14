@@ -1,7 +1,8 @@
 # =============================================================================
-# PROPOSAL -- Extended Data Fig. 3a: OXPHOS priority, the PUMA:BCL-XL balance, BAX
-# and BMF in every animal
+# edfig3a_per_animal.R -- Extended Data Fig. 3a: OXPHOS priority, the PUMA:BCL-XL
+# balance, BAX and BMF in every animal
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The author (2026-10-14), on the five-gene version (p1h_puma_members.R): "This
 # kind of just repeats the heatmap data. I would rather use the per animal z values
 # and plot them together as in Fig 2H+I (alt): OXPHOS mitoPPS, PUMA:BCL-XL and Bax,
@@ -29,6 +30,7 @@
 # much but does not clear 0.05 (script 56 asserts it).
 #
 # Reads: results/window_and_chain_statistics.rds (script 56: $values, $tests, $welch_08)
+# Output: outputs/natmetab/EDFig3/EDFig3a_per_animal.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -91,8 +93,7 @@ p <- ggplot(d, aes(group, z)) +
         strip.clip = "off",
         panel.spacing.x = unit(2, "mm"), legend.key.spacing.x = unit(1, "mm"))
 
-save_panel(p, fig = "EDFig3", panel = "a", name = "per_animal", width = 104, height = 60,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "EDFig3", panel = "a", name = "per_animal", width = 104, height = 60)
 
 cat("\nED 3a -- for the legend: z over the 24 animals; RAW P (script 56); lower brackets 12W vs 6W within a\n")
 cat("  genotype, upper bracket the interaction (the difference between the two changes)\n")

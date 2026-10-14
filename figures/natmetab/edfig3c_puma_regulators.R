@@ -1,7 +1,8 @@
 # =============================================================================
-# PROPOSAL -- Extended Data Fig. 3c: the PUMA regulators, ranked by how far their
-# 12-week MYC effect departs from MYC's overall fade
+# edfig3c_puma_regulators.R -- Extended Data Fig. 3c: the PUMA regulators, ranked
+# by how far their 12-week MYC effect departs from MYC's overall fade
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The author's plan (2026-10-14): the FOXO3 argument goes to Extended Data, drawn
 # over the old Fig. S2D (alt) roster -- script 42's p53 arm (9) and other PUMA
 # inducers (12: the ISR, E2f1, Trp73 and the FOXO family) -- with Bbc3 added, as a
@@ -31,6 +32,7 @@
 # Bbc3's licence is pre-specification; Foxo3, Zmat3 and Eda2r are exploratory.
 #
 # Reads: results/departure_from_myc_fade.rds (script 55)
+# Output: outputs/natmetab/EDFig3/EDFig3c_puma_regulators.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -88,8 +90,7 @@ p <- ggplot(r, aes(z, gene_f)) +
         legend.box = "vertical", legend.spacing.y = unit(0.3, "mm"),
         legend.key.size = unit(2.4, "mm"))
 
-save_panel(p, fig = "EDFig3", panel = "c", name = "puma_regulators", width = 86, height = 92,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "EDFig3", panel = "c", name = "puma_regulators", width = 86, height = 92)
 
 cat(sprintf("\nED 3c -- for the legend: departure z (script 55); dashed lines at |z| = %.2f and %.2f, the 95th and\n", BAND, BAND99))
 cat("  99th percentiles over the 8,774 MYC-responsive genes (empirical two-sided P = 0.05 and 0.01);\n")

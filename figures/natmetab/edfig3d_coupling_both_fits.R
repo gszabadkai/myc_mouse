@@ -1,8 +1,10 @@
 # =============================================================================
-# PROPOSAL -- Fig. 1i: OXPHOS priority against the PUMA:BCL-XL balance, animal
-# by animal (old Fig. 2I / 2H+I (alt) part B, in the Nat Metab layer)
+# edfig3d_coupling_both_fits.R -- Extended Data Fig. 3d: OXPHOS priority against
+# the PUMA:BCL-XL balance, animal by animal, unadjusted and adjusted for immune
+# content (old Fig. 2I / 2H+I (alt) part B, in the Nat Metab layer)
 # -----------------------------------------------------------------------------
-# NOW ED FIG. 3d (2026-10-14); Fig. 1i draws the adjusted half alone. Lines as in
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
+# Fig. 1i (fig1i_coupling.R) draws the adjusted half alone. Lines as in
 # Fig. 1i (author, 2026-10-14: "follow the main"): WT dashed and thinner, MYC+ solid.
 #
 # Both variables z-scored over the 24 animals; one line per genotype (12 animals),
@@ -23,6 +25,7 @@
 # not. Hypothesis-generating; it asserts nothing (verification note, 1.6).
 #
 # Reads: results/two_timeline_verification.rds (script 54)
+# Output: outputs/natmetab/EDFig3/EDFig3d_coupling_both_fits.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -108,8 +111,7 @@ p <- ggplot(long, aes(x, y)) +
         legend.key.width = unit(4, "mm"), legend.box = "horizontal",
         legend.margin = margin(-1, 0, 0, 0, "mm"))
 
-save_panel(p, fig = "EDFig3", panel = "d", name = "coupling_both", width = 73, height = 60,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "EDFig3", panel = "d", name = "coupling_both_fits", width = 73, height = 60)
 cat(sprintf("\nED 3d: unadjusted slopes WT %+.2f, MYC+ %+.2f; difference %+.2f, P %.2g, permutation P %.3f\n",
             dr("unadjusted", "neg"), dr("unadjusted", "pos"), i_u$interaction, i_u$p, pp("none")))
 cat(sprintf("    purity-adjusted slopes WT %+.2f, MYC+ %+.2f; difference %+.2f, P %.2g, permutation P %.3f\n",

@@ -1,13 +1,14 @@
 # =============================================================================
-# PROPOSAL -- Fig. 1i: OXPHOS priority against the PUMA:BCL-XL balance, animal by
-# animal, adjusted for epithelial and immune content
+# fig1i_coupling.R -- Fig. 1i: OXPHOS priority against the PUMA:BCL-XL balance,
+# animal by animal, adjusted for immune content
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The author's plan (2026-10-14): "along with OXPHOS deprioritisation" needs a
 # panel -- the adjusted half of the coupling, the WT line dashed and thinner, the
 # MYC+ line's R2 on the panel. P values in the legend (author): the slope
 # difference +0.78, P 0.0052 parametric and 0.085 against the within-age
 # permutation null. The unadjusted fit, and both fits side by side with all four P
-# values, are ED Fig. 3d (p1i_coupling.R): the impasse of the 2026-09-21 ruling.
+# values, are ED Fig. 3d (edfig3d_coupling_both_fits.R): the impasse of the 2026-09-21 ruling.
 #
 # WHAT THE R2 IS: the squared correlation of the drawn MYC+ points (n = 12), whose
 # y values are partial residuals -- the ratio with the shared epithelial and immune
@@ -15,6 +16,7 @@
 # so part of it is the 6W-to-12W difference (the verification note, section 5).
 #
 # Reads: results/two_timeline_verification.rds (script 54)
+# Output: outputs/natmetab/Fig1/Fig1i_coupling.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -80,8 +82,7 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
   theme(legend.key.size = unit(2.4, "mm"), legend.key.width = unit(4, "mm"),
         legend.box = "horizontal")
 
-save_panel(p, fig = "Fig1", panel = "i", name = "coupling_adjusted", width = 80, height = 60,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "Fig1", panel = "i", name = "coupling", width = 80, height = 60)
 
 cat(sprintf("\n1i -- for the legend: adjusted for immune content -- the pooled model's shared covariates are\n"))
 cat(sprintf("  script 42's immune and epithelial marker scores, which estimate each unsorted prep's\n"))

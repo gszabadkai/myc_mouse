@@ -66,7 +66,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
     Times.
 - **Base `pdf()` draws the ASCII hyphen as a minus sign.** So labels avoid hyphens ("Folate and 1C
   metabolism", not "1-C"), and a hyphen is typed only where a minus is meant ("OXPHOS - proliferation"
-  prints as OXPHOS − proliferation, ED 2f).
+  prints as OXPHOS − proliferation, the retired ED 2f).
 - **For a true hyphen, write the Latin-1 soft hyphen `"­"`**: base `pdf()` prints it as a
   hyphen ("BCL­XL" prints BCL-XL; checked in Quick Look, 2026-10-12). Use it wherever a label
   needs one (protein names, "Pro-apoptotic").
@@ -91,7 +91,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   fell outside a limit of 0.4 and was dropped (Fig. 1f, 2026-10-11; a self-test case covers it).
 - **Pad the data range by 3-4% before the axis rounds to its end tick**, so a point at the
   extreme is not cut by the axis end. Choose the pad so that, on facets side by side, the last
-  label of one facet cannot run into the first of the next (ED 2g ends on a minor tick for this).
+  label of one facet cannot run into the first of the next (ED 2f, the old 2g, ends on a minor tick for this).
 
 ## Statistics on panels
 
@@ -130,18 +130,18 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   and `collect_guides = TRUE` gives one shared key (Fig. 1d). Parts side by side use `ncol = 2`
   (Fig. 1f, ED 2d). Patchwork lays out a shared key with its own theme (11 pt), so the helper gives
   it the panel theme and no outer margin. Stacked parts that share an x axis get the same
-  `scale_x_nm()` call, so their zero lines align (ED 2f).
+  `scale_x_nm()` call, so their zero lines align (the retired ED 2f).
 - **Name points on a scatter only where the names fit off the cloud.** A `ggrepel` layer is
   given every point, the unnamed ones with an empty label, so names keep off all points, not just
   the named ones. Where names do not fit, the points are marked and the legend names them (ED 2e:
   eleven names at 62 mm crossed the cloud).
-- **Significance glyphs mean one thing per figure** (author, 2026-10-11). Filled/open is the
-  adjusted *P* of record (Fig. 1e) or the matched-set test (ED 2f), and the key says which. A panel
-  without a test of record keeps its dots filled, draws no open ones, and its legend says where
-  the test is (Fig. 1f: expression in ED 2f; priority as ranks, none passing BH).
+- **Significance glyphs mean one thing per figure** (author, 2026-10-11). Filled = *P* < 0.05 by
+  the panel's test of record, open = not, and the key and legend name the test: Fig. 1e, the
+  adjusted *P*; Fig. 1f, matched sets for expression and script 08's BH for priority (since
+  2026-10-14). A panel without a test of record keeps its dots filled and draws no open ones.
 - **Size marks the leading contrast** (author, 2026-10-11). Of two contrasts drawn per row, the one
   the text leads with is larger (1.6) and the other smaller (about 1.1), and the key shows both
-  sizes: Fig. 1e, 6W over 12W; Fig. 1f and ED 2f, WT over MYC+ (WT is the gland's own programme).
+  sizes: Fig. 1e, 6W over 12W; Fig. 1f, WT over MYC+ (WT is the gland's own programme).
   A panel that compares the two directly keeps them the same size (ED 1a, ED 1c: 6W against 12W).
 - **A number the text quotes is asserted where it is computed** (the Task D principle), e.g. Fig.
   1d's "20-33%".
@@ -162,7 +162,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Genotype effects** take the MYC+ hue of their age: "MYC+ vs WT, 6W" `#D55E00`, "MYC+ vs WT,
   12W" `#E69F00` (`contrast_cols` in the style file).
 - **Changes across the window** (12W vs 6W) take the genotype colour: "12W vs 6W, WT" `#0072B2`,
-  "12W vs 6W, MYC+" `#D55E00` (`geno_cols` with `dev_labels`; Fig. 1f, ED 2f-g).
+  "12W vs 6W, MYC+" `#D55E00` (`geno_cols` with `dev_labels`; Fig. 1f, ED 2f).
 - **Diverging fills:** `#4A3525` (espresso) to `#FAFAFA` (white, pinned at zero) to `#2A8A6D`
   (mint). Not blue-red, which would read as genotype.
 - **Unsigned levels:** `#F2F4F6` to `#8FA3B0` to `#243642`.
@@ -189,47 +189,48 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 
 ## Built
 
-| slot | script | content |
+The panels of record, promoted 2026-10-14 (author: "promote them to final panels"). Each writes
+`outputs/natmetab/<Fig>/<Fig><letter>_<name>.pdf` at the size it is placed. Sizes are for the
+183 x 247 mm submission page (ED 180 x 247).
+
+| slot | script | content; size (mm) |
 |---|---|---|
-| Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal, beside the MYC western |
-| ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals |
-| ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49 |
-| ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme |
+| Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal, beside the MYC western; 48 x 56 |
 | Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; 100 x 66 |
-| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 (83 until 2026-10-14) |
-| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller), two rulers side by side (expression, priority), TEB and proliferation above the mitochondrial arms; the paragraph's window numbers asserted; 100 x 56 |
+| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 |
+| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 100 x 56 |
+| Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 80 x 56 |
+| Fig. 1h | `fig1h_ratio_expected.R` | each BCL-2 ratio's expected 12W (6W x 0.43, the common shrink of the other eight) against observed, rows by gap; x axis "normalised to overall MYC activity"; 100 x 60 |
+| Fig. 1i | `fig1i_coupling.R` | OXPHOS priority against *Bbc3:Bcl2l1*, adjusted for immune content; WT dashed and thinner; MYC+ *R*2 on the panel, *P* values in the legend; 80 x 60 |
+| ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals; 80 x 64 |
+| ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49; 58 x 58 |
+| ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme; 112 x 80 |
 | ED 2a | `edfig2a_design.R` | the 2 x 2 design, n = 6 per group, arrows in the contrast colours; 46 x 40 |
-| ED 2b | `edfig2b_geneset_library.R` | the 986-set library by category, filled by mitochondrial class (purple against grey, 2026-10-14); 58 x 40 |
-| ED 2c | `edfig2c_pathway_axis.R` | pathway-level PCA (PC1 77%, equal units) beside the ranked PC1 loadings, three sets named; 72 x 40 |
-| ED 2d | `edfig2d_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 114 x 60 |
-| ED 2e | `edfig2e_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 60 x 60 |
-| ED 2f | `edfig2f_window_matched_controls.R` | window change of 9 programmes against 2,000 expression-matched sets (both genotypes, MYC+ smaller), over the paired OXPHOS-minus-comparator test (WT); 92 x 64 |
-| ED 2g | `edfig2g_window_two_rulers.R` | window, expression against priority, 143 pathways, WT and MYC+ facets; 84 x 64 |
+| ED 2b | `edfig2b_geneset_library.R` | the 986-set library by category, filled by mitochondrial class (purple against grey); 58 x 40 |
+| ED 2c | `edfig2c_pathway_axis.R` | pathway-level PCA, PC1 broken for the one far animal, equal units, beside the ranked PC1 loadings with six sets named; 176 x 46 |
+| ED 2d | `edfig2d_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 44-mm data areas; 114 x 56 |
+| ED 2e | `edfig2e_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 44-mm data area; 60 x 56 |
+| ED 2f | `edfig2f_window_two_rulers.R` | window, expression against priority, 143 pathways, WT and MYC+ facets (ED 2g until 2026-10-14); 84 x 64 |
+| ED 3a | `edfig3a_per_animal.R` | OXPHOS mitoPPS, *Bbc3:Bcl2l1*, *Bax*, *Bmf* per animal (z), brackets from script 56; 104 x 60 |
+| ED 3b | `edfig3b_fade_ranking.R` | BCL-2 family and downstream genes by departure from MYC's fade (script 55), lines at *P* = 0.05 and 0.01, fill = 6W effect +/-0.5, *Apaf1* left out; 86 x 100 |
+| ED 3c | `edfig3c_puma_regulators.R` | the PUMA regulators by departure, the same lines, four beyond *P* = 0.01 labelled with their empirical *P*; 86 x 92 |
+| ED 3d | `edfig3d_coupling_both_fits.R` | the coupling unadjusted and adjusted for immune content, both *P* pairs; 73 x 60 |
 
-**Page budget** (main figures 183 x 170 mm, Extended Data 180 x 170 mm). ED 2 (renumbered
-2026-10-12: the old 2g is 2d, the old 2d-f are 2e-g), three rows of 176, 174 and 176 mm: a + b + c
-(40 mm), d + e (60 mm), f + g (64 mm); 164 mm before the gaps. Fig. 1: d (100) pairs with e (83) in a 66-mm row; f (100) with
-g/h (83) in a 56-mm row; with a 56-mm top row for a-c the page is 178 mm, so 8 mm must still
-come out of the top row, f, or g/h.
+**Retired 2026-10-14** (`figures/natmetab/retired/`, outside the dry-run set; their old PDFs are
+in `outputs/natmetab/_retired/`): the 2026-10-11 Fig. 1f (`fig1f_window_reallocation.R`), the
+narrow ED 2c (`edfig2c_pathway_axis.R`), and the old ED 2f (`edfig2f_window_matched_controls.R`,
+folded into Fig. 1f).
 
-**Proposals, not yet of record** (`figures/natmetab/proposals/`; the handoff, 2a.7-2a.22 and
-2a.23-2a.31, has the details). The current set, on the 247-mm page (`page_mock_247.R`):
+**The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
+`outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
+- **Fig. 1**, 247 of 247 mm: bench row a-c 56 (placeholder); d 100 + e 80 (66); f 100 + g 80 (56);
+  h 100 + i 80 (60); 3-mm gaps.
+- **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
+- **ED 3**, about 165 mm: a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
 
-| slot | script | size (mm) |
-|---|---|---|
-| Fig. 1f (with ED 2f) | `p1f_window_combined.R`: 1f's rows and rulers; filled = *P* < 0.05 (matched sets for expression, script 08's BH for priority); OXPHOS against proliferation bracketed. **Needs script 56's object** | 100 x 56 |
-| Fig. 1g | `p1g_heatmap.R`: 16 BCL-2 family genes by role, group means of z | 80 x 56 |
-| Fig. 1h | `p1h_ratio_expected.R`: each ratio's expected 12W (0.43 x 6W) against observed | 100 x 60 |
-| Fig. 1i | `p1i_coupling_adjusted.R`: the adjusted coupling, WT dashed, MYC+ *R*2 on the panel | 80 x 60 |
-| ED 2c | `ped2c_pathway_axis_wide.R`: PCA with PC1 broken, equal units, beside the loadings | 176 x 46 |
-| ED 3a | `ped3a_per_animal.R`: OXPHOS mitoPPS, *Bbc3:Bcl2l1*, *Bax*, *Bmf* per animal. **Needs script 56's object** | 104 x 60 |
-| ED 3b | `ped3b_fade_ranking.R`: BCL-2 family and downstream by departure from the fade, *Apaf1* left out | 86 x 100 |
-| ED 3c | `ped3c_puma_regulators.R`: the PUMA regulators by departure, four labelled | 86 x 92 |
-| ED 3d | `p1i_coupling.R`: both coupling fits, all four *P* values | 73 x 60 |
-
-Superseded, kept for the record: `p1g_bcl2_balance.R`, `p1g_alt_ratio_rows.R`,
-`p1h_puma_members.R`, `p1h_alt_bcl2_plane.R`, `p_fade_ranking.R`, and the sheets `page_mock.R` and
-`sheet_1g_compare.R`.
+**Proposals** (`figures/natmetab/proposals/`): all superseded, kept for the record --
+`p1g_bcl2_balance.R`, `p1g_alt_ratio_rows.R`, `p1h_puma_members.R`, `p1h_alt_bcl2_plane.R`,
+`p_fade_ranking.R`, and the sheets `page_mock.R` (170 mm) and `sheet_1g_compare.R`.
 
 ## Pending
 

@@ -1,7 +1,9 @@
 # =============================================================================
-# PROPOSAL -- Extended Data Fig. 3b: the BCL-2 family and the downstream genes,
-# ranked by how far their 12-week MYC effect departs from MYC's overall fade
+# edfig3b_fade_ranking.R -- Extended Data Fig. 3b: the BCL-2 family and the
+# downstream genes, ranked by how far their 12-week MYC effect departs from MYC's
+# overall fade
 # -----------------------------------------------------------------------------
+# PROMOTED from proposals/ on 2026-10-14 (author: "promote them to final panels").
 # The 2026-10-13 ranking (p_fade_ranking.R, version B) as the author specified on
 # 2026-10-14: the points are coloured by MYC's 6-week effect on a graded scale
 # (the style's diverging espresso-white-mint) instead of the black/grey split, and
@@ -35,6 +37,7 @@
 # and give its value, so the omission is visible (printed below).
 #
 # Reads: results/departure_from_myc_fade.rds (script 55)
+# Output: outputs/natmetab/EDFig3/EDFig3b_fade_ranking.pdf
 # =============================================================================
 
 source(here::here("figures", "natmetab", "_style.R"))
@@ -104,8 +107,7 @@ p <- ggplot(r, aes(z_function, row)) +
         legend.spacing.y = unit(0.5, "mm"), legend.key.size = unit(2.4, "mm"),
         legend.title = element_text(size = NM_TXT, lineheight = 0.9))
 
-save_panel(p, fig = "EDFig3", panel = "b", name = "fade_ranking", width = 86, height = 100,
-           dir = here::here("outputs", "natmetab", "proposals"))
+save_panel(p, fig = "EDFig3", panel = "b", name = "fade_ranking", width = 86, height = 100)
 
 cat(sprintf("\nED 3b -- for the legend: fade rate %.4f; dashed lines at |z| = %.2f and %.2f, the 95th and 99th\n",
             dep$defs$rate, BAND, BAND99))
