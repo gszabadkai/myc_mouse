@@ -21,19 +21,20 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-14, end of day: the page is 183 x 247 mm for the initial submission (ED 180 x 247), and
-Fig. 1d-i, ED Fig. 2 and a new ED Fig. 3 are laid out on it as PROPOSALS (`page_mock_247.R`). Two
-rounds today: the author's plan (1g heatmap, 1h expected against observed, 1i adjusted coupling, the
-ED 3b-c rankings, ED 2c widened; 2a.27), then the author's six notes on those mock-ups (1f merged with
-ED 2f, ED 2b-c colours, ED 2c lower with more labels, ED 2d-e one size, ED 3a per animal, ED 3b
-without Apaf1; 2a.28). Script 55 (run by the author) and script 56 (written, NOT YET RUN: 2a.29)
-carry the statistics the proposals draw. Everything is committed and pushed: `4fb3aa9` and this
-handoff. FIRST: run script 56 (section 2, item 1).**
+**2026-10-14, evening: THE PANELS ARE PROMOTED. Fig. 1d-i, ED Fig. 2a-f and ED Fig. 3a-d are panels
+of record in `figures/natmetab/` (2a.32); the replaced ones are in `figures/natmetab/retired/`.
+After the first handoff the author ran script 56, then asked for: ED 3b's fill scale narrowed; ED
+3d's lines as in 1i and its adjustment explained and relabelled "adjusted for immune content"; the
+grey band replaced by dashed lines at P = 0.05 and P = 0.01 (script 55 now saves the 99% line and an
+empirical P per gene); and the promotion. Committed: `125bb7f`, the promotion commit and this
+handoff. NOT PUSHED (the author asked to commit). FIRST: re-run script 55, then render the panels
+(section 2, item 1).**
 
 Read this file first. Sections 1, 2 and 2a are current as of **2026-10-14**. Section 2a has four
 parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
 (2026-10-12, afternoon, 2a.7-2a.13), the arguments and proposals of 2026-10-13 (2a.14-2a.22), and the
-247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31).
+247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31), and the
+evening's changes and the promotion (2a.32).
 All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
@@ -47,14 +48,14 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `4fb3aa9` (2026-10-14: scripts 55 and 56, the 247-mm proposals, the style changes), `3114ec2` (the 2026-10-13 handoff) and `8bde9c4` |
-| pushed | everything, this handoff included (the author asked, 2026-10-14) |
+| HEAD | this handoff's commit, on top of the promotion commit and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line), `ccad756` (the first 2026-10-14 handoff) and `4fb3aa9` |
+| pushed | **not the evening's three commits** (the author asked to commit); everything up to `ccad756` is pushed |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
-| scripts | **55** (`55_departure_from_myc_fade.R`) written and **run by the author** (re-run after the Diablo fix, 2a.24). **56** (`56_window_and_chain_statistics.R`) written and dry-run only: **NOT YET RUN** (2a.29). **The next number is 57** |
-| results | `results/departure_from_myc_fade.rds` (script 55, 2026-10-14). **`results/window_and_chain_statistics.rds` does not exist yet**: script 56 writes it, and two proposals stop without it |
-| new figure layer | `figures/natmetab/`: `_style.R` (2026-10-14: purple class colours, `stack_parts()` with one part and grid units, `fixed_size()`), `_style_selftest.R` (passes), `FIGURE_RULES.md` (the 247-mm page, the 5-pt rule, the proposals table), and the **fourteen panel scripts** of 2026-10-12 (14 of 14 pass the dry run after today's style change). ED 2d and 2e now fix their data areas at 44 mm. **Plus `proposals/`**: the current set is FIGURE_RULES.md's proposals table (nine panels and `page_mock_247.R`); the older proposals stay for the record |
+| scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`): dry-run only, **NOT YET RE-RUN**; ED 3b-c stop without it. **56** run by the author (matches the dry run exactly). **The next number is 57** |
+| results | `results/window_and_chain_statistics.rds` (script 56, run). `results/departure_from_myc_fade.rds` is the morning's: script 55 must be re-run for the 99% columns |
+| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (passes), `FIGURE_RULES.md` (the built table is current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run (ED 3b-c against script 55's dry-run object). `page_mock_247.R` (moved out of `proposals/`) draws the three pages. `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. **Stale until re-run by the author:** `EDFig2/` 2b and 2c (the old slate colours), 2d and 2e (the old sizes). `outputs/natmetab/proposals/Fig1_ED2_ED3_247.pdf` is current (2a.29 says how it was drawn); the single proposal PDFs beside it are from round 1 |
+| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. **The promoted panels have not been rendered into their figure folders yet** (section 2, item 1) |
 | text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
@@ -69,23 +70,21 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **The author runs script 56** (Option A), then refreshes the pages:
+1. **Re-run script 55, then render the promoted panels** (Option A):
    ```
-   source(here::here("scripts", "56_window_and_chain_statistics.R"))   # writes results/window_and_chain_statistics.rds
-   source(here::here("figures", "natmetab", "proposals", "page_mock_247.R"))
+   source(here::here("scripts", "55_departure_from_myc_fade.R"))      # the 99% line; ED 3b-c need it
+   NM <- here::here("figures", "natmetab")
+   for (f in c("fig1e_myc_reallocation", "fig1f_window_reallocation", "fig1g_bcl2_heatmap",
+               "fig1h_ratio_expected", "fig1i_coupling", "edfig2c_pathway_axis",
+               "edfig2f_window_two_rulers", "edfig3a_per_animal", "edfig3b_fade_ranking",
+               "edfig3c_puma_regulators", "edfig3d_coupling_both_fits"))
+     source(file.path(NM, paste0(f, ".R")), local = new.env())
+   source(file.path(NM, "page_mock_247.R"))                            # the three pages, a check
    ```
-   Until it has run, `p1f_window_combined.R` and `ped3a_per_animal.R` stop at their `readRDS()`, and
-   so does `page_mock_247.R`. Its dry run passed every control (2a.29), and it is seeded, so the run
-   gives the numbers in 2a.29 exactly.
-   - Also re-run the four ED 2 panels of record whose PDFs are stale (2b, 2c, 2d, 2e), so the
-     Illustrator links pick up the new colours and sizes.
-2. **The author reviews the second-round mock-ups** (`outputs/natmetab/proposals/Fig1_ED2_ED3_247.pdf`,
-   three pages). What is open is listed in 2a.31: the merged 1f, ED 3a, the purple, ED 2c's labels,
-   ED 3d's place (deferred by the author: "keep them, will discuss later"), and the final sizes.
-3. **Then build** (as 2a.11): move each chosen proposal into `figures/natmetab/` under its final
-   letter, drop `dir =`, run the self-test and the dry run, and render. Consequences of the merge:
-   `edfig2f_window_matched_controls.R` leaves ED 2 and `edfig2g_window_two_rulers.R` becomes ED 2f
-   (rename with `git mv`, change its `panel =`), and 1f's legend absorbs ED 2f's (2a.30).
+   Already current, no re-run needed: Fig. 1b, 1d; ED 1a-c; ED 2a, 2b, 2d, 2e. Script 55 is
+   deterministic, so the run reproduces the dry run the panels were checked against.
+2. **Push** when the author says (the evening's commits are local).
+3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions.
 4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
    renumbering in 2a.31. Every legend number is printed by its script (2a.30).
 5. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
@@ -123,7 +122,9 @@ Section 10 holds the threads parked for after the manuscript.
 - **2026-10-13, 2a.14-2a.22:** the arguments behind Fig. 1g-h, and three more proposals. Pushed:
   `8bde9c4` and `3114ec2`.
 - **2026-10-14, 2a.23-2a.31:** the 247-mm page, two rounds of proposals, scripts 55 and 56. Pushed:
-  `4fb3aa9`, and this handoff.
+  `4fb3aa9` and `ccad756`.
+- **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, and the promotion.
+  Committed, not pushed.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -900,6 +901,45 @@ one; ED 2f leaves (into 1f) and ED 2g becomes 2f; the FOXO3 regulators are ED 3c
   f 100 + g 80 (56); h 100 + i 80 (60); 3-mm gaps.
 - **ED 2** (about 215 mm): a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f (old g) 84 x 64.
 - **ED 3** (about 165 mm, room to spare): a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
+
+### 2a.32 The evening: the author's notes after the first handoff, and the promotion
+
+1. **ED 3b's fill scale** "should be narrowed, the differences are not visible": +/-0.5 (was
+   +/-1.5); *Bid* (+0.61), *Birc5* (+1.16) and *Htra2* (+1.49) are drawn at the end colour, and the
+   legend names them.
+2. **ED 3d, "adjusted to epithelial cells? ... why adjust to that?"** -- answered: the adjustment is
+   for sample purity, not for the MECs. Script 42's two RNA composites (epithelial: *Epcam*,
+   *Krt8*, *Krt18*, *Krt5*, *Krt14*, *Cdh1*, *Krt17*; immune: *Ptprc*, *Cd52*, *Cd3e*, *Lyz2*,
+   *Cd74*, *H2-Aa*, *Itgam*, *Ms4a1*) estimate each unsorted prep's non-epithelial share; they
+   correlate -0.84 (WT) and -0.92 (MYC+), one purity axis. In WT the ratio tracks immune content
+   (r +0.90), so the unadjusted WT slope (-0.61) is mostly contamination; adjusted it is +0.05, and
+   MYC+ goes +0.56 -> +0.83 (script 54's decomposition: the immune score carries most of it). The
+   label is now "Adjusted for immune content" (author); 1i's y axis matches ("*Bbc3:Bcl2l1* (z
+   score), adjusted for immune content"). **The legend must name both scores**, and the caveat that
+   the keratin score also moves with epithelial state. The WT line is dashed and thinner, as in 1i.
+3. **The band in ED 3b-c** became two dashed pairs, labelled along their length: **P = 0.05**
+   (|z| 1.73) and **P = 0.01** (|z| 2.38), the 95th and 99th percentiles of |z| over the 8,774
+   MYC-responsive genes (author: "more important to show that the others are not significant").
+   - **The P is empirical** (script 55's new `p_emp_resp`: the fraction of responsive genes
+     departing at least as far, two-sided), not the nominal z-test (*Bbc3* 0.013, *Foxo3* 0.011
+     nominal): departures among MYC-responsive genes are narrower than a standard normal.
+   - Every drawn gene is beyond both pairs or inside both (smallest P inside: 0.10); asserted. Only
+     the omitted *Apaf1* (P 0.018) would fall between them.
+   - **ED 3c now prints the same empirical P** (*Foxo3* 0.0067, *Bbc3* 0.0074, *Zmat3* 0.0043,
+     *Eda2r* 0.0041). The interaction P it printed before (0.0074, 0.0081, 0.046, 0.014) goes to the
+     legend: beside a P = 0.01 line, *Zmat3* would have shown "P = 0.046" beyond it. Same four genes.
+4. **Saved sizes = the page's slots** (1e 80 x 66, 1g 80 x 56, 1h 100 x 60, 1i 80 x 60, ED 3b
+   86 x 100, ED 3c 86 x 92), so each PDF is placed at 100% exactly as reviewed.
+5. **The promotion** (author: "promote them to final panels and commit"): see FIGURE_RULES.md's
+   built table. New names: `fig1f_window_reallocation.R` (the merged panel; the old one is
+   retired under the same name), `fig1g_bcl2_heatmap.R`, `fig1h_ratio_expected.R`,
+   `fig1i_coupling.R`, `edfig2c_pathway_axis.R` (the wide one), `edfig2f_window_two_rulers.R` (the
+   old 2g), `edfig3a_per_animal.R`, `edfig3b_fade_ranking.R`, `edfig3c_puma_regulators.R`,
+   `edfig3d_coupling_both_fits.R`. All moved with `git mv`.
+6. **Prism (the author's question):** Fig. 1d's top is a box-and-whisker plot (median and IQR,
+   Tukey whiskers at 1.5 x IQR) with every animal drawn. Prism shows all points only with
+   min-to-max whiskers, so the bench panels will differ from R's unless R switches to min-max
+   (`geom_boxplot(coef = Inf)`, Fig. 1b, 1d and ED 3a). **Offered, not done.**
 
 ---
 
