@@ -15,7 +15,8 @@
 #   Not mitochondrial          everything else
 # The classes are script 37's rule (37:445-462), re-derived over the whole library
 # and asserted identical to script 37's saved classification on the sets they
-# share. Colours are slate (mito_class_cols): blue and orange mean genotype.
+# share. Colours are mito_class_cols: purple for the two mitochondrial classes,
+# grey for the rest (2026-10-14); blue and orange mean genotype.
 #
 # FORM: counts per category, three parts -> stacked bars, sorted (data-to-viz,
 #   "Order your data"); the key sits inside, bottom right, where the short bars

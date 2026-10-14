@@ -160,9 +160,12 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Diverging fills:** `#4A3525` (espresso) to `#FAFAFA` (white, pinned at zero) to `#2A8A6D`
   (mint). Not blue-red, which would read as genotype.
 - **Unsigned levels:** `#F2F4F6` to `#8FA3B0` to `#243642`.
-- **Mitochondrial class of a gene set** (ED 2b-c): MitoCarta `#243642`, curated (with mitochondria)
-  `#8FA3B0`, not mitochondrial `#D3DADF` (`mito_class_cols`). Slate, darker = more mitochondrial;
-  the old red/orange/blue is out because blue and orange mean genotype.
+- **Mitochondrial class of a gene set** (ED 2b-c): MitoCarta `#8E2C74`, curated (with mitochondria)
+  `#CC79A7`, not mitochondrial `#D9D9D9` (`mito_class_cols`). One hue for the two mitochondrial
+  classes (reddish purple, darker = defined on MitoCarta) against neutral grey, so mitochondrial
+  against not reads first (author, 2026-10-14; the slate shades of 2026-10-12 did not separate
+  them). The old red/orange/blue is out because blue and orange mean genotype; green is the
+  diverging scale's end.
 - **A schematic of the design teaches the contrast colours** (ED 2a): its arrows take the colour
   each contrast has on every effect panel; its text stays black.
 - **Consistency:** the same group has the same colour in every panel, R or Prism. Colour that
@@ -190,7 +193,7 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 83 x 66 |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller), two rulers side by side (expression, priority), TEB and proliferation above the mitochondrial arms; the paragraph's window numbers asserted; 100 x 56 |
 | ED 2a | `edfig2a_design.R` | the 2 x 2 design, n = 6 per group, arrows in the contrast colours; 46 x 40 |
-| ED 2b | `edfig2b_geneset_library.R` | the 986-set library by category, filled by mitochondrial class (slate); 58 x 40 |
+| ED 2b | `edfig2b_geneset_library.R` | the 986-set library by category, filled by mitochondrial class (purple against grey, 2026-10-14); 58 x 40 |
 | ED 2c | `edfig2c_pathway_axis.R` | pathway-level PCA (PC1 77%, equal units) beside the ranked PC1 loadings, three sets named; 72 x 40 |
 | ED 2d | `edfig2d_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 114 x 60 |
 | ED 2e | `edfig2e_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 60 x 60 |

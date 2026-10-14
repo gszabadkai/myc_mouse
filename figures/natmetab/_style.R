@@ -104,12 +104,18 @@ stopifnot(setequal(names(group_labels), names(group_cols)),
 div_cols <- c(neg = "#4A3525", zero = "#FAFAFA", pos = "#2A8A6D")
 seq_cols <- c(low = "#F2F4F6", mid = "#8FA3B0", high = "#243642")  # unsigned levels
 
-# Mitochondrial class of a gene set (ED 2b-c), script 37's three classes. Slate,
-# darker = more mitochondrial; not a hue, because blue and orange mean genotype.
+# Mitochondrial class of a gene set (ED 2b-c), script 37's three classes. The two
+# mitochondrial classes take one hue, reddish purple (Okabe-Ito), darker = defined
+# on MitoCarta; everything else is neutral grey, so mitochondrial against not reads
+# first (author, 2026-10-14: the slate shades did not separate them). Not blue or
+# orange, which mean genotype, and not green, which is the diverging scale's end.
 # The middle class is mitochondrial BY CONSTRUCTION: transcription-factor target
 # sets intersected with MitoCarta. Labels avoid hyphens (base pdf() draws a minus).
-mito_class_cols   <- c(mitocarta_proper = "#243642", construction_MITO = "#8FA3B0",
-                       non_mito = "#D3DADF")
+# options(natmetab.mito_class_cols = c(...)) tries another set (same three names).
+mito_class_cols   <- getOption("natmetab.mito_class_cols",
+                               c(mitocarta_proper = "#8E2C74", construction_MITO = "#CC79A7",
+                                 non_mito = "#D9D9D9"))
+stopifnot(identical(names(mito_class_cols), c("mitocarta_proper", "construction_MITO", "non_mito")))
 mito_class_labels <- c(mitocarta_proper = "MitoCarta",
                        construction_MITO = "Curated (with mitochondria)",
                        non_mito = "Not mitochondrial")
@@ -379,15 +385,22 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
 # collect_guides = TRUE gathers the parts' keys into one shared key at the bottom.
 # ncol = 2 (with widths) puts parts side by side instead, e.g. two rulers sharing
 # the same rows.
+# widths and heights may be grid units: unit(44, "mm") fixes a part's DATA AREA
+# at 44 mm whatever its axis labels need, so panels in different scripts come out
+# the same size and align on the page (ED 2d and 2e). A single part is allowed
+# for that purpose: fixed_size(p, 44, 44).
 stack_parts <- function(..., heights = NULL, widths = NULL, ncol = 1L,
                         collect_guides = FALSE) {
   parts <- list(...)
-  stopifnot(length(parts) >= 2L, all(vapply(parts, inherits, logical(1), "ggplot")),
+  stopifnot(length(parts) >= 1L, all(vapply(parts, inherits, logical(1), "ggplot")),
             is.null(heights) || length(heights) == ceiling(length(parts) / ncol),
             is.null(widths) || length(widths) == ncol)
   structure(list(parts = parts, heights = heights, widths = widths, ncol = ncol,
                  collect = isTRUE(collect_guides)),
             class = "nm_stack")
+}
+fixed_size <- function(p, width_mm, height_mm) {
+  stack_parts(p, widths = grid::unit(width_mm, "mm"), heights = grid::unit(height_mm, "mm"))
 }
 
 .nm_drawable <- function(p) {

@@ -15,8 +15,9 @@
 # FORM: two signed effects per pathway -> scatter on equal axes; Fig. 1e's eleven
 #   rows drawn in black, the rest grey. Not named: see the note at fig1e_rows.
 #
-# SIZE: 60 x 60 mm, so that ED 2d's two scatters (114 mm) and ED 2e fill one
-# 180-mm Extended Data row.
+# SIZE: the data area is the fixed ED2_SCATTER_MM square of ED 2d, on the same
+# shared range, so the three scatters of the row have one size and one set of units
+# (author, 2026-10-14). 60 x 56 mm overall.
 #
 # Reads:  results/background_vs_myc.rds (script 40: $ruler, $regressions)
 # Output: outputs/natmetab/EDFig2/EDFig2e_myc_reallocation_ages.pdf
@@ -45,9 +46,10 @@ fig1e_rows <- c("Translation", "Transcription", "Chaperones", "Serine metabolism
 stopifnot(all(fig1e_rows %in% r143$pathway))
 hl <- r143[r143$pathway %in% fig1e_rows, ]
 
-pad <- 0.04 * diff(range(c(r143$p_m6, r143$p_m12)))
-lo  <- min(c(r143$p_m6, r143$p_m12)) - pad
-hi  <- max(c(r143$p_m6, r143$p_m12)) + pad
+# one range for all three scatters of ED 2d-e (the same line is in edfig2d)
+ED2_SCATTER_MM <- 44
+v   <- c(r143$p_m6, r143$p_tn, r143$p_tp, r143$p_m12)
+pad <- 0.04 * diff(range(v)); lo <- min(v) - pad; hi <- max(v) + pad
 ann <- data.frame(x = lo + 0.02, y = hi - c(0.02, 0.075),
                   lab = c(sprintf('slope~"%.2f"', stats::coef(fit)[2]),
                           sprintf('R^displaystyle(2)~"%.2f"', summary(fit)$r.squared)))
@@ -68,7 +70,8 @@ p <- ggplot(r143, aes(p_m6, p_m12)) +
   labs(x = "MYC+ vs WT, 6W (mitoPPS)", y = "MYC+ vs WT, 12W (mitoPPS)") +
   theme_nm()
 
-save_panel(p, fig = "EDFig2", panel = "e", name = "myc_reallocation_ages", width = 60, height = 60)
+save_panel(fixed_size(p, ED2_SCATTER_MM, ED2_SCATTER_MM),
+           fig = "EDFig2", panel = "e", name = "myc_reallocation_ages", width = 60, height = 56)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nED Fig. 2e -- for the legend\n")

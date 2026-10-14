@@ -12,7 +12,10 @@
 #          MYC+ gland follows the gland's own programme. Dashed: equal change.
 #
 # FORM: two signed quantities per pathway -> scatters on equal axes, r printed.
-# SIZE: 114 x 60 mm, beside ED 2e (60 mm) in one 180-mm Extended Data row.
+# SIZE (author, 2026-10-14: "make them the same size to align"): every data area in
+# ED 2d and 2e is a fixed ED2_SCATTER_MM square on one shared range (ED2_RANGE,
+# both scripts), so the three scatters have the same size and the same units, and
+# align along the row whatever their axis labels need.
 #
 # Reads:  results/background_vs_myc.rds (script 40: $ruler)
 # Output: outputs/natmetab/EDFig2/EDFig2d_window_independent.pdf
@@ -24,7 +27,9 @@ ruler <- as.data.frame(readRDS(here::here("results", "background_vs_myc.rds"))$r
 r143  <- ruler[!ruler$is_mtdna, ]
 stopifnot(nrow(r143) == 143L)
 
-v   <- c(r143$p_m6, r143$p_tn, r143$p_tp)
+# one range for all three scatters of ED 2d-e (the same line is in edfig2e)
+ED2_SCATTER_MM <- 44
+v   <- c(r143$p_m6, r143$p_tn, r143$p_tp, r143$p_m12)
 pad <- 0.04 * diff(range(v)); lo <- min(v) - pad; hi <- max(v) + pad
 
 panel_xy <- function(x, y, xlab, ylab, identity) {
@@ -53,8 +58,9 @@ p_left  <- panel_xy(r143$p_m6, r143$p_tn, "MYC+ vs WT, 6W (mitoPPS)", "12W vs 6W
 p_right <- panel_xy(r143$p_tn, r143$p_tp, "12W vs 6W, WT (mitoPPS)", "12W vs 6W, MYC+ (mitoPPS)",
                     identity = TRUE)
 
-save_panel(stack_parts(p_left, p_right, ncol = 2, widths = c(1, 1)),
-           fig = "EDFig2", panel = "d", name = "window_independent", width = 114, height = 60)
+save_panel(stack_parts(p_left, p_right, ncol = 2, widths = grid::unit(rep(ED2_SCATTER_MM, 2), "mm"),
+                       heights = grid::unit(ED2_SCATTER_MM, "mm")),
+           fig = "EDFig2", panel = "d", name = "window_independent", width = 114, height = 56)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nED Fig. 2d -- for the legend\n")
@@ -68,5 +74,7 @@ cat("  BATCH: each window coincides with an extraction batch\n")
 # SANDBOX -- run line-by-line in Positron; skipped by source()
 # =============================================================================
 if (FALSE) {
-  print(.nm_drawable(stack_parts(p_left, p_right, ncol = 2, widths = c(1, 1))))
+  print(.nm_drawable(stack_parts(p_left, p_right, ncol = 2,
+                                 widths = grid::unit(rep(ED2_SCATTER_MM, 2), "mm"),
+                                 heights = grid::unit(ED2_SCATTER_MM, "mm"))))
 }
