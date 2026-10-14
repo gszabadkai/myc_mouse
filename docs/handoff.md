@@ -1,6 +1,6 @@
 ---
-date: 2026-10-12
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, verification]
+date: 2026-10-14
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,16 +21,19 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-13, end of day: Fig. 1g-h are still PROPOSED, not built. Today the argument was made
-precise -- a pro-death tilt at 6W, its common shrink with MYC's fade, and an added effect, PUMA
-(2a.16) -- and three proposals were added or changed: the three-step ratio rows, a ranking of the
-apoptotic genes by departure from the fade, and Bmf in 1h as the developmental control (2a.17-2a.19).
-Htra2, Bmf and Apaf1 were each weighed against Bbc3 (2a.15, 2a.19, 2a.20). The author will come back
-to finalise (2a.21). Everything is committed and pushed: `8bde9c4` and this handoff.**
+**2026-10-14, end of day: the page is 183 x 247 mm for the initial submission (ED 180 x 247), and
+Fig. 1d-i, ED Fig. 2 and a new ED Fig. 3 are laid out on it as PROPOSALS (`page_mock_247.R`). Two
+rounds today: the author's plan (1g heatmap, 1h expected against observed, 1i adjusted coupling, the
+ED 3b-c rankings, ED 2c widened; 2a.27), then the author's six notes on those mock-ups (1f merged with
+ED 2f, ED 2b-c colours, ED 2c lower with more labels, ED 2d-e one size, ED 3a per animal, ED 3b
+without Apaf1; 2a.28). Script 55 (run by the author) and script 56 (written, NOT YET RUN: 2a.29)
+carry the statistics the proposals draw. Everything is committed and pushed: `4fb3aa9` and this
+handoff. FIRST: run script 56 (section 2, item 1).**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-13**. Section 2a has three
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-14**. Section 2a has four
 parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
-(2026-10-12, afternoon, 2a.7-2a.13), and the arguments and proposals of 2026-10-13 (2a.14-2a.22).
+(2026-10-12, afternoon, 2a.7-2a.13), the arguments and proposals of 2026-10-13 (2a.14-2a.22), and the
+247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31).
 All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
@@ -44,15 +47,15 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of `8bde9c4` (2026-10-13: the ratio rows, the fade ranking, Bmf in 1h, `FIGURE_RULES.md`), `9fd2b16` (the 2026-10-12 handoff), `6cb04f1` (the first proposals and the two `_style.R` switches) and `a927ce8` (ED Fig. 2a-c) |
-| pushed | everything, this handoff included (the author asked, 2026-10-13) |
+| HEAD | this handoff's commit, on top of `4fb3aa9` (2026-10-14: scripts 55 and 56, the 247-mm proposals, the style changes), `3114ec2` (the 2026-10-13 handoff) and `8bde9c4` |
+| pushed | everything, this handoff included (the author asked, 2026-10-14) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
-| scripts | no numbered script was added or changed. **The next number is still 55** |
-| results | **no object was written.** The panels read existing objects only |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (20 of 20 pass), `FIGURE_RULES.md`, and **fourteen panel scripts**: Fig. 1b, d, e, f; ED 1a-c; ED 2a-g. All pass a dry run (re-run after the 2026-10-12 `_style.R` change: 14 of 14). PDFs in `outputs/natmetab/Fig1/`, `EDFig1/` and `EDFig2/`. **Plus `proposals/`**: six proposal panels and two sheets (`page_mock.R`, `sheet_1g_compare.R`), not panels of record and outside the dry-run set (2a.10, 2a.17-2a.19) |
+| scripts | **55** (`55_departure_from_myc_fade.R`) written and **run by the author** (re-run after the Diablo fix, 2a.24). **56** (`56_window_and_chain_statistics.R`) written and dry-run only: **NOT YET RUN** (2a.29). **The next number is 57** |
+| results | `results/departure_from_myc_fade.rds` (script 55, 2026-10-14). **`results/window_and_chain_statistics.rds` does not exist yet**: script 56 writes it, and two proposals stop without it |
+| new figure layer | `figures/natmetab/`: `_style.R` (2026-10-14: purple class colours, `stack_parts()` with one part and grid units, `fixed_size()`), `_style_selftest.R` (passes), `FIGURE_RULES.md` (the 247-mm page, the 5-pt rule, the proposals table), and the **fourteen panel scripts** of 2026-10-12 (14 of 14 pass the dry run after today's style change). ED 2d and 2e now fix their data areas at 44 mm. **Plus `proposals/`**: the current set is FIGURE_RULES.md's proposals table (nine panels and `page_mock_247.R`); the older proposals stay for the record |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The ED 2 PDFs carry the new letters; the four stale-lettered PDFs were deleted. `outputs/natmetab/proposals/` holds the four proposal PDFs and `Fig1_gh_proposals.pdf` (4 pages, 2a.10) |
-| text | as read on the afternoon of 2026-10-12, **the Doc now carries the ED 2a-c sentence** (2a.3). It still lacks the approved Fig. 1d-f paragraph (2b.2) and still cites the old ED 2 letters ("ED Fig. 2d", "2e", "2e,f"; see 2a.1). Its Fig. 1g-h paragraph is the author's earlier version; the draft in 2a.9 replaces it "for now" |
+| outputs | `outputs/` is gitignored. **Stale until re-run by the author:** `EDFig2/` 2b and 2c (the old slate colours), 2d and 2e (the old sizes). `outputs/natmetab/proposals/Fig1_ED2_ED3_247.pdf` is current (2a.29 says how it was drawn); the single proposal PDFs beside it are from round 1 |
+| text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
@@ -66,75 +69,61 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Waiting on the author: finalising Fig. 1g-h** (2a.21). The author said "I will continue with
-   ideas what to add". What is on the table:
-   - **the panel set:** which of the proposals carry the three steps. Claude's suggested pairing is
-     the three-step ratio rows (`p1g_alt_ratio_rows.R`) plus the fade ranking (`p_fade_ranking.R`),
-     with the five-gene per-animal panel (`p1h_puma_members.R`) and the coupling (`p1i_coupling.R`,
-     kept by the author);
-   - **the layout:** A, A2 or B (2a.10), which has to be redone for the chosen set; `page_mock.R`
-     still places the four-gene 1h and must be resized before it is re-run;
-   - **Apaf1:** how to present it (2a.20);
-   - **the paragraph:** a revision along the three steps is suggested in 2a.21, not yet seen by the
-     author.
-   
-   The sheets to look at are in `outputs/natmetab/proposals/`: `Fig1g_compare_sheet.pdf`,
-   `Fig1_fade_ranking_sheet.pdf`, `Fig1h_puma_members.pdf`, and the 2026-10-12 `Fig1_gh_proposals.pdf`.
-2. **Then build them** (2a.11):
-   - move the chosen scripts from `figures/natmetab/proposals/` into `figures/natmetab/` under their
-     final letters, which depend on the layout, and drop `dir =`;
-   - fix what 2a.11 lists, then render, check in Quick Look, and run the self-test and the dry run;
-   - the scripts print the legends' numbers (2a.13).
-   
-   Under A or A2 the panel that leaves needs an Extended Data home. ED 2 is full, so it needs a new
-   ED figure, and the bench ED figures cited in the Doc renumber.
-3. **The coupling stays** (author, 2a.8), so the paragraph needs a sentence for it; a hedged form is
-   in 2a.9. The draft paragraph (2a.9) stands "for now", and 2a.21 suggests how today's framing
-   would change it.
-   - **Before the ranking becomes a panel of record**, the departures of the genes MYC did not move
-     at 6W (computed in the proposal script) must come from a numbered script (55), run by the
-     author (2a.17).
-4. **Text below 5 pt** is an open question for the author (2a.8). Nothing is below 5 pt now.
-5. **For the author's Doc** (2a.1, 2b.2): the approved Fig. 1d-f paragraph, and the new ED 2 letters
-   with their citation order (ED 2d before 2e).
-6. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
+1. **The author runs script 56** (Option A), then refreshes the pages:
+   ```
+   source(here::here("scripts", "56_window_and_chain_statistics.R"))   # writes results/window_and_chain_statistics.rds
+   source(here::here("figures", "natmetab", "proposals", "page_mock_247.R"))
+   ```
+   Until it has run, `p1f_window_combined.R` and `ped3a_per_animal.R` stop at their `readRDS()`, and
+   so does `page_mock_247.R`. Its dry run passed every control (2a.29), and it is seeded, so the run
+   gives the numbers in 2a.29 exactly.
+   - Also re-run the four ED 2 panels of record whose PDFs are stale (2b, 2c, 2d, 2e), so the
+     Illustrator links pick up the new colours and sizes.
+2. **The author reviews the second-round mock-ups** (`outputs/natmetab/proposals/Fig1_ED2_ED3_247.pdf`,
+   three pages). What is open is listed in 2a.31: the merged 1f, ED 3a, the purple, ED 2c's labels,
+   ED 3d's place (deferred by the author: "keep them, will discuss later"), and the final sizes.
+3. **Then build** (as 2a.11): move each chosen proposal into `figures/natmetab/` under its final
+   letter, drop `dir =`, run the self-test and the dry run, and render. Consequences of the merge:
+   `edfig2f_window_matched_controls.R` leaves ED 2 and `edfig2g_window_two_rulers.R` becomes ED 2f
+   (rename with `git mv`, change its `panel =`), and 1f's legend absorbs ED 2f's (2a.30).
+4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
+   renumbering in 2a.31. Every legend number is printed by its script (2a.30).
+5. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
    scripts 50 and 51 matter again, 3e). Fig. 4g-j is open (2d.1).
-7. **When legends are written:** every script prints its legend's numbers (2a.4 has ED 2a-c's).
-   Fig. 1f's legend must say that expression is tested in ED 2f, that priority changes are ranks
-   and none passes BH, that each window coincides with an extraction batch, and that the OXPHOS
-   protein decline is Fig. 1b. ED 2c's must say that its class colours are ED 2b's key.
-8. **How each panel is built:**
+6. **How each panel is built** (unchanged):
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
-   - size it for its page: main figures 183 x 170 mm, **Extended Data 180 x 170 mm**, with room for
-     the gaps between panels in a row;
+   - size it for its page: **183 x 247 mm for the submission** (ED 180 x 247), rows kept modular for
+     the 170-mm page at acceptance; **5 pt where font size is the limit** (FIGURE_RULES.md);
    - preview the PDF with Quick Look (`qlmanage -t -s 2000`) and look at it: the checks cannot see
      clipped or colliding labels, and poppler's `pdftoppm` draws the italic *P* upright;
-   - for a choice between designs, show the author rendered proposals and a page mock-up, not a
-     description (2a.8; `figures/natmetab/proposals/page_mock.R`);
-   - a number the text quotes is asserted in the script that computes it;
+   - for a choice between designs, show rendered proposals and a page mock-up, not a description;
+   - a number the text quotes is asserted in the script that computes it, and a panel computes no
+     test: a statistic no object holds goes into a numbered script first (as 56 did today);
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
-     panel under `options(natmetab.dry_run = TRUE)` (all 14 pass).
-9. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
+     panel under `options(natmetab.dry_run = TRUE)` (14 of 14 pass).
+7. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
-10. **Carried items, possibly moot now: ask before acting.**
+8. **Carried items, possibly moot now: ask before acting.**
    - the seven-gene table (3a.3);
    - Fig. 2G (alt)'s claim item (3a.2);
    - the isoform caveat in Fig. S2D (alt);
    - the void orthotopic conclusions of scripts 50 and 51 (3e), which matter again for Fig. 3k-m.
-11. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
+9. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
    threads (section 10).
 
 ---
 
-## 2a. What happened on 2026-10-12 and 2026-10-13
+## 2a. What happened on 2026-10-12 to 2026-10-14
 
 - **2026-10-12, morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and
   that morning's handoff, `ab62730`.
 - **2026-10-12, afternoon, 2a.7-2a.13:** the first Fig. 1g-h proposals. Pushed: `6cb04f1` and
   `9fd2b16`.
 - **2026-10-13, 2a.14-2a.22:** the arguments behind Fig. 1g-h, and three more proposals. Pushed:
-  `8bde9c4`, and this handoff.
+  `8bde9c4` and `3114ec2`.
+- **2026-10-14, 2a.23-2a.31:** the 247-mm page, two rounds of proposals, scripts 55 and 56. Pushed:
+  `4fb3aa9`, and this handoff.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -725,6 +714,192 @@ the link to OXPHOS.
   - *Apaf1* interaction raw *P* 0.39;
   - *Bmf*: 6W −0.243 (SE 0.215), 12W −0.431 (raw *P* 0.045), interaction −0.188 (SE 0.304,
     *P* 0.54).
+
+### 2026-10-14: the 247-mm page, two rounds of proposals, scripts 55 and 56
+
+### 2a.23 The day, in order
+
+1. **The author's plan** (typed in a pasted block):
+   - the page is **183 x 247 mm for the initial submission** (ED 180 x 247), and "always use the
+     minimum font size where font size becomes limiting" (5 pt; nothing below it);
+   - **1g:** a heatmap of z for the BCL-2 family, as 2H+I (alt)'s top panel;
+   - **ED 3b:** the ranking, version B, coloured by a graded 6W MYC effect, axis "Difference from
+     the overall MYC effect";
+   - **1h:** the simplified ratio rows, "aligned with the common shrink", ordered by the 6W-12W
+     difference;
+   - **1i:** the adjusted coupling, the WT line dashed and thinner, the MYC+ line's R2 on the panel;
+   - **the FOXO3 argument goes to Extended Data:** a dot plot of the S2D (alt) roster plus *Bbc3*,
+     *P* < 0.05 labelled, same axis name. ("Foxo1/Foxo1a" in the plan was read as *Foxo3*, FOXO3a:
+     *Foxo1* is a control in that roster);
+   - **ED 2c:** wider, with PC1 broken for the outlier as in the old Fig. 1C.
+2. **The author's answers:** "1. the expected" (1h draws the expected 12W against the observed);
+   "3. yes, label them all" (the four regulators at *P* < 0.05); "4. keep them, will discuss later"
+   (the ED 3a and 3d additions); "5. write it, I will run it" (script 55); "place the pa values in
+   the legend" (1i's *P* values).
+3. **Script 55** written; a sign bug on *Diablo* found and fixed; the author re-ran it (2a.24).
+4. **Round 1** built and laid out on the 247-mm page (2a.27).
+5. **The author's six notes** on the mock-ups; **round 2** built (2a.28).
+6. **Script 56** written for the two statistics round 2 needed, dry-run, and the two proposals
+   switched to read it (2a.29). Committed `4fb3aa9` and pushed, at the author's request.
+
+### 2a.24 Script 55: the departure from MYC's fade, for every expressed gene
+
+`scripts/55_departure_from_myc_fade.R` writes `results/departure_from_myc_fade.rds`: `$genes`
+(15,191 expressed genes), `$band`, `$rosters`, `$defs` (with `$text`, the numbers the text quotes,
+asserted where computed).
+- **The statistic is script 44's, extended to the genes MYC did not move at 6W:** departure =
+  LFC12 - 0.4872 x LFC6, SE from both contrasts, z, nominal *P*. Unsigned; the BCL-2 family and the
+  downstream genes also get a function sign (+ = toward survival).
+- **Bands** (95th percentile of |z|): **1.73** over the 8,774 responsive genes (script 44's set,
+  rebuilt and asserted), **1.71** over the unmoved ones.
+- **The interaction is not the departure.** Interaction = fade share + departure:
+  *Bbc3* -0.541 = -0.132 + **-0.408** (mostly departure, z -2.49); *Htra2* -0.546 = **-0.764** +
+  0.217 (all fade, z +0.86); *Bax* -0.231 = -0.248 + 0.017 (it only fades).
+- **Rosters:** BCL-2 family 16 read (roles: effectors, activators BID/BIM/PUMA, sensitisers,
+  anti-apoptotic); downstream 8; PUMA regulators 20 read (*Trp73* and *Cdkn2a* below the floor).
+- **Findings:** *Bbc3* is the only BCL-2 member outside its band (+2.49 toward survival); *Apaf1*
+  the only downstream one (+2.14). Among the PUMA regulators, **four** pass raw interaction
+  *P* < 0.05, not two: *Foxo3* (z -2.53, *P* 0.0074) and *Bbc3* (-2.49, 0.0081) below the fade,
+  the p53 targets *Zmat3* (+2.74, 0.046) and *Eda2r* (+2.74, 0.014) above it, through a WT fall with
+  the MYC+ gland flat. None survives BH across the 20.
+- **The Diablo fix:** the first version signed *Diablo* (SMAC, an IAP antagonist) anti-apoptotic.
+  It now uses the `^brake` rule and asserts the anti-apoptotic downstream set is {*Xiap*, *Birc5*};
+  *Diablo*'s function z is +0.876. The author's re-run carries it.
+
+### 2a.25 What the data say against the draft text (flagged; nothing written to the Doc)
+
+- **"progressively"** spans two ages; say "between 6 and 12 weeks".
+- ***Bax*** falls under MYC only by the common fade (departure +0.02); *Bbc3* falls beyond it. Do not
+  pair them as one loss.
+- **"the steepest drop was in *Bbc3*"** is false on raw values (*Htra2* and *Birc5* drop further).
+  Say "fell furthest beyond MYC's overall fade".
+- **At 6W only two BCL-2 genes are significant on their own:** *Bax* up (IHW 1.4e-4) and *Bcl2l1*
+  down (IHW 0.04). "All nine ratios rise" is the ratio statement (median +0.49), not nine genes.
+- **New from round 2 (the merged 1f, 2a.28):**
+  - "both glands **demoted OXPHOS in priority**" and "FAO and the carnitine shuttle **gained
+    priority**": no window change of these pathways passes script 08's BH test (OXPHOS adjusted *P*
+    0.46 WT, 0.17 MYC+), so every priority point is open. The claims rest on ranks among 143:
+    OXPHOS 14th and 13th lowest; carnitine shuttle 2nd and 3rd highest; FAO 8th and 25th. Say
+    "ranked among".
+  - "OXPHOS priority **falls on both timelines**" is not licensed: in ED 3a the WT window falls as
+    far but *P* = 0.086 (script 56 asserts it).
+  - The proliferation signature's WT point is filled: it fell only -0.05, but beyond 98% of
+    matched sets (731 genes give a narrow null). "Fell further" is the bracket's job (*P* < 0.0005).
+
+### 2a.26 The coupling's two *P* values (the author's question 2)
+
+- The parametric *P* (0.0052) tests the slope difference against 0.
+- The within-age permutation shuffles OXPHOS within each age, which keeps the age-level
+  co-movement, so its null median is **+0.40**, not 0. The observed +0.78 sits at the 91.5th
+  percentile (*P* 0.085): **suggestive only**.
+- With age and the covariates in the model, the MYC+ slope is +0.62 (*P* 0.043).
+- The author: both *P* values go to 1i's legend.
+
+### 2a.27 Round 1: the proposals on the 247-mm page
+
+| slot | script | what |
+|---|---|---|
+| 1g | `p1g_heatmap.R` | 16 BCL-2 genes by role; group means of VST z; espresso-white-mint, +/-2; 5-pt numbers. MYC+ 6W: effectors and activators up, BCL-XL down; *Bbc3* +0.8 at 6W, -0.9 at 12W |
+| 1h | `p1h_ratio_expected.R` | each ratio's expected 12W (0.4291 x 6W, the line through the other eight; SE 0.137) against observed, rows by gap. PUMA:BCL-XL: expected +0.289, observed -0.061, inside the 95% prediction interval [-0.276, +0.855], the largest gap |
+| 1i | `p1i_coupling_adjusted.R` | adjusted fit only; WT dashed 0.35; MYC+ R2 0.73 (squared r of the drawn points; 0.35 unadjusted); *P* values in the legend |
+| ED 2c | `ped2c_pathway_axis_wide.R` | PCA with PC1 broken before the one 6W MYC+ animal at +44, loadings beside |
+| ED 3b | `ped3b_fade_ranking.R` | reads script 55; fill = 6W LFC; *Bbc3* alone outside in the BCL-2 family |
+| ED 3c | `ped3c_puma_regulators.R` | unsigned z, shapes by role, the four labelled with raw interaction *P* |
+| ED 3a, 3d | `p1h_puma_members.R`, `p1i_coupling.R` | the five genes per animal; both coupling fits |
+
+### 2a.28 Round 2: the author's six notes, and what was done
+
+1. **1h:** "The X-axis title is misleading": now "MYC+ vs WT (normalised to overall MYC activity)",
+   key "6W" and "12W". **The legend must say the factor is 0.43, the common shrink of the other
+   eight ratios** (the same per-animal estimator; script 54's ruling 4), not the gene-level fade
+   0.49. With 0.49 the row order is identical and PUMA:BCL-XL's expected is +0.33.
+2. **ED 2b-c colours** ("distinguish the mitochondrial gene sets"): `mito_class_cols` is now
+   reddish purple for the two mitochondrial classes (`#8E2C74` MitoCarta, `#CC79A7` curated with
+   mitochondria) against grey (`#D9D9D9`). `options(natmetab.mito_class_cols = ...)` tries others.
+3. **ED 2c lower, more labels:** 46 mm (was 58); the PCA data area is fixed at 30 mm so PC1 and PC2
+   have equal units; the loadings name OXPHOS (rank 114, 0.98), MYC (Felsher) (304, 0.94; the
+   Felsher integrative signature), MYC V1 (358, 0.92), Cell cycle (Reactome, 409), E2F targets (450)
+   and Glutathione (585). **"MYC V1" is MSigDB's MYC_UP.V1_UP: the library has no Hallmark MYC
+   targets V1, only V2** (rank 334, 0.93). The top 100 sets are 94 TF regulons x MitoCarta, 5
+   MitoCarta, 1 other (printed).
+4. **ED 2d and 2e the same size:** every scatter's data area is a fixed 44-mm square on one shared
+   range (`fixed_size()`; `stack_parts()` with grid units). Panels of record, edited in place.
+5. **1f and ED 2f merged** (`p1f_window_combined.R`, 100 x 56): 1f's rows and two rulers in one
+   panel (no facets, so a bracket can cross the groups); **filled = *P* < 0.05** -- for expression,
+   beyond the central 95% of 2,000 expression-matched sets (script 54; the two rows it lacks from
+   script 56); for priority, script 08's BH, Fig. 1e's grammar, so every priority point is open;
+   **no median ticks**; **a bracket for OXPHOS minus proliferation, WT, *P* < 0.0005** (script 43).
+   ED 2f leaves; the old 2g becomes 2f.
+6. **ED 3a per animal** (`ped3a_per_animal.R`, 104 x 60): OXPHOS (mitoPPS), *Bbc3:Bcl2l1*, *Bax*,
+   *Bmf*, z over the 24 animals, Fig. 2H+I (alt)'s form; lower brackets 12W vs 6W per genotype, upper
+   the interaction; raw *P* throughout (the old version's lower brackets were IHW-adjusted).
+7. **ED 3b without *Apaf1*:** the omission is asserted (outside the band, interaction *P* > 0.05)
+   and printed with its numbers for the legend (2a.30).
+
+### 2a.29 Script 56: the two statistics the round-2 proposals needed
+
+`scripts/56_window_and_chain_statistics.R` writes `results/window_and_chain_statistics.rds`:
+`$window_null`, `$window_null_control`, `$values` (the 24 animals' four quantities), `$tests`,
+`$welch_08`, `$defs`, `$notes`. **Dry run only (save sent to the scratchpad); the author has not run
+it.** Seeded (56), so the author's run reproduces these numbers.
+- **PART A, Fig. 1f's two extra rows**, by script 54's recipe (20 bins, 2,000 draws), proved on three
+  of script 54's arms (OXPHOS assembly, TCA cycle, nucleotide metabolism: within **1.45** percentile
+  points; tolerance 5) and against script 40's ruler:
+  - carnitine shuttle (5 genes): WT +0.200, 85.5th percentile; MYC+ +0.104, 76.4th: within;
+  - fatty acid oxidation (39): WT +0.227, **100th** (beyond every matched set); MYC+ -0.020, 75.6th.
+- **PART B, ED 3a's tests** (12W vs 6W in WT | in MYC+ | interaction; raw *P*):
+
+  | quantity | instrument | WT | MYC+ | interaction |
+  |---|---|---|---|---|
+  | OXPHOS mitoPPS | lm(value ~ age x genotype) | -0.109, *P* 0.086 | -0.153, *P* 0.020 | -0.044, *P* 0.62 |
+  | PUMA:BCL-XL | the same, script 42's model | +0.180, *P* 0.45 | -0.555, *P* 0.027 | -0.735, *P* 0.037 |
+  | *Bax* | DESeq2 Wald | -0.145, *P* 0.17 | -0.376, *P* 3.3e-4 | -0.231, *P* 0.12 |
+  | *Bmf* | DESeq2 Wald | +1.023, *P* 1.8e-6 | +0.835, *P* 1.1e-4 | -0.188, *P* 0.54 |
+
+  The ratio's fit reproduces script 42's saved values to 1e-8. The OXPHOS score is script 08's
+  (window differences to 1e-6), whose Welch test gives *P* 0.12 and 0.040 (BH 0.46, 0.17): Fig. 1f's
+  legend quotes Welch, ED 3a draws the model, and each legend names its test.
+- **The mock-up** `outputs/natmetab/proposals/Fig1_ED2_ED3_247.pdf` was drawn with these numbers:
+  first inside the two proposals (same recipe, another seed: no point changed state), then verified
+  against script 56's dry-run object in the scratchpad.
+
+### 2a.30 Legends: what each must say (every script prints its numbers)
+
+- **1f (with ED 2f):** filled = *P* < 0.05 against 2,000 expression-matched sets (two-sided
+  empirical; script 54, two rows script 56) for expression, BH-adjusted Welch (script 08) for
+  priority; priority claims are ranks among 143; the bracket is the WT paired comparison (script 43),
+  with OXPHOS minus mitochondrial ribosome (*P* 0.0005) and minus nucleotide metabolism (*P* 0.0085)
+  in words; each window coincides with an extraction batch; the OXPHOS protein decline is Fig. 1b.
+- **1h:** the 6W points are scaled by 0.43, the common shrink of the other eight ratios; PUMA:BCL-XL
+  is inside the 95% prediction interval (no row is "significant").
+- **1i:** slope difference +0.78, *P* 0.0052 parametric and 0.085 against the within-age
+  permutation; MYC+ R2 is of the drawn (adjusted) points.
+- **ED 2c:** the class colours are ED 2b's key; MYC V1 is MYC_UP.V1_UP; glutathione is the redox
+  control; the breast-cancer MYC bicluster loads as high as OXPHOS (0.98).
+- **ED 3a:** the instruments per quantity (2a.29), raw *P*; within-genotype brackets coincide with
+  batch, the interaction does not.
+- **ED 3b:** "*Apaf1* (+2.14 on the panel's axis, outside the band) is not shown: MYC had already lowered it at 6W
+  (-0.24), its change across the window does not differ by genotype (interaction *P* 0.39), and it
+  acts after the BCL-2 decision" -- or the author's wording; the omission must be visible.
+
+### 2a.31 Where things stand
+
+**Open for the author** (round 2 is not yet reviewed):
+- the merged 1f (and so ED 2's renumbering);
+- ED 3a's new form, and ED 3d's place ("keep them, will discuss later");
+- the purple class colours; ED 2c's six labels, and whether the wide ED 2c replaces the panel of
+  record (`edfig2c_pathway_axis.R`);
+- the final panel sizes;
+- the text fixes (2a.25).
+
+**Renumbering in the Doc when the set is fixed:** the new ED 3 pushes the bench ED Figs 3 and 4 down
+one; ED 2f leaves (into 1f) and ED 2g becomes 2f; the FOXO3 regulators are ED 3c.
+
+**The layouts** (`page_mock_247.R`, all checked by eye):
+- **Fig. 1** (247 of 247 mm, nothing to spare): bench row a-c 56 (placeholder); d 100 + e 80 (66);
+  f 100 + g 80 (56); h 100 + i 80 (60); 3-mm gaps.
+- **ED 2** (about 215 mm): a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f (old g) 84 x 64.
+- **ED 3** (about 165 mm, room to spare): a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
 
 ---
 

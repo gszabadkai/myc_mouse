@@ -22,8 +22,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   reading them"). Proposals are real scripts drawn at their printed size, kept in
   `figures/natmetab/proposals/` (outside the dry-run set) and saved to
   `outputs/natmetab/proposals/`; a page mock-up places them with the figure's other panels on the
-  183 x 170 mm page (`proposals/page_mock.R`). A proposal moves into `figures/natmetab/` under its
-  final letter once chosen.
+  page (`proposals/page_mock_247.R` since 2026-10-14; `page_mock.R` is the 170-mm one). A proposal
+  moves into `figures/natmetab/` under its final letter once chosen.
 - **Two switches in `_style.R` for mock-ups**, both off by default:
   - `options(natmetab.txt = 5, natmetab.txt_title = 6)`, set before a figure's panels are sourced,
     draws them one point smaller. The 5-pt floor does not move.
@@ -34,6 +34,12 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 
 - Width 89 mm (single column) or 183 mm (double). Height at most 170 mm, which leaves room for the
   legend. **[checked]**
+- **For the initial submission the page is 183 x 247 mm** (Extended Data 180 x 247), the author's
+  call on 2026-10-14. The 170-mm height applies at acceptance, so rows stay modular: a figure must
+  be re-flowable onto 170 mm by moving rows, not by redrawing panels. `save_panel()` still checks
+  each PANEL against 170 mm, which no single panel approaches.
+- **Where font size is the limit, use the minimum, 5 pt** (author, 2026-10-14), and nothing below
+  it: the floor stays 5 pt **[checked]**.
 - Extended Data: up to 10 figures, one page each, **at most 180 mm wide** by 170 mm tall (Nature
   research figure guide, Extended Data formatting, checked 2026-10-12). **[checked:** an `EDFig`
   panel wider than 180 mm is refused**]** A row of panels must also leave room for the gaps
@@ -206,27 +212,34 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 g/h (83) in a 56-mm row; with a 56-mm top row for a-c the page is 178 mm, so 8 mm must still
 come out of the top row, f, or g/h.
 
-**Proposals, not yet of record** (`figures/natmetab/proposals/`; the handoff, 2a.7-2a.22, has the
-details):
+**Proposals, not yet of record** (`figures/natmetab/proposals/`; the handoff, 2a.7-2a.22 and
+2a.23-2a.31, has the details). The current set, on the 247-mm page (`page_mock_247.R`):
 
-| proposal | script | size (mm) |
+| slot | script | size (mm) |
 |---|---|---|
-| 1g, the plane | `p1g_bcl2_balance.R`: the nine BCL-2 ratios, 6W against 12W | 56 x 56 |
-| 1g, the three steps | `p1g_alt_ratio_rows.R`: one row per ratio (tilt, common shrink, observed) | 62 x 58 |
-| 1h, every animal | `p1h_puma_members.R`: *Bbc3*, *Bcl2l1*, *Bax*, *Bmf* (developmental control), *Foxo3* | 96 x 64 |
-| 1h, the plane | `p1h_alt_bcl2_plane.R`: the BCL-2 family and *Foxo3* on both timelines | 60 x 60 |
-| ranking | `p_fade_ranking.R`: apoptotic genes by departure from MYC's fade (letter open) | 62 x 60; 66 x 86 |
-| coupling | `p1i_coupling.R`: both fits, both *P* pairs | 62 x 56 |
+| Fig. 1f (with ED 2f) | `p1f_window_combined.R`: 1f's rows and rulers; filled = *P* < 0.05 (matched sets for expression, script 08's BH for priority); OXPHOS against proliferation bracketed. **Needs script 56's object** | 100 x 56 |
+| Fig. 1g | `p1g_heatmap.R`: 16 BCL-2 family genes by role, group means of z | 80 x 56 |
+| Fig. 1h | `p1h_ratio_expected.R`: each ratio's expected 12W (0.43 x 6W) against observed | 100 x 60 |
+| Fig. 1i | `p1i_coupling_adjusted.R`: the adjusted coupling, WT dashed, MYC+ *R*2 on the panel | 80 x 60 |
+| ED 2c | `ped2c_pathway_axis_wide.R`: PCA with PC1 broken, equal units, beside the loadings | 176 x 46 |
+| ED 3a | `ped3a_per_animal.R`: OXPHOS mitoPPS, *Bbc3:Bcl2l1*, *Bax*, *Bmf* per animal. **Needs script 56's object** | 104 x 60 |
+| ED 3b | `ped3b_fade_ranking.R`: BCL-2 family and downstream by departure from the fade, *Apaf1* left out | 86 x 100 |
+| ED 3c | `ped3c_puma_regulators.R`: the PUMA regulators by departure, four labelled | 86 x 92 |
+| ED 3d | `p1i_coupling.R`: both coupling fits, all four *P* values | 73 x 60 |
 
-Sheets: `page_mock.R` (three page layouts, 2026-10-12, built with the four-gene 1h),
-`sheet_1g_compare.R` (the two 1g forms side by side), and the ranking's own sheet.
+Superseded, kept for the record: `p1g_bcl2_balance.R`, `p1g_alt_ratio_rows.R`,
+`p1h_puma_members.R`, `p1h_alt_bcl2_plane.R`, `p_fade_ranking.R`, and the sheets `page_mock.R` and
+`sheet_1g_compare.R`.
 
 ## Pending
 
-- Fig. 1 page budget: now the author's choice of layout for g, h and the coupling (A: 1e to
-  Extended Data; A2: 1d to Extended Data; B: every panel kept at 5/6 pt, d-f squeezed). The
-  2026-10-12 mock-ups show that six panels need two rows of three, so either one panel leaves or
-  all six narrow.
-- Text size below 5 pt: raised by the author for the initial submission (2026-10-12); not done,
-  because it reverses the 2026-10-09 rule, Nature requires 5 pt at acceptance, and the mock-ups show
-  that area, not type, is the limit. Awaiting the author's word.
+- **Fig. 1 page budget: settled for submission by the 247-mm page** (2026-10-14). Fig. 1 holds the
+  bench row a-c and d-i in three rows of two (`proposals/page_mock_247.R`; sizes in the proposals
+  table are as placed there). At acceptance (170 mm) whole rows move out; the A / A2 / B layouts of
+  2026-10-12 are the record of what that costs.
+- **Text size: settled 2026-10-14** -- the minimum, 5 pt, where font size is the limit, and nothing
+  below it (the author had asked on 2026-10-12 about going below 5 pt for the submission; not done,
+  because Nature requires 5 pt at acceptance and the mock-ups show that area, not type, is the
+  limit).
+- **The second-round proposals await the author** (handoff 2a.31): the merged 1f, ED 3a, the
+  purple class colours, ED 2c's labels, and ED 3d's place.
