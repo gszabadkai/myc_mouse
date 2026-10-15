@@ -1,6 +1,6 @@
 ---
 date: 2026-10-15
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format]
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,26 +21,28 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-15: FIG. 1b IS IN THE PRISM FORMAT (2a.33), pushed as `7bc98c3`. It sits in the bench row
-among Prism graphs, so it now takes their format:
-- a 20 x 20 mm graph; every line 0.9 pt;
-- axis title 6 pt, tick labels and P values 5 pt;
-- no x axis and no group labels (Illustrator sets them);
-- brackets without tips, each over the animals it compares; the WT window's P only in the legend;
-- the y axis in thousands, with a tight two-line title. The page is 30 x 28.5 mm.
+**2026-10-15, END OF DAY: FIG. 1 IS RESIZED AND SET IN 5/6-PT TYPE (2a.34). Everything is pushed,
+this handoff included.**
+- **Fig. 1b goes to Prism:** the author redraws it from the R panel's numbers;
+  `fig1b_myc_transcript.R` stays as their source (2a.33, 2a.34).
+- **Fig. 1d, 100 x 60:** 5/6 pt with a reduced *P* exponent. The y title reads "Fraction of
+  nuclear-encoded transcriptome (%)", not "total", because the denominator leaves out the mtDNA
+  transcripts. **Box-plot axes**, the author's new rule: from the tick below the lowest animal to
+  the tick above the *P* label.
+- **Fig. 1e, 78 x 55**, and **Fig. 1f, 100 x 56**, both 5/6 pt. 1f now sits alone in its row.
+- **Fig. 1g 66 + 1h 52 + 1i 56, all 56 tall: one 180-mm row.** g's key reads "z-score", has no
+  frame, and moved left.
+- **"z-score", hyphenated, everywhere**, ED 3a and 3d included.
 
-`_style.R` gained `lw_pt()`, `natural_size()` (with a `save_panel()` guard) and Prism-format
-arguments; the other 19 panels are unchanged pixel for pixel. Earlier the same day the 2026-10-14
-evening work and the min-max whiskers (2a.32) were committed and pushed (`e37da20`). FIRST: the
-author re-renders Fig. 1b (section 2, item 1). The author said "we need to slightly modify some
-panels" and has named only 1b so far: ask which come next.**
+FIRST: the author re-renders ED 3a and ED 3d, whose PDFs still say "z score"; every Fig. 1 PDF is
+current. Then ask what comes next (section 2, item 2): the ED figures are still 6/7 pt.
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-15**. Section 2a has four
-parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-15**. Section 2a covers
+Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
 (2026-10-12, afternoon, 2a.7-2a.13), the arguments and proposals of 2026-10-13 (2a.14-2a.22), and the
 247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31), and the
-evening's changes and the promotion (2a.32), and Fig. 1b in the Prism format (2026-10-15, 2a.33).
-All are pushed. Section 2b is the
+evening's changes and the promotion (2a.32), Fig. 1b in the Prism format (2026-10-15, 2a.33), and
+the afternoon's resizing of Fig. 1d-i in 5/6-pt type (2a.34). All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
@@ -53,14 +55,14 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit (2026-10-15), on top of `7bc98c3` (Fig. 1b in the Prism format), `e37da20` (the min-max whiskers), `813993d` (the 2026-10-14 evening handoff) and the promotion commit `969ee5c` |
-| pushed | everything through `7bc98c3`, at the author's word (2026-10-15). **This handoff's own commit is local**: push when the author says |
+| HEAD | this handoff's commit (2026-10-15, evening), on top of `8bb8242` (the g-h-i row, 5/6 pt, z-score), `7f2d178` (1d's box-plot axes, 1e), `dfa8986` (1d in 5/6 pt) and `c740aae` (the morning's handoff) |
+| pushed | **everything, this handoff included**, at the author's word (2026-10-15: "commit and push and handoff") |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
 | results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
-| new figure layer | `figures/natmetab/`: `_style.R` (since 2026-10-15 also `lw_pt()`, `natural_size()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `_style_selftest.R` (26 checks, all pass), `FIGURE_RULES.md` (the built table is current; new section "The Prism format"), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
+| new figure layer | `figures/natmetab/`: `_style.R` (on 2026-10-15 also `lw_pt()`, `natural_size()`, `label_mm()`, `box_axis()`, the `exponent` argument of `fmt_p()` and `brackets()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `_style_selftest.R` (33 checks, all pass), `FIGURE_RULES.md` (the built table and the page are current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. Nineteen panels are rendered and current (2026-10-14, 23:36 and 23:45). **Fig. 1b's PDF is stale**: still the 48 x 56 mm version of 23:45 until the author re-renders it |
+| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. **Every Fig. 1 PDF is current** (the author rendered 1b at 10:09 and 1d-i between 15:42 and 16:27 on 2026-10-15). **ED 3a and ED 3d are stale**: they still say "z score" (2026-10-14). The other ED PDFs are current |
 | text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
@@ -75,18 +77,22 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Re-render Fig. 1b** (the author, Option A): `source(here::here("figures", "natmetab",
-   "fig1b_myc_transcript.R"))`. Every other panel is current. Sourcing a panel's script overwrites
-   its PDF in `outputs/natmetab/<Fig>/`; Illustrator updates a linked placement and needs an
-   embedded one placed again. **1b's page shrinks from 48 x 56 to 30 x 28.5 mm**, so re-align it
-   in the bench row by its axis; the graph is 20 x 20 mm.
-2. **Ask which panels come next.** The author: "we need to slightly modify some panels"; only 1b
-   has been named. Any other R panel placed among Prism graphs takes FIGURE_RULES.md's "The Prism
-   format", with the helpers in 2a.33.
-3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions. **Fig. 1b's
-   legend now carries the WT window**, *P* = 0.48, which is no longer drawn (the script prints it,
-   marked "not drawn"). Its box sentence: "boxes show the median and interquartile range, whiskers
-   the minimum and maximum, and dots individual animals".
+1. **Re-render ED 3a and ED 3d** (the author, Option A), for their "z-score" labels:
+   `source(here::here("figures", "natmetab", "edfig3a_per_animal.R"))` and
+   `edfig3d_coupling_both_fits.R` likewise. Every other panel is current. Sourcing a panel's script
+   overwrites its PDF in `outputs/natmetab/<Fig>/`; Illustrator updates a linked placement and
+   needs an embedded one placed again.
+2. **Ask what comes next.** Fig. 1 is done in R (2a.34): 1b is the author's to redraw in Prism, and
+   the bench row a-c is theirs. Open:
+   - **Fig. 1f sits alone in its row** (100 of 180 mm): does it widen, or share the row?
+   - **The ED figures are still 6/7 pt**: do they take 5/6 too, and the box-plot axis rule (ED 3a)?
+3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's and 2a.34's additions.
+   - **Fig. 1b's legend carries the WT window**, *P* = 0.48, which is not drawn; the script prints
+     all four *P* values, whether 1b is drawn in R or Prism.
+   - **Fig. 1d's legend names the denominator**: the 13 mtDNA-encoded transcripts are left out of
+     it, which is why the title says "nuclear-encoded".
+   - The box sentence, for R and Prism alike: "boxes show the median and interquartile range,
+     whiskers the minimum and maximum, and dots individual animals".
 4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
    renumbering in 2a.31. Every legend number is printed by its script (2a.30).
 5. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
@@ -103,9 +109,18 @@ Section 10 holds the threads parked for after the manuscript.
      test: a statistic no object holds goes into a numbered script first (as 56 did today);
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
      panel under `options(natmetab.dry_run = TRUE)` (20 of 20 pass). For a change meant to leave
-     the other panels alone, render each one before and after and compare the images
-     (2026-10-15: pixel-identical at 200 dpi);
-   - a panel among Prism graphs takes the Prism format (FIGURE_RULES.md; Fig. 1b is the model).
+     the other panels alone, render each one before and after and compare them (2026-10-15:
+     byte-identical once the PDF dates are stripped);
+   - a panel among Prism graphs takes the Prism format (FIGURE_RULES.md; Fig. 1b is the model);
+   - **Fig. 1's type is 5/6 pt** (2026-10-15): 5 pt for tick and row labels, keys, *P* values and
+     tile numbers; 6 pt for axis and strip titles, group names and a colour bar's title. An
+     exponent or *R*2 superscript is reduced (`exponent = "reduced"`; it prints at 4 pt);
+   - **a box plot's y axis** runs from the tick closest below the lowest whisker to the first tick
+     above the highest mark, a *P* label included (`box_axis()`, on a graph of fixed height);
+   - **"z-score"**, hyphenated with the soft hyphen, everywhere;
+   - **a size the author reads in Illustrator:** check the PDF's own size first (its MediaBox).
+     Twice on 2026-10-15 the reading came from a different file (67.5 for a 66-mm page, 104 for
+     100). Base `pdf()` writes page sizes in whole points, rounded down, so a 56-mm page reads 55.74.
 7. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
 8. **Carried items, possibly moot now: ask before acting.**
@@ -131,7 +146,9 @@ Section 10 holds the threads parked for after the manuscript.
 - **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, the promotion, and the
   min-max whiskers. Pushed (2026-10-15): `125bb7f`, `969ee5c`, `813993d` and `e37da20`.
 - **2026-10-15, 2a.33:** Fig. 1b in the Prism format, two rounds of the author's notes. Pushed:
-  `7bc98c3`. This handoff's commit is local.
+  `7bc98c3` and that morning's handoff, `c740aae`.
+- **2026-10-15, afternoon, 2a.34:** Fig. 1b to Prism; Fig. 1d-i resized and set in 5/6-pt type;
+  box-plot axes; "z-score". Pushed: `dfa8986`, `7f2d178`, `8bb8242` and this handoff.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -905,7 +922,7 @@ one; ED 2f leaves (into 1f) and ED 2g becomes 2f; the FOXO3 regulators are ED 3c
 
 **The layouts** (`page_mock_247.R`, all checked by eye):
 - **Fig. 1** (247 of 247 mm, nothing to spare): bench row a-c 56 (placeholder); d 100 + e 80 (66);
-  f 100 + g 80 (56); h 100 + i 80 (60); 3-mm gaps.
+  f 100 + g 80 (56); h 100 + i 80 (60); 3-mm gaps. *Superseded on 2026-10-15 by 2a.34.*
 - **ED 2** (about 215 mm): a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f (old g) 84 x 64.
 - **ED 3** (about 165 mm, room to spare): a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
 
@@ -991,6 +1008,82 @@ and less space around the panel). Page 37.5 x 34 -> **30 x 28.5 mm**:
 
 **The author re-renders it:** `source(here::here("figures", "natmetab", "fig1b_myc_transcript.R"))`.
 Committed and pushed as `7bc98c3` (2026-10-15).
+
+### 2a.34 2026-10-15, afternoon: Fig. 1 resized, in 5/6-pt type
+
+**Fig. 1b goes to Prism** (author: "easier to get the prism lookalike if I just do it there").
+- **The data:** the author was given the 24 values as a Prism column table. They are DESeq2's
+  normalised *Myc* counts (`counts(dds, normalized = TRUE)` from `results/dds_int_run.rds`), the
+  panel's own, one row per animal and unpaired.
+- **The *P* values** are the four IHW-adjusted Wald values the script prints: 6 wk 2.7 x 10^-17,
+  12 wk 2.1 x 10^-20, MYC+ window 0.76, WT window 0.48 (legend only). Prism must not test: its
+  t-test or ANOVA would not give these.
+- **Boxes:** Prism's quartiles differ from R's at n = 6, so its boxes are wider; the medians and
+  min-max whiskers are the same.
+- `fig1b_myc_transcript.R` stays as the source of the numbers.
+
+**Fig. 1d, 100 x 60** (four rounds):
+1. **Type:** tick labels, the key and *P* values 5 pt; strip and axis titles 6 pt. The exponent is
+   reduced (`brackets(exponent = "reduced")`: plotmath's scriptstyle, 70%, which base `pdf()`
+   rounds to 4 pt).
+2. **The y title.** The author asked for "Fraction of total transcriptome (%)".
+   - The values are script 32's `share_nomt`, whose denominator leaves out the 13 mtDNA-encoded
+     transcripts, 7-16% of each library. So "total" would overstate every value: Nuclear MitoCarta
+     is 2.2-4.6% as drawn and 1.8-4.5% of the total.
+   - The title reads **"Fraction of nuclear-encoded transcriptome (%)"**; the author did not object.
+   - Script 32's `share_all` would make "total" true. It would also move the text's 20-33% to
+     21-33%, and the *P* values from 0.00049-0.0074 to 0.0054-0.036, because the mtDNA transcripts
+     vary a lot between animals.
+3. **Box-plot axes.** The author: "for box and whiskers plots it is acceptable that the y axis does
+   not start at 0 ... start the y-axis at the closest tick to the whisker at the bottom, and end it
+   above the highest one, in this case including the p value".
+   - The axes now run 0.05-0.2, 2-5, 0.3-1.1 and 0.4-1.2 (from 0 to 0.25, 6, 1.2 and 1.5 before).
+   - The ends are worked in printed mm on upper graphs fixed at 28 mm (`box_axis()`, `label_mm()`);
+     the lower graph takes the rest, 11.3 mm.
+   - The graphs do not clip, so the lowest OXPHOS animals (0.31, on an axis from 0.3) draw whole.
+4. **Size.** The author asked for 60 mm, then 56, then 95 wide, then "revert back to 100x60". The
+   67.5- and 104-mm readings had come from measuring a different file.
+
+**Fig. 1e:** 78 x 55 (was 80 x 66), in 5/6 pt. The author chose it from two previews, against the
+6/7-pt version.
+
+**Fig. 1f:** 5/6 pt; its size is unchanged (100 x 56), and it now sits alone in its row.
+
+**Fig. 1g, h and i: one row of 180 mm** (author), all 56 tall: 66 + 52 + 56, with two 3-mm gaps.
+- **g** (was 80 wide): the key's title is "z-score" alone, with no frame. The key moved left, to
+  the top of the role names' column beside Effectors and Activators, 1 mm past the wider of the
+  two. That is a negative `legend.box.spacing`, worked from the names' printed widths. Its 18-mm
+  bar ends above Sensitisers.
+- **h** (was 100 x 60): narrowed most, by the x axis (about 37 mm). Its title takes two lines,
+  because one line would be 46 mm.
+- **i** (was 80 x 60): the square data area is as large as the height allows (about 41 mm). The
+  *R*2 superscript is reduced like 1d's exponents; that was Claude's choice, and the author has not
+  objected.
+
+**"z-score" everywhere** (author): Fig. 1g's key, Fig. 1i's two axis titles, and the axis titles of
+ED 3a and ED 3d, written with the soft hyphen. The italic *z* of ED 3b-c is a test statistic, so it
+stays.
+
+**`_style.R`, defaults unchanged.** The twelve untouched panels are byte-identical; 20 of 20 pass;
+the self-test passes 33 of 33.
+- `fmt_p()` and `brackets()` take `exponent`: "full" (displaystyle) or "reduced" (scriptstyle).
+  `check_panel()` refuses a superscript in neither style.
+- `label_mm()` gives a plotmath label's printed height (5-pt *P* labels: 1.30 mm, or 1.90 with a
+  reduced exponent).
+- `box_axis()` applies the box-plot axis rule in printed mm, reworking the mm on each axis it finds
+  until that axis keeps its own margins.
+- `check_panel()` exempts box plots from the from-0 check.
+- `natural_size()` reads a null nested in a sum as 0, as grid's layout does. Patchwork centres a
+  collected key that way, so a fixed stack with a shared key now measures.
+
+**Two facts about base `pdf()`**, both in FIGURE_RULES.md and read from the PDFs:
+- it rounds every font size to a whole point: 5.5 prints at 6, and a 70% exponent of 5 pt at 4;
+- it writes the page size in whole points, rounded down: a 56-mm page reads 55.74 mm in Illustrator.
+
+**The page** (`page_mock_247.R`): Fig. 1 takes 237 of 247 mm. Bench row a-c 56; d 100 x 60 + e
+78 x 55 (row 60); f 100 x 56; g + h + i (56).
+
+Commits, all pushed: `dfa8986`, `7f2d178`, `8bb8242`, and this handoff.
 
 ---
 
