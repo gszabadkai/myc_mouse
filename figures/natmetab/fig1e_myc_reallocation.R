@@ -19,8 +19,10 @@
 #   significant, an open one is not. The 12W point is smaller: 6W is the effect
 #   the rows are chosen on, 12W the same pattern at lower amplitude.
 #
-# SIZE: 80 mm wide, so that it sits beside a 100-mm panel (Fig. 1d or 1f) with a
-#   3-mm gap on the 183-mm page (83 until 2026-10-14, which left no gap).
+# SIZE: 78 x 55 mm (author, 2026-10-15; 80 x 66 until then), beside Fig. 1d (100 x 60)
+#   on the 183-mm page (83 wide until 2026-10-14, which left no gap). Type as Fig. 1d
+#   (author, 2026-10-15): row labels, tick labels and the key 5 pt, the group names and
+#   the axis title 6 pt.
 #
 # STATISTICS: script 08's Welch t-test on per-animal mitoPPS scores, 6 vs 6 mice,
 #   BH-adjusted across the MitoPathways within each contrast; carried into
@@ -33,6 +35,9 @@
 source(here::here("figures", "natmetab", "_style.R"))
 
 ruler <- as.data.frame(readRDS(here::here("results", "background_vs_myc.rds"))$ruler)
+
+TXT   <- 5      # pt; row labels, tick labels and the key
+TITLE <- 6      # pt; the group names and the axis title
 
 GROUPS <- c(bio = "Biogenesis and\nbiosynthesis", ox = "OXPHOS",
             dyn = "Dynamics,\nsurveillance and\nsignalling")
@@ -91,16 +96,16 @@ p <- ggplot(long, aes(eff, label_n)) +
   labs(x = "MYC+ vs WT (mitoPPS)", y = NULL) +
   guides(colour = guide_legend(order = 1, override.aes = list(size = unname(PT_SIZE))),
          shape  = guide_legend(order = 2, override.aes = list(size = 1.4))) +
-  theme_nm(legend = "bottom") +
+  theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
   theme(axis.line.y  = element_blank(),
         axis.ticks.y = element_blank(),
-        strip.text.y = element_text(size = NM_TXT, angle = 0, hjust = 0, lineheight = 0.95),
+        strip.text.y = element_text(size = TITLE, angle = 0, hjust = 0, lineheight = 0.95),
         panel.spacing.y = unit(1.5, "mm"),
         legend.box = "vertical",
         legend.spacing.y = unit(0, "mm"),
         legend.margin = margin(0, 0, 0, 0))
 
-save_panel(p, fig = "Fig1", panel = "e", name = "myc_reallocation", width = 80, height = 66)
+save_panel(p, fig = "Fig1", panel = "e", name = "myc_reallocation", width = 78, height = 55)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 r143 <- ruler[!ruler$is_mtdna, ]

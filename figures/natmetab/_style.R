@@ -274,6 +274,29 @@ scale_x_nm <- function(step, top, bottom = 0, minor = FALSE, labels = lab_num, .
                               guide = a$guide, expand = c(0, 0), labels = labels, ...)
 }
 
+# A box plot's y axis need not start at 0 (author, 2026-10-15: "for box and whiskers plots
+# it is acceptable that the y axis does not start at 0"). For resolution it runs from the
+# tick closest below the lowest whisker to the first tick above the highest mark, which
+# may be a bracket's P label; whiskers run min to max, so the whiskers end at the lowest
+# and highest animals (lo, hi). Ticks are labelled (step) or minor (halfway, drawn).
+# Worked in printed mm on a graph `graph` mm tall: `above` mm are kept over the highest
+# animal (a bracket and its label; label_mm() measures a label) and `below` mm under the
+# lowest. With below = 0, the author's rule, the lowest point can sit on the axis end:
+# draw with coord_cartesian(clip = "off") so it is not cut. Returns .nm_axis()'s list,
+# for scale_y_continuous(), one panel or one facet at a time.
+box_axis <- function(lo, hi, step, graph, below = 0, above = 0) {
+  stopifnot(is.numeric(lo), is.numeric(hi), hi > lo, below >= 0, above >= 0, graph > below + above)
+  s <- (hi - lo) / (graph - below - above)       # data units per printed mm, at the tightest
+  repeat {
+    a <- .nm_axis(step, top = hi + above * s, bottom = lo - below * s, minor = TRUE)
+    # rounding out to ticks lengthens the axis, so each mm is more data: work it again
+    # on the axis just found until that axis keeps its own margins
+    s_axis <- diff(a$limits) / graph
+    if (s_axis <= s * (1 + 1e-9)) return(a)
+    s <- s_axis
+  }
+}
+
 # --- the theme -------------------------------------------------------------------
 # Titles, subtitles and captions are blanked: on a Nature panel the explanation
 # belongs in the legend, so a panel cannot acquire explanatory text by accident.
@@ -380,11 +403,13 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
     }
   }
 
-  # axes: both ends on a tick; y from 0 (or spanning 0) whenever an x axis is drawn
+  # axes: both ends on a tick; y from 0 (or spanning 0) whenever an x axis is drawn,
+  # except under a box plot, whose axis may start above 0 (author, 2026-10-15; box_axis())
   drawn <- function(ax) !all(vapply(sprintf(c("axis.text.%s", "axis.line.%s"),
                                             if (ax == "x") "x.bottom" else "y.left"),
     function(e) inherits(ggplot2::calc_element(e, thm), "element_blank"), logical(1)))
   x_drawn <- drawn("x")
+  boxes   <- any(vapply(p$layers, function(l) inherits(l$geom, "GeomBoxplot"), logical(1)))
   yv <- unlist(lapply(b$data, function(d)
     unlist(d[intersect(names(d), c("y", "ymin", "ymax", "lower", "upper", "middle"))],
            use.names = FALSE)), use.names = FALSE)
@@ -407,7 +432,7 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
         tr <- v$scale$get_transformation()$name
         if (tr != "identity") {
           add("panel %d: the y axis is %s, which has no 0; with an x axis drawn it must start at 0", k, tr)
-        } else if (r[1] > tol) {
+        } else if (r[1] > tol && !boxes) {
           add("panel %d: the y axis starts at %s, not 0", k, format(signif(r[1], 4)))
         } else if (r[2] < -tol) {
           add("panel %d: the y axis does not reach 0", k)
@@ -453,6 +478,8 @@ fixed_size <- function(p, width_mm, height_mm) {
 # The printed size a fixed-size panel needs: its data areas plus its axes, titles and
 # margins, in mm, measured with the PDF device's Helvetica metrics. NA where a row or
 # column stretches (a relative width or height), which takes whatever room is left.
+# A null inside a sum does not stretch its row: patchwork centres a collected key that
+# way, and grid's layout reads the null as 0, as convertHeight() does here (Fig. 1d).
 # A smaller page cuts the panel's edges; save_panel() refuses one. A larger page
 # centres the panel.
 natural_size <- function(p) {
@@ -460,9 +487,22 @@ natural_size <- function(p) {
   grDevices::pdf(NULL, family = NM_FONT)
   on.exit(grDevices::dev.off())
   g <- patchwork::patchworkGrob(.nm_drawable(p))
-  fixed <- function(u) !any(unlist(grid::unitType(u, recurse = TRUE)) == "null")
+  fixed <- function(u) !any(grid::unitType(u) == "null")
   c(width  = if (fixed(g$widths))  sum(grid::convertWidth(g$widths, "mm", valueOnly = TRUE))  else NA,
     height = if (fixed(g$heights)) sum(grid::convertHeight(g$heights, "mm", valueOnly = TRUE)) else NA)
+}
+
+# The printed height of a plotmath label (a P value from fmt_p(), say) at txt pt, in mm,
+# measured with the PDF device's Helvetica metrics: for an axis that ends just above a
+# bracket's label (Fig. 1d). 5-pt P labels measure 1.30 mm, and 1.90 mm with a reduced
+# exponent.
+label_mm <- function(label, txt = NM_TXT) {
+  stopifnot(is.character(label), is.numeric(txt))
+  grDevices::pdf(NULL, family = NM_FONT)
+  on.exit(grDevices::dev.off())
+  vapply(label, function(l) grid::convertHeight(grid::grobHeight(grid::textGrob(
+    parse(text = l), gp = grid::gpar(fontsize = txt, fontfamily = NM_FONT))), "mm", valueOnly = TRUE),
+    numeric(1), USE.NAMES = FALSE)
 }
 
 .nm_drawable <- function(p) {

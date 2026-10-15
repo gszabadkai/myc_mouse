@@ -80,8 +80,22 @@ expect_refused("a superscript in no named style", "superscript", p)
 p <- good() + theme(axis.text = element_text(size = 4.5))
 expect_refused("theme text under 5 pt", "theme axis.text", p)
 
-p <- good() + scale_y_continuous(limits = c(1, 16), breaks = seq(0, 16, 4), expand = c(0, 0))
-expect_refused("a magnitude axis not starting at 0", "starts at 1, not 0|does not end on a tick", p)
+d10 <- transform(d, y = y + 10)        # every value above 10
+p <- ggplot(d10, aes(group, y)) + geom_point() + scale_y_nm(step = 4, top = 20, bottom = 8) + theme_nm()
+expect_refused("a magnitude axis not starting at 0", "starts at 8, not 0", p)
+expect_ok("a box plot's y axis may start above 0, on the ticks box_axis() finds", {
+  a <- box_axis(min(d10$y), max(d10$y), step = 4, graph = 40)
+  stopifnot(isTRUE(all.equal(a$limits, c(10, 20))))
+  check_panel(ggplot(d10, aes(group, y)) + geom_boxplot(coef = Inf) +
+                scale_y_continuous(limits = a$limits, breaks = a$breaks, minor_breaks = a$minor_breaks,
+                                   guide = a$guide, expand = c(0, 0)) + theme_nm(), 50, 50)
+})
+expect_ok("box_axis: the closest ticks outside the whiskers, its margins kept in mm", {
+  a <- box_axis(lo = 0.31, hi = 0.94, step = 0.2, graph = 25, above = 3)
+  stopifnot(isTRUE(all.equal(a$limits, c(0.3, 1.1))))
+  b <- box_axis(lo = 0.31, hi = 0.94, step = 0.2, graph = 25, below = 0.5, above = 3)
+  stopifnot(isTRUE(all.equal(b$limits, c(0.2, 1.1))))     # 0.3 leaves under 0.5 mm below 0.31
+})
 
 p <- good() + scale_y_continuous(limits = c(0, 15), breaks = seq(0, 12, 4), minor_breaks = NULL,
                                  expand = c(0, 0))
@@ -151,9 +165,17 @@ expect_ok("a reduced exponent prints at 4 pt in a 5-pt label (70%, rounded by pd
   tm <- grep("Tm \\((2.7|-17)\\) Tj", readLines(f, warn = FALSE), value = TRUE, useBytes = TRUE)
   stopifnot(length(tm) == 2L, grepl("Tf 5.00 .*\\(2.7\\)", tm[1]), grepl("Tf 4.00 .*\\(-17\\)", tm[2]))
 })
+expect_ok("label_mm: 5-pt P labels measure 1.30 mm, 1.90 with a reduced exponent", {
+  h <- label_mm(fmt_p(c(0.0030, 4.9e-4), exponent = "reduced"), txt = 5)
+  stopifnot(abs(h - c(1.30, 1.90)) < 0.02)
+})
 expect_refused("a fixed-size panel saved smaller than it needs", "edges would be cut", {
   old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
   suppressMessages(save_panel(fixed_size(good(), 30, 30), "Fig1", "z", "selftest_fixed", 30, 30))
+})
+expect_ok("natural_size measures a fixed stack with a collected key", {
+  n <- natural_size(stack_parts(good(), good(), heights = grid::unit(c(30, 10), "mm"), collect_guides = TRUE))
+  stopifnot(is.na(n[["width"]]), n[["height"]] > 40, n[["height"]] < 70)
 })
 expect_ok("a fixed-size panel saved at its natural size passes", {
   old <- options(natmetab.dry_run = TRUE); on.exit(options(old))

@@ -16,14 +16,16 @@
 #
 # FORM. Top: one value per animal, four groups of six -> every animal over a box
 #   (median and interquartile range; whiskers minimum to maximum since 2026-10-14, as Prism)
-#   (data-to-viz, "Do boxplots hide information?"). Each module has its own y axis
-#   from 0; the x axis is not drawn, so the key names the groups. Groups run
-#   genotype-major because the bracket is the genotype main effect.
+#   (data-to-viz, "Do boxplots hide information?"). Each module has its own y axis, from
+#   the tick closest below its lowest animal to the first tick above its bracket's P
+#   label (author, 2026-10-15: a box plot's axis need not start at 0, "in order to
+#   ensure resolution"). The x axis is not drawn, so the key names the groups. Groups
+#   run genotype-major because the bracket is the genotype main effect.
 #   Bottom: 143 values per age -> the points themselves (author, 2026-10-10: a
 #   histogram added nothing the points do not show). Both rows have a single
 #   peak, so a median is a fair summary here (FIGURE_RULES.md, Showing data).
 #
-# FORMAT (author, 2026-10-15): 56 mm tall (was 66); tick labels, the key and P values
+# FORMAT (author, 2026-10-15): 100 x 60 mm (was 100 x 66); tick labels, the key and P values
 #   5 pt, strip and axis titles 6 pt, as the Prism-format panel (Fig. 1b); the exponent
 #   of a P value reduced (fmt_p's scriptstyle: 4 pt inside the 5-pt label).
 #
@@ -98,20 +100,38 @@ wt_window <- stats::t.test(log2(share_nomt) ~ factor(timepoint, levels = c("12W"
                            data = wt_mc)
 stopifnot(diff(rev(wt_window$estimate)) >= 0)
 
-# per-module axis: from 0 to a tick above the bracket's label
-fac_max <- tapply(df$share_nomt, df$panel, max)
-base    <- fac_max * 1.06
-step    <- fac_max * 0.13
-ybreaks <- lapply(base + 0.9 * step, function(need) pretty(c(0, need), n = 4))
-tops    <- vapply(ybreaks, max, numeric(1))
-brk_fun <- function(lims) ybreaks[[which.min(abs(tops - lims[2]))]]
+# Per-module axis (author, 2026-10-15): a box plot's axis need not start at 0, so for
+# resolution each runs from the tick closest below the lowest animal (the lower whisker:
+# min to max) to the first tick above the bracket's P label, the highest mark
+# (box_axis()). Worked in printed mm on graphs GRAPH_H mm tall: the bracket GAP mm
+# above the top animal; the label 1% of the graph above the bracket (ggpubr) at vjust
+# -0.15, so its top 1.15 label heights higher; then at least CLEAR mm to the axis end.
+# A lowest animal close above its tick overhangs the axis end (Nuclear OXPHOS, 0.31 on
+# an axis from 0.3), so the graphs do not clip.
+GRAPH_H <- 28     # mm; the upper graphs' height, fixed in the stack below
+GAP     <- 1.0    # mm; top animal to bracket
+CLEAR   <- 0.2    # mm; top of the label to the axis end, at least
+STEP    <- c(MASS_MARKERS_NOCHAP = 0.05, MITOCARTA_NUCLEAR_ENCODED = 1,
+             MITOCARTA_OXPHOS_NU = 0.2, BIOGENESIS_FULL = 0.2)   # labelled ticks; minor ones halfway
 
+lo_animal <- tapply(df$share_nomt, df$panel, min)
+fac_max   <- tapply(df$share_nomt, df$panel, max)
+stopifnot(identical(names(fac_max), unname(arm_name[arms])))
 comps <- data.frame(panel = factor(names(fac_max), levels = levels(df$panel)),
                     group1 = 1.5, group2 = 3.5, p = stats[arms, "geno_p"])
-br    <- brackets(comps, base = unname(base), step = unname(step), txt = TXT, exponent = "reduced")
-frame <- data.frame(panel = factor(rep(names(tops), 2), levels = levels(df$panel)),
+need  <- GAP + 0.01 * GRAPH_H + 1.15 * label_mm(fmt_p(comps$p, exponent = "reduced"), TXT) + CLEAR
+axes  <- lapply(seq_along(arms), function(i)
+  box_axis(lo_animal[[i]], fac_max[[i]], STEP[[arms[i]]], GRAPH_H, above = need[i]))
+lims  <- t(vapply(axes, function(a) a$limits, numeric(2)))   # one row per module: bottom, top
+stopifnot(!anyDuplicated(lims[, 2]))                         # each facet's ticks are found by its top
+pick   <- function(l) axes[[which.min(abs(lims[, 2] - l[2]))]]
+per_mm <- (lims[, 2] - lims[, 1]) / GRAPH_H                  # data units per printed mm
+
+br    <- brackets(comps, base = unname(fac_max) + GAP * per_mm,
+                  step = (need - GAP) * per_mm, txt = TXT, exponent = "reduced")
+frame <- data.frame(panel = factor(rep(names(fac_max), 2), levels = levels(df$panel)),
                     group = factor(order_by_geno[1], levels = order_by_geno),
-                    y = c(rep(0, length(tops)), unname(tops)))
+                    y = c(lims[, 1], lims[, 2]))
 
 p_top <- ggplot(df, aes(group, share_nomt)) +
   geom_blank(data = frame, aes(x = group, y = y), inherit.aes = FALSE) +
@@ -122,9 +142,12 @@ p_top <- ggplot(df, aes(group, share_nomt)) +
   facet_wrap(~ panel, nrow = 1, scales = "free_y") +
   scale_colour_manual(values = group_cols, labels = group_keys, name = NULL) +
   scale_fill_manual(values = group_fill, guide = "none") +
-  scale_y_continuous(breaks = brk_fun, labels = lab_num, expand = c(0, 0)) +
+  scale_y_continuous(breaks = function(l) pick(l)$breaks,
+                     minor_breaks = function(l) pick(l)$minor_breaks,
+                     guide = guide_axis(minor.ticks = TRUE), labels = lab_num, expand = c(0, 0)) +
   labs(x = NULL, y = "Fraction of nuclear­encoded\ntranscriptome (%)") +   # soft hyphen: pdf() prints "-" as a minus
   guides(colour = guide_legend(nrow = 1, override.aes = list(size = 1.5))) +
+  coord_cartesian(clip = "off") +              # a point on the axis end is drawn whole
   theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
   theme(axis.text.x  = element_blank(),
         axis.ticks.x = element_blank(),
@@ -163,8 +186,15 @@ p_bot <- ggplot(eff, aes(lfc, row)) +
   theme_nm(txt = TXT, txt_title = TITLE) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank())
 
-save_panel(stack_parts(p_top, p_bot, heights = c(3, 1.25), collect_guides = TRUE),
-           fig = "Fig1", panel = "d", name = "mito_content", width = 100, height = 56)
+# The upper graphs are GRAPH_H mm tall, the height their axis ends are worked on; the
+# lower graph takes what is left of the page (author, 2026-10-15: 100 x 60 mm).
+PAGE_W  <- 100
+PAGE_H  <- 60
+LOWER_H <- PAGE_H - natural_size(stack_parts(p_top, p_bot, heights = grid::unit(c(GRAPH_H, 0), "mm"),
+                                             collect_guides = TRUE))[["height"]]
+stopifnot(LOWER_H >= 8)
+panel <- stack_parts(p_top, p_bot, heights = grid::unit(c(GRAPH_H, LOWER_H), "mm"), collect_guides = TRUE)
+save_panel(panel, fig = "Fig1", panel = "d", name = "mito_content", width = PAGE_W, height = PAGE_H)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nFig. 1d -- for the legend\n")
@@ -185,7 +215,9 @@ cat(sprintf("    12W: median %+.3f, %.1f%% above zero\n", stats::median(r143$c_m
 # SANDBOX -- run line-by-line in Positron; skipped by source()
 # =============================================================================
 if (FALSE) {
-  print(.nm_drawable(stack_parts(p_top, p_bot, heights = c(3, 1.25), collect_guides = TRUE)))
+  print(.nm_drawable(panel))
+  data.frame(module = names(fac_max), lowest = lo_animal, highest = fac_max,
+             axis_from = lims[, 1], axis_to = lims[, 2], need_mm = need)
   stats[arms, c("n_genes", "geno_beta", "geno_p", "int_p")]
   r143[order(-r143$c_m6), c("pathway", "c_m6", "c_m12")][1:5, ]
 }

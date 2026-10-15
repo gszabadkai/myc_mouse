@@ -54,8 +54,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   or Arial. The manuscript's Arial does not need matching, because Nature typesets the text.
 - **Sizes:** 6 pt for tick labels, keys, on-panel labels and P values; 7 pt for axis titles and
   strips. Nothing below 5 pt **[checked]**, except a reduced exponent (next point). A panel in the
-  Prism format is a point smaller (5 and 6 pt; see below), and so is Fig. 1d (author, 2026-10-15:
-  5 pt for tick labels, the key and P values, 6 pt for strip and axis titles).
+  Prism format is a point smaller (5 and 6 pt; see below), and so are Fig. 1d and 1e (author,
+  2026-10-15: 5 pt for tick and row labels, keys and P values, 6 pt for strip and axis titles).
 - **A P value's exponent prints at the label's size, unless the author asks for it reduced**
   (Fig. 1d, 2026-10-15: "superscript size should be reduced"). `brackets(exponent = "reduced")`
   sets it in plotmath's script style, 70% of the label, which prints at 4 pt inside a 5-pt label:
@@ -69,6 +69,9 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - Units go in parentheses. Thousands take commas (1,000). Zero is printed as "0".
 - Gene symbols are italic (mouse: *Myc*); proteins are in capitals (MYC).
 - **Export:** base `pdf()` with Helvetica, not embedded; Illustrator embeds the font on save.
+  - Base `pdf()` writes the page size in whole points, rounded down: a 56-mm page is 158 pt, which
+    Illustrator shows as 55.74 mm (checked 2026-10-15). The panel is laid out on the full 56 mm, so
+    what is cut is a sliver of empty margin, top and right.
   - Never `cairo_pdf`. It embeds the font but places every letter separately, and at 5-7 pt Apple's
     viewers collapse the spaces between words (commit a58fa1c; re-checked 2026-10-09).
   - Not "Arial through renamed Helvetica metrics" either: Apple's viewers then draw the text in
@@ -84,8 +87,14 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 
 ## Axes
 
-- **The y axis starts at 0 whenever an x axis is drawn.** **[checked]** So a magnitude never goes
-  on a log axis. **[checked]**
+- **The y axis starts at 0 whenever an x axis is drawn** **[checked]**, except under a box plot (next
+  point). So a magnitude never goes on a log axis. **[checked]**
+- **A box plot's y axis need not start at 0** (author, 2026-10-15), so for resolution it runs from the
+  tick closest below the lowest whisker to the first tick above the highest mark, a bracket's *P*
+  label included. Whiskers run minimum to maximum, so the lowest and highest animals set the ends.
+  `box_axis()` works the ends out in printed millimetres on a graph of fixed height, `label_mm()`
+  measuring the label, and a point on the lower end is drawn whole (`coord_cartesian(clip = "off")`).
+  **[checked:** a box plot is exempt from the from-0 check**]** First used on Fig. 1d's module shares.
 - Signed quantities (log2 fold changes) run from negative to positive, with 0 inside the axis and
   marked by a line. **[checked:** the axis must reach 0**]**
 - **Both ends of every continuous axis sit on a major or minor tick**, with no padding.
@@ -99,7 +108,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - Breaks are rounded to 10 decimals inside the scale helpers: an unrounded 0.4000000000000001
   fell outside a limit of 0.4 and was dropped (Fig. 1f, 2026-10-11; a self-test case covers it).
 - **Pad the data range by 3-4% before the axis rounds to its end tick**, so a point at the
-  extreme is not cut by the axis end. Choose the pad so that, on facets side by side, the last
+  extreme is not cut by the axis end (a box plot instead starts on the tick closest below its
+  lowest whisker; see above). Choose the pad so that, on facets side by side, the last
   label of one facet cannot run into the first of the next (ED 2f, the old 2g, ends on a minor tick for this).
 
 ## Statistics on panels
@@ -246,8 +256,8 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | slot | script | content; size (mm) |
 |---|---|---|
 | Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal (x1,000), beside the MYC western, in the Prism format (graph 20 x 20 mm, no x axis, 0.9-pt lines, brackets without tips over the animals they compare, the WT window's *P* in the legend; since 2026-10-15); 30 x 28.5 |
-| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; tick labels, key and *P* 5 pt, titles 6 pt, exponent reduced, y title "Fraction of nuclear-encoded transcriptome (%)" (since 2026-10-15); 100 x 56 |
-| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 |
+| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; tick labels, key and *P* 5 pt, titles 6 pt, exponent reduced, y title "Fraction of nuclear-encoded transcriptome (%)"; upper graphs 28 mm tall, each axis from the tick below its lowest animal to the tick above its *P* label (since 2026-10-15); 100 x 60 |
+| Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; row labels and key 5 pt, group names and axis title 6 pt; 78 x 55 (since 2026-10-15) |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 100 x 56 |
 | Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 80 x 56 |
 | Fig. 1h | `fig1h_ratio_expected.R` | each BCL-2 ratio's expected 12W (6W x 0.43, the common shrink of the other eight) against observed, rows by gap; x axis "normalised to overall MYC activity"; 100 x 60 |
@@ -273,7 +283,7 @@ folded into Fig. 1f).
 
 **The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
 `outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
-- **Fig. 1**, 247 of 247 mm: bench row a-c 56 (placeholder); d 100 x 56 + e 80 (66); f 100 + g 80 (56);
+- **Fig. 1**, 241 of 247 mm: bench row a-c 56 (placeholder); d 100 x 60 + e 78 x 55 (60); f 100 + g 80 (56);
   h 100 + i 80 (60); 3-mm gaps.
 - **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
 - **ED 3**, about 165 mm: a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
