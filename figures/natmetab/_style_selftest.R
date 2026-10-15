@@ -19,7 +19,7 @@ comps <- data.frame(group1 = c("6W_neg", "12W_neg", "6W_neg", "6W_pos"),
 good <- function(minor = FALSE) {
   br <- brackets(comps, base = 9.8, step = 1.2)
   ggplot(d, aes(group, y)) +
-    geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.6,
+    geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.6, coef = Inf,
                  colour = box_line, linewidth = NM_LINE) +
     geom_point(aes(colour = group), position = position_jitter(width = 0.15, seed = 1),
                size = 0.9, shape = 16) +
@@ -108,6 +108,9 @@ p <- good() + scale_y_log10()
 expect_refused("a log axis under a drawn x axis", "has no 0", p)
 
 expect_refused("a panel taller than the page", "over the 170 mm page", good(), height = 180)
+
+p <- good(); p$layers[[1]]$stat_params$coef <- 1.5          # Tukey whiskers
+expect_refused("box whiskers that do not run min to max", "whiskers must run min to max", p)
 
 # --- stacked parts: each part is checked on its own ----------------------------------
 strip <- function(size = pt(6)) {

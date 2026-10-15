@@ -117,6 +117,10 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 
 - Every animal is shown (n = 6 per group) over a box. No bars with error bars, and no violins at
   n = 6.
+- **Boxes: median and interquartile range; whiskers minimum to maximum** **[checked]** (author,
+  2026-10-14). Prism draws every point only over min-max whiskers, so R matches it and one legend
+  sentence covers R and Prism panels: "boxes show the median and interquartile range, whiskers the
+  minimum and maximum, and dots individual animals". In R: `geom_boxplot(coef = Inf)`.
 - The chart form is checked against data-to-viz (https://www.data-to-viz.com/) and its caveats.
   Each script's header notes the caveats checked.
 - **No single central value on a group with values in both directions.** A median or mean of a

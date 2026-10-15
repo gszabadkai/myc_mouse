@@ -7,7 +7,8 @@
 # itself: the message does not fall where the protein does. ED Fig. 1a is the
 # rest of the network.
 #
-# FORM: one value per animal, four groups of six -> every animal over a box
+# FORM: one value per animal, four groups of six -> every animal over a box (median
+#   and interquartile range; whiskers minimum to maximum since 2026-10-14, as Prism)
 #   (data-to-viz, "Do boxplots hide information?": the points are drawn). A linear
 #   axis from 0, so a halving would read as half the height beside the blot.
 #   Groups age-major: three of the four tests compare within an age or across the
@@ -59,7 +60,7 @@ br <- brackets(tests[, c("group1", "group2", "p", "level")],
                base = max(d$y) * 1.06, step = 1700)
 
 p <- ggplot(d, aes(group, y)) +
-  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.6,
+  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.6, coef = Inf,   # min-max whiskers
                colour = box_line, linewidth = NM_LINE) +
   ggbeeswarm::geom_quasirandom(aes(colour = group), width = 0.2, size = 0.9, shape = 16) +
   br +
@@ -75,7 +76,7 @@ save_panel(p, fig = "Fig1", panel = "b", name = "myc_transcript", width = 48, he
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nFig. 1b -- for the legend\n")
 cat("  n = 6 mice per group; points are animals; boxes show median and interquartile",
-    "range, whiskers 1.5 x IQR.\n")
+    "range, whiskers minimum to maximum.\n")
 cat("  DESeq2 Wald test, ~ timepoint * genotype, IHW-adjusted P:\n")
 for (i in seq_len(nrow(tests))) {
   cat(sprintf("    %-8s vs %-8s log2FC %+.2f (SE %.2f)  P = %.2g\n",

@@ -333,6 +333,17 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
     }
   }
 
+  # boxes: whiskers run minimum to maximum (author, 2026-10-14). Prism draws every point
+  # only over min-max whiskers, so R matches it and one legend sentence covers both:
+  # "boxes show the median and interquartile range, whiskers the minimum and maximum".
+  for (i in seq_along(p$layers)) {
+    if (!inherits(p$layers[[i]]$geom, "GeomBoxplot")) next
+    cf <- p$layers[[i]]$stat_params$coef
+    if (is.null(cf) || !is.infinite(cf)) {
+      add("layer %d (box): whiskers must run min to max -- geom_boxplot(coef = Inf)", i)
+    }
+  }
+
   # axes: both ends on a tick; y from 0 (or spanning 0) whenever an x axis is drawn
   drawn <- function(ax) !all(vapply(sprintf(c("axis.text.%s", "axis.line.%s"),
                                             if (ax == "x") "x.bottom" else "y.left"),

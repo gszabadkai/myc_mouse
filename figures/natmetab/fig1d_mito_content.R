@@ -15,6 +15,7 @@
 #           points are in the MYC+ 6W and 12W colours of the shared key.
 #
 # FORM. Top: one value per animal, four groups of six -> every animal over a box
+#   (median and interquartile range; whiskers minimum to maximum since 2026-10-14, as Prism)
 #   (data-to-viz, "Do boxplots hide information?"). Each module has its own y axis
 #   from 0; the x axis is not drawn, so the key names the groups. Groups run
 #   genotype-major because the bracket is the genotype main effect.
@@ -102,7 +103,7 @@ frame <- data.frame(panel = factor(rep(names(tops), 2), levels = levels(df$panel
 
 p_top <- ggplot(df, aes(group, share_nomt)) +
   geom_blank(data = frame, aes(x = group, y = y), inherit.aes = FALSE) +
-  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.62,
+  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.62, coef = Inf,   # min-max whiskers
                colour = box_line, linewidth = NM_LINE) +
   ggbeeswarm::geom_quasirandom(aes(colour = group), width = 0.22, size = 0.7, shape = 16) +
   br +

@@ -26,9 +26,9 @@ of record in `figures/natmetab/` (2a.32); the replaced ones are in `figures/natm
 After the first handoff the author ran script 56, then asked for: ED 3b's fill scale narrowed; ED
 3d's lines as in 1i and its adjustment explained and relabelled "adjusted for immune content"; the
 grey band replaced by dashed lines at P = 0.05 and P = 0.01 (script 55 now saves the 99% line and an
-empirical P per gene); and the promotion. Committed: `125bb7f`, the promotion commit and this
-handoff. NOT PUSHED (the author asked to commit). FIRST: re-run script 55, then render the panels
-(section 2, item 1).**
+empirical P per gene); and the promotion. The author then re-ran script 55 and rendered the panels
+(23:36), and asked for min-max whiskers on every box, to match Prism (2a.32, item 6): done, and the
+three box panels re-rendered (23:45). All committed and pushed on 2026-10-15.**
 
 Read this file first. Sections 1, 2 and 2a are current as of **2026-10-14**. Section 2a has four
 parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
@@ -48,14 +48,14 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit, on top of the promotion commit and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line), `ccad756` (the first 2026-10-14 handoff) and `4fb3aa9` |
-| pushed | **not the evening's three commits** (the author asked to commit); everything up to `ccad756` is pushed |
+| HEAD | the whisker commit (2026-10-15), on top of `813993d` (the evening handoff), the promotion commit `969ee5c` and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line) |
+| pushed | everything, at the author's word (2026-10-15) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
-| scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`): dry-run only, **NOT YET RE-RUN**; ED 3b-c stop without it. **56** run by the author (matches the dry run exactly). **The next number is 57** |
-| results | `results/window_and_chain_statistics.rds` (script 56, run). `results/departure_from_myc_fade.rds` is the morning's: script 55 must be re-run for the 99% columns |
+| scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
+| results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
 | new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (passes), `FIGURE_RULES.md` (the built table is current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run (ED 3b-c against script 55's dry-run object). `page_mock_247.R` (moved out of `proposals/`) draws the three pages. `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. **The promoted panels have not been rendered into their figure folders yet** (section 2, item 1) |
+| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. All twenty panels are rendered and current: the promoted ones at 23:36, the three box panels again at 23:45 with min-max whiskers |
 | text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
@@ -70,20 +70,16 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Re-run script 55, then render the promoted panels** (Option A):
+1. **Done:** script 55 re-run and every panel rendered (2026-10-14, 23:36 and 23:45). To re-render
+   a panel after an edit, source its script (Option A); it overwrites its PDF in
+   `outputs/natmetab/<Fig>/`, linked placements in Illustrator update, embedded ones are re-placed:
    ```
-   source(here::here("scripts", "55_departure_from_myc_fade.R"))      # the 99% line; ED 3b-c need it
    NM <- here::here("figures", "natmetab")
-   for (f in c("fig1e_myc_reallocation", "fig1f_window_reallocation", "fig1g_bcl2_heatmap",
-               "fig1h_ratio_expected", "fig1i_coupling", "edfig2c_pathway_axis",
-               "edfig2f_window_two_rulers", "edfig3a_per_animal", "edfig3b_fade_ranking",
-               "edfig3c_puma_regulators", "edfig3d_coupling_both_fits"))
+   for (f in c("fig1b_myc_transcript", "fig1d_mito_content", "edfig3a_per_animal"))   # the panels edited
      source(file.path(NM, paste0(f, ".R")), local = new.env())
    source(file.path(NM, "page_mock_247.R"))                            # the three pages, a check
    ```
-   Already current, no re-run needed: Fig. 1b, 1d; ED 1a-c; ED 2a, 2b, 2d, 2e. Script 55 is
-   deterministic, so the run reproduces the dry run the panels were checked against.
-2. **Push** when the author says (the evening's commits are local).
+2. **Pushed** (2026-10-15): everything through the whisker commit.
 3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions.
 4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
    renumbering in 2a.31. Every legend number is printed by its script (2a.30).
@@ -100,7 +96,7 @@ Section 10 holds the threads parked for after the manuscript.
    - a number the text quotes is asserted in the script that computes it, and a panel computes no
      test: a statistic no object holds goes into a numbered script first (as 56 did today);
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
-     panel under `options(natmetab.dry_run = TRUE)` (14 of 14 pass).
+     panel under `options(natmetab.dry_run = TRUE)` (20 of 20 pass).
 7. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
 8. **Carried items, possibly moot now: ask before acting.**
@@ -123,8 +119,8 @@ Section 10 holds the threads parked for after the manuscript.
   `8bde9c4` and `3114ec2`.
 - **2026-10-14, 2a.23-2a.31:** the 247-mm page, two rounds of proposals, scripts 55 and 56. Pushed:
   `4fb3aa9` and `ccad756`.
-- **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, and the promotion.
-  Committed, not pushed.
+- **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, the promotion, and the
+  min-max whiskers. Pushed (2026-10-15): `125bb7f`, `969ee5c`, `813993d` and the whisker commit.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -938,8 +934,11 @@ one; ED 2f leaves (into 1f) and ED 2g becomes 2f; the FOXO3 regulators are ED 3c
    `edfig3d_coupling_both_fits.R`. All moved with `git mv`.
 6. **Prism (the author's question):** Fig. 1d's top is a box-and-whisker plot (median and IQR,
    Tukey whiskers at 1.5 x IQR) with every animal drawn. Prism shows all points only with
-   min-to-max whiskers, so the bench panels will differ from R's unless R switches to min-max
-   (`geom_boxplot(coef = Inf)`, Fig. 1b, 1d and ED 3a). **Offered, not done.**
+   min-to-max whiskers, so R switched to min-max (author: "yes change the whiskers to min max to
+   all panels with box and whiskers"): Fig. 1b, 1d and ED 3a use `geom_boxplot(coef = Inf)`, and
+   `save_panel()` now refuses a box whose whiskers do not run min to max (self-test case added).
+   Legend sentence for R and Prism alike: "boxes show the median and interquartile range, whiskers
+   the minimum and maximum, and dots individual animals".
 
 ---
 

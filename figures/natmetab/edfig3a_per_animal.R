@@ -8,8 +8,9 @@
 # and plot them together as in Fig 2H+I (alt): OXPHOS mitoPPS, PUMA:BCL-XL and Bax,
 # Bmf values." The form is Fig. 2H+I (alt) part A (figures/panels/
 # fig2_puma_chain_alt.R). Each quantity is standardised over the 24 animals, so
-# four quantities in three units share one axis. Each group shows a box and every
-# animal, genotype-major, so each genotype's 6W -> 12W pair sits side by side.
+# four quantities in three units share one axis. Each group shows a box (median and
+# IQR, whiskers minimum to maximum, as Prism) and every animal, genotype-major,
+# so each genotype's 6W -> 12W pair sits side by side.
 #
 #   OXPHOS (mitoPPS)  script 42's axis score = script 08's OXPHOS-subunit mitoPPS
 #   Bbc3:Bcl2l1       log2(PUMA) - log2(BCL-XL), script 42's ratio (log2 of
@@ -75,7 +76,7 @@ TOP <- max(attr(bl, "tops"))
 
 p <- ggplot(d, aes(group, z)) +
   geom_hline(yintercept = 0, linewidth = NM_LINE, colour = "grey85") +
-  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.62, colour = box_line,
+  geom_boxplot(aes(fill = group), outlier.shape = NA, width = 0.62, coef = Inf, colour = box_line,
                linewidth = NM_LINE) +
   ggbeeswarm::geom_quasirandom(aes(colour = group), width = 0.18, size = 0.7, shape = 16) +
   bl +
