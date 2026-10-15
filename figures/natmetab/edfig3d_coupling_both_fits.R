@@ -98,8 +98,8 @@ p <- ggplot(long, aes(x, y)) +
   scale_x_nm(step = 1, top = XL[2], bottom = XL[1], minor = TRUE, labels = lab_signed) +
   scale_y_nm(step = 1, top = YT, bottom = YB, minor = TRUE, labels = lab_signed) +
   coord_equal() +
-  labs(x = "OXPHOS priority (mitoPPS, z score)",
-       y = expression(italic("Bbc3:Bcl2l1") ~ "(log2 ratio, z score)")) +
+  labs(x = "OXPHOS priority (mitoPPS, z­score)",                 # z-score: a soft hyphen (author, 2026-10-15)
+       y = expression(italic("Bbc3:Bcl2l1") ~ "(log2 ratio, z­score)")) +
   guides(fill = guide_legend(order = 1, nrow = 2, override.aes = list(size = 1.5)),
          colour = guide_legend(order = 2, nrow = 2), linetype = guide_legend(order = 2, nrow = 2),
          linewidth = guide_legend(order = 2, nrow = 2)) +

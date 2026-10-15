@@ -61,8 +61,10 @@ grid.text(hy("a-c  in vivo panels (bench): tumour onset, Ki-67 / cleaved caspase
 for (k in 0:2) grid.text(letters[k + 1], x = mm(fx - 1.2 + k * 61), y = mm(PH - FY + 1.2),
                          just = c("left", "top"), gp = gpar(fontsize = 8, fontface = "bold"))
 place(fx, P$f1d, 0, 59, 100, 60, "d");   place(fx, P$f1e, 103, 59, 78, 55, "e")
-place(fx, P$f1f, 0, 122, 100, 56, "f");   place(fx, P$f1g, 103, 122, 80, 56, "g")
-place(fx, P$f1h, 0, 181, 100, 60, "h");   place(fx, P$f1i, 103, 181, 80, 60, "i")
+place(fx, P$f1f, 0, 122, 100, 56, "f")
+# g, h and i share one row of 180 mm (author, 2026-10-15)
+place(fx, P$f1g, 0, 181, 66, 56, "g");    place(fx, P$f1h, 69, 181, 52, 56, "h")
+place(fx, P$f1i, 124, 181, 56, 56, "i")
 
 # --- ED Fig. 2 --------------------------------------------------------------------
 fx <- page("Extended Data Fig. 2 on 180 x 247 mm", 180)

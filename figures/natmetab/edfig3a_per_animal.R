@@ -84,7 +84,7 @@ p <- ggplot(d, aes(group, z)) +
   scale_colour_manual(values = group_cols, labels = group_keys, name = NULL) +
   scale_fill_manual(values = group_fill, guide = "none") +
   scale_y_nm(step = 1, top = TOP, bottom = min(d$z) - 0.1, minor = TRUE, labels = lab_signed) +
-  labs(x = NULL, y = "Per animal (z score)") +
+  labs(x = NULL, y = "Per animal (z­score)") +           # z-score: a soft hyphen (author, 2026-10-15)
   guides(colour = guide_legend(nrow = 1, override.aes = list(size = 1.5))) +
   coord_cartesian(clip = "off") +
   theme_nm(legend = "bottom") +

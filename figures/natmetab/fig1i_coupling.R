@@ -15,6 +15,11 @@
 # terms removed. Without the adjustment it is 0.35. The MYC+ line spans both ages,
 # so part of it is the 6W-to-12W difference (the verification note, section 5).
 #
+# SIZE AND TYPE (author, 2026-10-15): g, h and i share one row of 180 mm, all as tall
+# as Fig. 1g (56 mm); the data area is square (equal ranges, coord_equal) and as large
+# as that height allows, so the page is as wide as it needs. Tick labels, the key and
+# the R2 label 5 pt, its superscript reduced as Fig. 1d's exponents; axis titles 6 pt.
+#
 # Reads: results/two_timeline_verification.rds (script 54)
 # Output: outputs/natmetab/Fig1/Fig1i_coupling.pdf
 # =============================================================================
@@ -22,6 +27,11 @@
 source(here::here("figures", "natmetab", "_style.R"))
 
 tv <- readRDS(here::here("results", "two_timeline_verification.rds"))
+
+TXT    <- 5     # pt; tick labels, the key, the R2 label
+TITLE  <- 6     # pt; the axis titles
+PAGE_H <- 56    # mm; as Fig. 1g
+
 pd <- as.data.frame(tv$coupling_panel)
 ln <- as.data.frame(tv$coupling_lines)
 cf <- as.data.frame(tv$coupling_fits)
@@ -62,8 +72,8 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
                                linetype = genotype, linewidth = genotype), inherit.aes = FALSE) +
   geom_point(aes(fill = group), shape = 21, size = 1.4, stroke = 0.2, colour = "grey20") +
   annotate("text", x = XL[1] + 0.15, y = YL[2] - 0.1, hjust = 0, vjust = 1, parse = TRUE,
-           label = sprintf('"MYC+"~italic(R)^displaystyle(2)=="%.2f"', R2),
-           size = pt(NM_TXT), family = NM_FONT) +
+           label = sprintf('"MYC+"~italic(R)^scriptstyle(2)=="%.2f"', R2),
+           size = pt(TXT), family = NM_FONT) +
   scale_colour_manual(values = geno_cols, labels = geno_labels, name = NULL) +
   scale_linetype_manual(values = c(neg = "22", pos = "solid"), labels = geno_labels, name = NULL) +
   scale_linewidth_manual(values = c(neg = 0.35, pos = 0.55), labels = geno_labels, name = NULL) +
@@ -71,18 +81,25 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
   scale_x_nm(step = 1, top = XL[2], bottom = XL[1], minor = TRUE, labels = lab_signed) +
   scale_y_nm(step = 1, top = YL[2], bottom = YL[1], minor = TRUE, labels = lab_signed) +
   coord_equal() +
-  labs(x = "OXPHOS priority (mitoPPS, z score)",
+  labs(x = "OXPHOS priority (mitoPPS, z­score)",                 # z-score: a soft hyphen (author, 2026-10-15)
        # "adjusted for immune content", as ED 3d (author, 2026-10-14): "adjusted" alone, and
        # "epithelial content", read as adjusting for the MECs themselves
-       y = expression(atop(italic("Bbc3:Bcl2l1") ~ "(z score),", "adjusted for immune content"))) +
+       y = expression(atop(italic("Bbc3:Bcl2l1") ~ "(z­score),", "adjusted for immune content"))) +
   guides(fill = guide_legend(order = 1, nrow = 2, override.aes = list(size = 1.5)),
          colour = guide_legend(order = 2, nrow = 2), linetype = guide_legend(order = 2, nrow = 2),
          linewidth = guide_legend(order = 2, nrow = 2)) +
-  theme_nm(legend = "bottom") +
+  theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
   theme(legend.key.size = unit(2.4, "mm"), legend.key.width = unit(4, "mm"),
         legend.box = "horizontal")
 
-save_panel(p, fig = "Fig1", panel = "i", name = "coupling", width = 80, height = 60)
+# The square data area as large as PAGE_H allows: measured with a 30-mm square, the
+# rest of the panel (axes, titles, key, margins) is fixed, so the square is PAGE_H minus
+# that rest, and the page as wide as the square plus its rest.
+rest  <- natural_size(fixed_size(p, 30, 30)) - 30
+SIDE  <- PAGE_H - rest[["height"]]
+panel <- fixed_size(p, SIDE, SIDE)
+save_panel(panel, fig = "Fig1", panel = "i", name = "coupling",
+           width = ceiling((SIDE + rest[["width"]]) * 2) / 2, height = PAGE_H)
 
 cat(sprintf("\n1i -- for the legend: adjusted for immune content -- the pooled model's shared covariates are\n"))
 cat(sprintf("  script 42's immune and epithelial marker scores, which estimate each unsorted prep's\n"))

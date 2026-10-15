@@ -54,10 +54,12 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   or Arial. The manuscript's Arial does not need matching, because Nature typesets the text.
 - **Sizes:** 6 pt for tick labels, keys, on-panel labels and P values; 7 pt for axis titles and
   strips. Nothing below 5 pt **[checked]**, except a reduced exponent (next point). A panel in the
-  Prism format is a point smaller (5 and 6 pt; see below), and so are Fig. 1d and 1e (author,
-  2026-10-15: 5 pt for tick and row labels, keys and P values, 6 pt for strip and axis titles).
+  Prism format is a point smaller (5 and 6 pt; see below), and so are Fig. 1d to 1i (author,
+  2026-10-15: 5 pt for tick and row labels, keys, P values and tile numbers; 6 pt for strip and
+  axis titles, group names and a colour bar's title).
 - **A P value's exponent prints at the label's size, unless the author asks for it reduced**
-  (Fig. 1d, 2026-10-15: "superscript size should be reduced"). `brackets(exponent = "reduced")`
+  (Fig. 1d, 2026-10-15: "superscript size should be reduced"; Fig. 1i's *R*2 the same).
+  `brackets(exponent = "reduced")`
   sets it in plotmath's script style, 70% of the label, which prints at 4 pt inside a 5-pt label:
   the one text allowed under 5 pt. A superscript in no named style is refused **[checked]**,
   because plotmath prints it at 70% with a gap after its minus.
@@ -246,6 +248,8 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
   its unit ("Expression (log2 fold change)", "Priority (mitoPPS)").
 - Gene symbols on axes are italic; set and programme names are not. Row labels start with a
   capital (Nature lettering).
+- **"z-score", hyphenated, everywhere** (author, 2026-10-15), with the soft hyphen so it does not
+  print as a minus (Type, above). An italic *z* for a test statistic stays as it is (ED 3b, 3c).
 
 ## Built
 
@@ -258,10 +262,10 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal (x1,000), beside the MYC western, in the Prism format (graph 20 x 20 mm, no x axis, 0.9-pt lines, brackets without tips over the animals they compare, the WT window's *P* in the legend; since 2026-10-15); 30 x 28.5 |
 | Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; tick labels, key and *P* 5 pt, titles 6 pt, exponent reduced, y title "Fraction of nuclear-encoded transcriptome (%)"; upper graphs 28 mm tall, each axis from the tick below its lowest animal to the tick above its *P* label (since 2026-10-15); 100 x 60 |
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; row labels and key 5 pt, group names and axis title 6 pt; 78 x 55 (since 2026-10-15) |
-| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 100 x 56 |
-| Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 80 x 56 |
-| Fig. 1h | `fig1h_ratio_expected.R` | each BCL-2 ratio's expected 12W (6W x 0.43, the common shrink of the other eight) against observed, rows by gap; x axis "normalised to overall MYC activity"; 100 x 60 |
-| Fig. 1i | `fig1i_coupling.R` | OXPHOS priority against *Bbc3:Bcl2l1*, adjusted for immune content; WT dashed and thinner; MYC+ *R*2 on the panel, *P* values in the legend; 80 x 60 |
+| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 5/6 pt (since 2026-10-15); 100 x 56 |
+| Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 5/6 pt, the key titled "z-score", unframed, at the top beside the two short role names (since 2026-10-15); 66 x 56 |
+| Fig. 1h | `fig1h_ratio_expected.R` | each BCL-2 ratio's expected 12W (6W x 0.43, the common shrink of the other eight) against observed, rows by gap; x axis "normalised to overall MYC activity", its title on two lines; 5/6 pt (since 2026-10-15); 52 x 56 |
+| Fig. 1i | `fig1i_coupling.R` | OXPHOS priority against *Bbc3:Bcl2l1*, adjusted for immune content; WT dashed and thinner; MYC+ *R*2 on the panel, *P* values in the legend; 5/6 pt, the square data area as large as the 56-mm height allows (since 2026-10-15); 56 x 56 |
 | ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals; 80 x 64 |
 | ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49; 58 x 58 |
 | ED 1c | `edfig1c_nes_by_programme.R` | NES of every gene set at 6W and 12W, by programme; 112 x 80 |
@@ -283,8 +287,8 @@ folded into Fig. 1f).
 
 **The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
 `outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
-- **Fig. 1**, 241 of 247 mm: bench row a-c 56 (placeholder); d 100 x 60 + e 78 x 55 (60); f 100 + g 80 (56);
-  h 100 + i 80 (60); 3-mm gaps.
+- **Fig. 1**, 237 of 247 mm: bench row a-c 56 (placeholder); d 100 x 60 + e 78 x 55 (60); f 100 x 56;
+  g 66 + h 52 + i 56, all 56 tall, one row of 180 (author, 2026-10-15); 3-mm gaps.
 - **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
 - **ED 3**, about 165 mm: a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
 

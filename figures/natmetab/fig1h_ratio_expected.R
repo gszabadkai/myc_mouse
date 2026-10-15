@@ -20,6 +20,13 @@
 # carries it. The factor is the RATIO SET's common shrink (0.43), not the
 # gene-level fade of script 55 (0.49); the legend must name which one it is.
 #
+# TYPE (2026-10-15, as Fig. 1d and 1e): row and tick labels and the key 5 pt, the
+# axis title 6 pt.
+#
+# SIZE (author, 2026-10-15): g, h and i share one row of 180 mm (66 + 52 + 56 and two
+# 3-mm gaps); h is as tall as g (56 mm) and narrows most, by a shorter x axis, so the
+# axis title takes two lines.
+#
 # Reads: results/two_timeline_verification.rds (script 54: $ratios, $ratio_line)
 # Output: outputs/natmetab/Fig1/Fig1h_ratio_expected.pdf
 # =============================================================================
@@ -27,6 +34,9 @@
 source(here::here("figures", "natmetab", "_style.R"))
 
 tv <- readRDS(here::here("results", "two_timeline_verification.rds"))
+
+TXT   <- 5      # pt; row and tick labels, the key
+TITLE <- 6      # pt; the axis title
 pr <- as.data.frame(tv$ratios)
 ln <- as.data.frame(tv$ratio_line)
 TARGET <- tv$params$target_ratio
@@ -67,13 +77,13 @@ p <- ggplot(long, aes(x, row)) +
   scale_size_manual(values = c(expected = 1.6, observed = 1.1), guide = "none") +
   scale_y_discrete(labels = parse(text = ylab)) +
   scale_x_nm(step = 0.2, top = hi + pad, bottom = lo - pad, minor = TRUE, labels = lab_signed) +
-  labs(x = "MYC+ vs WT (normalised to overall MYC activity)", y = NULL) +
+  labs(x = "MYC+ vs WT (normalised\nto overall MYC activity)", y = NULL) +
   guides(colour = guide_legend(override.aes = list(size = c(1.6, 1.1)), nrow = 1)) +
-  theme_nm(legend = "bottom") +
+  theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank(),
         legend.key.size = unit(2.4, "mm"))
 
-save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 100, height = 60)
+save_panel(p, fig = "Fig1", panel = "h", name = "ratio_expected", width = 52, height = 56)
 
 cat(sprintf("\n1h -- for the legend: the 6W points are scaled by the common shrink %.3f (SE %.3f), the line\n",
             SLOPE, L8$slope_se))

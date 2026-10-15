@@ -36,6 +36,9 @@
 # BATCH: 6W and 12W were extracted as separate batches, so both windows coincide
 # with batch; matched sets and paired sets share it (legend).
 #
+# TYPE (2026-10-15, as Fig. 1d and 1e): row and tick labels, the key and the P value
+# 5 pt, the axis titles and the group names 6 pt.
+#
 # Reads:  results/background_vs_myc.rds            (script 40: $ruler)
 #         results/substrate_specificity_tradeoff.rds (script 43: $comparator, $paired_null)
 #         results/two_timeline_verification.rds    (script 54: $arm_null)
@@ -54,6 +57,9 @@ tv    <- readRDS(here::here("results", "two_timeline_verification.rds"))
 an    <- as.data.frame(tv$arm_null)
 wn56  <- as.data.frame(readRDS(here::here("results", "window_and_chain_statistics.rds"))$window_null)
 pw    <- as.data.frame(readRDS(here::here("results", "mitopps_scores.rds"))$mitopps_pairwise)
+
+TXT   <- 5      # pt; row and tick labels, the key and the P value
+TITLE <- 6      # pt; the axis titles and the group names
 
 GROUPS <- c(dev = "Development\nprogrammes", mito = "Mitochondrial\npathways")
 
@@ -106,7 +112,7 @@ stopifnot(identical(is.na(rows$padj_neg), rows$group == "dev"),
 # --- the paired comparison the bracket draws (WT window, script 43) ---------------------
 pp <- pn[pn$arm_a == "OXPHOS subunits" & pn$arm_b == "PROLIF_* pooled", ]
 stopifnot(nrow(pp) == 1L, pp$observed_diff < 0)
-p_lab <- if (pp$p_emp_lower == 0) "italic(P)<'0.0005'" else fmt_p(pp$p_emp_lower)
+p_lab <- if (pp$p_emp_lower == 0) "italic(P)<'0.0005'" else fmt_p(pp$p_emp_lower, exponent = "reduced")
 
 # --- rows top to bottom, one panel, a gap between the groups -------------------------------
 rows <- rows[order(match(rows$group, names(GROUPS)), rows$expr_neg), ]
@@ -163,7 +169,7 @@ one_ruler <- function(d, x0, x1, xtitle, show_rows) {
     guides(colour = guide_legend(order = 1, override.aes = list(size = unname(PT_SIZE), shape = 16)),
            shape  = guide_legend(order = 2, override.aes = list(size = 1.4, colour = "black"))) +
     coord_cartesian(clip = "off") +
-    theme_nm(legend = "bottom") +
+    theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
     theme(axis.line.y = element_blank(), axis.ticks.y = element_blank())
   if (show_rows) g else g + theme(axis.text.y = element_blank())
 }
@@ -180,14 +186,14 @@ p_ex <- one_ruler(ex, min(ex$val) - pad(ex$val), max(ex$val) + pad(ex$val),
   geom_segment(data = br, aes(x = x, xend = xend, y = y, yend = yend), inherit.aes = FALSE,
                linewidth = NM_LINE, colour = "black") +
   annotate("text", x = XB + 0.02, y = mean(yb), label = p_lab, parse = TRUE, hjust = 0,
-           size = pt(NM_TXT), family = NM_FONT)
+           size = pt(TXT), family = NM_FONT)
 p_pr <- one_ruler(pr, min(pr$val) - pad(pr$val), max(pr$val) + pad(pr$val),
                   "Priority\n(mitoPPS)", FALSE) +
   guides(shape = "none")              # one shape key, from the expression ruler, for both
 x_right <- layer_scales(p_pr)$x$get_limits()[2]
 p_pr <- p_pr +
   annotate("text", x = x_right + 0.03, y = grp_y[names(GROUPS)], label = GROUPS, hjust = 0,
-           vjust = 0.5, lineheight = 0.95, size = pt(NM_TXT), family = NM_FONT) +
+           vjust = 0.5, lineheight = 0.95, size = pt(TITLE), family = NM_FONT) +
   theme(plot.margin = margin(1, 15, 1, 1, "mm"))
 
 save_panel(stack_parts(p_ex, p_pr, ncol = 2, widths = c(1.15, 1), collect_guides = TRUE),
