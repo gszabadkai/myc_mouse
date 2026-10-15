@@ -60,7 +60,7 @@ grid.text(hy("a-c  in vivo panels (bench): tumour onset, Ki-67 / cleaved caspase
           x = mm(fx + 91.5), y = mm(PH - FY - 28), gp = gpar(fontsize = 7, col = "grey40", fontfamily = "Helvetica"))
 for (k in 0:2) grid.text(letters[k + 1], x = mm(fx - 1.2 + k * 61), y = mm(PH - FY + 1.2),
                          just = c("left", "top"), gp = gpar(fontsize = 8, fontface = "bold"))
-place(fx, P$f1d, 0, 59, 100, 66, "d");    place(fx, P$f1e, 103, 59, 80, 66, "e")
+place(fx, P$f1d, 0, 59, 100, 56, "d");    place(fx, P$f1e, 103, 59, 80, 66, "e")
 place(fx, P$f1f, 0, 128, 100, 56, "f");   place(fx, P$f1g, 103, 128, 80, 56, "g")
 place(fx, P$f1h, 0, 187, 100, 60, "h");   place(fx, P$f1i, 103, 187, 80, 60, "i")
 

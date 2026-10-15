@@ -23,6 +23,15 @@
 #   histogram added nothing the points do not show). Both rows have a single
 #   peak, so a median is a fair summary here (FIGURE_RULES.md, Showing data).
 #
+# FORMAT (author, 2026-10-15): 56 mm tall (was 66); tick labels, the key and P values
+#   5 pt, strip and axis titles 6 pt, as the Prism-format panel (Fig. 1b); the exponent
+#   of a P value reduced (fmt_p's scriptstyle: 4 pt inside the 5-pt label).
+#
+# THE Y TITLE names the ruler: script 32's share_nomt leaves the 13 mtDNA-encoded
+#   transcripts (7-16% of each library) out of the denominator, so the values are a
+#   fraction of the nuclear-encoded transcriptome, not of the total. Script 32's
+#   share_all is the fraction of the total; it moves the text's 20-33% to 21-33%.
+#
 # STATISTICS. Top: script 32's model, lm(log2 share ~ timepoint + myc_status); the
 #   bracket P is its genotype main effect, read from results/mito_content_proxies.rds
 #   $share_stats and asserted against a refit here. Bottom: descriptive; values are
@@ -37,6 +46,9 @@ source(here::here("figures", "natmetab", "_style.R"))
 
 content <- readRDS(here::here("results", "mito_content_proxies.rds"))
 bg      <- readRDS(here::here("results", "background_vs_myc.rds"))
+
+TXT   <- 5      # pt; tick labels, the key and P values
+TITLE <- 6      # pt; strip titles and axis titles
 
 # =============================================================================
 # TOP: the module shares
@@ -96,7 +108,7 @@ brk_fun <- function(lims) ybreaks[[which.min(abs(tops - lims[2]))]]
 
 comps <- data.frame(panel = factor(names(fac_max), levels = levels(df$panel)),
                     group1 = 1.5, group2 = 3.5, p = stats[arms, "geno_p"])
-br    <- brackets(comps, base = unname(base), step = unname(step))
+br    <- brackets(comps, base = unname(base), step = unname(step), txt = TXT, exponent = "reduced")
 frame <- data.frame(panel = factor(rep(names(tops), 2), levels = levels(df$panel)),
                     group = factor(order_by_geno[1], levels = order_by_geno),
                     y = c(rep(0, length(tops)), unname(tops)))
@@ -111,13 +123,13 @@ p_top <- ggplot(df, aes(group, share_nomt)) +
   scale_colour_manual(values = group_cols, labels = group_keys, name = NULL) +
   scale_fill_manual(values = group_fill, guide = "none") +
   scale_y_continuous(breaks = brk_fun, labels = lab_num, expand = c(0, 0)) +
-  labs(x = NULL, y = "Share of nuclear\ntranscriptome (%)") +
+  labs(x = NULL, y = "Fraction of nuclear­encoded\ntranscriptome (%)") +   # soft hyphen: pdf() prints "-" as a minus
   guides(colour = guide_legend(nrow = 1, override.aes = list(size = 1.5))) +
-  theme_nm(legend = "bottom") +
+  theme_nm(legend = "bottom", txt = TXT, txt_title = TITLE) +
   theme(axis.text.x  = element_blank(),
         axis.ticks.x = element_blank(),
         axis.line.x  = element_blank(),
-        strip.text   = element_text(size = NM_TXT, lineheight = 0.95),
+        strip.text   = element_text(size = TITLE, lineheight = 0.95),
         panel.spacing.x = unit(2.5, "mm"),
         legend.margin = margin(0, 0, 0, 0))
 
@@ -148,11 +160,11 @@ p_bot <- ggplot(eff, aes(lfc, row)) +
   scale_x_nm(step = 0.5, top = max(eff$lfc), bottom = min(eff$lfc), minor = TRUE,
              labels = lab_signed) +
   labs(x = "MYC+ vs WT, per MitoPathway (log2 fold change)", y = NULL) +
-  theme_nm() +
+  theme_nm(txt = TXT, txt_title = TITLE) +
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank())
 
 save_panel(stack_parts(p_top, p_bot, heights = c(3, 1.25), collect_guides = TRUE),
-           fig = "Fig1", panel = "d", name = "mito_content", width = 100, height = 66)
+           fig = "Fig1", panel = "d", name = "mito_content", width = 100, height = 56)
 
 # --- numbers for the legend (printed, never drawn) --------------------------------
 cat("\nFig. 1d -- for the legend\n")

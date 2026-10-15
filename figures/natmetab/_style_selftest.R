@@ -53,6 +53,9 @@ expect_ok("P labels format as specified", stopifnot(identical(
   fmt_p(c(0.484, 0.05, 1, 0.0074, 2.653779e-17, 0.000999)),
   c("italic(P)=='0.48'", "italic(P)=='0.050'", "italic(P)=='1.0'", "italic(P)=='0.0074'",
     "italic(P)=='2.7'%*%10^displaystyle('-17')", "italic(P)=='1'%*%10^displaystyle('-3')"))))
+expect_ok("a reduced exponent is named scriptstyle", stopifnot(identical(
+  fmt_p(c(2.653779e-17, 0.0074), exponent = "reduced"),
+  c("italic(P)=='2.7'%*%10^scriptstyle('-17')", "italic(P)=='0.0074'"))))
 expect_ok("tick labels: commas, '0', no trailing zeros", stopifnot(
   identical(lab_num(c(0, 4000, 16000)), c("0", "4,000", "16,000")),
   identical(lab_signed(c(-0.5, 0, 0.25)), c("-0.5", "0", "+0.25"))))
@@ -72,7 +75,7 @@ p <- good() + annotate("text", x = 1, y = 1, label = "note", size = pt(6), colou
 expect_refused("coloured text", "coloured text", p)
 
 p <- good(); p$layers[[3]]$data$label <- "italic(P)==2.7%*%10^-17"
-expect_refused("a shrunken superscript", "superscript", p)
+expect_refused("a superscript in no named style", "superscript", p)
 
 p <- good() + theme(axis.text = element_text(size = 4.5))
 expect_refused("theme text under 5 pt", "theme axis.text", p)
@@ -134,6 +137,20 @@ expect_ok("a bracket without tips is its bar alone, with its P label", {
             length(labs) == nrow(comps), all(vapply(labs, function(t) is.expression(t$label), TRUE)))
 })
 expect_refused("a bracket without tips under 5 pt", "text at 4.50 pt", tipless(txt = 4.5))
+
+# --- a reduced exponent (Fig. 1d): passes, and prints at 4 pt in a 5-pt label ----------
+expect_ok("brackets with a reduced exponent pass", check_panel(
+  ggplot(d, aes(group, y)) + geom_point() +
+    brackets(comps, base = 9.8, step = 1.2, txt = 5, exponent = "reduced") +
+    scale_y_nm(step = 4, top = 14) + theme_nm(txt = 5, txt_title = 6), 50, 50))
+expect_ok("a reduced exponent prints at 4 pt in a 5-pt label (70%, rounded by pdf())", {
+  f <- tempfile(fileext = ".pdf"); on.exit(unlink(f))
+  grDevices::pdf(f, compress = FALSE, family = NM_FONT)
+  grid::grid.text(parse(text = fmt_p(2.653779e-17, exponent = "reduced")), gp = grid::gpar(fontsize = 5))
+  invisible(grDevices::dev.off())
+  tm <- grep("Tm \\((2.7|-17)\\) Tj", readLines(f, warn = FALSE), value = TRUE, useBytes = TRUE)
+  stopifnot(length(tm) == 2L, grepl("Tf 5.00 .*\\(2.7\\)", tm[1]), grepl("Tf 4.00 .*\\(-17\\)", tm[2]))
+})
 expect_refused("a fixed-size panel saved smaller than it needs", "edges would be cut", {
   old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
   suppressMessages(save_panel(fixed_size(good(), 30, 30), "Fig1", "z", "selftest_fixed", 30, 30))

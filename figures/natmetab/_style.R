@@ -159,20 +159,25 @@ lab_signed <- function(x) {
 
 # --- P values: formatted here, never computed here -----------------------------
 # Exact, two significant figures, italic capital P (the journal's house style),
-# x 10^k below 0.001. The exponent is a quoted string inside displaystyle():
-# plotmath otherwise prints superscripts at ~70% size (4.2 pt inside a 6 pt label)
-# and puts a gap after an unquoted minus. Plotmath keeps the source ASCII.
-fmt_p <- function(p) {
+# x 10^k below 0.001. The exponent is a quoted string, because plotmath puts a gap
+# after an unquoted minus, inside a style named on purpose:
+#   exponent = "full"     displaystyle(): the exponent at the label's size (the default)
+#   exponent = "reduced"  scriptstyle(): at 70% of it, which base pdf() rounds to a
+#                         whole point: 4 pt inside a 5 pt label, read from the PDF
+#                         (author, 2026-10-15, Fig. 1d: "superscript size should be reduced")
+# check_panel() refuses a superscript in neither style. Plotmath keeps the source ASCII.
+fmt_p <- function(p, exponent = c("full", "reduced")) {
+  style <- c(full = "displaystyle", reduced = "scriptstyle")[[match.arg(exponent)]]
   stopifnot(is.numeric(p), !anyNA(p), all(p >= 0 & p <= 1))
   vapply(p, function(v) {
     if (v >= 0.001) {
       return(sprintf("italic(P)=='%s'", formatC(signif(v, 2), format = "fg", digits = 2, flag = "#")))
     }
-    if (v < 1e-300) return("italic(P)<10^displaystyle('-300')")
+    if (v < 1e-300) return(sprintf("italic(P)<10^%s('-300')", style))
     e <- floor(log10(v))
     m <- signif(v / 10^e, 2)
     if (m >= 10) { m <- m / 10; e <- e + 1 }
-    sprintf("italic(P)=='%s'%%*%%10^displaystyle('%d')", format(m), e)
+    sprintf("italic(P)=='%s'%%*%%10^%s('%d')", format(m), style, e)
   }, character(1))
 }
 
@@ -195,11 +200,13 @@ fmt_p <- function(p) {
 #   tips       FALSE draws the bar alone, without the downward ends (the Prism format,
 #              Fig. 1b). ggpubr would still draw each tip as a zero-length segment, a
 #              stray point in Illustrator, so the bar is all that is drawn.
+#   exponent   "full" or "reduced": the size of a P value's exponent (fmt_p)
 #
 # Returns the layer, with attr "top": the y the axis must reach so the top label
 # is not clipped. Pass it on: scale_y_nm(step = ..., top = attr(br, "top")).
 # attr "tops" gives the same per bracket, for per-facet scales.
-brackets <- function(comps, base, step, txt = NM_TXT, line = NM_LINE, tips = TRUE) {
+brackets <- function(comps, base, step, txt = NM_TXT, line = NM_LINE, tips = TRUE,
+                     exponent = "full") {
   stopifnot(is.data.frame(comps), all(c("group1", "group2", "p") %in% names(comps)),
             nrow(comps) >= 1L, is.numeric(base), length(base) %in% c(1L, nrow(comps)),
             is.numeric(step), length(step) %in% c(1L, nrow(comps)), all(step > 0),
@@ -211,7 +218,7 @@ brackets <- function(comps, base, step, txt = NM_TXT, line = NM_LINE, tips = TRU
     comps$level <- if (length(base) > 1L) 1 else seq_len(nrow(comps))
   }
   comps$y.position <- base + (comps$level - 1) * step
-  comps$label <- fmt_p(comps$p)
+  comps$label <- fmt_p(comps$p, exponent)
   layer <- ggpubr::geom_bracket(
     data = comps, inherit.aes = FALSE,
     mapping = ggplot2::aes(xmin = group1, xmax = group2,
@@ -355,8 +362,10 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
     if (!is.null(d$family) && any(!d$family %in% c("", NM_FONT))) {
       add("layer %d (%s): font is not %s", i, g, NM_FONT)
     }
-    if (!is.null(d$label) && any(grepl("\\^(?!displaystyle\\()", as.character(d$label), perl = TRUE))) {
-      add("layer %d (%s): a superscript would print at ~70%% size", i, g)
+    # a superscript prints at the size fmt_p() names; a bare one comes out at ~70% by
+    # default, with a gap after its minus
+    if (!is.null(d$label) && any(grepl("\\^(?!(displaystyle|scriptstyle)\\()", as.character(d$label), perl = TRUE))) {
+      add("layer %d (%s): a superscript in no named style would print at ~70%% size", i, g)
     }
   }
 

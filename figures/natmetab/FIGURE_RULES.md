@@ -53,8 +53,16 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Helvetica throughout:** R panels, Prism graphs and Illustrator labels. Nature accepts Helvetica
   or Arial. The manuscript's Arial does not need matching, because Nature typesets the text.
 - **Sizes:** 6 pt for tick labels, keys, on-panel labels and P values; 7 pt for axis titles and
-  strips. Nothing below 5 pt **[checked]**, superscripts included **[checked]**. A panel in the
-  Prism format is a point smaller (5 and 6 pt; see below).
+  strips. Nothing below 5 pt **[checked]**, except a reduced exponent (next point). A panel in the
+  Prism format is a point smaller (5 and 6 pt; see below), and so is Fig. 1d (author, 2026-10-15:
+  5 pt for tick labels, the key and P values, 6 pt for strip and axis titles).
+- **A P value's exponent prints at the label's size, unless the author asks for it reduced**
+  (Fig. 1d, 2026-10-15: "superscript size should be reduced"). `brackets(exponent = "reduced")`
+  sets it in plotmath's script style, 70% of the label, which prints at 4 pt inside a 5-pt label:
+  the one text allowed under 5 pt. A superscript in no named style is refused **[checked]**,
+  because plotmath prints it at 70% with a gap after its minus.
+- **Base `pdf()` rounds every font size to a whole point** (read from the PDF, 2026-10-15): 5.4 pt
+  prints at 5, 5.5 at 6, and a 70% exponent in a 5-pt label at 4. Use whole-point sizes.
 - **Black text only.** Colour belongs to marks and keys, never to text. **[checked]**
 - Lettering is lower case with the first letter capitalised (Nature), e.g. "Myc mRNA (x1,000,
   normalised counts)".
@@ -100,7 +108,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   A plot never computes them: no `ggpubr::stat_compare_means()`, no ggstatsplot. At n = 6 against 6,
   a Wilcoxon test cannot go below P = 0.0022, while DESeq2 gives 2.7 x 10^-17 for *Myc*.
 - P values are exact, to two significant figures, with an italic capital *P* (the journal's house
-  style). Below 0.001 they are written as x 10^k, with the exponent at full size.
+  style). Below 0.001 they are written as x 10^k, with the exponent at full size unless the panel
+  reduces it (Type, above).
 - DESeq2's adjusted P values are IHW-adjusted (weighted BH). Legends say "IHW-adjusted P, DESeq2
   Wald test".
 - Brackets are drawn with `ggpubr::geom_bracket()` through `brackets()` in the style file. That is
@@ -237,7 +246,7 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | slot | script | content; size (mm) |
 |---|---|---|
 | Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal (x1,000), beside the MYC western, in the Prism format (graph 20 x 20 mm, no x axis, 0.9-pt lines, brackets without tips over the animals they compare, the WT window's *P* in the legend; since 2026-10-15); 30 x 28.5 |
-| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; 100 x 66 |
+| Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; tick labels, key and *P* 5 pt, titles 6 pt, exponent reduced, y title "Fraction of nuclear-encoded transcriptome (%)" (since 2026-10-15); 100 x 56 |
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 100 x 56 |
 | Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 80 x 56 |
@@ -264,7 +273,7 @@ folded into Fig. 1f).
 
 **The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
 `outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
-- **Fig. 1**, 247 of 247 mm: bench row a-c 56 (placeholder); d 100 + e 80 (66); f 100 + g 80 (56);
+- **Fig. 1**, 247 of 247 mm: bench row a-c 56 (placeholder); d 100 x 56 + e 80 (66); f 100 + g 80 (56);
   h 100 + i 80 (60); 3-mm gaps.
 - **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
 - **ED 3**, about 165 mm: a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
