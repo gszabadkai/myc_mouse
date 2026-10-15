@@ -28,13 +28,14 @@ After the first handoff the author ran script 56, then asked for: ED 3b's fill s
 grey band replaced by dashed lines at P = 0.05 and P = 0.01 (script 55 now saves the 99% line and an
 empirical P per gene); and the promotion. The author then re-ran script 55 and rendered the panels
 (23:36), and asked for min-max whiskers on every box, to match Prism (2a.32, item 6): done, and the
-three box panels re-rendered (23:45). All committed and pushed on 2026-10-15.**
+three box panels re-rendered (23:45). All committed and pushed on 2026-10-15 (`e37da20`).
+2026-10-15: Fig. 1b redrawn in the Prism format (2a.33), committed and pushed; the author re-renders it.**
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-14**. Section 2a has four
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-15**. Section 2a has four
 parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
 (2026-10-12, afternoon, 2a.7-2a.13), the arguments and proposals of 2026-10-13 (2a.14-2a.22), and the
 247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31), and the
-evening's changes and the promotion (2a.32).
+evening's changes and the promotion (2a.32), and Fig. 1b in the Prism format (2026-10-15, 2a.33).
 All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
@@ -48,7 +49,7 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | the whisker commit (2026-10-15), on top of `813993d` (the evening handoff), the promotion commit `969ee5c` and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line) |
+| HEAD | the Fig. 1b Prism-format commit (2026-10-15), on top of `e37da20` (the min-max whiskers), `813993d` (the evening handoff), the promotion commit `969ee5c` and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line) |
 | pushed | everything, at the author's word (2026-10-15) |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
@@ -70,7 +71,9 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Done:** script 55 re-run and every panel rendered (2026-10-14, 23:36 and 23:45). To re-render
+1. **Re-render Fig. 1b** (the Prism format, 2a.33): `source(here::here("figures", "natmetab",
+   "fig1b_myc_transcript.R"))`. Every other panel is current: script 55 re-run and all panels
+   rendered on 2026-10-14 (23:36 and 23:45). To re-render
    a panel after an edit, source its script (Option A); it overwrites its PDF in
    `outputs/natmetab/<Fig>/`, linked placements in Illustrator update, embedded ones are re-placed:
    ```
@@ -79,7 +82,7 @@ Section 10 holds the threads parked for after the manuscript.
      source(file.path(NM, paste0(f, ".R")), local = new.env())
    source(file.path(NM, "page_mock_247.R"))                            # the three pages, a check
    ```
-2. **Pushed** (2026-10-15): everything through the whisker commit.
+2. **Pushed** (2026-10-15): everything through the Fig. 1b Prism-format commit.
 3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions.
 4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
    renumbering in 2a.31. Every legend number is printed by its script (2a.30).
@@ -120,7 +123,8 @@ Section 10 holds the threads parked for after the manuscript.
 - **2026-10-14, 2a.23-2a.31:** the 247-mm page, two rounds of proposals, scripts 55 and 56. Pushed:
   `4fb3aa9` and `ccad756`.
 - **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, the promotion, and the
-  min-max whiskers. Pushed (2026-10-15): `125bb7f`, `969ee5c`, `813993d` and the whisker commit.
+  min-max whiskers. Pushed (2026-10-15): `125bb7f`, `969ee5c`, `813993d` and `e37da20`.
+- **2026-10-15, 2a.33:** Fig. 1b in the Prism format, two rounds of the author's notes. Pushed.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -939,6 +943,46 @@ one; ED 2f leaves (into 1f) and ED 2g becomes 2f; the FOXO3 regulators are ED 3c
    `save_panel()` now refuses a box whose whiskers do not run min to max (self-test case added).
    Legend sentence for R and Prism alike: "boxes show the median and interquartile range, whiskers
    the minimum and maximum, and dots individual animals".
+
+### 2a.33 2026-10-15: Fig. 1b in the Prism format
+
+The author's four notes, all done in `fig1b_myc_transcript.R` (FIGURE_RULES.md, new section "The
+Prism format"): 1b sits among Prism graphs, and "Prism is less flexible, so will need to adapt".
+1. **No x axis and no group labels** (Illustrator sets them).
+2. **Graph 20 x 20 mm**: the data area, fixed with `fixed_size()`. The y axis ends at 12,500 (a minor
+   tick), with the top animal at 12,180; labels every 5,000. The brackets sit above the axis end.
+3. **Axis title 6 pt, tick labels and P values 5 pt.** The title is on two lines (`atop()`, as in
+   1i and ED 3b-c), because one line is 30 mm against the 20-mm axis. **Brackets have no tips.**
+   The two genotype P values are 12 mm wide at 5 pt, so the brackets take four levels, about 13 mm
+   above the axis end.
+4. **Every line 1 pt**, read from the PDF: axis, ticks, box outlines, whiskers, medians (ggplot
+   doubles the median unless `median.linewidth` is set) and brackets. At 1 pt the two WT boxes,
+   whose interquartile ranges are under 1 mm on this axis, print as solid grey bars.
+
+**Second round, the same day** (author: "lines are slightly thicker than prism - try 0.9 point?",
+and less space around the panel). Page 37.5 x 34 -> **30 x 28.5 mm**:
+1. **Lines 0.9 pt** (0.90 in the PDF).
+2. **Brackets over the animals they compare**: the 12W genotype bracket moved down into the graph,
+   over the 12W groups; the WT window (P = 0.48) left out, its P for the legend (the script prints
+   it, marked "not drawn"); the MYC+ window moved down to just above the 6W bracket.
+3. **Tick labels in thousands** (0, 5, 10), title "*Myc* mRNA (x1,000, / normalised counts)". The
+   comma in 1,000 follows the rules (the author wrote "x1000"), and "normalised" is the author's
+   spelling, as on Fig. 1h. The break after "x1,000," keeps both lines inside the 20-mm axis; one
+   line would be 26 mm.
+4. **The title is closer to the axis, with its lines closer together**: 2.4 mm baseline to
+   baseline, 0.6 mm from the tick labels. `atop()` cannot set that, so the title is a narrow
+   column of its own, stacked beside the graph (`stack_parts`, all widths in mm). The x is
+   Helvetica's own glyph (byte D7), so Illustrator can edit it.
+
+**`_style.R` gained, with defaults unchanged** (the other 19 panels re-rendered pixel-identical;
+20 of 20 pass the dry run; self-test 26 of 26):
+- `lw_pt()`, points to linewidth;
+- `theme_nm(txt, txt_title, line)` and `brackets(txt, line, tips)`; `tips = FALSE` draws the bar
+  alone, with no zero-length tip segments;
+- `natural_size()`, the page a fixed-size panel needs. `save_panel()` now refuses a fixed-size
+  panel saved smaller than that.
+
+**The author re-renders it:** `source(here::here("figures", "natmetab", "fig1b_myc_transcript.R"))`.
 
 ---
 

@@ -1,7 +1,8 @@
 # =============================================================================
 # _style_selftest.R -- proves that _style.R draws a good panel and refuses bad ones
 # -----------------------------------------------------------------------------
-# Synthetic data only, writes nothing. Run after any change to _style.R:
+# Synthetic data only; writes nothing but one temporary PDF, deleted (the 1-pt line
+# is read from the PDF itself). Run after any change to _style.R:
 #   Rscript figures/natmetab/_style_selftest.R
 # Every case builds a FRESH plot: ggplot layers are shared by reference, so
 # editing a copy of a plot also edits the original.
@@ -111,6 +112,38 @@ expect_refused("a panel taller than the page", "over the 170 mm page", good(), h
 
 p <- good(); p$layers[[1]]$stat_params$coef <- 1.5          # Tukey whiskers
 expect_refused("box whiskers that do not run min to max", "whiskers must run min to max", p)
+
+# --- the Prism format (Fig. 1b): 1-pt lines, brackets without tips, a fixed graph ----
+tipless <- function(txt = 5) {
+  br <- brackets(comps, base = 9.8, step = 1.2, txt = txt, line = lw_pt(1), tips = FALSE)
+  ggplot(d, aes(group, y)) + geom_point() + br +
+    scale_y_nm(step = 4, top = attr(br, "top")) + theme_nm(txt = 5, txt_title = 6, line = lw_pt(1))
+}
+expect_ok("lw_pt(1) prints a 1-pt line", {
+  f <- tempfile(fileext = ".pdf"); on.exit(unlink(f))
+  grDevices::pdf(f, compress = FALSE)
+  grid::grid.lines(gp = grid::gpar(lwd = lw_pt(1) * ggplot2::.pt))
+  invisible(grDevices::dev.off())
+  stopifnot(any(grepl("^1.00 w$", readLines(f, warn = FALSE), useBytes = TRUE)))
+})
+expect_ok("a bracket without tips is its bar alone, with its P label", {
+  g    <- ggplot2::layer_grob(tipless(), 2)[[1]]$children
+  segs <- Filter(function(x) inherits(x, "segments"), g)
+  labs <- Filter(function(x) inherits(x, "text"), g)
+  stopifnot(length(segs) == nrow(comps), all(vapply(segs, function(s) length(s$x0), 1L) == 1L),
+            length(labs) == nrow(comps), all(vapply(labs, function(t) is.expression(t$label), TRUE)))
+})
+expect_refused("a bracket without tips under 5 pt", "text at 4.50 pt", tipless(txt = 4.5))
+expect_refused("a fixed-size panel saved smaller than it needs", "edges would be cut", {
+  old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
+  suppressMessages(save_panel(fixed_size(good(), 30, 30), "Fig1", "z", "selftest_fixed", 30, 30))
+})
+expect_ok("a fixed-size panel saved at its natural size passes", {
+  old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
+  q <- fixed_size(good(), 30, 30)
+  n <- ceiling(natural_size(q) * 2) / 2
+  suppressMessages(save_panel(q, "Fig1", "z", "selftest_fixed", n[["width"]], n[["height"]]))
+})
 
 # --- stacked parts: each part is checked on its own ----------------------------------
 strip <- function(size = pt(6)) {

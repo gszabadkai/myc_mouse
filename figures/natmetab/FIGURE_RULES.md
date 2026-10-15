@@ -53,10 +53,11 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Helvetica throughout:** R panels, Prism graphs and Illustrator labels. Nature accepts Helvetica
   or Arial. The manuscript's Arial does not need matching, because Nature typesets the text.
 - **Sizes:** 6 pt for tick labels, keys, on-panel labels and P values; 7 pt for axis titles and
-  strips. Nothing below 5 pt **[checked]**, superscripts included **[checked]**.
+  strips. Nothing below 5 pt **[checked]**, superscripts included **[checked]**. A panel in the
+  Prism format is a point smaller (5 and 6 pt; see below).
 - **Black text only.** Colour belongs to marks and keys, never to text. **[checked]**
-- Lettering is lower case with the first letter capitalised (Nature), e.g. "Myc mRNA (normalized
-  counts)".
+- Lettering is lower case with the first letter capitalised (Nature), e.g. "Myc mRNA (x1,000,
+  normalised counts)".
 - Units go in parentheses. Thousands take commas (1,000). Zero is printed as "0".
 - Gene symbols are italic (mouse: *Myc*); proteins are in capitals (MYC).
 - **Export:** base `pdf()` with Helvetica, not embedded; Illustrator embeds the font on save.
@@ -150,6 +151,42 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **A number the text quotes is asserted where it is computed** (the Task D principle), e.g. Fig.
   1d's "20-33%".
 
+## The Prism format (an R panel among Prism graphs)
+
+Fig. 1b sits in the bench row, beside the western and the Prism graphs, so it takes their format
+rather than the R panels' (author, 2026-10-15: "Prism is less flexible, so will need to adapt to
+that"). It is the first such panel; another R panel placed among Prism graphs would take the same.
+- **The graph is 20 x 20 mm.** This is the data area, which Prism calls the graph size, fixed
+  through `stack_parts()` with grid units. The y axis ends at the tick just above the top point
+  (Fig. 1b: 12.5 thousand against a top animal of 12,180, a minor tick).
+- **Large counts read in thousands**: tick labels 0, 5, 10 and "x1,000" in the title (author,
+  2026-10-15), so the labels stay narrow beside a 20-mm axis.
+- **No x axis and no group labels.** Illustrator sets the labels, as on the Prism graphs.
+- **Axis title 6 pt; tick labels and P values 5 pt**: `theme_nm(txt = 5, txt_title = 6, ...)` and
+  `brackets(txt = 5, ...)`.
+- **Every line 0.9 pt**: axis, ticks, box outlines, whiskers, medians and brackets (author,
+  2026-10-15: 1 pt read heavier than the Prism graphs). `lw_pt()` converts printed points to
+  ggplot's linewidth: linewidth 1 prints 2.13 pt and `NM_LINE` prints 0.53 pt, read from the PDF.
+  ggplot draws a box's median at twice its linewidth unless `median.linewidth` is given.
+- **Brackets are straight lines, without the downward tips.** `brackets(tips = FALSE)` draws the
+  bar alone, because ggpubr would keep the tips as zero-length segments, which are stray points in
+  Illustrator.
+- **Each bracket sits just above the animals it compares**, as Prism places them, not stacked
+  above the whole graph (author, 2026-10-15). Fig. 1b: the 12W genotype bracket inside the graph
+  over the 12W groups, the 6W one just above the axis end, and the MYC+ window above that.
+  Brackets above the axis end are kept by `scales::oob_keep` on the y scale, drawn by
+  `coord_cartesian(clip = "off")`, and held by a top margin. A *P* the author leaves off the
+  panel goes in the legend (Fig. 1b: the WT window, *P* = 0.48).
+- **The axis title is close to the axis, with its lines close together** (author, 2026-10-15):
+  2.4 mm baseline to baseline (6 pt at 1.15), 0.6 mm from the tick labels. Plotmath's `atop()`
+  spaces two lines about twice that far apart, so the title is set as a narrow column of its own,
+  a part of the stack beside the graph, and centred on it as an axis title is.
+- **The saved page is the title, the graph with its axis, and the brackets** (`natural_size()`), so
+  there is no margin to trim. **[checked:** `save_panel()` refuses any fixed-size panel saved
+  smaller than it needs, whose edges would be cut (ED 2d and 2e too)**]**
+- At 0.9 pt, a box whose interquartile range is under about 1 mm on the axis prints as a nearly
+  solid bar (Fig. 1b, both WT groups). Prism draws it the same way.
+
 ## Colour
 
 | group | label | points, lines | box or bar fill |
@@ -199,7 +236,7 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 
 | slot | script | content; size (mm) |
 |---|---|---|
-| Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal, beside the MYC western; 48 x 56 |
+| Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal (x1,000), beside the MYC western, in the Prism format (graph 20 x 20 mm, no x axis, 0.9-pt lines, brackets without tips over the animals they compare, the WT window's *P* in the legend; since 2026-10-15); 30 x 28.5 |
 | Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; 100 x 66 |
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; 80 x 66 |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 100 x 56 |

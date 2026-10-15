@@ -44,13 +44,19 @@ NM_TXT_MIN   <- 5            # pt; the floor -- nothing on a panel may be smalle
 NM_TXT       <- getOption("natmetab.txt", 6)        # pt; tick labels, keys, on-panel labels, P values
 NM_TXT_TITLE <- getOption("natmetab.txt_title", 7)  # pt; axis titles and strips (Nature's maximum)
 stopifnot(NM_TXT >= NM_TXT_MIN, NM_TXT_TITLE >= NM_TXT, NM_TXT_TITLE <= 7)
-NM_LINE      <- 0.25         # ggplot linewidth: axes, ticks, brackets, box outlines
+NM_LINE      <- 0.25         # ggplot linewidth: axes, ticks, brackets, box outlines (0.53 pt printed)
 NM_MAX_W     <- 183          # mm; double column
 NM_ED_MAX_W  <- 180          # mm; Extended Data page width (Nature research figure guide)
 NM_MAX_H     <- 170          # mm; tallest Nature figure that leaves room for a legend
 nm_widths    <- c(single = 89, double = 183)
 
 pt <- function(x) x / ggplot2::.pt   # points -> ggplot text size units
+
+# Points -> ggplot linewidth, for a line of a stated printed weight. ggplot draws
+# linewidth x .pt as R's lwd, and base pdf() writes lwd 1 as 0.75 pt (R's lwd unit is
+# 1/96 inch), so linewidth 1 prints 2.13 pt. lw_pt(1) prints 1 pt, as Prism and
+# Illustrator measure it (read from the PDF's own line-width operators, 2026-10-15).
+lw_pt <- function(x) x * 96 / 72 / ggplot2::.pt
 
 # --- the sample palette (Okabe-Ito): hue = genotype, lightness = age ----------
 # Keys are the factor levels on disk (neg/pos); labels are what gets printed.
@@ -185,14 +191,19 @@ fmt_p <- function(p) {
 #   have their own y scale (comps then carries the facet column).
 #   group1/group2 may also be numeric x positions, e.g. 1.5 and 3.5 to span the
 #   two WT boxes against the two MYC+ boxes.
+#   txt, line  the P label's size (pt) and the line's linewidth
+#   tips       FALSE draws the bar alone, without the downward ends (the Prism format,
+#              Fig. 1b). ggpubr would still draw each tip as a zero-length segment, a
+#              stray point in Illustrator, so the bar is all that is drawn.
 #
 # Returns the layer, with attr "top": the y the axis must reach so the top label
 # is not clipped. Pass it on: scale_y_nm(step = ..., top = attr(br, "top")).
 # attr "tops" gives the same per bracket, for per-facet scales.
-brackets <- function(comps, base, step) {
+brackets <- function(comps, base, step, txt = NM_TXT, line = NM_LINE, tips = TRUE) {
   stopifnot(is.data.frame(comps), all(c("group1", "group2", "p") %in% names(comps)),
             nrow(comps) >= 1L, is.numeric(base), length(base) %in% c(1L, nrow(comps)),
-            is.numeric(step), length(step) %in% c(1L, nrow(comps)), all(step > 0))
+            is.numeric(step), length(step) %in% c(1L, nrow(comps)), all(step > 0),
+            is.numeric(txt), is.numeric(line), is.logical(tips))
   # Default stacking: by row order when all brackets share one base; level 1 each
   # when every bracket has its own base (one per facet), or they would be stacked
   # across facets as if they shared a panel.
@@ -205,8 +216,20 @@ brackets <- function(comps, base, step) {
     data = comps, inherit.aes = FALSE,
     mapping = ggplot2::aes(xmin = group1, xmax = group2,
                            y.position = y.position, label = label),
-    type = "expression", label.size = pt(NM_TXT), linewidth = NM_LINE,
-    tip.length = 0.012, vjust = -0.15, colour = "black", family = NM_FONT)
+    type = "expression", label.size = pt(txt), linewidth = line,
+    tip.length = if (tips) 0.012 else 0, vjust = -0.15, colour = "black", family = NM_FONT)
+  if (!tips) {
+    # ggpubr's stat gives each bracket three segments (tip, bar, tip); with no tips the
+    # tips have x == xend. Drawing the bar alone puts the label where ggpubr would: the
+    # midpoint of the first and last segments, which are now the bar's two ends.
+    with_tips <- layer$geom
+    layer$geom <- ggplot2::ggproto("GeomBracketBar", with_tips,
+      draw_group = function(data, panel_params, coord, type = "text", coord.flip = FALSE,
+                            orientation = "horizontal") {
+        with_tips$draw_group(data[data$x != data$xend, , drop = FALSE], panel_params, coord,
+                             type = type, coord.flip = coord.flip, orientation = orientation)
+      })
+  }
   tops <- comps$y.position + 0.9 * step
   structure(list(layer), top = max(tops), tops = tops)
 }
@@ -247,24 +270,27 @@ scale_x_nm <- function(step, top, bottom = 0, minor = FALSE, labels = lab_num, .
 # --- the theme -------------------------------------------------------------------
 # Titles, subtitles and captions are blanked: on a Nature panel the explanation
 # belongs in the legend, so a panel cannot acquire explanatory text by accident.
-theme_nm <- function(legend = "none") {
-  ggplot2::theme_classic(base_size = NM_TXT_TITLE, base_family = NM_FONT) +
+# txt, txt_title and line default to the R panels' sizes; a panel drawn in another
+# format passes its own (Fig. 1b, the Prism format: 5, 6 and lw_pt(1)).
+theme_nm <- function(legend = "none", txt = NM_TXT, txt_title = NM_TXT_TITLE, line = NM_LINE) {
+  stopifnot(txt >= NM_TXT_MIN, txt_title >= txt, txt_title <= 7)
+  ggplot2::theme_classic(base_size = txt_title, base_family = NM_FONT) +
     ggplot2::theme(
       text              = ggplot2::element_text(colour = "black"),
-      axis.text         = ggplot2::element_text(size = NM_TXT, colour = "black"),
-      axis.title        = ggplot2::element_text(size = NM_TXT_TITLE, colour = "black"),
-      axis.line         = ggplot2::element_line(linewidth = NM_LINE, colour = "black"),
-      axis.ticks        = ggplot2::element_line(linewidth = NM_LINE, colour = "black"),
+      axis.text         = ggplot2::element_text(size = txt, colour = "black"),
+      axis.title        = ggplot2::element_text(size = txt_title, colour = "black"),
+      axis.line         = ggplot2::element_line(linewidth = line, colour = "black"),
+      axis.ticks        = ggplot2::element_line(linewidth = line, colour = "black"),
       axis.ticks.length = ggplot2::unit(1, "mm"),
       axis.minor.ticks.length = ggplot2::rel(0.5),
-      legend.text       = ggplot2::element_text(size = NM_TXT),
-      legend.title      = ggplot2::element_text(size = NM_TXT),
+      legend.text       = ggplot2::element_text(size = txt),
+      legend.title      = ggplot2::element_text(size = txt),
       legend.key.size   = ggplot2::unit(3, "mm"),
       legend.key.spacing.y = ggplot2::unit(0.4, "mm"),
       legend.margin     = ggplot2::margin(0, 0, 0, 0),
       legend.box.spacing = ggplot2::unit(2, "mm"),     # key to plot; the 7-pt default is 2.5 mm
       legend.position   = legend,
-      strip.text        = ggplot2::element_text(size = NM_TXT_TITLE),
+      strip.text        = ggplot2::element_text(size = txt_title),
       strip.background  = ggplot2::element_blank(),
       plot.title        = ggplot2::element_blank(),
       plot.subtitle     = ggplot2::element_blank(),
@@ -318,9 +344,10 @@ check_panel <- function(p, width, height, max_w = NM_MAX_W) {
   b <- ggplot2::ggplot_build(p)
   for (i in seq_along(p$layers)) {
     g <- class(p$layers[[i]]$geom)[1]
-    if (!g %in% .nm_text_geoms) next
+    bracket <- inherits(p$layers[[i]]$geom, "GeomBracket")   # tipless brackets too
+    if (!bracket && !g %in% .nm_text_geoms) next
     d <- b$data[[i]]
-    sz <- if (g == "GeomBracket") d$label.size else d$size
+    sz <- if (bracket) d$label.size else d$size
     if (length(sz) && any(sz * ggplot2::.pt < NM_TXT_MIN - 1e-9)) {
       add("layer %d (%s): text at %.2f pt", i, g, min(sz) * ggplot2::.pt)
     }
@@ -414,6 +441,21 @@ fixed_size <- function(p, width_mm, height_mm) {
   stack_parts(p, widths = grid::unit(width_mm, "mm"), heights = grid::unit(height_mm, "mm"))
 }
 
+# The printed size a fixed-size panel needs: its data areas plus its axes, titles and
+# margins, in mm, measured with the PDF device's Helvetica metrics. NA where a row or
+# column stretches (a relative width or height), which takes whatever room is left.
+# A smaller page cuts the panel's edges; save_panel() refuses one. A larger page
+# centres the panel.
+natural_size <- function(p) {
+  stopifnot(inherits(p, "nm_stack"))
+  grDevices::pdf(NULL, family = NM_FONT)
+  on.exit(grDevices::dev.off())
+  g <- patchwork::patchworkGrob(.nm_drawable(p))
+  fixed <- function(u) !any(unlist(grid::unitType(u, recurse = TRUE)) == "null")
+  c(width  = if (fixed(g$widths))  sum(grid::convertWidth(g$widths, "mm", valueOnly = TRUE))  else NA,
+    height = if (fixed(g$heights)) sum(grid::convertHeight(g$heights, "mm", valueOnly = TRUE)) else NA)
+}
+
 .nm_drawable <- function(p) {
   if (!inherits(p, "nm_stack")) return(p)
   w <- patchwork::wrap_plots(p$parts, ncol = p$ncol, heights = p$heights, widths = p$widths,
@@ -445,6 +487,11 @@ save_panel <- function(p, fig, panel, name, width, height, dir = NULL) {
   max_w <- if (grepl("^EDFig", fig)) NM_ED_MAX_W else NM_MAX_W
   if (inherits(p, "nm_stack")) {
     for (part in p$parts) check_panel(part, width, height, max_w)
+    need <- natural_size(p)                    # NA where a row or column stretches
+    if (isTRUE(any(c(width, height) < need - 0.05))) {
+      stop(sprintf("panel refused:\n  - saved at %g x %g mm, it needs %.1f x %.1f mm: its edges would be cut",
+                   width, height, need[["width"]], need[["height"]]), call. = FALSE)
+    }
   } else {
     check_panel(p, width, height, max_w)
   }
