@@ -1,6 +1,6 @@
 ---
-date: 2026-10-14
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56]
+date: 2026-10-15
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,15 +21,19 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-14, evening: THE PANELS ARE PROMOTED. Fig. 1d-i, ED Fig. 2a-f and ED Fig. 3a-d are panels
-of record in `figures/natmetab/` (2a.32); the replaced ones are in `figures/natmetab/retired/`.
-After the first handoff the author ran script 56, then asked for: ED 3b's fill scale narrowed; ED
-3d's lines as in 1i and its adjustment explained and relabelled "adjusted for immune content"; the
-grey band replaced by dashed lines at P = 0.05 and P = 0.01 (script 55 now saves the 99% line and an
-empirical P per gene); and the promotion. The author then re-ran script 55 and rendered the panels
-(23:36), and asked for min-max whiskers on every box, to match Prism (2a.32, item 6): done, and the
-three box panels re-rendered (23:45). All committed and pushed on 2026-10-15 (`e37da20`).
-2026-10-15: Fig. 1b redrawn in the Prism format (2a.33), committed and pushed; the author re-renders it.**
+**2026-10-15: FIG. 1b IS IN THE PRISM FORMAT (2a.33), pushed as `7bc98c3`. It sits in the bench row
+among Prism graphs, so it now takes their format:
+- a 20 x 20 mm graph; every line 0.9 pt;
+- axis title 6 pt, tick labels and P values 5 pt;
+- no x axis and no group labels (Illustrator sets them);
+- brackets without tips, each over the animals it compares; the WT window's P only in the legend;
+- the y axis in thousands, with a tight two-line title. The page is 30 x 28.5 mm.
+
+`_style.R` gained `lw_pt()`, `natural_size()` (with a `save_panel()` guard) and Prism-format
+arguments; the other 19 panels are unchanged pixel for pixel. Earlier the same day the 2026-10-14
+evening work and the min-max whiskers (2a.32) were committed and pushed (`e37da20`). FIRST: the
+author re-renders Fig. 1b (section 2, item 1). The author said "we need to slightly modify some
+panels" and has named only 1b so far: ask which come next.**
 
 Read this file first. Sections 1, 2 and 2a are current as of **2026-10-15**. Section 2a has four
 parts: Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
@@ -49,14 +53,14 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | the Fig. 1b Prism-format commit (2026-10-15), on top of `e37da20` (the min-max whiskers), `813993d` (the evening handoff), the promotion commit `969ee5c` and `125bb7f` (2026-10-14 evening: the P lines, the labels, script 55's 99% line) |
-| pushed | everything, at the author's word (2026-10-15) |
+| HEAD | this handoff's commit (2026-10-15), on top of `7bc98c3` (Fig. 1b in the Prism format), `e37da20` (the min-max whiskers), `813993d` (the 2026-10-14 evening handoff) and the promotion commit `969ee5c` |
+| pushed | everything through `7bc98c3`, at the author's word (2026-10-15). **This handoff's own commit is local**: push when the author says |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
 | results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
-| new figure layer | `figures/natmetab/`: `_style.R`, `_style_selftest.R` (passes), `FIGURE_RULES.md` (the built table is current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run (ED 3b-c against script 55's dry-run object). `page_mock_247.R` (moved out of `proposals/`) draws the three pages. `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
+| new figure layer | `figures/natmetab/`: `_style.R` (since 2026-10-15 also `lw_pt()`, `natural_size()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `_style_selftest.R` (26 checks, all pass), `FIGURE_RULES.md` (the built table is current; new section "The Prism format"), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. All twenty panels are rendered and current: the promoted ones at 23:36, the three box panels again at 23:45 with min-max whiskers |
+| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. Nineteen panels are rendered and current (2026-10-14, 23:36 and 23:45). **Fig. 1b's PDF is stale**: still the 48 x 56 mm version of 23:45 until the author re-renders it |
 | text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
@@ -71,24 +75,23 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Re-render Fig. 1b** (the Prism format, 2a.33): `source(here::here("figures", "natmetab",
-   "fig1b_myc_transcript.R"))`. Every other panel is current: script 55 re-run and all panels
-   rendered on 2026-10-14 (23:36 and 23:45). To re-render
-   a panel after an edit, source its script (Option A); it overwrites its PDF in
-   `outputs/natmetab/<Fig>/`, linked placements in Illustrator update, embedded ones are re-placed:
-   ```
-   NM <- here::here("figures", "natmetab")
-   for (f in c("fig1b_myc_transcript", "fig1d_mito_content", "edfig3a_per_animal"))   # the panels edited
-     source(file.path(NM, paste0(f, ".R")), local = new.env())
-   source(file.path(NM, "page_mock_247.R"))                            # the three pages, a check
-   ```
-2. **Pushed** (2026-10-15): everything through the Fig. 1b Prism-format commit.
-3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions.
+1. **Re-render Fig. 1b** (the author, Option A): `source(here::here("figures", "natmetab",
+   "fig1b_myc_transcript.R"))`. Every other panel is current. Sourcing a panel's script overwrites
+   its PDF in `outputs/natmetab/<Fig>/`; Illustrator updates a linked placement and needs an
+   embedded one placed again. **1b's page shrinks from 48 x 56 to 30 x 28.5 mm**, so re-align it
+   in the bench row by its axis; the graph is 20 x 20 mm.
+2. **Ask which panels come next.** The author: "we need to slightly modify some panels"; only 1b
+   has been named. Any other R panel placed among Prism graphs takes FIGURE_RULES.md's "The Prism
+   format", with the helpers in 2a.33.
+3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's additions. **Fig. 1b's
+   legend now carries the WT window**, *P* = 0.48, which is no longer drawn (the script prints it,
+   marked "not drawn"). Its box sentence: "boxes show the median and interquartile range, whiskers
+   the minimum and maximum, and dots individual animals".
 4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
    renumbering in 2a.31. Every legend number is printed by its script (2a.30).
 5. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
    scripts 50 and 51 matter again, 3e). Fig. 4g-j is open (2d.1).
-6. **How each panel is built** (unchanged):
+6. **How each panel is built** (two bullets added 2026-10-15):
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
    - size it for its page: **183 x 247 mm for the submission** (ED 180 x 247), rows kept modular for
@@ -99,7 +102,10 @@ Section 10 holds the threads parked for after the manuscript.
    - a number the text quotes is asserted in the script that computes it, and a panel computes no
      test: a statistic no object holds goes into a numbered script first (as 56 did today);
    - after any edit to `_style.R`, run `Rscript figures/natmetab/_style_selftest.R`, then every
-     panel under `options(natmetab.dry_run = TRUE)` (20 of 20 pass).
+     panel under `options(natmetab.dry_run = TRUE)` (20 of 20 pass). For a change meant to leave
+     the other panels alone, render each one before and after and compare the images
+     (2026-10-15: pixel-identical at 200 dpi);
+   - a panel among Prism graphs takes the Prism format (FIGURE_RULES.md; Fig. 1b is the model).
 7. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
 8. **Carried items, possibly moot now: ask before acting.**
@@ -112,7 +118,7 @@ Section 10 holds the threads parked for after the manuscript.
 
 ---
 
-## 2a. What happened on 2026-10-12 to 2026-10-14
+## 2a. What happened on 2026-10-12 to 2026-10-15
 
 - **2026-10-12, morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and
   that morning's handoff, `ab62730`.
@@ -124,7 +130,8 @@ Section 10 holds the threads parked for after the manuscript.
   `4fb3aa9` and `ccad756`.
 - **2026-10-14, evening, 2a.32:** the author's notes after the first handoff, the promotion, and the
   min-max whiskers. Pushed (2026-10-15): `125bb7f`, `969ee5c`, `813993d` and `e37da20`.
-- **2026-10-15, 2a.33:** Fig. 1b in the Prism format, two rounds of the author's notes. Pushed.
+- **2026-10-15, 2a.33:** Fig. 1b in the Prism format, two rounds of the author's notes. Pushed:
+  `7bc98c3`. This handoff's commit is local.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -983,6 +990,7 @@ and less space around the panel). Page 37.5 x 34 -> **30 x 28.5 mm**:
   panel saved smaller than that.
 
 **The author re-renders it:** `source(here::here("figures", "natmetab", "fig1b_myc_transcript.R"))`.
+Committed and pushed as `7bc98c3` (2026-10-15).
 
 ---
 
