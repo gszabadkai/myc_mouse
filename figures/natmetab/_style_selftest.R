@@ -169,6 +169,19 @@ expect_ok("label_mm: 5-pt P labels measure 1.30 mm, 1.90 with a reduced exponent
   h <- label_mm(fmt_p(c(0.0030, 4.9e-4), exponent = "reduced"), txt = 5)
   stopifnot(abs(h - c(1.30, 1.90)) < 0.02)
 })
+expect_ok("spread_on_line: labels keep their gap and the bounds, and a free one sits on its anchor", {
+  w  <- c(10, 6, 8, 4)
+  cx <- spread_on_line(anchor = c(50, 48, 52, 90), width = w, lo = 0, hi = 100, gap = 2)
+  o  <- order(cx)
+  stopifnot(all(diff(cx[o]) - (w[o][-1] + w[o][-4]) / 2 >= 2 - 1e-9),     # gap kept
+            min(cx - w / 2) >= 0, max(cx + w / 2) <= 100,                  # bounds kept
+            abs(cx[4] - 90) < 1e-9,                                         # free label on its anchor
+            abs(mean(cx[1:3]) - 50) < 1e-9)                                 # a crowded run centred on its anchors
+  cx <- spread_on_line(anchor = c(1, 2), width = c(10, 10), lo = 0, hi = 100, gap = 2)
+  stopifnot(abs(min(cx) - 5) < 1e-9)                                        # pushed off the lower bound
+  w_mm <- text_mm(c("OXPHOS", "Small molecule\ntransport"), txt = 7, fontface = "bold")
+  stopifnot(abs(w_mm[, "w"] - c(10.4, 18.0)) < 0.1, w_mm[2, "h"] > 2 * w_mm[1, "h"])
+})
 expect_refused("a fixed-size panel saved smaller than it needs", "edges would be cut", {
   old <- options(natmetab.dry_run = TRUE); on.exit(options(old))
   suppressMessages(save_panel(fixed_size(good(), 30, 30), "Fig1", "z", "selftest_fixed", 30, 30))

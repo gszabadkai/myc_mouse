@@ -7,8 +7,9 @@
 # with its two facets overlaid: every nuclear MitoPathway's change in expression
 # against its change in priority, WT and MYC+ in their colours, "WT r" and "MYC+ r"
 # on the panel. OXPHOS subunits, the carnitine shuttle and fatty acid oxidation (the
-# text's three) have their two points joined and one black label with a leader to
-# each. The priority ruler and the group names ("Development programmes",
+# text's three) have their two points joined by a thin dashed line and one black
+# label with a leader to the WT point (author, later on 2026-10-16: the joins thinner
+# and dashed, one leader each). The priority ruler and the group names ("Development programmes",
 # "Mitochondrial pathways") are retired; the priority numbers stay in the legend.
 # The left side, the expression ruler with its tests and bracket, is unchanged.
 #
@@ -198,8 +199,8 @@ p_ex <- one_ruler(ex, min(ex$val) - pad(ex$val), max(ex$val) + pad(ex$val),
 # --- the right side: the window scatter (author, 2026-10-16) ------------------------------
 # The old ED 2f, its two facets overlaid: every nuclear MitoPathway's change in
 # expression against its change in priority, WT and MYC+ in their colours. The three
-# pathways the text names have their two points joined, and one black label with a
-# leader to each point; WT r and MYC+ r are written on the panel. It replaces the
+# pathways the text names have their two points joined (thin, dashed), and one black
+# label with a leader to the WT point; WT r and MYC+ r are written on the panel. It replaces the
 # priority ruler and the group names, retired.
 r143 <- ruler[!ruler$is_mtdna, ]
 stopifnot(nrow(r143) == 143L)
@@ -214,12 +215,14 @@ link <- data.frame(pathway = NAMED,
                    x  = r143$c_tn[match(NAMED, r143$pathway)], y  = r143$p_tn[match(NAMED, r143$pathway)],
                    xe = r143$c_tp[match(NAMED, r143$pathway)], ye = r143$p_tp[match(NAMED, r143$pathway)])
 # Each label is placed by hand in empty space (checked on the drawn panel), with a
-# leader from its anchor to each of the pathway's two points.
+# leader from its anchor to the pathway's WT point.
 lab <- data.frame(pathway = NAMED,
                   text = c("OXPHOS\nsubunits", "Carnitine\nshuttle", "Fatty acid\noxidation"),
-                  lx = c(-0.10, -0.10, 0.30), ly = c(-0.34, 0.22, -0.10), hj = c(0, 1, 0))
+                  lx = c(-0.10, 0.26, 0.30), ly = c(-0.34, 0.34, -0.10), hj = c(0, 0, 0))
 lab$x0 <- lab$lx + ifelse(lab$hj == 0, -0.015, 0.015)          # the leaders start just off the text
-lead <- merge(lab[, c("pathway", "x0", "ly")], hl[, c("pathway", "x", "y")], by = "pathway")
+# one leader per label, to the WT point (author, 2026-10-16)
+lead <- merge(lab[, c("pathway", "x0", "ly")], hl[hl$geno == "neg", c("pathway", "x", "y")], by = "pathway")
+stopifnot(nrow(lead) == length(NAMED))
 xl <- range(sc$x) + c(-1, 1) * 0.03 * diff(range(sc$x))
 yl <- range(sc$y) + c(-1, 1) * 0.04 * diff(range(sc$y))
 # WT r and MYC+ r, two lines in the empty upper-left corner (atop() would set them far apart)
@@ -233,7 +236,7 @@ p_sc <- ggplot(sc, aes(x, y)) +
   geom_segment(data = lead, aes(x = x0, y = ly, xend = x, yend = y), inherit.aes = FALSE,
                linewidth = 0.25, colour = "grey50") +
   geom_segment(data = link, aes(x = x, y = y, xend = xe, yend = ye), inherit.aes = FALSE,
-               linewidth = 0.4, colour = "grey30") +
+               linewidth = NM_LINE, linetype = "22", colour = "grey30") +
   geom_point(data = hl, aes(fill = geno), shape = 21, size = 1.4, colour = "black", stroke = 0.35) +
   geom_text(data = lab, aes(x = lx, y = ly, label = text, hjust = hj), inherit.aes = FALSE,
             size = pt(TXT), family = NM_FONT, lineheight = 0.9, colour = "black") +

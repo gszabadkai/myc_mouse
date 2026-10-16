@@ -139,6 +139,82 @@ mito_tier_labels <- c("Protein import, sorting and homeostasis" = "Protein impor
                       "Small molecule transport"                = "Small molecule transport")
 mito_tier_cols <- stats::setNames(c("#D55E00", "#E69F00", "#009E73", "#B8B8B8", "#56B4E9",
                                     "#0072B2", "#CC79A7"), mito_tier_labels)
+# The same names as point labels, the long ones on two lines so that four fit along
+# the empty corner of a 120-mm data area (ranked_tier_marks()).
+mito_tier_text <- stats::setNames(c("Protein import\nand homeostasis", "Central dogma", "OXPHOS",
+                                    "Metabolism", "Signalling", "Dynamics and\nsurveillance",
+                                    "Small molecule\ntransport"), mito_tier_labels)
+
+# ED 2f-g's marks on a curve of MitoPathways ranked from promoted to demoted (author,
+# 2026-10-16: "as in fig02_reallocation_ranked.pdf"). In data units, on a data area
+# data_w x data_h mm whose ranges xr, yr are read from the built plot:
+#   anchors  (rank, y, tier, label): the seven top-level MitoPathways, the tiers
+#            themselves. Each is ringed and named in black, plain, at txt pt (larger
+#            than the panel's 6 pt), its name on one of two lines of labels: promoted
+#            pathways (y > 0) along the foot of the empty lower left, bottom-aligned,
+#            demoted ones along the head of the empty upper right, top-aligned, so
+#            that the axis stays the data's height. Each line runs only where no
+#            point comes within `clear` mm of it; spread_on_line() sets the names on
+#            it, `gap` mm apart; a leader joins each name to its ring.
+#   stars    (rank, y, up, r_mm): an asterisk above (up) or below each significant
+#            point, clear of its dot (radius r_mm; a ringed one, of its ring). Nature
+#            asks for exact P values, not asterisks; the author makes these two
+#            panels the exception, as the legend must say.
+#   pts      (rank, y): every point drawn, which the lines of labels keep off.
+# Returns the layers; the caller maps the ring fills with scale_fill_manual().
+ranked_tier_marks <- function(anchors, stars, pts, xr, yr, data_w, data_h, txt = NM_TXT_TITLE,
+                              ring = 2, clear = 1, gap = 2.5, edge = 1, lineheight = 0.9) {
+  stopifnot(all(c("rank", "y", "tier", "label") %in% names(anchors)),
+            all(c("rank", "y", "up", "r_mm") %in% names(stars)),
+            all(c("rank", "y") %in% names(pts)), txt >= NM_TXT_MIN, txt <= 7)
+  ux <- diff(xr) / data_w; uy <- diff(yr) / data_h           # data units per mm
+  em <- txt * 25.4 / 72                                        # one em at txt pt, in mm
+  r_ring <- point_r_mm(ring, stroke = 0.4)
+  # Helvetica: ascenders and capitals 0.718 em above the baseline, descenders 0.21 below
+  nl  <- lengths(strsplit(anchors$label, "\n", fixed = TRUE))
+  asc <- ((nl - 1) * lineheight + 0.718) * em                  # above the last baseline
+  dsc <- 0.21 * em
+  w   <- text_mm(anchors$label, txt, "plain", lineheight)[, "w"]
+  bot <- anchors$y > 0
+  y_bot <- yr[1] + (edge + dsc) * uy                          # the bottom line's last baseline
+  y_top <- yr[2] - edge * uy                                   # the top line's top
+  lo_y  <- tapply(pts$y, pts$rank, min); hi_y <- tapply(pts$y, pts$rank, max)
+  rk    <- as.numeric(names(lo_y))
+  cx    <- numeric(nrow(anchors))
+  for (b in c(TRUE, FALSE)) {
+    k <- bot == b
+    if (!any(k)) next
+    blocked <- if (b) rk[lo_y < y_bot + (max(asc[k]) + clear) * uy]
+               else   rk[hi_y > y_top - (max(asc[k]) + dsc + clear) * uy]
+    a <- anchors$rank[k]
+    stopifnot(!any(blocked >= min(a) & blocked <= max(a)))   # the line is free around its anchors
+    lo <- max(c(xr[1] + edge * ux, blocked[blocked < min(a)] + 0.5 + clear * ux))
+    hi <- min(c(xr[2] - edge * ux, blocked[blocked > max(a)] - 0.5 - clear * ux))
+    cx[k] <- spread_on_line(a, w[k] * ux, lo, hi, gap * ux)
+  }
+  lab <- data.frame(x = cx, y = ifelse(bot, y_bot, y_top), vjust = ifelse(bot, 0, 1),
+                    label = anchors$label)
+  # leaders: from just off each name to just off its ring
+  sy <- ifelse(bot, y_bot + (asc + 0.4) * uy, y_top - (asc + dsc + 0.4) * uy)
+  dx <- (anchors$rank - cx) / ux; dy <- (anchors$y - sy) / uy
+  f  <- pmax(0, 1 - (r_ring + 0.3) / sqrt(dx^2 + dy^2))
+  lead <- data.frame(x = cx, y = sy, xend = cx + f * dx * ux, yend = sy + f * dy * uy)
+  # asterisks: the glyph (0.431-0.718 em above its baseline) centred 0.25 mm off the dot
+  ringed <- paste(stars$rank, stars$y) %in% paste(anchors$rank, anchors$y)
+  r  <- ifelse(ringed, r_ring, stars$r_mm)
+  ct <- stars$y + ifelse(stars$up, 1, -1) * (r + 0.25 + 0.1435 * em) * uy
+  st <- data.frame(x = stars$rank, y = ct - 0.5745 * em * uy)
+  list(
+    ggplot2::geom_segment(data = lead, ggplot2::aes(x, y, xend = xend, yend = yend),
+                          inherit.aes = FALSE, linewidth = 0.2, colour = "grey55"),
+    ggplot2::geom_point(data = anchors, ggplot2::aes(rank, y, fill = tier), inherit.aes = FALSE,
+                        shape = 21, size = ring, colour = "black", stroke = 0.4, show.legend = FALSE),
+    ggplot2::geom_text(data = st, ggplot2::aes(x, y), label = "*", inherit.aes = FALSE, vjust = 0,
+                       size = pt(txt), family = NM_FONT, colour = "black"),
+    ggplot2::geom_text(data = lab, ggplot2::aes(x, y, label = label, vjust = vjust), inherit.aes = FALSE,
+                       size = pt(txt), family = NM_FONT, lineheight = lineheight,
+                       colour = "black"))
+}
 
 scale_fill_div <- function(limits, name = NULL, ...) {
   if (length(limits) == 1L) limits <- c(-abs(limits), abs(limits))
@@ -517,6 +593,50 @@ label_mm <- function(label, txt = NM_TXT) {
   vapply(label, function(l) grid::convertHeight(grid::grobHeight(grid::textGrob(
     parse(text = l), gp = grid::gpar(fontsize = txt, fontfamily = NM_FONT))), "mm", valueOnly = TRUE),
     numeric(1), USE.NAMES = FALSE)
+}
+
+# The printed size of plain text at txt pt, in mm, measured with the PDF device's
+# Helvetica metrics: w, the widest line; h, the block (for a single line, without
+# descenders). One row per label.
+text_mm <- function(label, txt = NM_TXT, fontface = "plain", lineheight = 0.9) {
+  stopifnot(is.character(label), is.numeric(txt))
+  grDevices::pdf(NULL, family = NM_FONT)
+  on.exit(grDevices::dev.off())
+  gp <- grid::gpar(fontsize = txt, fontfamily = NM_FONT, fontface = fontface, lineheight = lineheight)
+  m <- vapply(label, function(l) {
+    g <- grid::textGrob(l, gp = gp)
+    c(grid::convertWidth(grid::grobWidth(g), "mm", valueOnly = TRUE),
+      grid::convertHeight(grid::grobHeight(g), "mm", valueOnly = TRUE))
+  }, numeric(2), USE.NAMES = FALSE)
+  matrix(m, ncol = 2L, byrow = TRUE, dimnames = list(NULL, c("w", "h")))
+}
+
+# The printed radius of a ggplot point of the given size and stroke, its outline
+# included, in mm: R draws the circle at 0.375 of the point's font size, which
+# ggplot sets to size * .pt + stroke * .stroke / 2, and the outline, as wide as that
+# stroke term, straddles it.
+point_r_mm <- function(size, stroke = 0) {
+  (0.375 * (size * ggplot2::.pt + stroke * ggplot2::.stroke / 2) + stroke * ggplot2::.stroke / 4) * 25.4 / 72
+}
+
+# Labels set along one line, each as near its anchor as the others allow (ED 2f-g):
+# the centres of labels `width` wide that would each like to be centred on `anchor`,
+# at least `gap` apart and inside [lo, hi], all in one unit; in the input order.
+# The left edges, less the room the labels before each one take, must not decrease,
+# so the least-squares answer is an isotonic regression; the bounds then clip it.
+spread_on_line <- function(anchor, width, lo, hi, gap = 0) {
+  n <- length(anchor)
+  stopifnot(n >= 1L, length(width) == n, all(width > 0), gap >= 0,
+            sum(width) + gap * (n - 1) <= hi - lo)
+  o   <- order(anchor)
+  w   <- width[o]
+  off <- c(0, cumsum(w + gap))[seq_len(n)]
+  q   <- anchor[o] - w / 2 - off
+  if (n > 1L) q <- stats::isoreg(q)$yf
+  q   <- pmin(pmax(q, lo), hi - w[n] - off[n])
+  out <- numeric(n)
+  out[o] <- q + off + w / 2
+  out
 }
 
 .nm_drawable <- function(p) {
