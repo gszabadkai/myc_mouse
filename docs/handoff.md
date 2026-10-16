@@ -1,6 +1,6 @@
 ---
 date: 2026-10-16
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps]
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps, ed2-tier-labels]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,7 +21,7 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-16: FIG. 1 AND THE EXTENDED DATA RE-FORMED, TWICE (2a.35).**
+**2026-10-16: FIG. 1 AND THE EXTENDED DATA RE-FORMED, TWICE (2a.35), THEN ED 2f-g AS fig02 (2a.36).**
 - **Fig. 1h is the BCL-2 family's departure from MYC's fade** (the old ED 3b's top half), 52 x 56,
   5/6 pt. The ratio panel, the old Fig. 1h, is **ED 3b**: rows by the 6W effect, filled = the 6W
   effect *P* < 0.05. Bbc3:Bcl2l1 is the one ratio that rises significantly at 6W and ends below
@@ -31,12 +31,17 @@ relates-to:
   "MYC+ r"; OXPHOS subunits, carnitine shuttle and fatty acid oxidation joined and labelled). The
   priority ruler and the group names are retired. **ED 2f and 2g are new**: the exploratory fig02b
   (MYC's effect on priority, 6W, ranked) and figS6 (the window, ranked), tier colours as the
-  originals, the adjusted-*P* < 0.05 pathways named. **Committed (`1e2bbac`), not pushed.**
-- At the author's request, Claude ran the three changed scripts: **every PDF is current.**
+  originals. Commit `1e2bbac`.
+- **Evening (2a.36): ED 2f and 2g as the exploratory fig02.** The seven top-level MitoPathways
+  ringed and named (7 pt, plain, black); no per-pathway names; an asterisk on each point at
+  adjusted *P* < 0.05 (the author's exception); the data area 120 mm wide with the key at its
+  right ("MitoPathways (MitoCarta3.0, Hierarchy top level)"); no x-axis title. 171 x 45 each.
+  Fig. 1f's joins thinner and dashed, one leader per label, to the WT point. Commit `99af310`.
+- At the author's request ("run, commit and push"), Claude ran the three changed scripts and
+  pushed everything: **every PDF is current, nothing is local.**
 
-FIRST: the author places Fig. 1f, ED 2f and ED 2g in Illustrator (ED 2f's and 2g's files are new
-names) and reviews ED 2f's 33 names (section 2, item 2). Push `1e2bbac` and this handoff when the
-author says.
+FIRST: the author places the re-written Fig. 1f, ED 2f and ED 2g in Illustrator (same file names;
+ED 2f and 2g are now 171 mm wide, not 180). Then the open item in section 2, item 2.
 
 Read this file first. Sections 1, 2 and 2a are current as of **2026-10-16**. Section 2a covers
 Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
@@ -44,7 +49,7 @@ Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h propo
 247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31), and the
 evening's changes and the promotion (2a.32), Fig. 1b in the Prism format (2026-10-15, 2a.33), and
 the afternoon's resizing of Fig. 1d-i in 5/6-pt type (2a.34), and 2026-10-16's two re-formings
-(2a.35). All are pushed but 2a.35's second commit and this handoff. Section 2b is the
+(2a.35), and the evening's ED 2f-g as fig02 (2a.36). All are pushed. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
@@ -57,14 +62,14 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit (2026-10-16), on top of `1e2bbac` (Fig. 1f's scatter, ED 2f-g), `74f0047` (Fig. 1h, ED 3 re-formed) and `9d87af7` (the 2026-10-15 handoff) |
-| pushed | everything through `74f0047` (2026-10-16, at the author's word). **`1e2bbac` and this handoff are local**: the author asked for "commit, run and save the pdfs", not a push |
+| HEAD | this handoff's commit (2026-10-16, evening), on top of `99af310` (ED 2f-g as fig02, Fig. 1f's dashed joins), `44e870c` (the afternoon's handoff), `1e2bbac` (Fig. 1f's scatter, ED 2f-g) and `74f0047` (Fig. 1h, ED 3 re-formed) |
+| pushed | **everything**, this handoff included (2026-10-16, evening, at the author's word: "run, commit and push") |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
 | results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
-| new figure layer | `figures/natmetab/`: `_style.R` (on 2026-10-15 also `lw_pt()`, `natural_size()`, `label_mm()`, `box_axis()`, the `exponent` argument of `fmt_p()` and `brackets()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `mito_tier_labels`/`mito_tier_cols` (2026-10-16), `_style_selftest.R` (33 checks, all pass), `FIGURE_RULES.md` (the built table and the pages are current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-g; ED 3a-c. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the replaced panels (six since 2026-10-16: also the per-animal ED 3a, the coupling ED 3d, the window-scatter ED 2f); `proposals/` holds only superseded ones |
+| new figure layer | `figures/natmetab/`: `_style.R` (on 2026-10-15 also `lw_pt()`, `natural_size()`, `label_mm()`, `box_axis()`, the `exponent` argument of `fmt_p()` and `brackets()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `mito_tier_labels`/`mito_tier_cols` (2026-10-16), and that evening `mito_tier_text`, `ranked_tier_marks()`, `spread_on_line()`, `text_mm()` and `point_r_mm()`, `_style_selftest.R` (34 checks, all pass), `FIGURE_RULES.md` (the built table and the pages are current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-g; ED 3a-c. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the replaced panels (six since 2026-10-16: also the per-animal ED 3a, the coupling ED 3d, the window-scatter ED 2f); `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. **Every PDF is current.** The author rendered the morning's panels (Fig. 1h, ED 3a-c) on 2026-10-16; Claude wrote Fig. 1f, ED 2f and ED 2g (02:10) and the page mock-up at the author's request. `outputs/natmetab/_retired/` holds every replaced PDF, render-dated: on 2026-10-16 the old Fig. 1h, ED 3a, 3b, 3d and the window-scatter ED 2f joined it |
+| outputs | `outputs/` is gitignored. **Every PDF is current.** The author rendered the morning's panels (Fig. 1h, ED 3a-c) on 2026-10-16; Claude wrote Fig. 1f, ED 2f and ED 2g and the page mock-up at the author's request (02:10, and again in the evening after 2a.36; each written PDF matches the reviewed render). `outputs/natmetab/_retired/` holds every replaced PDF, render-dated: on 2026-10-16 the old Fig. 1h, ED 3a, 3b, 3d and the window-scatter ED 2f joined it |
 | text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its Fig. 1 and ED citations renumber (2a.31, 2a.35) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
@@ -79,26 +84,28 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Place the new PDFs in Illustrator.** Fig. 1f keeps its file name
-   (`Fig1f_window_reallocation.pdf`, re-written 2026-10-16). ED 2f and 2g are new files,
-   `EDFig2f_reallocation_ranked.pdf` and `EDFig2g_reallocation_window_ranked.pdf`; the old ED 2f's
-   link breaks (its PDF is in `_retired/`). Fig. 1h and ED 3 were placed by the author on
-   2026-10-16.
-2. **The author reviews three things:**
-   - **ED 2f's 33 names** fill the space above and below the curve; their leaders are long and
-     cross in places. If it is too busy: a taller panel (the ED 2 page has 3 mm to spare), names
-     on two lines, or numbers on the points with the names in the legend.
-   - **Fig. 1f's right side**: the labels are placed by hand (`lab` in the script); they were
-     checked on the drawn panel.
-   - **ED 2g names the MYC+ window changes at adjusted *P* < 0.05**, which the exploratory figS6
-     left out on purpose: the window coincides with an extraction batch. The legend must say so.
-3. **Push** `1e2bbac` and this handoff when the author says.
+1. **Place the re-written PDFs in Illustrator** (evening of 2026-10-16; same file names):
+   `Fig1f_window_reallocation.pdf`, `EDFig2f_reallocation_ranked.pdf` and
+   `EDFig2g_reallocation_window_ranked.pdf`. ED 2f and 2g are now **171 x 45** (were 180 x 45).
+2. **One open item: an ED 2g asterisk reads as an OXPHOS one.** The author asked which OXPHOS
+   pathway is significantly down in ED 2g. None is: the ten asterisks are six Metabolism, three
+   Protein import and one Dynamics pathway (2a.36), and the OXPHOS tier's
+   smallest MYC+ adjusted *P* is Complex I's, 0.077. The asterisk that looks like OXPHOS's belongs
+   to Selenoproteins (rank 142, grey): its MYC+ dot (-0.21) is above its WT dot (-0.32), so the
+   asterisk goes above, at the height of CIV subunits' green open dot next door (rank 141, -0.19).
+   Proposed, not done: put an asterisk on the side away from its neighbours' dots where the
+   partner rule puts it beside one (or below the MYC+ dot here). Ask the author.
+3. ~~Push~~: done (evening of 2026-10-16).
 4. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's, 2a.34's and 2a.35's.
    - **Fig. 1f**: the right side's *r* values (WT 0.79, MYC+ 0.86) and the three named pathways'
      values; the priority numbers of the six rows, no longer drawn, stay in the legend.
    - **Fig. 1h**: *Bbc3* alone beyond *P* = 0.01 (empirical *P* 0.0074); every other gene
      *P* >= 0.12; *Bid* drawn at the end colour.
-   - **ED 2f-g**: script 08's Welch test, BH across the MitoPathways; ED 2g's batch sentence.
+   - **ED 2f-g**: script 08's Welch test, BH across the MitoPathways; ED 2g's batch sentence. The
+     evening's form adds: **the ranking** (no x-axis title: "MitoPathways ranked by MYC's effect on
+     priority at 6W, promoted to demoted"; ED 2g, by the WT window change); **the asterisk** (BH-
+     adjusted *P* < 0.05; ED 2f the 6W effect, 33; ED 2g the MYC+ window change, 10, none in WT);
+     **the rings** (the seven top-level MitoPathways, MitoCarta3.0's hierarchy, named).
    - **ED 3b**: the 6W test (script 42's `lm(log2 ratio ~ age * genotype)`, unadjusted; BH over the
      nine leaves the same five); ED 3a keeps *Apaf1*'s omission note.
    - **Fig. 1b's legend carries the WT window**, *P* = 0.48 (not drawn); **Fig. 1d's names the
@@ -134,9 +141,10 @@ Section 10 holds the threads parked for after the manuscript.
      Twice on 2026-10-15 the reading came from a different file (67.5 for a 66-mm page, 104 for
      100). Base `pdf()` writes page sizes in whole points, rounded down, so a 56-mm page reads 55.74;
    - **`ggrepel` lays labels out for the page it draws on**: judge them on the panel's own PDF, not
-     on the A4 mock-up (26 of ED 2f's 33 names moved there). To fit many names, put the key below
-     the plot, hold each set to its empty region (`xlim`/`ylim`), spread their starts (`nudge_x`),
-     and pad names with two spaces; a larger `box.padding` made the layout fail;
+     on the A4 mock-up (26 of ED 2f's 33 names moved there). Labels placed by calculation
+     (`spread_on_line()`, ED 2f-g since the evening of 2026-10-16) are the same on every page;
+   - **Quick Look hangs on a missing file**: guard it (`[ -f x.pdf ] && qlmanage ...`), or a failed
+     render leaves the shell waiting;
    - the Extended Data figures keep 6/7-pt type (author, 2026-10-16); a panel moving into them takes it.
 8. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
@@ -1171,7 +1179,50 @@ unchanged; the old ED 3a (per animal) and 3d (coupling) are gone. ED 2f is the r
 on priority (new, from fig02b); ED 2g the ranked window (new, from figS6); the old ED 2f (the window
 scatter) is Fig. 1f's right side.
 
-Commits: `74f0047` (pushed), `1e2bbac` and this handoff (local).
+Commits: `74f0047`, `1e2bbac` and `44e870c` (all pushed in the evening).
+
+### 2a.36 2026-10-16, evening: ED 2f-g as fig02; Fig. 1f's joins dashed
+
+**The author's notes.** Fig. 1f: "Make the lines linking the 6W and 12W thinner and dashed. Link
+the point legends (OXPHOS, etc..) only to the 6W point." ED 2f and 2g: "Make the actual plot
+shorter - around 120 mm, move the legend key to the right side, so the plot can be taller. The point
+labels should be done as in `fig02_reallocation_ranked.pdf` - the tier labels larger, circled
+points, any significant point marked with an asterisk (Nature doesn't want asterisk, but in this
+case it is an exception). Point legends only for the tier labels, not individual pathways. The tier
+labels aligned on the bottom or the top." After the previews: "the point labels should not be in
+bold, black is ok. WE don't need a title underneath, that goes in the legend. The title of the
+legend key should read `MitoPathways (MitoCarta3.0, Hierarchy top level)`".
+
+- **Fig. 1f**: the scatter has no 6W or 12W points (both axes are the window change), so "6W"
+  was read as **WT**: one leader per label, to the WT point; the WT-MYC+ joins at `NM_LINE`,
+  dashed (`"22"`). The carnitine label moved to above-right of its point (0.26, 0.34) to clear
+  "MYC+ *r*". If the author meant MYC+, it is `hl$geno == "pos"` in the script.
+- **ED 2f and 2g** (`ranked_tier_marks()` in `_style.R` does the marks for both):
+  - the seven top-level MitoPathways (`$pathway_levels`, Level 1; each is its tier's own) ringed
+    (size 2) and named in 7-pt plain black type, long names on two lines (`mito_tier_text`); fig02
+    set them bold and in tier colours, which the text rule refuses (and the author: not bold);
+  - names on two lines of labels: promoted tiers along the foot of the empty lower left, demoted
+    ones along the head of the empty upper right. fig02 put promoted on top, which needs about half
+    as much axis again; this way the axis stays the data's height. Each line runs only where no
+    point comes within 1 mm; `spread_on_line()` sets the names on it as near their rings as the
+    others allow (least squares on the left edges: an isotonic regression, then the bounds);
+  - asterisks (7 pt) 0.25 mm off the dot, on the side away from its partner: ED 2f, the 33 6W
+    effects at adjusted *P* < 0.05; ED 2g, the ten MYC+ window changes (no WT change passes);
+  - the data area **120 x 43 mm** (was about 180 x 32 with the key below); the key at the right,
+    titled "MitoPathways" / "(MitoCarta3.0, Hierarchy top level)" on two lines (on one line,
+    46 mm, the panel would be about 183 wide, over the ED page); no x-axis title. **171 x 45.**
+  - ED 2g's ten, by MYC+ change: Vitamin B2 metabolism +0.215, Xenobiotic metabolism +0.190,
+    Molybdenum cofactor synthesis +0.129, Cholesterol, bile acid, steroid synthesis +0.085 (all
+    Metabolism, adj *P* 0.036); Protein homeostasis -0.108 (0.039); Intramitochondrial membrane
+    interactions -0.162 (Dynamics, 0.036); Cytochromes -0.172 and Selenoproteins -0.207
+    (Metabolism, 0.039); MIA40 -0.210 (0.039) and Chaperones -0.216 (0.044) (Protein import).
+    **No OXPHOS pathway passes** in either genotype (Complex I's MYC+ adjusted *P* 0.077 is the
+    tier's smallest); see section 2, item 2 for the asterisk that reads as one.
+- **Checks**: 20 of 20 panels pass, the 17 untouched byte-identical; self-test 34 of 34
+  (`spread_on_line()` and `text_mm()` added). The written PDFs match the reviewed renders.
+- **Claude ran** the three scripts and `page_mock_247.R` (author: "run, commit and push").
+
+Commits: `99af310` and this handoff; all pushed.
 
 ---
 
