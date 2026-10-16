@@ -41,7 +41,7 @@ relates-to:
   pushed everything: **every PDF is current, nothing is local.**
 
 FIRST: the author places the re-written Fig. 1f, ED 2f and ED 2g in Illustrator (same file names;
-ED 2f and 2g are now 171 mm wide, not 180). Then the open item in section 2, item 2.
+ED 2f and 2g are now 171 mm wide, not 180). Nothing is open from the evening's review.
 
 Read this file first. Sections 1, 2 and 2a are current as of **2026-10-16**. Section 2a covers
 Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
@@ -63,7 +63,7 @@ Section 10 holds the threads parked for after the manuscript.
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
 | HEAD | this handoff's commit (2026-10-16, evening), on top of `99af310` (ED 2f-g as fig02, Fig. 1f's dashed joins), `44e870c` (the afternoon's handoff), `1e2bbac` (Fig. 1f's scatter, ED 2f-g) and `74f0047` (Fig. 1h, ED 3 re-formed) |
-| pushed | **everything**, this handoff included (2026-10-16, evening, at the author's word: "run, commit and push") |
+| pushed | **everything**, this handoff included (2026-10-16, evening, at the author's word: "run, commit and push", then "push") |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
 | results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
@@ -87,14 +87,10 @@ Section 10 holds the threads parked for after the manuscript.
 1. **Place the re-written PDFs in Illustrator** (evening of 2026-10-16; same file names):
    `Fig1f_window_reallocation.pdf`, `EDFig2f_reallocation_ranked.pdf` and
    `EDFig2g_reallocation_window_ranked.pdf`. ED 2f and 2g are now **171 x 45** (were 180 x 45).
-2. **One open item: an ED 2g asterisk reads as an OXPHOS one.** The author asked which OXPHOS
-   pathway is significantly down in ED 2g. None is: the ten asterisks are six Metabolism, three
-   Protein import and one Dynamics pathway (2a.36), and the OXPHOS tier's
-   smallest MYC+ adjusted *P* is Complex I's, 0.077. The asterisk that looks like OXPHOS's belongs
-   to Selenoproteins (rank 142, grey): its MYC+ dot (-0.21) is above its WT dot (-0.32), so the
-   asterisk goes above, at the height of CIV subunits' green open dot next door (rank 141, -0.19).
-   Proposed, not done: put an asterisk on the side away from its neighbours' dots where the
-   partner rule puts it beside one (or below the MYC+ dot here). Ask the author.
+2. **Closed: the ED 2g asterisk that reads as an OXPHOS one stays as it is** (author, evening of
+   2026-10-16: "it is OK, one can see it"). The author asked which OXPHOS pathway is significantly
+   down in ED 2g; none is (2a.36). The asterisk beside CIV subunits' green dot (rank 141) belongs to
+   Selenoproteins (rank 142), placed above its MYC+ dot by the away-from-partner rule.
 3. ~~Push~~: done (evening of 2026-10-16).
 4. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's, 2a.34's and 2a.35's.
    - **Fig. 1f**: the right side's *r* values (WT 0.79, MYC+ 0.86) and the three named pathways'
