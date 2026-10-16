@@ -1,6 +1,6 @@
 ---
-date: 2026-10-15
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes]
+date: 2026-10-16
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
@@ -21,28 +21,30 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-10-15, END OF DAY: FIG. 1 IS RESIZED AND SET IN 5/6-PT TYPE (2a.34). Everything is pushed,
-this handoff included.**
-- **Fig. 1b goes to Prism:** the author redraws it from the R panel's numbers;
-  `fig1b_myc_transcript.R` stays as their source (2a.33, 2a.34).
-- **Fig. 1d, 100 x 60:** 5/6 pt with a reduced *P* exponent. The y title reads "Fraction of
-  nuclear-encoded transcriptome (%)", not "total", because the denominator leaves out the mtDNA
-  transcripts. **Box-plot axes**, the author's new rule: from the tick below the lowest animal to
-  the tick above the *P* label.
-- **Fig. 1e, 78 x 55**, and **Fig. 1f, 100 x 56**, both 5/6 pt. 1f now sits alone in its row.
-- **Fig. 1g 66 + 1h 52 + 1i 56, all 56 tall: one 180-mm row.** g's key reads "z-score", has no
-  frame, and moved left.
-- **"z-score", hyphenated, everywhere**, ED 3a and 3d included.
+**2026-10-16: FIG. 1 AND THE EXTENDED DATA RE-FORMED, TWICE (2a.35).**
+- **Fig. 1h is the BCL-2 family's departure from MYC's fade** (the old ED 3b's top half), 52 x 56,
+  5/6 pt. The ratio panel, the old Fig. 1h, is **ED 3b**: rows by the 6W effect, filled = the 6W
+  effect *P* < 0.05. Bbc3:Bcl2l1 is the one ratio that rises significantly at 6W and ends below
+  zero at 12W. **ED 3a** is the downstream genes; ED 3c is unchanged; the old **ED 3a and 3d are
+  retired**. Pushed: `74f0047`.
+- **Fig. 1f's right side is the window scatter** (the old ED 2f, its two facets overlaid; "WT r",
+  "MYC+ r"; OXPHOS subunits, carnitine shuttle and fatty acid oxidation joined and labelled). The
+  priority ruler and the group names are retired. **ED 2f and 2g are new**: the exploratory fig02b
+  (MYC's effect on priority, 6W, ranked) and figS6 (the window, ranked), tier colours as the
+  originals, the adjusted-*P* < 0.05 pathways named. **Committed (`1e2bbac`), not pushed.**
+- At the author's request, Claude ran the three changed scripts: **every PDF is current.**
 
-FIRST: the author re-renders ED 3a and ED 3d, whose PDFs still say "z score"; every Fig. 1 PDF is
-current. Then ask what comes next (section 2, item 2): the ED figures are still 6/7 pt.
+FIRST: the author places Fig. 1f, ED 2f and ED 2g in Illustrator (ED 2f's and 2g's files are new
+names) and reviews ED 2f's 33 names (section 2, item 2). Push `1e2bbac` and this handoff when the
+author says.
 
-Read this file first. Sections 1, 2 and 2a are current as of **2026-10-15**. Section 2a covers
+Read this file first. Sections 1, 2 and 2a are current as of **2026-10-16**. Section 2a covers
 Extended Data Fig. 2 (2026-10-12, morning, 2a.1-2a.6), the first Fig. 1g-h proposals
 (2026-10-12, afternoon, 2a.7-2a.13), the arguments and proposals of 2026-10-13 (2a.14-2a.22), and the
 247-mm page with two rounds of proposals and scripts 55-56 (2026-10-14, 2a.23-2a.31), and the
 evening's changes and the promotion (2a.32), Fig. 1b in the Prism format (2026-10-15, 2a.33), and
-the afternoon's resizing of Fig. 1d-i in 5/6-pt type (2a.34). All are pushed. Section 2b is the
+the afternoon's resizing of Fig. 1d-i in 5/6-pt type (2a.34), and 2026-10-16's two re-formings
+(2a.35). All are pushed but 2a.35's second commit and this handoff. Section 2b is the
 2026-10-10/11 session (Fig. 1d-f and ED Fig. 2, old letters), 2c the 2026-10-10 session (Fig. 1b
 and ED Fig. 1) and 2d the 2026-10-09 session, which started the Nat Metab layer. Section 3 is the
 2026-09-22 session and 3a the 2026-09-21 evening session; 3b to 3g and 4 to 9 are carried over.
@@ -55,15 +57,15 @@ Section 10 holds the threads parked for after the manuscript.
 | | |
 |---|---|
 | checkout | `main`, tracking `origin/main`. It is the only branch, local and remote |
-| HEAD | this handoff's commit (2026-10-15, evening), on top of `8bb8242` (the g-h-i row, 5/6 pt, z-score), `7f2d178` (1d's box-plot axes, 1e), `dfa8986` (1d in 5/6 pt) and `c740aae` (the morning's handoff) |
-| pushed | **everything, this handoff included**, at the author's word (2026-10-15: "commit and push and handoff") |
+| HEAD | this handoff's commit (2026-10-16), on top of `1e2bbac` (Fig. 1f's scatter, ED 2f-g), `74f0047` (Fig. 1h, ED 3 re-formed) and `9d87af7` (the 2026-10-15 handoff) |
+| pushed | everything through `74f0047` (2026-10-16, at the author's word). **`1e2bbac` and this handoff are local**: the author asked for "commit, run and save the pdfs", not a push |
 | branches | unchanged since 2026-09-22: only `main`. Tags: five `archive/*`, plus `block-a-reviewed`, `block-b-full` and `orthotopic-pre-identity-correction` |
 | scripts | **55** changed in the evening (the 99% line, `p_emp_resp`, `outside_99`) and re-run by the author (23:36). **56** run by the author (matches the dry run exactly). **The next number is 57** |
 | results | `results/window_and_chain_statistics.rds` (script 56) and `results/departure_from_myc_fade.rds` (script 55, with the 99% columns), both current |
-| new figure layer | `figures/natmetab/`: `_style.R` (on 2026-10-15 also `lw_pt()`, `natural_size()`, `label_mm()`, `box_axis()`, the `exponent` argument of `fmt_p()` and `brackets()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `_style_selftest.R` (33 checks, all pass), `FIGURE_RULES.md` (the built table and the page are current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-f; ED 3a-d. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the three replaced panels; `proposals/` holds only superseded ones |
+| new figure layer | `figures/natmetab/`: `_style.R` (on 2026-10-15 also `lw_pt()`, `natural_size()`, `label_mm()`, `box_axis()`, the `exponent` argument of `fmt_p()` and `brackets()`, and `txt`/`txt_title`/`line`/`tips` arguments on `theme_nm()` and `brackets()`), `mito_tier_labels`/`mito_tier_cols` (2026-10-16), `_style_selftest.R` (33 checks, all pass), `FIGURE_RULES.md` (the built table and the pages are current), **twenty panels of record**: Fig. 1b, d-i; ED 1a-c; ED 2a-g; ED 3a-c. 20 of 20 pass the dry run. `page_mock_247.R` draws the three pages (Fig. 1's bench row, with 1b, is a placeholder there). `retired/` holds the replaced panels (six since 2026-10-16: also the per-animal ED 3a, the coupling ED 3d, the window-scatter ED 2f); `proposals/` holds only superseded ones |
 | old figure layer | `figures/panels/` is **untouched and kept as the record**; not used for the Letter |
-| outputs | `outputs/` is gitignored. The four stale PDFs (old 1f, narrow 2c, old 2f, old 2g) were moved to `outputs/natmetab/_retired/`. **Every Fig. 1 PDF is current** (the author rendered 1b at 10:09 and 1d-i between 15:42 and 16:27 on 2026-10-15). **ED 3a and ED 3d are stale**: they still say "z score" (2026-10-14). The other ED PDFs are current |
-| text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its ED citations renumber (2a.31) |
+| outputs | `outputs/` is gitignored. **Every PDF is current.** The author rendered the morning's panels (Fig. 1h, ED 3a-c) on 2026-10-16; Claude wrote Fig. 1f, ED 2f and ED 2g (02:10) and the page mock-up at the author's request. `outputs/natmetab/_retired/` holds every replaced PDF, render-dated: on 2026-10-16 the old Fig. 1h, ED 3a, 3b, 3d and the window-scatter ED 2f joined it |
+| text | the Doc (tab "Nat metab version") was read on 2026-10-12 (copy in that session's scratchpad); **nothing was written to it**. Its Fig. 1g-i paragraph needs the fixes in 2a.25, and its Fig. 1 and ED citations renumber (2a.31, 2a.35) |
 | repo | `/Users/gs/code/myc_mouse`, off Drive |
 | human arm | unchanged, read-only. Fig. 4g-j's data live in `../myc_human_exploratory` |
 
@@ -77,27 +79,37 @@ Section 10 holds the threads parked for after the manuscript.
 
 ## 2. Do this first
 
-1. **Re-render ED 3a and ED 3d** (the author, Option A), for their "z-score" labels:
-   `source(here::here("figures", "natmetab", "edfig3a_per_animal.R"))` and
-   `edfig3d_coupling_both_fits.R` likewise. Every other panel is current. Sourcing a panel's script
-   overwrites its PDF in `outputs/natmetab/<Fig>/`; Illustrator updates a linked placement and
-   needs an embedded one placed again.
-2. **Ask what comes next.** Fig. 1 is done in R (2a.34): 1b is the author's to redraw in Prism, and
-   the bench row a-c is theirs. Open:
-   - **Fig. 1f sits alone in its row** (100 of 180 mm): does it widen, or share the row?
-   - **The ED figures are still 6/7 pt**: do they take 5/6 too, and the box-plot axis rule (ED 3a)?
-3. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's and 2a.34's additions.
-   - **Fig. 1b's legend carries the WT window**, *P* = 0.48, which is not drawn; the script prints
-     all four *P* values, whether 1b is drawn in R or Prism.
-   - **Fig. 1d's legend names the denominator**: the 13 mtDNA-encoded transcripts are left out of
-     it, which is why the title says "nuclear-encoded".
-   - The box sentence, for R and Prism alike: "boxes show the median and interquartile range,
-     whiskers the minimum and maximum, and dots individual animals".
-4. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, and the
-   renumbering in 2a.31. Every legend number is printed by its script (2a.30).
-5. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
+1. **Place the new PDFs in Illustrator.** Fig. 1f keeps its file name
+   (`Fig1f_window_reallocation.pdf`, re-written 2026-10-16). ED 2f and 2g are new files,
+   `EDFig2f_reallocation_ranked.pdf` and `EDFig2g_reallocation_window_ranked.pdf`; the old ED 2f's
+   link breaks (its PDF is in `_retired/`). Fig. 1h and ED 3 were placed by the author on
+   2026-10-16.
+2. **The author reviews three things:**
+   - **ED 2f's 33 names** fill the space above and below the curve; their leaders are long and
+     cross in places. If it is too busy: a taller panel (the ED 2 page has 3 mm to spare), names
+     on two lines, or numbers on the points with the names in the legend.
+   - **Fig. 1f's right side**: the labels are placed by hand (`lab` in the script); they were
+     checked on the drawn panel.
+   - **ED 2g names the MYC+ window changes at adjusted *P* < 0.05**, which the exploratory figS6
+     left out on purpose: the window coincides with an extraction batch. The legend must say so.
+3. **Push** `1e2bbac` and this handoff when the author says.
+4. **Legends** (the scripts print every number): 2a.30's list, plus 2a.32's, 2a.34's and 2a.35's.
+   - **Fig. 1f**: the right side's *r* values (WT 0.79, MYC+ 0.86) and the three named pathways'
+     values; the priority numbers of the six rows, no longer drawn, stay in the legend.
+   - **Fig. 1h**: *Bbc3* alone beyond *P* = 0.01 (empirical *P* 0.0074); every other gene
+     *P* >= 0.12; *Bid* drawn at the end colour.
+   - **ED 2f-g**: script 08's Welch test, BH across the MitoPathways; ED 2g's batch sentence.
+   - **ED 3b**: the 6W test (script 42's `lm(log2 ratio ~ age * genotype)`, unadjusted; BH over the
+     nine leaves the same five); ED 3a keeps *Apaf1*'s omission note.
+   - **Fig. 1b's legend carries the WT window**, *P* = 0.48 (not drawn); **Fig. 1d's names the
+     denominator** (the 13 mtDNA-encoded transcripts are left out). The box sentence, for R and
+     Prism alike: "boxes show the median and interquartile range, whiskers the minimum and
+     maximum, and dots individual animals".
+5. **The text** (the author's Doc; Claude has written nothing to it): the fixes in 2a.25, the
+   renumbering in 2a.31 and 2a.35. Every legend number is printed by its script (2a.30).
+6. **After Fig. 1:** Fig. 3k-m (script 53's three panels, 2d.1; the void orthotopic conclusions of
    scripts 50 and 51 matter again, 3e). Fig. 4g-j is open (2d.1).
-6. **How each panel is built** (two bullets added 2026-10-15):
+7. **How each panel is built** (bullets added 2026-10-15 and 2026-10-16):
    - one script per panel in `figures/natmetab/`, sourcing `_style.R` and saved with
      `save_panel()`, which refuses a panel that breaks a rule;
    - size it for its page: **183 x 247 mm for the submission** (ED 180 x 247), rows kept modular for
@@ -120,20 +132,25 @@ Section 10 holds the threads parked for after the manuscript.
    - **"z-score"**, hyphenated with the soft hyphen, everywhere;
    - **a size the author reads in Illustrator:** check the PDF's own size first (its MediaBox).
      Twice on 2026-10-15 the reading came from a different file (67.5 for a 66-mm page, 104 for
-     100). Base `pdf()` writes page sizes in whole points, rounded down, so a 56-mm page reads 55.74.
-7. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
+     100). Base `pdf()` writes page sizes in whole points, rounded down, so a 56-mm page reads 55.74;
+   - **`ggrepel` lays labels out for the page it draws on**: judge them on the panel's own PDF, not
+     on the A4 mock-up (26 of ED 2f's 33 names moved there). To fit many names, put the key below
+     the plot, hold each set to its empty region (`xlim`/`ylim`), spread their starts (`nudge_x`),
+     and pad names with two spaces; a larger `box.padding` made the layout fail;
+   - the Extended Data figures keep 6/7-pt type (author, 2026-10-16); a panel moving into them takes it.
+8. **At the end of the figure sessions:** turn `FIGURE_RULES.md` and `_style.R` into the GS-lab
    figure skill.
-8. **Carried items, possibly moot now: ask before acting.**
+9. **Carried items, possibly moot now: ask before acting.**
    - the seven-gene table (3a.3);
    - Fig. 2G (alt)'s claim item (3a.2);
    - the isoform caveat in Fig. S2D (alt);
    - the void orthotopic conclusions of scripts 50 and 51 (3e), which matter again for Fig. 3k-m.
-9. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
+10. **Do not reopen without the author:** the FOXO3 activity step (closed, 3.5), or the parked human
    threads (section 10).
 
 ---
 
-## 2a. What happened on 2026-10-12 to 2026-10-15
+## 2a. What happened on 2026-10-12 to 2026-10-16
 
 - **2026-10-12, morning, 2a.1-2a.6:** Extended Data Fig. 2. Two commits, both pushed: `a927ce8`, and
   that morning's handoff, `ab62730`.
@@ -148,7 +165,10 @@ Section 10 holds the threads parked for after the manuscript.
 - **2026-10-15, 2a.33:** Fig. 1b in the Prism format, two rounds of the author's notes. Pushed:
   `7bc98c3` and that morning's handoff, `c740aae`.
 - **2026-10-15, afternoon, 2a.34:** Fig. 1b to Prism; Fig. 1d-i resized and set in 5/6-pt type;
-  box-plot axes; "z-score". Pushed: `dfa8986`, `7f2d178`, `8bb8242` and this handoff.
+  box-plot axes; "z-score". Pushed: `dfa8986`, `7f2d178`, `8bb8242` and that evening's handoff,
+  `9d87af7`.
+- **2026-10-16, 2a.35:** Fig. 1h and ED 3 re-formed (pushed, `74f0047`); Fig. 1f's right side and
+  ED 2f-g (`1e2bbac`) and this handoff, local.
 
 ### 2a.1 Extended Data Fig. 2 renumbered (the author's order)
 
@@ -1083,7 +1103,75 @@ the self-test passes 33 of 33.
 **The page** (`page_mock_247.R`): Fig. 1 takes 237 of 247 mm. Bench row a-c 56; d 100 x 60 + e
 78 x 55 (row 60); f 100 x 56; g + h + i (56).
 
-Commits, all pushed: `dfa8986`, `7f2d178`, `8bb8242`, and this handoff.
+Commits, all pushed: `dfa8986`, `7f2d178`, `8bb8242`, and that evening's handoff, `9d87af7`.
+
+### 2a.35 2026-10-16: Fig. 1h and ED 3 re-formed; Fig. 1f's right side and ED 2f-g
+
+**Morning (author): "Figure 1h I think is not the one which should be on the main figure"**, and
+the old ED 3a and 3d "do not add important details to the current text version".
+- **Fig. 1h** (`fig1h_bcl2_fade.R`, new): the old ED 3b's top half -- the 16 BCL-2 family genes by
+  departure from MYC's fade (script 55), the *P* = 0.05 and 0.01 lines, fill = the 6W effect --
+  at the old 1h's 52 x 56 in 5/6 pt. No strip (one group); the x title is a strip of its own (two
+  lines 2.4 mm apart; `atop()` spaces them twice as far); the bar unframed, as Fig. 1g's.
+- **ED 3a** (`edfig3a_fade_downstream.R`, the old ED 3b's script renamed): the seven downstream
+  genes, *Apaf1* still left out; 86 x 44.
+- **ED 3b** (`edfig3b_ratio_expected.R`, the old Fig. 1h renamed): rows by the 6W effect, not the
+  gap; filled 6W point = the 6W MYC effect on the ratio *P* < 0.05. The test is script 42's
+  `lm(log2 ratio ~ age * genotype)` over 24 animals, the genotype coefficient at 6W, unadjusted,
+  read from script 54's `$ratios` (`d6`, `p6`). Five pass: Bid:Bcl2l1 (*P* 0.0036), Bax:Bcl2l1
+  (0.00012), Bak1:Bcl2l1 (0.0052), **Bbc3:Bcl2l1 (0.0089)**, Bax:Mcl1 (0.0059); BH over the nine
+  leaves the same five. **Bbc3:Bcl2l1 is the one that ends below zero at 12W (-0.06)**, as the
+  author expected; Bmf:Bcl2l1 (0.40), Bbc3:Mcl1 (0.12) and Bcl2l11:Bcl2l1 (0.46) do not pass, and
+  also end below zero. The 12W points carry no test and stay filled; the key draws the
+  significance symbols in the 6W colour. ED type (6/7 pt); 86 x 45.
+- **ED 3c** unchanged. The ED 3 page: a over b beside c, 92 mm.
+- **Retired**: `edfig3a_per_animal.R` and `edfig3d_coupling_both_fits.R` (in `retired/`).
+
+**Afternoon (author): under Fig. 1's title, "OXPHOS deprioritisation in the adult mammary gland
+establishes the initial window for tumourigenesis", the deprioritisation "is weak".**
+- **Fig. 1f's right side** is now the window scatter, the old ED 2f with its two facets overlaid:
+  143 pathways' change in expression against change in priority, WT and MYC+ in their colours;
+  OXPHOS subunits, the carnitine shuttle and fatty acid oxidation joined across genotypes, each
+  with one black label and a leader to both points (placed by hand, `lab` in the script); "WT
+  *r* = 0.79" and "MYC+ *r* = 0.86" in the empty upper-left corner. The priority ruler and the
+  group names are retired; the left side (the expression ruler, its tests, the bracket) is
+  unchanged. 100 x 56, as before (author: "the sizes should be still OK").
+- **ED 2f** (`edfig2f_reallocation_ranked.R`, new): the exploratory fig02b reproduced -- the 143
+  ranked by MYC's effect on priority at 6W, the 12W effect as a small dot on a thin line, tier
+  colours as the original (`mito_tier_cols`); the **33** at BH-adjusted *P* < 0.05 named in black
+  (15 promoted, 18 demoted) and outlined. The original's seven ringed top-level categories are not
+  drawn (seven more labels; the three that pass are named). 180 x 45.
+- **ED 2g** (`edfig2g_reallocation_window_ranked.R`, new): figS6 reproduced -- ranked by the WT
+  window change (filled), the MYC+ change open and joined; **no WT change passes**; the **ten**
+  MYC+ changes at adjusted *P* < 0.05 named on their open dots. figS6 drew no significance on
+  purpose (the window coincides with an extraction batch); the legend must carry that sentence.
+  180 x 45. The ED 2 page: f and g one below the other, 244 of 247 mm.
+- Both ranked panels use the 143 nuclear MitoPathways of Fig. 1e and ED 2e (the originals drew 144,
+  with the mtDNA module) and assert their values equal script 40's copy.
+- **Retired**: the window-scatter ED 2f (`edfig2f_window_two_rulers.R`).
+- **Tier colours as the originals** (author): Protein import and homeostasis `#D55E00`, Central
+  dogma `#E69F00`, OXPHOS `#009E73`, Metabolism `#B8B8B8`, Signalling `#56B4E9`, Dynamics and
+  surveillance `#0072B2`, Small molecule transport `#CC79A7`. Blue and orange are tiers there, not
+  genotypes; those panels carry no genotype colour.
+- **Fitting 33 names in 45 mm**: three tries. With the key at the right and plain `ggrepel`, the
+  names stacked and overlapped; with a larger `box.padding`, the layout became infeasible and names
+  collided; the kept version puts the key below, holds each set to the empty side of the curve,
+  spreads their starts, and pads each name with two spaces. **`ggrepel` lays labels out for the
+  page it draws on**: on the A4 mock-up 26 of the 33 moved (two renders on the panel's own page
+  are identical, and the saved PDF matches the reviewed render label for label).
+
+**Checks**: 20 of 20 panels pass the dry run (after each round: the untouched ones byte-identical);
+the self-test passes. **Claude ran** `fig1f_window_reallocation.R`, `edfig2f_reallocation_ranked.R`,
+`edfig2g_reallocation_window_ranked.R` and `page_mock_247.R` to write their PDFs (author: "commit,
+run and save the pdfs"), and moved the stale PDFs to `outputs/natmetab/_retired/`.
+
+**Renumbering for the text** (2026-10-16): Fig. 1h is the BCL-2 family's departure (was ED 3b's top
+half); ED 3a the downstream genes (was ED 3b's bottom half); ED 3b the ratios (was Fig. 1h); ED 3c
+unchanged; the old ED 3a (per animal) and 3d (coupling) are gone. ED 2f is the ranked MYC effect
+on priority (new, from fig02b); ED 2g the ranked window (new, from figS6); the old ED 2f (the window
+scatter) is Fig. 1f's right side.
+
+Commits: `74f0047` (pushed), `1e2bbac` and this handoff (local).
 
 ---
 
