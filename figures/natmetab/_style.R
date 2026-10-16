@@ -126,6 +126,20 @@ mito_class_labels <- c(mitocarta_proper = "MitoCarta",
                        construction_MITO = "Curated (with mitochondria)",
                        non_mito = "Not mitochondrial")
 
+# MitoPathway tiers (ED 2f-g), the seven top-level MitoCarta categories, coloured "as in
+# the original panels" (author, 2026-10-16: fig02b and figS6): Okabe-Ito, Metabolism grey.
+# Here blue and orange are tiers, not genotypes; these panels carry no genotype colour.
+# Keys are script 08's tier names (results/mitopps_scores.rds $pathway_tier1_map).
+mito_tier_labels <- c("Protein import, sorting and homeostasis" = "Protein import and homeostasis",
+                      "Mitochondrial central dogma"             = "Central dogma",
+                      "OXPHOS"                                  = "OXPHOS",
+                      "Metabolism"                              = "Metabolism",
+                      "Signaling"                               = "Signalling",
+                      "Mitochondrial dynamics and surveillance" = "Dynamics and surveillance",
+                      "Small molecule transport"                = "Small molecule transport")
+mito_tier_cols <- stats::setNames(c("#D55E00", "#E69F00", "#009E73", "#B8B8B8", "#56B4E9",
+                                    "#0072B2", "#CC79A7"), mito_tier_labels)
+
 scale_fill_div <- function(limits, name = NULL, ...) {
   if (length(limits) == 1L) limits <- c(-abs(limits), abs(limits))
   stopifnot(length(limits) == 2L, limits[1] < 0, limits[2] > 0)

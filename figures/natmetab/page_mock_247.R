@@ -28,7 +28,8 @@ P <- lapply(c(
   f1h = file.path(NAT, "fig1h_bcl2_fade.R"),             f1i = file.path(NAT, "fig1i_coupling.R"),
   e2a = file.path(NAT, "edfig2a_design.R"),              e2b = file.path(NAT, "edfig2b_geneset_library.R"),
   e2c = file.path(NAT, "edfig2c_pathway_axis.R"),        e2d = file.path(NAT, "edfig2d_window_independent.R"),
-  e2e = file.path(NAT, "edfig2e_myc_reallocation_ages.R"), e2f = file.path(NAT, "edfig2f_window_two_rulers.R"),
+  e2e = file.path(NAT, "edfig2e_myc_reallocation_ages.R"), e2f = file.path(NAT, "edfig2f_reallocation_ranked.R"),
+  e2g = file.path(NAT, "edfig2g_reallocation_window_ranked.R"),
   e3a = file.path(NAT, "edfig3a_fade_downstream.R"),     e3b = file.path(NAT, "edfig3b_ratio_expected.R"),
   e3c = file.path(NAT, "edfig3c_puma_regulators.R")), grab)
 
@@ -72,7 +73,10 @@ fx <- page("Extended Data Fig. 2 on 180 x 247 mm", 180)
 place(fx, P$e2a, 0, 0, 46, 40, "a");      place(fx, P$e2b, 50, 0, 58, 40, "b")
 place(fx, P$e2c, 0, 43, 176, 46, "c")
 place(fx, P$e2d, 0, 92, 114, 56, "d");    place(fx, P$e2e, 117, 92, 60, 56, "e")
-place(fx, P$e2f, 0, 151, 84, 64, "f")
+# 2026-10-16 (author): f and g, the two ranked panels, one below the other across the
+# page; the old f, the window scatter, is Fig. 1f's right side
+place(fx, P$e2f, 0, 151, 180, 45, "f")
+place(fx, P$e2g, 0, 199, 180, 45, "g")
 
 # --- ED Fig. 3 --------------------------------------------------------------------
 fx <- page("Extended Data Fig. 3 on 180 x 247 mm", 180)

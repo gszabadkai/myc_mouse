@@ -112,7 +112,8 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Pad the data range by 3-4% before the axis rounds to its end tick**, so a point at the
   extreme is not cut by the axis end (a box plot instead starts on the tick closest below its
   lowest whisker; see above). Choose the pad so that, on facets side by side, the last
-  label of one facet cannot run into the first of the next (ED 2f, the old 2g, ends on a minor tick for this).
+  label of one facet cannot run into the first of the next (the two-facet window scatter, retired on
+  2026-10-16, ended on a minor tick for this).
 
 ## Statistics on panels
 
@@ -161,6 +162,15 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   given every point, the unnamed ones with an empty label, so names keep off all points, not just
   the named ones. Where names do not fit, the points are marked and the legend names them (ED 2e:
   eleven names at 62 mm crossed the cloud).
+- **Naming many points on a ranked plot** (ED 2f, 33 names in 45 mm, 2026-10-16): the key goes
+  below the plot, so the names get the width; each set of names is held to the empty side of
+  the curve (`ggrepel` `xlim`/`ylim`), starts spread over it (`nudge_x`), and sees every point,
+  named or not; two spaces either side of a name keep names that share a row apart at no cost
+  in height. A larger `box.padding` made the layout infeasible and the names collided.
+- **`ggrepel` places labels for the page it draws on** (checked 2026-10-16): the same 180 x 45 mm
+  panel placed on the A4 page mock-up moved 26 of ED 2f's 33 names, while two renders on the
+  panel's own page are identical. Judge labels on the panel's own PDF, which is what Illustrator
+  places; the mock-up only checks the page.
 - **Significance glyphs mean one thing per figure** (author, 2026-10-11). Filled = *P* < 0.05 by
   the panel's test of record, open = not, and the key and legend name the test: Fig. 1e, the
   adjusted *P*; Fig. 1f, matched sets for expression and script 08's BH for priority (since
@@ -226,7 +236,7 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
 - **Genotype effects** take the MYC+ hue of their age: "MYC+ vs WT, 6W" `#D55E00`, "MYC+ vs WT,
   12W" `#E69F00` (`contrast_cols` in the style file).
 - **Changes across the window** (12W vs 6W) take the genotype colour: "12W vs 6W, WT" `#0072B2`,
-  "12W vs 6W, MYC+" `#D55E00` (`geno_cols` with `dev_labels`; Fig. 1f, ED 2f).
+  "12W vs 6W, MYC+" `#D55E00` (`geno_cols` with `dev_labels`; Fig. 1f, ED 2g's key).
 - **Diverging fills:** `#4A3525` (espresso) to `#FAFAFA` (white, pinned at zero) to `#2A8A6D`
   (mint). Not blue-red, which would read as genotype.
 - **Unsigned levels:** `#F2F4F6` to `#8FA3B0` to `#243642`.
@@ -236,6 +246,11 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
   against not reads first (author, 2026-10-14; the slate shades of 2026-10-12 did not separate
   them). The old red/orange/blue is out because blue and orange mean genotype; green is the
   diverging scale's end.
+- **MitoPathway tiers** (ED 2f-g, author 2026-10-16: "colour coded as in the original panels",
+  fig02b and figS6): Protein import and homeostasis `#D55E00`, Central dogma `#E69F00`, OXPHOS
+  `#009E73`, Metabolism `#B8B8B8`, Signalling `#56B4E9`, Dynamics and surveillance `#0072B2`,
+  Small molecule transport `#CC79A7` (`mito_tier_cols`). Blue and orange are tiers here, not
+  genotypes; these two panels carry no genotype colour, and their point labels are black.
 - **A schematic of the design teaches the contrast colours** (ED 2a): its arrows take the colour
   each contrast has on every effect panel; its text stays black.
 - **Consistency:** the same group has the same colour in every panel, R or Prism. Colour that
@@ -264,7 +279,7 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | Fig. 1b | `fig1b_myc_transcript.R` | *Myc* mRNA per animal (x1,000), beside the MYC western, in the Prism format (graph 20 x 20 mm, no x axis, 0.9-pt lines, brackets without tips over the animals they compare, the WT window's *P* in the legend; since 2026-10-15); 30 x 28.5 |
 | Fig. 1d | `fig1d_mito_content.R` | module shares (4 modules, every animal) over the MYC effect on 143 MitoPathways at 6W and 12W; one PDF, shared key; tick labels, key and *P* 5 pt, titles 6 pt, exponent reduced, y title "Fraction of nuclear-encoded transcriptome (%)"; upper graphs 28 mm tall, each axis from the tick below its lowest animal to the tick above its *P* label (since 2026-10-15); 100 x 60 |
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; row labels and key 5 pt, group names and axis title 6 pt; 78 x 55 (since 2026-10-15) |
-| Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 5/6 pt (since 2026-10-15); 100 x 56 |
+| Fig. 1f | `fig1f_window_reallocation.R` | left: 12W vs 6W in WT and MYC+ (MYC+ smaller) on the expression ruler, filled = *P* < 0.05 against 2,000 expression-matched sets (scripts 54 and 56), OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); right (since 2026-10-16): the window scatter, the old ED 2f's two facets overlaid, expression against priority for 143 pathways, OXPHOS subunits, the carnitine shuttle and fatty acid oxidation joined across genotypes and labelled once with two leaders, WT *r* 0.79 and MYC+ *r* 0.86 on the panel; the priority ruler and the group names retired; 5/6 pt; 100 x 56 |
 | Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 5/6 pt, the key titled "z-score", unframed, at the top beside the two short role names (since 2026-10-15); 66 x 56 |
 | Fig. 1h | `fig1h_bcl2_fade.R` | the BCL-2 family (16 genes) by departure from MYC's fade (script 55), lines at *P* = 0.05 and 0.01, fill = 6W effect +/-0.5; the old ED 3b's top half, moved here on 2026-10-16 (author); 5/6 pt, the x title a strip of its own (two lines 2.4 mm apart), the bar unframed; 52 x 56 |
 | Fig. 1i | `fig1i_coupling.R` | OXPHOS priority against *Bbc3:Bcl2l1*, adjusted for immune content; WT dashed and thinner; MYC+ *R*2 on the panel, *P* values in the legend; 5/6 pt, the square data area as large as the 56-mm height allows (since 2026-10-15); 56 x 56 |
@@ -276,7 +291,8 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | ED 2c | `edfig2c_pathway_axis.R` | pathway-level PCA, PC1 broken for the one far animal, equal units, beside the ranked PC1 loadings with six sets named; 176 x 46 |
 | ED 2d | `edfig2d_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 44-mm data areas; 114 x 56 |
 | ED 2e | `edfig2e_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 44-mm data area; 60 x 56 |
-| ED 2f | `edfig2f_window_two_rulers.R` | window, expression against priority, 143 pathways, WT and MYC+ facets (ED 2g until 2026-10-14); 84 x 64 |
+| ED 2f | `edfig2f_reallocation_ranked.R` | the 143 nuclear MitoPathways ranked by MYC's effect on priority at 6W (mitoPPS), 12W as small dots, tier colours as the exploratory fig02b; the 33 at adjusted *P* < 0.05 named in black (since 2026-10-16); 180 x 45 |
+| ED 2g | `edfig2g_reallocation_window_ranked.R` | the 143 ranked by the WT window change (filled), the MYC+ change open and joined, tier colours as figS6; the ten MYC+ changes at adjusted *P* < 0.05 named (no WT change passes; the window is a batch); since 2026-10-16; 180 x 45 |
 | ED 3a | `edfig3a_fade_downstream.R` | the downstream genes by departure from MYC's fade, the same lines, fill = 6W effect +/-0.5, *Apaf1* left out; the old ED 3b's bottom half (2026-10-16; the old script, renamed); 86 x 44 |
 | ED 3b | `edfig3b_ratio_expected.R` | each BCL-2 ratio's 6W effect x 0.43 (the common shrink of the other eight) against its 12W effect; rows by the 6W effect, filled = 6W effect *P* < 0.05 (script 42); the old Fig. 1h, moved and changed on 2026-10-16 (author); 86 x 45 |
 | ED 3c | `edfig3c_puma_regulators.R` | the PUMA regulators by departure, the same lines, four beyond *P* = 0.01 labelled with their empirical *P*; 86 x 92 |
@@ -291,11 +307,17 @@ ED 3a, OXPHOS priority and the ratios per animal (`edfig3a_per_animal.R`), and E
 unadjusted and adjusted (`edfig3d_coupling_both_fits.R`). Both are in `retired/`, and their PDFs,
 with the old Fig. 1h's and the old ED 3b's, in `outputs/natmetab/_retired/`.
 
+**Retired 2026-10-16, later** (author: "the actual OXPHOS deprioritisation is weak"): the window
+scatter, ED 2f since 2026-10-14 (`edfig2f_window_two_rulers.R`), is now Fig. 1f's right side with
+its two facets overlaid; the priority ruler and the group names of Fig. 1f went with it. Its PDF is
+in `outputs/natmetab/_retired/`.
+
 **The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
 `outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
 - **Fig. 1**, 237 of 247 mm: bench row a-c 56 (placeholder); d 100 x 60 + e 78 x 55 (60); f 100 x 56;
   g 66 + h 52 + i 56, all 56 tall, one row of 180 (author, 2026-10-15); 3-mm gaps.
-- **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
+- **ED 2**, 244 mm (2026-10-16): a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 180 x 45;
+  g 180 x 45; 3-mm gaps.
 - **ED 3**, 92 mm (2026-10-16): a 86 x 44 over b 86 x 45, beside c 86 x 92; 3-mm gaps.
 
 **Proposals** (`figures/natmetab/proposals/`): all superseded, kept for the record --
