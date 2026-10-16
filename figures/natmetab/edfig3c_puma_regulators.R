@@ -6,14 +6,14 @@
 # The author's plan (2026-10-14): the FOXO3 argument goes to Extended Data, drawn
 # over the old Fig. S2D (alt) roster -- script 42's p53 arm (9) and other PUMA
 # inducers (12: the ISR, E2f1, Trp73 and the FOXO family) -- with Bbc3 added, as a
-# dot plot like ED 3b, the genes at P < 0.05 labelled. Trp73 and Cdkn2a are below
+# dot plot like the old ED 3b (now Fig. 1h and ED 3a), the genes at P < 0.05 labelled. Trp73 and Cdkn2a are below
 # the expression floor (script 55), so 20 genes are drawn.
 #
 # THE AXIS is script 55's departure z, UNSIGNED: negative = the 12W MYC effect is
 # lower than MYC's overall fade predicts. No function sign: Mdm2 restrains p53 and
 # the others induce PUMA.
 #
-# THE LINES, as ED 3b (author, 2026-10-14): two dashed pairs, labelled P = 0.05
+# THE LINES, as Fig. 1h and ED 3a (author, 2026-10-14): two dashed pairs, labelled P = 0.05
 # (|z| = 1.73, the 95th percentile over the 8,774 genes MYC moved at 6W) and P = 0.01
 # (|z| = 2.38, the 99th), so that the 16 genes inside are seen not to depart
 # (every one P >= 0.10). No gene falls between the pairs.

@@ -8,7 +8,9 @@
 # MYC+ line's R2 on the panel. P values in the legend (author): the slope
 # difference +0.78, P 0.0052 parametric and 0.085 against the within-age
 # permutation null. The unadjusted fit, and both fits side by side with all four P
-# values, are ED Fig. 3d (edfig3d_coupling_both_fits.R): the impasse of the 2026-09-21 ruling.
+# values, were ED Fig. 3d, retired on 2026-10-16 (author: it does not add important
+# details to the text; retired/edfig3d_coupling_both_fits.R): the impasse of the
+# 2026-09-21 ruling.
 #
 # WHAT THE R2 IS: the squared correlation of the drawn MYC+ points (n = 12), whose
 # y values are partial residuals -- the ratio with the shared epithelial and immune
@@ -82,7 +84,7 @@ p <- ggplot(pd, aes(x, y_adjusted)) +
   scale_y_nm(step = 1, top = YL[2], bottom = YL[1], minor = TRUE, labels = lab_signed) +
   coord_equal() +
   labs(x = "OXPHOS priority (mitoPPS, z­score)",                 # z-score: a soft hyphen (author, 2026-10-15)
-       # "adjusted for immune content", as ED 3d (author, 2026-10-14): "adjusted" alone, and
+       # "adjusted for immune content", as the retired ED 3d (author, 2026-10-14): "adjusted" alone, and
        # "epithelial content", read as adjusting for the MECs themselves
        y = expression(atop(italic("Bbc3:Bcl2l1") ~ "(z­score),", "adjusted for immune content"))) +
   guides(fill = guide_legend(order = 1, nrow = 2, override.aes = list(size = 1.5)),

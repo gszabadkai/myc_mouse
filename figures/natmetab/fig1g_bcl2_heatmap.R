@@ -18,7 +18,8 @@
 #
 # VALUES: VST expression (script 15's matrix), z-scored per gene over all 24
 # animals, mean per group. Descriptive only: no test is drawn. The tests are in
-# ED Fig. 3a (the animals) and ED Fig. 3b (the departures), and the legend. The two
+# Fig. 1h (the departures from MYC's fade) and the legend; ED Fig. 3a, the animals,
+# was retired on 2026-10-16. The two
 # ages are two extraction batches, so the WT 6W -> 12W columns include batch.
 #
 # COLOUR: the diverging espresso-white-mint scale, white at 0, limits +/-2 so that

@@ -164,7 +164,9 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
 - **Significance glyphs mean one thing per figure** (author, 2026-10-11). Filled = *P* < 0.05 by
   the panel's test of record, open = not, and the key and legend name the test: Fig. 1e, the
   adjusted *P*; Fig. 1f, matched sets for expression and script 08's BH for priority (since
-  2026-10-14). A panel without a test of record keeps its dots filled and draws no open ones.
+  2026-10-14); ED 3b, the 6W effect on each ratio (script 42, unadjusted), where only the 6W
+  points are tested, the key draws the symbols in the 6W colour and the 12W points stay filled
+  (2026-10-16). A panel without a test of record keeps its dots filled and draws no open ones.
 - **Size marks the leading contrast** (author, 2026-10-11). Of two contrasts drawn per row, the one
   the text leads with is larger (1.6) and the other smaller (about 1.1), and the key shows both
   sizes: Fig. 1e, 6W over 12W; Fig. 1f, WT over MYC+ (WT is the gland's own programme).
@@ -249,7 +251,7 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
 - Gene symbols on axes are italic; set and programme names are not. Row labels start with a
   capital (Nature lettering).
 - **"z-score", hyphenated, everywhere** (author, 2026-10-15), with the soft hyphen so it does not
-  print as a minus (Type, above). An italic *z* for a test statistic stays as it is (ED 3b, 3c).
+  print as a minus (Type, above). An italic *z* for a test statistic stays as it is (Fig. 1h, ED 3a, 3c).
 
 ## Built
 
@@ -264,7 +266,7 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | Fig. 1e | `fig1e_myc_reallocation.R` | mitoPPS MYC effect at 6W and 12W (12W smaller), 11 rule-chosen rows in three groups, filled = adjusted *P* < 0.05; row labels and key 5 pt, group names and axis title 6 pt; 78 x 55 (since 2026-10-15) |
 | Fig. 1f | `fig1f_window_reallocation.R` | 12W vs 6W in WT and MYC+ (MYC+ smaller) on two rulers, with the old ED 2f's tests: filled = *P* < 0.05 (2,000 expression-matched sets for expression, script 54 and script 56; script 08's BH for priority, every point open); OXPHOS minus proliferation bracketed (WT, *P* < 0.0005, script 43); no median ticks; 5/6 pt (since 2026-10-15); 100 x 56 |
 | Fig. 1g | `fig1g_bcl2_heatmap.R` | 16 BCL-2 family genes by role, group means of z, espresso-white-mint +/-2; 5/6 pt, the key titled "z-score", unframed, at the top beside the two short role names (since 2026-10-15); 66 x 56 |
-| Fig. 1h | `fig1h_ratio_expected.R` | each BCL-2 ratio's expected 12W (6W x 0.43, the common shrink of the other eight) against observed, rows by gap; x axis "normalised to overall MYC activity", its title on two lines; 5/6 pt (since 2026-10-15); 52 x 56 |
+| Fig. 1h | `fig1h_bcl2_fade.R` | the BCL-2 family (16 genes) by departure from MYC's fade (script 55), lines at *P* = 0.05 and 0.01, fill = 6W effect +/-0.5; the old ED 3b's top half, moved here on 2026-10-16 (author); 5/6 pt, the x title a strip of its own (two lines 2.4 mm apart), the bar unframed; 52 x 56 |
 | Fig. 1i | `fig1i_coupling.R` | OXPHOS priority against *Bbc3:Bcl2l1*, adjusted for immune content; WT dashed and thinner; MYC+ *R*2 on the panel, *P* values in the legend; 5/6 pt, the square data area as large as the 56-mm height allows (since 2026-10-15); 56 x 56 |
 | ED 1a | `edfig1a_myc_network.R` | MYC/MAX/MXD network: MYC+ vs WT at 6W and 12W, 95% intervals; 80 x 64 |
 | ED 1b | `edfig1b_myc_effect_rescaled.R` | MYC effect 12W vs 6W, 2,648 MYC-responsive genes, slope 0.49; 58 x 58 |
@@ -275,22 +277,26 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | ED 2d | `edfig2d_window_independent.R` | WT window against the MYC effect (r -0.02); MYC+ window against WT window (r 0.69); 44-mm data areas; 114 x 56 |
 | ED 2e | `edfig2e_myc_reallocation_ages.R` | mitoPPS MYC effect 12W vs 6W, 143 pathways, fit slope 0.64, Fig. 1e rows in black; 44-mm data area; 60 x 56 |
 | ED 2f | `edfig2f_window_two_rulers.R` | window, expression against priority, 143 pathways, WT and MYC+ facets (ED 2g until 2026-10-14); 84 x 64 |
-| ED 3a | `edfig3a_per_animal.R` | OXPHOS mitoPPS, *Bbc3:Bcl2l1*, *Bax*, *Bmf* per animal (z), brackets from script 56; 104 x 60 |
-| ED 3b | `edfig3b_fade_ranking.R` | BCL-2 family and downstream genes by departure from MYC's fade (script 55), lines at *P* = 0.05 and 0.01, fill = 6W effect +/-0.5, *Apaf1* left out; 86 x 100 |
+| ED 3a | `edfig3a_fade_downstream.R` | the downstream genes by departure from MYC's fade, the same lines, fill = 6W effect +/-0.5, *Apaf1* left out; the old ED 3b's bottom half (2026-10-16; the old script, renamed); 86 x 44 |
+| ED 3b | `edfig3b_ratio_expected.R` | each BCL-2 ratio's 6W effect x 0.43 (the common shrink of the other eight) against its 12W effect; rows by the 6W effect, filled = 6W effect *P* < 0.05 (script 42); the old Fig. 1h, moved and changed on 2026-10-16 (author); 86 x 45 |
 | ED 3c | `edfig3c_puma_regulators.R` | the PUMA regulators by departure, the same lines, four beyond *P* = 0.01 labelled with their empirical *P*; 86 x 92 |
-| ED 3d | `edfig3d_coupling_both_fits.R` | the coupling unadjusted and adjusted for immune content, both *P* pairs; 73 x 60 |
 
 **Retired 2026-10-14** (`figures/natmetab/retired/`, outside the dry-run set; their old PDFs are
 in `outputs/natmetab/_retired/`): the 2026-10-11 Fig. 1f (`fig1f_window_reallocation.R`), the
 narrow ED 2c (`edfig2c_pathway_axis.R`), and the old ED 2f (`edfig2f_window_matched_controls.R`,
 folded into Fig. 1f).
 
+**Retired 2026-10-16** (author: "they do not add important details to the current text version"):
+ED 3a, OXPHOS priority and the ratios per animal (`edfig3a_per_animal.R`), and ED 3d, the coupling
+unadjusted and adjusted (`edfig3d_coupling_both_fits.R`). Both are in `retired/`, and their PDFs,
+with the old Fig. 1h's and the old ED 3b's, in `outputs/natmetab/_retired/`.
+
 **The pages** (`page_mock_247.R`, a check, not an Illustrator input; writes
 `outputs/natmetab/Fig1_ED2_ED3_247.pdf`):
 - **Fig. 1**, 237 of 247 mm: bench row a-c 56 (placeholder); d 100 x 60 + e 78 x 55 (60); f 100 x 56;
   g 66 + h 52 + i 56, all 56 tall, one row of 180 (author, 2026-10-15); 3-mm gaps.
 - **ED 2**, about 215 mm: a 46 + b 58 (40); c 176 x 46; d 114 + e 60 (56); f 84 x 64.
-- **ED 3**, about 165 mm: a 104 + d 73 (60); b 86 x 100 + c 86 x 92.
+- **ED 3**, 92 mm (2026-10-16): a 86 x 44 over b 86 x 45, beside c 86 x 92; 3-mm gaps.
 
 **Proposals** (`figures/natmetab/proposals/`): all superseded, kept for the record --
 `p1g_bcl2_balance.R`, `p1g_alt_ratio_rows.R`, `p1h_puma_members.R`, `p1h_alt_bcl2_plane.R`,
@@ -306,5 +312,5 @@ folded into Fig. 1f).
   below it (the author had asked on 2026-10-12 about going below 5 pt for the submission; not done,
   because Nature requires 5 pt at acceptance and the mock-ups show that area, not type, is the
   limit).
-- **The second-round proposals await the author** (handoff 2a.31): the merged 1f, ED 3a, the
-  purple class colours, ED 2c's labels, and ED 3d's place.
+- **The second-round proposals await the author** (handoff 2a.31): the merged 1f, the purple class
+  colours and ED 2c's labels. ED 3a and ED 3d were retired on 2026-10-16.

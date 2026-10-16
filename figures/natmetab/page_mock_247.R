@@ -8,7 +8,8 @@
 # Second round (author's notes, 2026-10-14): 1f carries ED 2f's statistics
 # (p1f_window_combined.R), so ED 2f leaves and ED 2g becomes 2f; ED 2c is lower;
 # ED 2d and 2e share one data-area size; ED 3a is the per-animal form of
-# Fig. 2H+I (alt) (ped3a_per_animal.R).
+# Fig. 2H+I (alt) (ped3a_per_animal.R). 2026-10-16: Fig. 1h is the BCL-2 family's
+# departure from MYC's fade, and ED 3 is a + b beside c (old ED 3a and 3d retired).
 suppressPackageStartupMessages(library(grid))
 NAT  <- here::here("figures", "natmetab")
 OUT  <- here::here("outputs", "natmetab", "Fig1_ED2_ED3_247.pdf")
@@ -24,12 +25,12 @@ grab <- function(script) {
 P <- lapply(c(
   f1d = file.path(NAT, "fig1d_mito_content.R"),          f1e = file.path(NAT, "fig1e_myc_reallocation.R"),
   f1f = file.path(NAT, "fig1f_window_reallocation.R"),   f1g = file.path(NAT, "fig1g_bcl2_heatmap.R"),
-  f1h = file.path(NAT, "fig1h_ratio_expected.R"),        f1i = file.path(NAT, "fig1i_coupling.R"),
+  f1h = file.path(NAT, "fig1h_bcl2_fade.R"),             f1i = file.path(NAT, "fig1i_coupling.R"),
   e2a = file.path(NAT, "edfig2a_design.R"),              e2b = file.path(NAT, "edfig2b_geneset_library.R"),
   e2c = file.path(NAT, "edfig2c_pathway_axis.R"),        e2d = file.path(NAT, "edfig2d_window_independent.R"),
   e2e = file.path(NAT, "edfig2e_myc_reallocation_ages.R"), e2f = file.path(NAT, "edfig2f_window_two_rulers.R"),
-  e3a = file.path(NAT, "edfig3a_per_animal.R"),          e3b = file.path(NAT, "edfig3b_fade_ranking.R"),
-  e3c = file.path(NAT, "edfig3c_puma_regulators.R"),     e3d = file.path(NAT, "edfig3d_coupling_both_fits.R")), grab)
+  e3a = file.path(NAT, "edfig3a_fade_downstream.R"),     e3b = file.path(NAT, "edfig3b_ratio_expected.R"),
+  e3c = file.path(NAT, "edfig3c_puma_regulators.R")), grab)
 
 PW <- 210; PH <- 297; FY <- 22
 mm <- function(v) unit(v, "mm")
@@ -75,8 +76,10 @@ place(fx, P$e2f, 0, 151, 84, 64, "f")
 
 # --- ED Fig. 3 --------------------------------------------------------------------
 fx <- page("Extended Data Fig. 3 on 180 x 247 mm", 180)
-place(fx, P$e3a, 0, 0, 104, 60, "a");     place(fx, P$e3d, 107, 0, 73, 60, "d")
-place(fx, P$e3b, 0, 63, 86, 100, "b");    place(fx, P$e3c, 92, 63, 86, 92, "c")
+# 2026-10-16 (author): a (the downstream genes) over b (the ratios, the old Fig. 1h),
+# beside c; the old a (per animal) and d (both coupling fits) are retired
+place(fx, P$e3a, 0, 0, 86, 44, "a");      place(fx, P$e3c, 92, 0, 86, 92, "c")
+place(fx, P$e3b, 0, 47, 86, 45, "b")
 
 invisible(dev.off())
 cat("wrote", OUT, "\n")
