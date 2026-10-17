@@ -50,6 +50,14 @@ THEN THE LEGENDS (2a.37).**
 - At the author's request ("run, commit and push"), Claude ran the three changed scripts and
   pushed everything: **every PDF is current, nothing is local.**
 
+**2026-10-17, after midnight: Fig. 2's colours, a proposal** (committed and pushed):
+`docs/2026-10-17_fig2_construct_colours.md`, page `outputs/natmetab/proposals/p2_construct_colours.pdf`
+(script `figures/natmetab/proposals/p2_construct_colours.R`). Recommended: Option A, the half of
+Nature's example palette (Okabe-Ito) Fig. 1 does not use, one hue per mechanism -- EV light grey
+`#CCCCCC`, BCL-xL black, PGC-1α/NRF1 bluish green `#009E73`, Ndi1/LbNOX matrix reddish purple
+`#CC79A7`, LbNOX cytosol yellow `#F0E442`; MYC state on the axis, no colour. The author decides;
+then it goes into `_style.R` and `FIGURE_RULES.md`.
+
 FIRST: the author places the re-written Fig. 1f, ED 2f and ED 2g in Illustrator (same file names;
 ED 2f and 2g are now 171 mm wide, not 180), swapping ED 2f and 2g on the assembled figure, and
 moves the legends into the Doc. Nothing is open for Claude from the evening's review.
