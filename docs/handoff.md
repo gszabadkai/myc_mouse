@@ -50,13 +50,17 @@ THEN THE LEGENDS (2a.37).**
 - At the author's request ("run, commit and push"), Claude ran the three changed scripts and
   pushed everything: **every PDF is current, nothing is local.**
 
-**2026-10-17, after midnight: Fig. 2's colours, a proposal** (committed and pushed):
-`docs/2026-10-17_fig2_construct_colours.md`, page `outputs/natmetab/proposals/p2_construct_colours.pdf`
-(script `figures/natmetab/proposals/p2_construct_colours.R`). Recommended: Option A, the half of
-Nature's example palette (Okabe-Ito) Fig. 1 does not use, one hue per mechanism -- EV light grey
-`#CCCCCC`, BCL-xL black, PGC-1α/NRF1 bluish green `#009E73`, Ndi1/LbNOX matrix reddish purple
-`#CC79A7`, LbNOX cytosol yellow `#F0E442`; MYC state on the axis, no colour. The author decides;
-then it goes into `_style.R` and `FIGURE_RULES.md`.
+**2026-10-17 to 10-19: Fig. 2's colours, ADOPTED** (author, 2026-10-19):
+`docs/2026-10-17_fig2_construct_colours.md`. Option A, the half of Nature's example palette
+(Okabe-Ito) Fig. 1 does not use, one hue per mechanism -- EV light grey `#CCCCCC`, BCL-xL black,
+PGC-1α/NRF1 bluish green `#009E73`, Ndi1/LbNOX matrix reddish purple `#CC79A7`, LbNOX cytosol yellow
+`#F0E442`; MYC state on the axis, no colour. **Bars take the colour itself (100%)**, not Fig. 1's
+28% box tint ("the bar comes almost invisible"): border black 0.9 pt, symbols white with a black
+border, error bars upward. In `_style.R` (`construct_cols`, guarded against the mouse colours) and
+`FIGURE_RULES.md` ("The cell-line constructs"). Pages: `outputs/natmetab/proposals/
+p2_construct_colours.pdf` and `p2_bar_fills.pdf` (scripts in `figures/natmetab/proposals/`).
+Open: a colour for PGC-1α + BCL-xL (Figs 3-4). The author is making the MYAZ PGC-1α bar charts
+in Prism.
 
 FIRST: the author places the re-written Fig. 1f, ED 2f and ED 2g in Illustrator (same file names;
 ED 2f and 2g are now 171 mm wide, not 180), swapping ED 2f and 2g on the assembled figure, and

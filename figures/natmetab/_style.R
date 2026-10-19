@@ -102,6 +102,23 @@ order_by_geno <- c("6W_neg", "12W_neg", "6W_pos", "12W_pos")
 stopifnot(setequal(names(group_labels), names(group_cols)),
           setequal(names(group_fill), names(group_cols)))
 
+# --- the cell-line constructs (Fig. 2 on; author, 2026-10-19) ----------------
+# Nature's example palette (Okabe-Ito), the half the mouse groups do not use, one hue
+# per mechanism: EV light grey, BCL-xL black, biogenesis (PGC-1a, NRF1) bluish green,
+# matrix NADH oxidation (Ndi1, LbNOX in the matrix) reddish purple, cytosolic NADH
+# oxidation (LbNOX in the cytosol) yellow. Two constructs share a hue only where they
+# share a mechanism, and never in one panel; the axis names the construct. MYC state
+# (off/on, basal/raised) is on the axis and takes no colour. EV is light grey, not
+# mid-grey: #999999 has reddish purple's lightness and merges with it under
+# deuteranopia. docs/2026-10-17_fig2_construct_colours.md has the comparison.
+# BARS take the hue itself (100%), not the 28% tint: in a bar the fill is the only
+# mark (author, 2026-10-19: at 28% "the bar comes almost invisible"). Border black,
+# 0.9 pt; symbols white with a black border; error bars upward only.
+# Keys are ASCII; labels are set in Prism and Illustrator ("PGC-1" + alpha, "BCL-xL").
+construct_cols <- c(EV = "#CCCCCC", BCL_xL = "#000000", PGC1A = "#009E73", NRF1 = "#009E73",
+                    Ndi1 = "#CC79A7", LbNOX_matrix = "#CC79A7", LbNOX_cytosol = "#F0E442")
+stopifnot(!any(construct_cols %in% group_cols))    # never a mouse group's colour
+
 # --- diverging and sequential fills (author's specification, 2026-07-30) ------
 # Espresso -> white -> mint, white pinned at zero. Not blue-red: blue and orange
 # already mean genotype. Each arm is scaled to its own end of `limits`, so on a

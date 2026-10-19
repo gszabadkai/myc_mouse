@@ -248,7 +248,8 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
 | MYC+, 12 weeks | MYC+ / 12W | `#E69F00` | `#F8E4B8` |
 
 - **Encoding:** hue is genotype and lightness is age (Okabe-Ito).
-- **Fills** are the hue at 28% over white, as solid colours, so Prism uses identical values.
+- **Fills** are the hue at 28% over white, as solid colours, so Prism uses identical values. This
+  is a rule for **boxes**, where the dots carry the hue; **bars take the hue itself** (below).
 - **Neutrals:** box outlines and medians are `#595959`; axes are black.
 - **Genotype alone:** WT `#0072B2`, MYC+ `#D55E00`.
 - **Genotype effects** take the MYC+ hue of their age: "MYC+ vs WT, 6W" `#D55E00`, "MYC+ vs WT,
@@ -273,6 +274,34 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
   each contrast has on every effect panel; its text stays black.
 - **Consistency:** the same group has the same colour in every panel, R or Prism. Colour that
   encodes nothing is not used.
+
+### The cell-line constructs (Fig. 2 on; author, 2026-10-19)
+
+Nature's example colour-blind palette (Okabe-Ito, the research figure guide), the half the mouse
+groups do not use, **one hue per mechanism** (`construct_cols` in the style file):
+
+| construct | mechanism | colour (bar fill) |
+|---|---|---|
+| EV | control | light grey `#CCCCCC` |
+| BCL-xL | anti-apoptotic | black `#000000` |
+| PGC-1α, NRF1 | mitochondrial biogenesis | bluish green `#009E73` |
+| Ndi1, LbNOX (matrix) | matrix NADH oxidation | reddish purple `#CC79A7` |
+| LbNOX (cytosol) | cytosolic NADH oxidation | yellow `#F0E442` |
+
+- **Two constructs share a hue only where they share a mechanism**, and never in one panel; the
+  axis names the construct.
+- **MYC state** (off/on in iMMECs, basal/raised in MYAZ) is on the axis and takes no colour.
+- **Bars take the hue itself (100%), not the 28% tint**: in a bar the fill is the only mark
+  (author, 2026-10-19: at 28% "the bar comes almost invisible"). **Border black, 0.9 pt; symbols
+  white circles with a black border** (they read on every fill, black and yellow included);
+  **error bars upward only**, so none hides inside a dark bar.
+- **EV is light grey, not mid-grey:** `#999999` has reddish purple's lightness and merges with it
+  under deuteranopia (CIELAB dE 7). Within every panel the colours stay apart under deuteranopia,
+  protanopia and tritanopia.
+- **Yellow carries no line** on white; as a bar it keeps its black border.
+- Open: Figs 3-4 add **PGC-1α + BCL-xL** (and EV-EV), which need a colour of their own.
+- The comparison: `docs/2026-10-17_fig2_construct_colours.md`; pages
+  `outputs/natmetab/proposals/p2_construct_colours.pdf` and `p2_bar_fills.pdf`.
 
 ## Labels
 

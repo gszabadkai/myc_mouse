@@ -1,14 +1,50 @@
 ---
 date: 2026-10-17
 tags: [project/myc_mouse, nat-metab, figure-2, colour, proposal]
-status: proposal -- the author decides; nothing is in _style.R or FIGURE_RULES.md yet
+status: ADOPTED (author, 2026-10-19) -- Option A, with bars at 100%; in _style.R (construct_cols) and FIGURE_RULES.md
 relates-to:
   - figures/natmetab/proposals/p2_construct_colours.R   (draws the page)
   - outputs/natmetab/proposals/p2_construct_colours.pdf (three pages: in use, Option A, Option B)
+  - figures/natmetab/proposals/p2_bar_fills.R           (draws the bar-fill page, 2026-10-19)
+  - outputs/natmetab/proposals/p2_bar_fills.pdf         (bars at 28%, 60%, 100%; 100% under three CVDs)
   - figures/natmetab/_style.R, figures/natmetab/FIGURE_RULES.md (the colours in use)
 ---
 
-# Fig. 2: colours for the cell-line constructs (proposal)
+# Fig. 2: colours for the cell-line constructs (adopted 2026-10-19)
+
+## Decision (author, 2026-10-19)
+
+**Option A, with bars filled at 100%.** Making the MYAZ PGC-1α bar charts, the author found the 28%
+fills of the proposal "almost invisible, the fill colour is too light": the 28% rule is Fig. 1's
+box rule, where the dots carry the hue; in a bar the fill is the only mark. Shown the bars at 28%,
+60% and 100% (`p2_bar_fills.pdf`): "the 100% bar fill, border and symbols suggestion looks OK".
+
+**Prism settings for a bar chart:**
+
+| construct | bar fill |
+|---|---|
+| EV | `#CCCCCC` |
+| BCL-xL | `#000000` |
+| PGC-1α, NRF1 | `#009E73` |
+| Ndi1, LbNOX matrix | `#CC79A7` |
+| LbNOX cytosol | `#F0E442` |
+
+- bar border black, 0.9 pt (the Prism format's every line);
+- symbols: circles, white fill, black border (they read on every fill, black and yellow included);
+- error bars upward only, so none hides inside a dark bar;
+- MYC state on the axis, no colour.
+
+The 60% fills, for the record: EV `#E0E0E0`, BCL-xL `#666666`, PGC-1α `#66C5AB`, Ndi1 `#E0AFCA`,
+LbNOX cytosol `#F6EF8E` -- readable, but EV stays faint and the hues separate less under CVD.
+Box plots, if Fig. 2 has any, keep Fig. 1's rule (28% fill, coloured dots).
+
+In the code: `construct_cols` in `figures/natmetab/_style.R` (ASCII keys; labels are set in Prism
+and Illustrator), with a guard that no construct takes a mouse group's colour; the rules in
+`figures/natmetab/FIGURE_RULES.md`, "The cell-line constructs".
+
+---
+
+The proposal as written on 2026-10-17 follows.
 
 **The author's question (2026-10-17):** "can you recall what is the current colour scales, what
 colours are being used? I'm working on Fig.2 where groups are different from the mouse so I need to
@@ -43,7 +79,7 @@ LbNOX matrix, LbNOX cytosol).
 
 ## Recommended: Option A, the half of Nature's palette Fig. 1 does not use, one hue per mechanism
 
-| construct | colour | fill (28% over white, for Prism) |
+| construct | colour | fill (28% over white; superseded for bars on 2026-10-19 -- bars take the colour) |
 |---|---|---|
 | EV | light grey `#CCCCCC` | `#F1F1F1` |
 | BCL-xL (anti-apoptotic) | black `#000000` | `#B8B8B8` |
@@ -73,7 +109,8 @@ protanopia the indigo and purple turn navy -- Fig. 1's WT blue -- and the teal t
    should be set paper-wide; the combination needs its own colour (a darker green is one candidate).
 2. Bluish green sits near Fig. 1g's mint heatmap end, and reddish purple is ED 2b-c's mitochondrial
    class: other figures and other encodings, so acceptable, but noted.
-3. When the author chooses, add the construct palette to `_style.R` and `FIGURE_RULES.md`.
+3. ~~When the author chooses, add the construct palette to `_style.R` and `FIGURE_RULES.md`.~~
+   Done 2026-10-19 (see the decision above).
 
 Sources: [Nature research figure guide](https://research-figure-guide.nature.com/figures/building-and-exporting-figure-panels/);
 [Nature blog, colour-blind readers](https://blogs.nature.com/blog/post_4-4/);
