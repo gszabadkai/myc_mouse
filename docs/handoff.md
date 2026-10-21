@@ -1654,6 +1654,47 @@ axis check that accepted an ending on an undrawn minor tick.
 
 ---
 
+> **ORTHOTOPIC STATEMENTS IN SECTIONS 3 TO 10 ARE PARTLY SUPERSEDED** (banner added
+> 2026-10-21; the text below is unchanged). These sections were carried forward unedited from
+> September. Two pieces of work dated 2026-09-10 void several orthotopic statements in them:
+> - **the sample identity correction**, `docs/2026-09-09_orthotopic_identity_correction.md`
+>   (commits `082034c`, `02d3acb`, `aef300f`, 2026-09-10): the arm called `Pgc1a` is
+>   PGC1a + Bcl-xL, so scripts 50 and 51's contrasts against `EV` are two-factor;
+> - **script 52**, `scripts/52_orthotopic_escape_series.R`, author-run 2026-09-10; note
+>   `docs/2026-09-10_orthotopic_escape_series.md`. Section 3c summarises it correctly.
+>
+> Read these statements as superseded:
+> - **"C1 holds" and "C1 got stronger and more specific" (3d); "C1 HOLDS -- the one clean
+>   causal result ... PGC1a alone raises the guardian in vivo with no Bcl-xL construct present"
+>   (3e).** The identity correction voids C1, and script 52's R4 closes it: in the
+>   construct-free `NTPgc1a` vs `NTEV` contrast, `Bcl2l1` is −0.113 [−0.283, +0.174], p 0.535
+>   (escape-series note §4).
+> - **"C2 holds as an observation" (3d, 3e); "quote 0.0385, or quote both" (3d); "Quote
+>   p = 0.0385" (7).** C2's contrast against `EV` is void as two-factor (`aef300f`). On the
+>   escape series the cap appears only in `Pgc1a_BclxL` vs `BclxL` (escape-series note §5).
+>   "PGC1a nearly doubles the mitochondrial share" (3d) describes the PGC1a + Bcl-xL arm.
+> - **"Scoring set fixed at the 21 vector-series samples ... p21 series out of scope" (3e).**
+>   Script 52 scores all 49 vector and CRISPR samples (escape-series note §7). The "p21 series"
+>   is the CRISPR series, back in scope (`data/orthotopic_series/README.md`, corrected in
+>   `082034c`).
+> - **"R3 IS BLOCKED ON ONE FACT AND IT IS YOURS" (7).** The "standing Bcl-xL/OXPHOS finding"
+>   does not exist (identity correction §1; the CORRECTION in §3 of
+>   `docs/2026-09-08_orthotopic_specificity_checks.md`). R3 stands, demoted to a standalone
+>   negative control; with C1 void there is no forward edge, so the directed-edge argument is
+>   withdrawn (identity correction §1).
+> - **"Does the orthotopic result earn a panel? C1 is the cleanest causal statement in the
+>   branch" (7).** C1 is closed (above).
+> - **Section 4, item 8** points to `docs/2026-09-08_orthotopic_vector_series.md` for "the
+>   manuscript consequences" and to `docs/2026-09-07_orthotopic_analysis_plan.md` as "its spec".
+>   Both now carry void or superseded banners; read the identity correction and the
+>   escape-series note first. The branch notes' corollaries now run to 7 (5-7 added 2026-09-10).
+> - **"See section 2 item 0"** (3d's banner, and the R3 item in 7) points to an item that no
+>   longer exists.
+>
+> **Still standing:** C3's verdict (uninformative), the composition gate with its positive
+> control, R3 (demoted) and R5 (the 2026-09-08 notes' frontmatters); the Bcl-xL/Bcl-xS
+> limitation (escape-series note §6); and the C3 / abstract decision, still open (7).
+
 ## 3. What happened on 2026-09-22
 
 Seven commits, all pushed: `dd58b8d`, `d3d7f3b`, `1a43f04`, `b881522` (this handoff's first

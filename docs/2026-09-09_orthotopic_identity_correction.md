@@ -56,6 +56,28 @@ difference is not differential construct expression. Gene-level counts cannot
 separate construct from endogenous in either arm, so the number is not
 interpretable and does not need to be.
 
+> **SUPERSEDED IN PART, 2026-09-10, by script 52** (`scripts/52_orthotopic_escape_series.R`,
+> author-run 2026-09-10; note `docs/2026-09-10_orthotopic_escape_series.md`). The p53
+> escape-route account of `Bbc3` in the next paragraph, and the prediction two paragraphs below
+> it, do not survive script 52:
+> - **R2:** `Bbc3` falls in the construct-free `NTPgc1a` arm too (escape-series note §3), so the
+>   fall is not confined to the arm with a downstream buffer.
+> - **R3:** the prediction was tested in `Pgc1a_BclxL` vs `BclxL`. One of the five named p53
+>   targets (`Cdkn2a`) moves down with `Bbc3`, and the note's verdict is "The escape-route
+>   explanation is **not supported**" (§3).
+> - **What replaces it:** `Bbc3` tracks retained PGC1α dose, −0.731 / −0.345 / +0.044 against
+>   each arm's own control at `Ppargc1a` 301.6 / 128.6 / 0.17 CPM (escape-series note §3, read
+>   from `results/orthotopic_escape_series.rds`). The note states it as selection, not
+>   regulation: "tumours that retained more PGC1a show less `Bbc3`".
+> - **The −0.727 below is script 51's 21-sample value**
+>   (`docs/2026-09-08_orthotopic_specificity_checks.md`). Script 52's −0.731 comes from its
+>   49-sample run, and the escape-series note (§7) says a value from that run "is never
+>   quotable beside one from the 21-sample run".
+>
+> The arm identities stand. Per the escape-series note §6, "The four-arm escape reading of §3
+> survives, with its `NTPgc1a` row reworded from "no respiratory rise" to "a tilt without mass
+> expansion, and no cap" (§2)." The text below is unchanged. *(Banner added 2026-10-21.)*
+
 **`Bbc3` −0.727 — explained, and it stops being an anomaly.** MYAZ is p53
 proficient; the PGC1α survivors have **p19^ARF and p21 down** by western.
 Unrestrained MDM2, reduced p53 output, and `Bbc3` — a canonical p53 target —

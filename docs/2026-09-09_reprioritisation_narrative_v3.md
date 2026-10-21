@@ -1,5 +1,30 @@
 # Narrative v3 — "Developmental reprioritisation of the mitochondrial transcriptome gates MYC-driven mammary tumourigenesis"
 
+> **SUPERSEDED IN PART.** Two statements below have been overtaken. The text is unchanged.
+> *(Banner added 2026-10-21.)*
+> - **Movement 5, the paragraph beginning "The buffered arm shows a *second* effector
+>   block":** its p53 account of `Bbc3` was overturned on 2026-09-10 by script 52
+>   (`scripts/52_orthotopic_escape_series.R`; `docs/2026-09-10_orthotopic_escape_series.md`
+>   §3). `Bbc3` falls in the construct-free `NTPgc1a` arm too, and only one of the five p53
+>   targets that paragraph names moves with it. `Bbc3` instead tracks retained PGC1α dose,
+>   which the note states as selection, not regulation. The four-arm table and the two escape
+>   classes stand (escape-series note §6). The `Bbc3` −0.727 in that paragraph is script 51's
+>   21-sample value; the escape-series note (§7) says a value from script 52's run "is never
+>   quotable beside one from the 21-sample run".
+> - **Movement 3, the FOXO3 paragraph:** the FOXO3 activity step was closed as a measured
+>   negative on 2026-09-22 (`docs/2026-09-21_two_timeline_verification.md` §10.2, commit
+>   `8e4dd96`).
+>   - **The evidence.** FOXO3's target programme is lower under MYC at both ages, with no
+>     interaction detected: script 47 PART I, and script 23 PART 5b's score (§9.1). A subset
+>     test found no hidden falling subset (§10.1). It was computed in-session and has no
+>     script; its code is in §10.4.
+>   - **The ruling.** The Foxo3-to-PUMA link is transcript-level.
+>   - **Two wordings are also superseded.**
+>     - "falling along the MYC timeline" is now "rose in the normal gland and did not rise
+>       under MYC" (§1.4, script 54's Check 2, 2026-09-21).
+>     - "canonical p53-independent activator" is now "a p53-independent activator of PUMA"
+>       (§9.2, author, 2026-09-22).
+
 **Supersedes `2026-09-09_reprioritisation_narrative_v2.md`.** Movement 2 is
 rewritten around the LbNOX result, which names the lethal variable and adds a
 functional demonstration of the MYC interaction. Movements 5 and 7 change as a
