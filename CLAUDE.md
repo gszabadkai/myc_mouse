@@ -28,20 +28,28 @@ paper: Menegollo, Bentham et al., Cancer Res 2024 (CAN-23-3172).
 
 ## Current phase
 
+**Current, from 2026-10-09: the Nature Metabolism Letter.** Its panels are built in
+`figures/natmetab/` (rules in `figures/natmetab/FIGURE_RULES.md`); the live state is
+`docs/handoff.md`. Blocks A-C below are history, anchored by the tags listed under
+"Branches, worktrees, git discipline".
+
 Two-pipeline consolidation is done: `new-analysis` is the trunk (scripts 00-12);
 main's removed scripts are archived byte-identical in `scripts/archive_main_pipeline/`.
 The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
 - **Block A** — broad exploratory (scripts 13-25) + the step-by-step revision (Issues
   #1-6, scripts 26-31). **DONE and reviewed** (2026-07-12): synthesised in
   `docs/2026-07-12_BlockA_revision_synthesis_and_figure_plan.md`; the reviewed commit is
-  tagged `block-a-reviewed` (4b82a82) and now lives on `analysis-exploratory` (00-31).
+  tagged `block-a-reviewed` (46bcba7) and lived on `analysis-exploratory` (00-31), now
+  tag `archive/analysis-exploratory`.
 - **Block B** — publication figures, on `paper-figures`. **FROZEN 2026-08-14** at tag
   `block-b-full`: 25 panels, three circulation PDFs, and `paper/analysis_record.qmd`, the
   record of the whole analysis before the cut.
-- **Block C** — CURRENT: the **halved paper**, on `paper-final` (off `block-b-full`).
-  Collaborators judged the three written Results sections too detailed; they are being cut
-  to roughly half, keeping the minimum chain to the closing conclusion, and the figures
-  reorganised to match. Before cutting, three **state readings** were added
+- **Block C** — the **halved paper**, on `paper-final` (off `block-b-full`; now tag
+  `archive/paper-final`), until the Letter replaced it on 2026-10-09.
+  Collaborators judged the three written Results sections too detailed; they were to be cut
+  to roughly half, keeping the minimum chain to the closing conclusion, with the figures
+  reorganised to match. The cut happened as the Nature Metabolism version (2026-10-09,
+  `docs/handoff.md` section 1). Before cutting, three **state readings** were added
   (`scripts/45_state_readings.R`, 2026-08-16) because the corpus is built entirely out of
   contrasts and the reduction needed the states:
   - **The diagonal** (`6W_wt>12W_myc`) — never computed; `docs/myc_mouse_finalisation_plan.md
@@ -69,8 +77,12 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
   - **Rule that follows: a sentence quoting an OXPHOS abundance number must name its ruler.**
   - **Script 32** (`32_mito_content_proxies.R`) — answers "is the biogenesis claim about
     mitochondrial CONTENT?" in absolute compartment shares. **Myc raises mitochondrial
-    content ~20–27%**; survives adjustment for prep-stress + contamination. Not a figure
-    script. **Figure scripts are now 39+** (34/35/36/37 are analysis scripts, 38 planned — see below).
+    content**: the text quotes **20–33% across four modules**, asserted in
+    `figures/natmetab/fig1d_mito_content.R` (2026-10-10, `08c0dda`); the mass-marker effect
+    survives adjustment for prep-stress + contamination. Not a figure
+    script. **The numbered scripts, 32-56 included, are analysis scripts** (some write
+    diagnostic PDFs; 53 draws the escape-series figure); publication panels live in
+    `figures/`, the Letter's in `figures/natmetab/`.
   - **Script 33** (`33_mtdna_axis_and_coupling_null.R`) — **read this before using ANY
     mt-transcript number.** (1) The mt-transcript share **is not contamination** (mixing
     would need a contaminant mt-share >100%; and nuclear MEC genes track contamination
@@ -238,50 +250,56 @@ The finalisation (`docs/myc_mouse_finalisation_plan.md`) runs in two phases:
 
 ## Branches, worktrees, git discipline
 
-Branch model (updated 2026-07-12 after the Block A revision consolidation):
-- `new-analysis` — stable trunk (scripts 00-12). Unchanged.
-- `analysis-exploratory` — **reviewed Block A, scripts 00-31** (fast-forwarded to include
-  the revision Issues #1-6). Tag `block-a-reviewed` anchors the reviewed commit (4b82a82).
-- `paper-figures` — **Block B, FROZEN 2026-08-14** at tag `block-b-full` (0cb07c2), pushed.
-  Scripts 32-44 and the 25-panel `figures/panels/` layer plus `paper/analysis_record.qmd`.
-  Do not add to it: it is the named "full version" the reduction is measured against.
-- `paper-final` — **Block C, CURRENT working branch** (created off `block-b-full`). The
-  halved paper. First work landed 2026-08-16: `scripts/45_state_readings.R` and the three
-  state-reading panels (see below). Not yet pushed.
-- `BlockA-revision-step-by-step` — the ad-hoc revision branch, now subsumed by
-  `analysis-exploratory`; retained as a safety ref, delete once the author is satisfied.
-- `main` — earlier pipeline, historical reference only.
+Branch model (updated 2026-10-21; the move is recorded in `dd58b8d`):
+- `main` — the only branch, local and remote, and the working branch. Since `b7253f7`
+  (2026-09-22) it carries the whole new-analysis lineage (scripts 00-56, `figures/panels/`,
+  `figures/natmetab/`, `paper/`, `docs/`) on top of the old main history. Old main's scripts
+  are byte-identical in `scripts/archive_main_pipeline/` (its `06_diagnostics_QC.R` became
+  `02_qc.R`).
+- Retired branches survive as lightweight tags: `archive/new-analysis` (ce393c1),
+  `archive/BlockA-revision-step-by-step` (4b82a82), `archive/analysis-exploratory` (46bcba7),
+  `archive/paper-figures` (0cb07c2), `archive/paper-final` (b691133). `experimental-cohorts`
+  was deleted untagged; its tip 64c7261 is in main.
+- Annotated tags: `block-a-reviewed` (-> 46bcba7; reviewed Block A, scripts 00-31),
+  `block-b-full` (-> 0cb07c2; Block B frozen 2026-08-14, the full version the reduction is
+  measured against), `orthotopic-pre-identity-correction` (-> 144e12b). 46bcba7 is not in
+  main's history; its only change, script 23, is byte-identical on main (fe6d004).
 
 Worktrees:
-- This working directory — the active `new-analysis`-derived branch.
-- `../myc_mouse_main` — clean checkout of `main`, sharing this repo's `.git`. (There
-  is no `../myc_mouse_new` worktree.)
+- One: this working directory, on `main`. `../myc_mouse_main` no longer exists (not recreated
+  after the 2026-09-21 move off Drive).
+- A parallel session that writes scripts or results gets its own worktree:
+  `git worktree add ../myc_mouse_<name> -b <branch> main`.
 
 Git rules:
-1. Do not check out `main` in this working folder. Use the `../myc_mouse_main`
-   worktree or `git show main:<path>`. Switching among the `new-analysis`-derived
-   branches (`new-analysis`, `analysis-exploratory`, `paper-figures`, `paper-final`)
-   here is fine.
-2. Do not rename, move, or delete scripts without consulting `docs/branch_manifest.md`
-   and confirming with the author. Prefer `git mv`.
-3. Read-only git ops (`git show`, `git diff`, `git log`, `git ls-tree`) are always
-   fine. Stop-and-check before any destructive action; never force-push a shared
-   branch.
+1. Work on `main`. Read archived states with `git show <tag>:<path>`; do not check out a tag
+   in this working folder.
+2. Do not rename, move, or delete scripts without consulting `docs/branch_manifest.md` and
+   confirming with the author. Prefer `git mv`.
+3. Read-only git ops (`git show`, `git diff`, `git log`, `git ls-tree`) are always fine.
+   Stop-and-check before any destructive action; never force-push `main`.
 
 ## Project structure
 
-- `scripts/` — numbered R pipeline (00-45), `archive_main_pipeline/`, and
-  `R_CODING_INSTRUCTIONS.md`. **45 is the newest** (`45_state_readings.R`, the diagonal
-  contrast, the absolute levels, and the expression-weighting decomposition).
+- `scripts/` — numbered R pipeline (00-56), `archive_main_pipeline/`, and
+  `R_CODING_INSTRUCTIONS.md`. **56 is the newest** (`56_window_and_chain_statistics.R`);
+  the next number is 57.
 - `data/` — inputs, plus the library snapshot in `data/genesets_from_library/`.
 - `docs/` — `myc_mouse_finalisation_plan.md`, `branch_manifest.md`, `gene_set_history.md`.
 - `results/` — intermediate `.rds` (gitignored, generated at runtime).
 - `outputs/` — figures/tables (gitignored, generated at runtime).
 - `functions/` — shared utilities (`generate_heatmap.R`, `reconcile_gene_symbols.R`).
 - `figures/` — the exploratory figure layer (`fig01`-`fig05`, `figS1`-`figS8`, four assembled
-  `figure*.R` composites) plus **`figures/panels/`, the publication layer**: one script per
-  manuscript panel, `_panel_common.R` (declared scheme + helpers), `rebuild_panels.R`,
-  `panels_to_pdf.R`, and **`PANELS.md`, the manifest of record** for which slot each panel holds.
+  `figure*.R` composites), plus two publication layers:
+  - **`figures/natmetab/`, the Nature Metabolism Letter's layer (current)**: one script per
+    panel, saved with `save_panel()` from `_style.R` (checked by `_style_selftest.R`);
+    `FIGURE_RULES.md` (every rule, with its reason), `LEGENDS.md`, `page_mock_247.R`, and
+    `proposals/` and `retired/`. Panels are assembled in Illustrator; the source of record
+    is the Google Doc, tabs "Nat metab version" and "fig plans" (`docs/handoff.md` 2d.1).
+  - **`figures/panels/`, the August long-form layer, kept untouched as the record** and not
+    used for the Letter: one script per panel, `_panel_common.R` (declared scheme +
+    helpers), `rebuild_panels.R`, `panels_to_pdf.R`, and `PANELS.md`, that version's slot
+    manifest.
 - `paper/` — Quarto. **`analysis_record.qmd` is the record of the analysis as it stands**
   (2026-08-14, extended 2026-08-16): the written Results verbatim, every panel with its legend block, the
   retracted corpus, the open questions. It re-runs no analysis and transcribes no number — it
@@ -293,9 +311,10 @@ Git rules:
 ## Gene sets — consume the library snapshot, do not rebuild
 
 - Finished sets live in `data/genesets_from_library/` — a snapshot of
-  `mammary_geneset_library` **v1.0** (nine category GMTs mouse+human, master GMT,
-  provenance CSV, `metabric_sets.rds`, `gray_chea_mito_tf_shortlist.csv`), pinned to
-  the `v1.0` tag. Provenance in `data/genesets_from_library/README.md`.
+  `mammary_geneset_library` **v1.0** (nine mouse category GMTs, master GMT,
+  provenance CSV, `metabric_sets.rds`, `gray_chea_mito_tf_shortlist.csv`; the human GMTs
+  are deliberately not snapshotted), pinned to the `v1.0` tag. Provenance in
+  `data/genesets_from_library/README.md`.
 - **Do not rebuild gene sets.** Load the GMTs. Each set carries a method tag (`fgsea`,
   `gsva`, or `both`) — route it to the method its tag names. The GSVA large-set
   size-filter exemption applies as recorded in the library decisions.
