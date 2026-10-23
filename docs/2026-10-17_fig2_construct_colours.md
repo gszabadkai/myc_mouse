@@ -1,16 +1,46 @@
 ---
 date: 2026-10-17
 tags: [project/myc_mouse, nat-metab, figure-2, colour, proposal]
-status: ADOPTED (author, 2026-10-19) -- Option A, with bars at 100%; in _style.R (construct_cols) and FIGURE_RULES.md
+status: ADOPTED (author, 2026-10-19) -- Option A, with bars at 100%; in _style.R (construct_cols) and FIGURE_RULES.md. Extended 2026-10-23: PGC-1α + BCL-xL #00573F, and the no-Dox tints (construct_nodox); plain or hatched open
 relates-to:
   - figures/natmetab/proposals/p2_construct_colours.R   (draws the page)
   - outputs/natmetab/proposals/p2_construct_colours.pdf (three pages: in use, Option A, Option B)
   - figures/natmetab/proposals/p2_bar_fills.R           (draws the bar-fill page, 2026-10-19)
   - outputs/natmetab/proposals/p2_bar_fills.pdf         (bars at 28%, 60%, 100%; 100% under three CVDs)
+  - figures/natmetab/proposals/p3_pgc1a_bclxl_colours.R (the PGC-1α + BCL-xL candidates, 2026-10-23)
+  - figures/natmetab/proposals/p23_nodox_tints.R        (the recorded palette with the no-Dox tints, plain and hatched)
   - figures/natmetab/_style.R, figures/natmetab/FIGURE_RULES.md (the colours in use)
 ---
 
 # Fig. 2: colours for the cell-line constructs (adopted 2026-10-19)
+
+## Decision (author, 2026-10-23): PGC-1α + BCL-xL, and the no-Dox tints
+
+**PGC-1α + BCL-xL (Figs 3-4) is `#00573F`**, the biogenesis green darkened to 55%: candidate (b)
+of five on `p3_pgc1a_bclxl_colours.pdf` ("yes, b is good"). Under deuteranopia, protanopia and
+tritanopia it stays at least CIELAB dE 25 from PGC-1α `#009E73` and 31 from BCL-xL black, the most
+even balance of the candidates. The others: `#005F45` (x 0.60, 22 from PGC-1α), `#004734` (x 0.45,
+25 from BCL-xL), Paul Tol's green `#117733` (17 from PGC-1α under tritanopia), and the PGC-1α green
+with a black hatch.
+
+**No Dox.** The author uses `#B8E4D8`, which is the PGC-1α green at 28% over white (Option A's tint
+column below), for PGC-1α's no-Dox bar on some bar graphs. The same rule gives Ndi1 / LbNOX matrix
+`#F1D9E6` and LbNOX cytosol `#FBF7CA`; all three are `construct_nodox` in `_style.R`. No tint is
+set for EV, BCL-xL or PGC-1α + BCL-xL. Prism: the no-Dox bar takes the tint, with the same black
+0.9-pt border, white symbols and upward error bars.
+
+What the tints cost, CIELAB dE under deuteranopia (computed 2026-10-23; `p23_nodox_tints.pdf` has
+the table under all four visions):
+- PGC-1α no Dox against EV `#CCCCCC`: **4** (17 in normal vision). Ndi1 no Dox against EV: **8**.
+- PGC-1α no Dox against Ndi1 no Dox: **4**.
+- LbNOX cytosol no Dox against the white page: 7 under tritanopia, so its black border carries it.
+- No tint of the green escapes EV under deuteranopia (28-60%: dE 1-10), because EV's lightness lies
+  between the tint and the green.
+
+So a tint is safe only where it does not share a graph with EV or another tint. **Open: plain, or
+hatched in the full colour** (0.5 pt), which the pattern separates where lightness cannot (page 2
+of `p23_nodox_tints.pdf`). Also open: where Dox switches MYC (iMMEC rtTA-MYC), the tint marks MYC
+off, an exception to "MYC state takes no colour" below; the axis still names the state.
 
 ## Decision (author, 2026-10-19)
 
@@ -105,8 +135,9 @@ protanopia the indigo and purple turn navy -- Fig. 1's WT blue -- and the teal t
 
 ## Open
 
-1. **Figs 3-4** reuse EV, BCL-xL and PGC-1α and add **PGC-1α + BCL-xL** (and EV-EV): the palette
-   should be set paper-wide; the combination needs its own colour (a darker green is one candidate).
+1. ~~**Figs 3-4** reuse EV, BCL-xL and PGC-1α and add **PGC-1α + BCL-xL** (and EV-EV): the palette
+   should be set paper-wide; the combination needs its own colour (a darker green is one candidate).~~
+   PGC-1α + BCL-xL done 2026-10-23 (`#00573F`, the decision at the top); EV-EV still open.
 2. Bluish green sits near Fig. 1g's mint heatmap end, and reddish purple is ED 2b-c's mitochondrial
    class: other figures and other encodings, so acceptable, but noted.
 3. ~~When the author chooses, add the construct palette to `_style.R` and `FIGURE_RULES.md`.~~

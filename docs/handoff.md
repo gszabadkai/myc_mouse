@@ -59,8 +59,15 @@ PGC-1α/NRF1 bluish green `#009E73`, Ndi1/LbNOX matrix reddish purple `#CC79A7`,
 border, error bars upward. In `_style.R` (`construct_cols`, guarded against the mouse colours) and
 `FIGURE_RULES.md` ("The cell-line constructs"). Pages: `outputs/natmetab/proposals/
 p2_construct_colours.pdf` and `p2_bar_fills.pdf` (scripts in `figures/natmetab/proposals/`).
-Open: a colour for PGC-1α + BCL-xL (Figs 3-4). The author is making the MYAZ PGC-1α bar charts
-in Prism.
+The author is making the MYAZ PGC-1α bar charts in Prism.
+
+**2026-10-23: PGC-1α + BCL-xL and the no-Dox tints, RECORDED** (author): PGC-1α + BCL-xL (Figs 3-4)
+is `#00573F`, the green darkened to 55% (candidate (b), `p3_pgc1a_bclxl_colours.pdf`). No-Dox bars
+take the construct's 28% tint: PGC-1α/NRF1 `#B8E4D8` (the author's, already in use), Ndi1/LbNOX
+matrix `#F1D9E6`, LbNOX cytosol `#FBF7CA` (`construct_nodox`); none set for EV, BCL-xL or the
+combination. Under deuteranopia the tints sit near EV (dE 4 for PGC-1α) and near each other.
+**Open: plain or hatched** (`p23_nodox_tints.pdf`, page 1 plain, page 2 hatched); EV-EV's colour.
+Note section at the top of `docs/2026-10-17_fig2_construct_colours.md`; rules in `FIGURE_RULES.md`.
 
 FIRST: the author places the re-written Fig. 1f, ED 2f and ED 2g in Illustrator (same file names;
 ED 2f and 2g are now 171 mm wide, not 180), swapping ED 2f and 2g on the assembled figure, and

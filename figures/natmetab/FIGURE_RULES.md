@@ -275,7 +275,7 @@ that"). It is the first such panel; another R panel placed among Prism graphs wo
 - **Consistency:** the same group has the same colour in every panel, R or Prism. Colour that
   encodes nothing is not used.
 
-### The cell-line constructs (Fig. 2 on; author, 2026-10-19)
+### The cell-line constructs (Fig. 2 on; author, 2026-10-19 and 10-23)
 
 Nature's example colour-blind palette (Okabe-Ito, the research figure guide), the half the mouse
 groups do not use, **one hue per mechanism** (`construct_cols` in the style file):
@@ -285,6 +285,7 @@ groups do not use, **one hue per mechanism** (`construct_cols` in the style file
 | EV | control | light grey `#CCCCCC` |
 | BCL-xL | anti-apoptotic | black `#000000` |
 | PGC-1α, NRF1 | mitochondrial biogenesis | bluish green `#009E73` |
+| PGC-1α + BCL-xL (Figs 3-4; 2026-10-23) | both | dark green `#00573F` |
 | Ndi1, LbNOX (matrix) | matrix NADH oxidation | reddish purple `#CC79A7` |
 | LbNOX (cytosol) | cytosolic NADH oxidation | yellow `#F0E442` |
 
@@ -299,9 +300,21 @@ groups do not use, **one hue per mechanism** (`construct_cols` in the style file
   under deuteranopia (CIELAB dE 7). Within every panel the colours stay apart under deuteranopia,
   protanopia and tritanopia.
 - **Yellow carries no line** on white; as a bar it keeps its black border.
-- Open: Figs 3-4 add **PGC-1α + BCL-xL** (and EV-EV), which need a colour of their own.
+- **PGC-1α + BCL-xL** (Figs 3-4; author, 2026-10-23): the biogenesis green darkened to 55%,
+  `#00573F`. Under deuteranopia, protanopia and tritanopia it stays at least CIELAB dE 25 from
+  PGC-1α and 31 from BCL-xL. Open: EV-EV.
+- **No Dox** (author, 2026-10-23): on bar graphs with a no-Dox bar, the construct's colour at 28%
+  over white (`construct_nodox`): PGC-1α/NRF1 `#B8E4D8`, Ndi1/LbNOX (matrix) `#F1D9E6`, LbNOX
+  (cytosol) `#FBF7CA`. No tint is set for EV, BCL-xL or PGC-1α + BCL-xL. Under deuteranopia the
+  tints sit near EV (dE 4 for PGC-1α, 8 for Ndi1) and the PGC-1α and Ndi1 tints near each other
+  (dE 4); under tritanopia the LbNOX (cytosol) tint is dE 7 from the white page, so its black
+  border carries it. **Open: plain, or hatched in the full colour** (0.5 pt), which the pattern
+  separates where lightness cannot. Where Dox switches MYC (iMMEC rtTA-MYC), the tint marks MYC
+  off, an exception to the MYC-state rule above.
 - The comparison: `docs/2026-10-17_fig2_construct_colours.md`; pages
-  `outputs/natmetab/proposals/p2_construct_colours.pdf` and `p2_bar_fills.pdf`.
+  `outputs/natmetab/proposals/p2_construct_colours.pdf`, `p2_bar_fills.pdf`,
+  `p3_pgc1a_bclxl_colours.pdf` (the PGC-1α + BCL-xL candidates) and `p23_nodox_tints.pdf` (the
+  recorded palette with the no-Dox tints, plain and hatched).
 
 ## Labels
 

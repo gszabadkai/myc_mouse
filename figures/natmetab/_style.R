@@ -115,9 +115,30 @@ stopifnot(setequal(names(group_labels), names(group_cols)),
 # mark (author, 2026-10-19: at 28% "the bar comes almost invisible"). Border black,
 # 0.9 pt; symbols white with a black border; error bars upward only.
 # Keys are ASCII; labels are set in Prism and Illustrator ("PGC-1" + alpha, "BCL-xL").
+# PGC-1a + BCL-xL (Figs 3-4; author, 2026-10-23): the biogenesis green times 0.55,
+# CIELAB dE at least 25 from PGC-1a and 31 from BCL-xL under deuteranopia, protanopia
+# and tritanopia (proposals/p3_pgc1a_bclxl_colours.R).
 construct_cols <- c(EV = "#CCCCCC", BCL_xL = "#000000", PGC1A = "#009E73", NRF1 = "#009E73",
+                    PGC1A_BCL_xL = "#00573F",
                     Ndi1 = "#CC79A7", LbNOX_matrix = "#CC79A7", LbNOX_cytosol = "#F0E442")
-stopifnot(!any(construct_cols %in% group_cols))    # never a mouse group's colour
+# No Dox (author, 2026-10-23): on bar graphs with a no-Dox bar, the construct's colour
+# at 28% over white (FILL_ALPHA). Set for three hues only. Under deuteranopia these
+# tints sit near EV (dE 4 for PGC-1a, 8 for Ndi1) and the PGC-1a and Ndi1 tints near
+# each other (dE 4); hatching them in the full colour is open (proposals/p23_nodox_tints.R).
+# Where Dox switches MYC (iMMEC rtTA-MYC) the tint marks MYC off, an exception to
+# "MYC state takes no colour" above.
+construct_nodox <- c(PGC1A = "#B8E4D8", NRF1 = "#B8E4D8", Ndi1 = "#F1D9E6",
+                     LbNOX_matrix = "#F1D9E6", LbNOX_cytosol = "#FBF7CA")
+local({
+  tint <- function(h) {
+    v <- grDevices::col2rgb(h)[, 1]
+    w <- round(255 - FILL_ALPHA * (255 - v))
+    grDevices::rgb(w[1], w[2], w[3], maxColorValue = 255)
+  }
+  stopifnot(identical(vapply(construct_cols[names(construct_nodox)], tint, character(1)),
+                      construct_nodox))
+})
+stopifnot(!any(c(construct_cols, construct_nodox) %in% c(group_cols, group_fill)))  # never a mouse group's colour
 
 # --- diverging and sequential fills (author's specification, 2026-07-30) ------
 # Espresso -> white -> mint, white pinned at zero. Not blue-red: blue and orange
