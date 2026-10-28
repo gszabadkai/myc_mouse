@@ -61,6 +61,23 @@ border, error bars upward. In `_style.R` (`construct_cols`, guarded against the 
 p2_construct_colours.pdf` and `p2_bar_fills.pdf` (scripts in `figures/natmetab/proposals/`).
 The author is making the MYAZ PGC-1α bar charts in Prism.
 
+**2026-10-28: Section 3 read-out, script 57 run.** Digest and handoff:
+`docs/2026-10-28_section3_results_digest.md` (read this first); full auto-generated record
+`docs/2026-10-28_section3_panel_readout.md` (regenerated on every run, never hand-edit);
+object `results/orthotopic_section3_panels.rds`. Script 57 reads out script 52 for the
+Section 3 panels; its rebuild gate reproduces 52's arm medians exactly. **Fig. 3g is
+796-fold, not ~1,100** (1,100 is `Pgc1a_BclxL` vs `BclxL`, a different panel); Mann-Whitney
+*P* = 0.000583, the floor at 7 vs 7, so "P < 0.0001" comes off. **Both open numbers came
+back negative:** `Bbc3` does not track `Ppargc1a` within `Pgc1a_BclxL` (r −0.165
+[−0.817, +0.671]), so ED a is a three-background comparison, not a dose-response; and `Myc`
+in `KOPgc1a` vs `KOEV` is −193 [−475, +431], so **ED d is not built**. The CRISPR arms are
+**pooled, p19ARF-disrupted not null** — `data/orthotopic_series/README.md` corrected.
+**The 57 panels are DRAFTS for content control and are not formatted.** Open: the Fig. 3
+colour gap (`NTPgc1a` and `KOPgc1a` are one construct on two backgrounds, which the Fig. 2
+palette does not encode — three options in the digest section 6), EV-EV's colour, plain or
+hatched no-Dox tints, ED numbering, and the facility manifest, which never landed.
+**Nothing from this session is committed.**
+
 **2026-10-23: PGC-1α + BCL-xL and the no-Dox tints, RECORDED** (author): PGC-1α + BCL-xL (Figs 3-4)
 is `#00573F`, the green darkened to 55% (candidate (b), `p3_pgc1a_bclxl_colours.pdf`). No-Dox bars
 take the construct's 28% tint: PGC-1α/NRF1 `#B8E4D8` (the author's, already in use), Ndi1/LbNOX

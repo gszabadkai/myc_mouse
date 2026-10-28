@@ -54,17 +54,27 @@ manipulations, not one. Every conclusion in scripts 50 and 51 that read that con
 
 ### The CRISPR series carries the only construct-free PGC1a arm
 
-`NTEV` / `NTPgc1a` are a **non-targeting CRISPR clone** background, and `NTPgc1a` is a
+**CORRECTED 2026-10-28.** This section said "clone" of both CRISPR arms and that was wrong. The
+editing was **pooled CRISPR with no single-cell selection**, so these are polyclonal edited
+populations and the p19^ARF arm is **p19^ARF-disrupted, not null** (author, 2026-10-28). Editing
+was validated independently: the edited fraction was checked and the p19^ARF western QC passed.
+This matters because the KO negative carries the closing sentence of Section 3. Two files still
+carry the old wording and are deliberately not edited — `scripts/52_orthotopic_escape_series.R`
+(header comment) and `scripts/53_escape_dose_figure.R` (figure caption) are the committed
+analysis behind a saved object and a published PDF.
+
+`NTEV` / `NTPgc1a` are a **non-targeting CRISPR** background, and `NTPgc1a` is a
 **surviving PGC1a-only arm** — `Ppargc1a` 128.6 CPM, with some increase in OXPHOS subunits by
 western. It is therefore the **only place in the cohort where `Bcl2l1` means endogenous
 BCL-XL**.
 
-`KOEV` / `KOPgc1a` are a **p19^ARF CRISPR clone**. `KOPgc1a` has **lost the transgene
+`KOEV` / `KOPgc1a` are a **p19^ARF CRISPR-disrupted** background. `KOPgc1a` has **lost the transgene
 entirely** (`Ppargc1a` 0.2 CPM), which is itself informative: it belongs to the escape series
 rather than being a failed arm.
 
-Note the two series differ in derivation — the CRISPR arms are clones, the vector arms a
-polyclonal pool — so **clean contrasts are within series** (`NTPgc1a` vs `NTEV`,
+Note the two series differ in derivation — the CRISPR arms are pooled edited populations on two
+separate edited backgrounds, the vector arms a polyclonal pool split after transduction — so
+**clean contrasts are within series** (`NTPgc1a` vs `NTEV`,
 `Pgc1a_BclxL` vs `BclxL`). Cross-series contrasts carry a derivation difference and are
 descriptive only.
 
