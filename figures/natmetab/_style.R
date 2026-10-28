@@ -45,6 +45,14 @@ NM_TXT       <- getOption("natmetab.txt", 6)        # pt; tick labels, keys, on-
 NM_TXT_TITLE <- getOption("natmetab.txt_title", 7)  # pt; axis titles and strips (Nature's maximum)
 stopifnot(NM_TXT >= NM_TXT_MIN, NM_TXT_TITLE >= NM_TXT, NM_TXT_TITLE <= 7)
 NM_LINE      <- 0.25         # ggplot linewidth: axes, ticks, brackets, box outlines (0.53 pt printed)
+# The Prism graphs' stroke weight, in POINTS, per figure -- MEASURED from the built
+# figure, not assumed, because the two figures' Prism graphs are set differently.
+# Fig. 1b was set to 0.9 pt by hand (author, 2026-10-15: 1 pt read heavier than its
+# Prism neighbours). Figure 3's panels a-h measure 0.72 pt: the dominant stroke in
+# `outputs/natmetab/proposals/NM_Fig3.pdf` and the weight of its symbol outlines
+# (2026-10-28). An R panel drawn at NM_LINE (0.53 pt) reads visibly thinner beside
+# them. Pass it through lw_pt(): theme_nm(line = lw_pt(NM_LINE_PRISM[["Fig3"]])).
+NM_LINE_PRISM <- c(Fig1 = 0.9, Fig3 = 0.72)
 NM_MAX_W     <- 183          # mm; double column
 NM_ED_MAX_W  <- 180          # mm; Extended Data page width (Nature research figure guide)
 NM_MAX_H     <- 170          # mm; tallest Nature figure that leaves room for a legend
@@ -139,6 +147,32 @@ local({
                       construct_nodox))
 })
 stopifnot(!any(c(construct_cols, construct_nodox) %in% c(group_cols, group_fill)))  # never a mouse group's colour
+
+# --- the genetic background (Fig. 3 on; author, 2026-10-28) -------------------
+# A SCOPED RULE, NOT AN EXCEPTION. Where a panel holds the CONSTRUCT CONSTANT and
+# varies the BACKGROUND, colour encodes the BACKGROUND. The construct-hue rule
+# above is untouched everywhere it actually applies. Fig. 3i and its Extended Data
+# are the case: all three informative arms carry PGC-1a, so the construct palette
+# would give two of them one hue and say nothing about what differs.
+# Keyed by ARM, so a panel indexes it directly with the arm names on disk.
+# Three of the four ARE their construct's colour and are asserted to stay so; only
+# the p19ARF-disrupted background needs a colour of its own.
+#   #AA4499 (Paul Tol's muted purple) rather than Okabe-Ito's orange #E69F00: all
+#   EIGHT Okabe-Ito colours are already assigned, and #E69F00 is the MYC+ 12W mouse
+#   group. Orange would then mean one biological group in Fig. 1 and a different one
+#   in Fig. 3. #AA4499 stays at least CIELAB dE 32 from black, #00573F and #009E73
+#   under deuteranopia, protanopia and tritanopia, and is free paper-wide.
+#   NOT grey: grey reads as "not significant" rather than "different background".
+background_cols <- c(BclxL = "#000000", Pgc1a_BclxL = "#00573F",
+                     NTPgc1a = "#009E73", KOPgc1a = "#AA4499")
+background_labels <- c(BclxL = "no transgene", Pgc1a_BclxL = "effector blocked",
+                       NTPgc1a = "pathway intact", KOPgc1a = "checkpoint disrupted")
+stopifnot(
+  identical(names(background_cols), names(background_labels)),
+  # the three that reuse a construct colour must keep tracking it
+  identical(unname(background_cols[c("BclxL", "Pgc1a_BclxL", "NTPgc1a")]),
+            unname(construct_cols[c("BCL_xL", "PGC1A_BCL_xL", "PGC1A")])),
+  !any(background_cols %in% c(group_cols, group_fill)))   # never a mouse group's colour
 
 # --- diverging and sequential fills (author's specification, 2026-07-30) ------
 # Espresso -> white -> mint, white pinned at zero. Not blue-red: blue and orange

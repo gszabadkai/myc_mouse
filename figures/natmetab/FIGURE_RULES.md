@@ -291,6 +291,30 @@ groups do not use, **one hue per mechanism** (`construct_cols` in the style file
 
 - **Two constructs share a hue only where they share a mechanism**, and never in one panel; the
   axis names the construct.
+- **Where a panel holds the construct constant and varies the background, colour encodes the
+  BACKGROUND** (author, 2026-10-28). A scoped rule, not an exception: the construct-hue rule
+  above is untouched everywhere it applies. Fig. 3i and its Extended Data are the case — all
+  three informative arms carry PGC-1α, so the construct palette would give two of them one hue
+  and say nothing about what actually differs. `background_cols` in the style file, keyed by arm:
+
+  Listed in the order the panels draw them, which is an **escalation** (author,
+  2026-10-28) — what has to be done to the death pathway before a tumour can hold a high
+  respiratory state. Not dose order, and not the order of the original spec:
+
+  | arm | background | colour |
+  |---|---|---|
+  | `BclxL` | no transgene (zero arm) | black `#000000` |
+  | `KOPgc1a` | checkpoint disrupted (p19ARF) | purple `#AA4499` |
+  | `NTPgc1a` | pathway intact | bluish green `#009E73` |
+  | `Pgc1a_BclxL` | effector blocked | dark green `#00573F` |
+
+  Three of the four are their construct's own colour and are asserted to stay so; only the
+  p19ARF-disrupted background needs one of its own. It is **`#AA4499`** (Paul Tol's muted
+  purple), **not Okabe-Ito's orange `#E69F00`**: all eight Okabe-Ito colours are already
+  assigned and `#E69F00` is the MYC+ 12W mouse group, so orange would mean one biological group
+  in Fig. 1 and a different one in Fig. 3. `#AA4499` stays at least CIELAB dE 32 from black,
+  `#00573F` and `#009E73` under deuteranopia, protanopia and tritanopia, and is free paper-wide.
+  **Not grey** — grey reads as "not significant" rather than "a different background".
 - **MYC state** (off/on in iMMECs, basal/raised in MYAZ) is on the axis and takes no colour.
 - **Bars take the hue itself (100%), not the 28% tint**: in a bar the fill is the only mark
   (author, 2026-10-19: at 28% "the bar comes almost invisible"). **Border black, 0.9 pt; symbols

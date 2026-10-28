@@ -199,15 +199,37 @@ blots. Confirm where the quantification lives before building it.
 
 ## 4. Drawing requirements that come from the prose
 
-1. **3i must be ordered by route, not by construct name and not alphabetically**:
-   effector blocked, pathway intact, checkpoint removed. Label each arm by what
-   was done to the death pathway, with the construct as a subscript. Drawn as
-   unordered bars with construct names, the head-to-head route comparison is
-   present in the data and invisible on the page.
+1. **3i must be ordered by route, not by construct name and not alphabetically.**
+   Label each arm by what was done to the death pathway, with the construct as a
+   subscript. Drawn as unordered bars with construct names, the head-to-head
+   route comparison is present in the data and invisible on the page.
+   **AMENDED 2026-10-28 (author): the order is an ESCALATION — no transgene,
+   checkpoint disrupted, pathway intact, effector blocked** — "what you need to
+   get to OXPHOS". This replaces the original order (effector blocked, pathway
+   intact, checkpoint removed), which ran the other way. It is deliberately not
+   dose order: the retained-dose panel beside it carries that.
+   **3i is also now TWO panels placed side by side, both letter i**: retained
+   dose per animal, and the respiratory ruler against each matched control.
+   "Checkpoint removed" becomes "checkpoint **disrupted**" throughout, per the
+   pooled-CRISPR correction of the same date.
 2. **The x-axis of 3i reads "retained", never "assigned".** Retention is an
    outcome of selection, not a designed variable.
 3. **One unit across 3g and 3i.** Script 52 quotes CPM; the existing Prism axis
    says DESeq2-normalised. Pick one and state which.
+   **Settled 2026-10-28: CPM**, because script 52, its saved object and both
+   orthotopic notes quote it, and DESeq2-normalised differs by a near-constant
+   26.4-28.3x here.
+3a. **The respiratory ruler on 3i is mitoPPS** (author, 2026-10-28), because
+   Fig. 1e and 1f already use it and the section's claim is that both systems
+   give the same answer when buffer status is matched. `ox_rel` goes to Extended
+   Data as a second ruler; the two agree on every arm. `ox_lvl` is not used --
+   pathway intact spans zero on it.
+   **`ox_rel` is NOT OXPHOS against the transcriptome.** It is the 86 nuclear
+   OXPHOS subunits against the other 880 nuclear MitoCarta genes, as a difference
+   of mean per-gene z-scores, so it is already normalised within the compartment,
+   like mitoPPS. The quantity that reads as overall mitochondrial level is the
+   MitoCarta share of the library (14.7% in `Pgc1a_BclxL` against 7.8-8.6%
+   elsewhere), which no panel currently draws.
 4. **3g needs per-animal values, not summary statistics**, since Prism computes
    its own statistics from the pasted replicates.
 5. **The legend must cite one statistical test consistently.** A Prism unpaired
