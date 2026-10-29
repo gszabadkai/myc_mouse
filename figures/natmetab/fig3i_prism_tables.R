@@ -24,6 +24,28 @@
 #   test, the legend must cite that test and not script 52's interval. That is
 #   the same split Fig. 3g already has.
 #
+# THE ERROR BARS ARE ASYMMETRIC, AND MUST STAY THAT WAY (author, 2026-10-28).
+#   It is not a log scale and not a rounding artefact. `boot_diff` takes the
+#   2.5th and 97.5th PERCENTILES of the resampled differences, which is not
+#   value +/- k x SE and is under no constraint to be symmetric. Three things
+#   make it lopsided, all of them real:
+#     - a median of 7 is coarse. With n = 7 odd, a resampled median is always one
+#       of the 7 observed values, so the difference of two medians can take at
+#       most 7 x 7 = 49 values. The bootstrap distribution is 49 spikes, not a
+#       bell, and the percentiles land where the spikes fall.
+#     - the estimate is not the centre of its own bootstrap distribution. For
+#       KOPgc1a vs KOEV the observed difference is +0.0711 while the bootstrap
+#       median is +0.0464, which stretches the lower arm and compresses the upper.
+#     - the arms are skewed, and which one skews decides the direction. KOEV has
+#       two values far above its median and three tight below, so a resample that
+#       picks them collapses the difference: skew -0.87, a long left tail. The
+#       no-transgene contrast leans the other way.
+#   DO NOT COLLAPSE TO A SINGLE +/- VALUE. For checkpoint disrupted the true
+#   interval is [-0.0644, +0.1054] and spans zero; symmetrising on err_plus gives
+#   [+0.0368, +0.1054], which EXCLUDES zero -- a false positive in the one arm
+#   where the question matters. The legend has to say the bars are asymmetric and
+#   why, or a reader will read them as SD or SEM.
+#
 # ORDER is the escalation (author, 2026-10-28): no transgene, checkpoint
 #   disrupted, pathway intact, effector blocked. Columns are written in that
 #   order so a paste lands correctly without reordering.
