@@ -195,6 +195,16 @@ seed for the GS-lab figure skill planned for the end of the figure sessions.
   BH-adjusted *P* < 0.05 (script 08): on ED 2f, the 6W effect; on ED 2g, the MYC+ window change
   (no WT change passes). It sits on the side away from the dot's partner, at 7 pt, 0.25 mm off the
   dot or its ring. The legend states the threshold and the test, as for any other glyph.
+- **ED 5d is the second asterisk exception, with two more marks** (author, 2026-11-07). A heatmap of
+  the three orthotopic arms, Fig. 1g's form: a 7-pt **star** in the Bcl-xL + Pgc-1α tile where that
+  arm differs from at least one control (DESeq2 Wald, IHW-adjusted *P* < 0.05); an **arrow** after
+  each gene name for the direction the cited studies predict; the gene name in **bold** where the
+  change is in that direction -- significant against at least one control in the predicted direction
+  and not significant against it in the other, so that a change of about zero cannot read as agreeing.
+  Script 58 decides both marks; the panel only draws them. **A signature is judged only as a set**
+  (author, 2026-11-08): the adhesion, TGF-β and Wnt signature is named as a signature, its genes carry
+  no arrow and no bold (a single gene moving the predicted way carries no weight), the set's arrow
+  follows its name, and its set test (fgsea) is in the legend.
 - **Size marks the leading contrast** (author, 2026-10-11). Of two contrasts drawn per row, the one
   the text leads with is larger (1.6) and the other smaller (about 1.1), and the key shows both
   sizes: Fig. 1e, 6W over 12W; Fig. 1f, WT over MYC+ (WT is the gland's own programme).
@@ -380,6 +390,7 @@ The panels of record, promoted 2026-10-14 (author: "promote them to final panels
 | ED 3a | `edfig3a_fade_downstream.R` | the downstream genes by departure from MYC's fade, the same lines, fill = 6W effect +/-0.5, *Apaf1* left out; the old ED 3b's bottom half (2026-10-16; the old script, renamed); 86 x 44 |
 | ED 3b | `edfig3b_ratio_expected.R` | each BCL-2 ratio's 6W effect x 0.43 (the common shrink of the other eight) against its 12W effect; rows by the 6W effect, filled = 6W effect *P* < 0.05 (script 42); the old Fig. 1h, moved and changed on 2026-10-16 (author); 86 x 45 |
 | ED 3c | `edfig3c_puma_regulators.R` | the PUMA regulators by departure, the same lines, four beyond *P* = 0.01 labelled with their empirical *P*; 86 x 92 |
+| ED 5d | `edfig5d_invasion_genes.R` | the 35 invasion genes fixed in script 58 from the literature, in five groups (Id proteins; Tcf4-Twist1 programme; MMPs; adhesion, TGF-β and Wnt signature, judged as a set; Snail), across EV + EV, Bcl-xL + EV and Bcl-xL + Pgc-1α (7 tumours each): VST z per gene over 21 tumours, arm means, espresso-white-mint ±1.5; stars, bold names and arrows as in "Showing data"; group names and headers placed by calculation; 5/6 pt, stars 7 pt; 52.5 x 86 (author, 2026-11-07: replaces the TF-activity charts, which are dropped) |
 
 **Retired 2026-10-14** (`figures/natmetab/retired/`, outside the dry-run set; their old PDFs are
 in `outputs/natmetab/_retired/`): the 2026-10-11 Fig. 1f (`fig1f_window_reallocation.R`), the

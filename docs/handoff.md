@@ -1,8 +1,9 @@
 ---
-date: 2026-10-16
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps, ed2-tier-labels, legends]
+date: 2026-11-07
+tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps, ed2-tier-labels, legends, extended-data-5, ed-fig5d, tf-activity, orthotopic]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
+  - docs/2026-11-07_edfig5d_tf_activity.md              (READ FIRST on 2026-11-07's thread: ED 5d's TF panels, the transgene finding, three decisions pending)
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
   - figures/natmetab/_style.R                           (the style; figures/natmetab/_style_selftest.R must pass after any edit)
   - figures/natmetab/LEGENDS.md                         (the legends of Fig. 1 and ED Figs 1-3, 2026-10-16; 2a.37)
@@ -21,6 +22,38 @@ relates-to:
 ---
 
 # Handoff -- restart from here
+
+**2026-11-07, EVENING: ED FIG. 5d DECIDED AND BUILT. THE AUTHOR RUNS SCRIPT 58; THEN THE FIGURE AND
+TEXT FIXES.** Read `docs/2026-11-07_edfig5d_tf_activity.md` (its update section first).
+- **ED 5d is now a heatmap of 35 invasion genes** chosen from the literature (PGC-1α restraining
+  invasion separately from mitochondrial biogenesis): Id proteins; the Tcf4-Twist1 programme; MMPs;
+  the adhesion, TGF-β and Wnt signature (Luo 2016's melanoma signature, named for its content and as
+  a signature: judged only as a set, so its genes carry no arrow and no bold; author, 2026-11-08); Snail.
+  Columns EV + EV, Bcl-xL + EV, Bcl-xL + Pgc-1α (7 tumours each); Fig. 1g's form, ±1.5. Star = differs
+  from at least one control (IHW < 0.05); bold name = change in the predicted direction (significant);
+  arrows = the prediction. **The TF charts are dropped** (author). Panel
+  `figures/natmetab/edfig5d_invasion_genes.R` (52.5 x 86 mm); legend, DOIs and a Methods draft in
+  `figures/natmetab/LEGENDS.md` (ED 5 section); rules in `FIGURE_RULES.md`.
+- **Next for the author: run `scripts/58_orthotopic_tf_activity.R`** (written and dry-run by Claude;
+  needs decoupleR, now in `00_setup_packages.R`), then the panel script, which writes
+  `outputs/natmetab/EDFig5/EDFig5d_invasion_genes.pdf`. A dry-run object writes only to
+  `outputs/natmetab/proposals/preview/`.
+- Dry-run reading: *Id1* up, *Cdh1* up, *Cdh2*, *Tcf4*, *Twist1* and *Mmp2* down, *Mmp9* down against
+  Bcl-xL + EV only; *Id2*, *Vim*, *Pthlh*, Snail and the melanoma signature not (set NES +0.9).
+  Stromal markers are lower in the Pgc-1α arm (-0.48), so *Twist1* and *Mmp2* may move partly with
+  composition (in the Methods draft). For the text: *Mmp9* is not a Twist1 target in CollecTRI or
+  DoRothEA; "due to" is causal for a survivor population.
+- New and untracked: `data/collectri_mouse/` (pinned CollecTRI + UniProt names + README),
+  script 58, the panel, two proposals (`p5d_tf_colours.R`, `p5d_expression_options.R`, superseded by
+  the choice), the comparison `docs/2026-11-07_current_figures_vs_repo.md`. Also `scripts/external/`
+  (the author's) and `omnipathr-log/`. **Nothing is committed.**
+- **Then: the figure and text fixes** from the comparison (author's order: ED 5 first, then these):
+  Fig. 3i's Bcl-xL sign (drawn +0.021, is -0.021); Fig. 1b's exponents (10^17, 10^20 for 10^-17,
+  10^-20); Fig. 3g's zero-CPM tumour on a log axis; ED 2f/2g placed at 105% and ED 1c at 96.8%; four
+  text citations to the wrong panel; legends that lost required details; and the repo housekeeping
+  (retire `fig1b_myc_transcript.R` and the old ED 5 scripts, update FIGURE_RULES's Built table and
+  `page_mock_247.R`, make `fig3i_prism_tables.R` write +error before -error). The author said the
+  old EDFig5 is superseded; ask before any `git mv`.
 
 **2026-10-16: FIG. 1 AND THE EXTENDED DATA RE-FORMED, TWICE (2a.35), THEN ED 2f-g AS fig02 (2a.36),
 THEN THE LEGENDS (2a.37).**

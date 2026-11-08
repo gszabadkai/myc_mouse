@@ -39,6 +39,63 @@ Panel order follows the text (author, 2026-10-16). **d** is MYC's effect at 12W 
 
 ---
 
+## Extended Data Fig. 5 (panel d; 2026-11-07)
+
+No title (the author's rule for Extended Data figures). Panels **a**–**c** and **e** are the author's
+Prism graphs, images and blots; their legends are the author's. **d** replaces the TF-activity charts
+(author, 2026-11-07). Its numbers are printed by `edfig5d_invasion_genes.R` from script 58; the
+counts below are from the dry run and are re-read from the author's run. Superscripts are the
+references below, for Paperpile.
+
+**d**, Expression of 35 genes selected from studies in which PGC-1α restrains migration or invasion
+independently of mitochondrial biogenesis, in orthotopic tumours of MYAZ cells carrying EV + EV,
+Bcl-xL + EV or Bcl-xL + Pgc-1α (*n* = 7 tumours per group). Genes are grouped as Id proteins^1,2^, the
+Tcf4–Twist1 epithelial–mesenchymal programme^2,3^, matrix metalloproteinases (MMPs), the adhesion,
+TGF-β and Wnt signature repressed by PGC-1α in melanoma^1^, and Snail^4^. Tiles, group means of
+variance-stabilised expression z-scored per gene across the 21 tumours. Arrows, the change predicted
+for Bcl-xL + Pgc-1α tumours by the cited studies, gene by gene, and for the signature as a set;
+asterisks, Bcl-xL + Pgc-1α different from at least one control group (DESeq2 Wald test, independent
+hypothesis weighting (IHW)-adjusted *P* < 0.05); bold gene names, a change in the predicted direction
+(IHW-adjusted *P* < 0.05 against at least one control group and no significant change in the
+opposite direction against the other), for genes outside the signature. The signature, tested as a
+set (fgsea on the DESeq2 Wald statistic): normalised enrichment score +0.90 against Bcl-xL + EV
+(*P* = 0.61) and +0.84 against EV + EV (*P* = 0.70) **[dry-run values; re-read from the author's run of
+script 58]**.
+
+References (DOIs for Paperpile):
+1. Luo, C. et al. A PGC1α-mediated transcriptional axis suppresses melanoma metastasis. *Nature*
+   **537**, 422–426 (2016). doi:10.1038/nature19347
+2. Oh, T.-I. et al. PGC1α loss promotes lung cancer metastasis through epithelial–mesenchymal
+   transition. *Cancers* **13**, 1772 (2021). doi:10.3390/cancers13081772
+3. Fang, X.-Q. et al. PGC1α cooperates with FOXA1 to regulate epithelial mesenchymal transition
+   through the TCF4–TWIST1. *Int. J. Mol. Sci.* **23**, 8247 (2022). doi:10.3390/ijms23158247
+4. Nam, H. et al. PGC1α suppresses kidney cancer progression by inhibiting collagen-induced SNAIL
+   expression. *Matrix Biol.* **89**, 43–58 (2020). doi:10.1016/j.matbio.2020.01.001
+
+For Methods (draft):
+5. Love, M. I., Huber, W. & Anders, S. Moderated estimation of fold change and dispersion for
+   RNA-seq data with DESeq2. *Genome Biol.* **15**, 550 (2014). doi:10.1186/s13059-014-0550-8
+6. Ignatiadis, N., Klaus, B., Zaugg, J. B. & Huber, W. Data-driven hypothesis weighting increases
+   detection power in genome-scale multiple testing. *Nat. Methods* **13**, 577–580 (2016).
+   doi:10.1038/nmeth.3885
+
+*Methods, draft paragraph.* Gene-level counts of the 21 tumours of the three vector groups were
+analysed with DESeq2^5^ (one-factor design; genes with at least 10 counts in at least 2 tumours),
+and *P* values were adjusted by IHW^6^. The 35 genes were taken from studies in which PGC-1α
+restrains migration or invasion through routes separate from mitochondrial biogenesis^1–4^: the Id
+proteins induced by PGC-1α (*Id1*, *Id2*, *Id3*), the Tcf4–Twist1 programme (*Twist1*, *Tcf4*, *Cdh1*,
+*Cdh2*, *Vim*, *Pthlh*), the PGC-1α-repressed metastasis and invasion signature of melanoma (22 of its
+23 genes; IL8 has no mouse orthologue), *Snai1* and *Snai2*, and *Mmp2* and *Mmp9*. The signature was
+tested only as a set, by fgsea on the DESeq2 Wald statistic; the other genes one by one. The list was fixed
+before the expression of all but four of them (*Twist1*, *Cdh1*, *Mmp2*, *Mmp9*) had been examined.
+For display, counts were variance-stabilised, z-scored per gene across the 21 tumours and averaged
+per group. Markers of tumour composition differed between the groups (stromal markers, median log₂
+fold change −0.48 in Bcl-xL + Pgc-1α against Bcl-xL + EV; endothelial and adipose markers higher), so
+genes also expressed by stromal cells, *Twist1* and *Mmp2* among them, may change in part with
+composition.
+
+---
+
 ## For Methods (author, 2026-10-16)
 
 - **The batch caveat goes in Methods, not in the legends:** the 6W and 12W cohorts were extracted

@@ -23,7 +23,10 @@ bioc_packages <- c(
   "GSVA",            # per-sample gene-set scoring (15_gsva_scoring.R)
   "singscore",       # rank-based cohort-independent set scoring (36_linear_pathway_coupling.R)
   "org.Mm.eg.db",    # gene-symbol alias reconciliation (functions/reconcile_gene_symbols.R)
-  "AnnotationDbi"    # mapIds() for the alias lookup (functions/reconcile_gene_symbols.R)
+  "AnnotationDbi",   # mapIds() for the alias lookup (functions/reconcile_gene_symbols.R)
+  "decoupleR"        # run_ulm(), TF activity (58_orthotopic_tf_activity.R). The regulons come
+                     # from the pinned file in data/collectri_mouse/, never get_collectri():
+                     # OmnipathR 4.0.0 fails here, and loading it writes logs into the cwd
 )
 
 # Load or install CRAN packages
