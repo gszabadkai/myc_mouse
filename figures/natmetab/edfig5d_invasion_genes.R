@@ -70,8 +70,13 @@ gt  <- as.data.frame(o$genes$readout)
 fc1 <- gt[gt$contrast == "vs_bclxl", ]
 stopifnot(identical(ORD, c("A", "B", "D", "C", "E")), nrow(G) == 35L,
           setequal(hm$gene, G$gene), setequal(sig$gene, G$gene),
-          all(c("star", "bold") %in% names(sig)),
-          !any(sig$bold[sig$gene %in% G$gene[G$module == "C"]]))   # the signature: set test only
+          all(c("star", "bold") %in% names(sig)))
+# the signature is judged only as a set (2026-11-08): an object that bolds any of its
+# genes was written by script 58 before that rule, and is stale
+if (any(sig$bold[sig$gene %in% G$gene[G$module == "C"]]))
+  stop(S58, " was written before the signature rule of 2026-11-08 (it bolds signature genes: ",
+       paste(sig$gene[sig$bold & sig$gene %in% G$gene[G$module == "C"]], collapse = ", "),
+       "). Re-run scripts/58_orthotopic_tf_activity.R, then this script.", call. = FALSE)
 
 # Mouse proteins in title case (the author's naming, 2026-11-06); MMPs as on the ED 5e
 # blot; Wnt as Luo et al. write the pathway.

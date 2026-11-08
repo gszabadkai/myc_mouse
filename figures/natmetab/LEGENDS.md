@@ -43,9 +43,9 @@ Panel order follows the text (author, 2026-10-16). **d** is MYC's effect at 12W 
 
 No title (the author's rule for Extended Data figures). Panels **a**–**c** and **e** are the author's
 Prism graphs, images and blots; their legends are the author's. **d** replaces the TF-activity charts
-(author, 2026-11-07). Its numbers are printed by `edfig5d_invasion_genes.R` from script 58; the
-counts below are from the dry run and are re-read from the author's run. Superscripts are the
-references below, for Paperpile.
+(author, 2026-11-07). Its numbers are printed by `edfig5d_invasion_genes.R` from script 58, run by
+the author on 2026-11-08 (identical to Claude's dry run). Superscripts are the references below, for
+Paperpile.
 
 **d**, Expression of 35 genes selected from studies in which PGC-1α restrains migration or invasion
 independently of mitochondrial biogenesis, in orthotopic tumours of MYAZ cells carrying EV + EV,
@@ -59,8 +59,7 @@ hypothesis weighting (IHW)-adjusted *P* < 0.05); bold gene names, a change in th
 (IHW-adjusted *P* < 0.05 against at least one control group and no significant change in the
 opposite direction against the other), for genes outside the signature. The signature, tested as a
 set (fgsea on the DESeq2 Wald statistic): normalised enrichment score +0.90 against Bcl-xL + EV
-(*P* = 0.61) and +0.84 against EV + EV (*P* = 0.70) **[dry-run values; re-read from the author's run of
-script 58]**.
+(*P* = 0.61) and +0.84 against EV + EV (*P* = 0.70).
 
 References (DOIs for Paperpile):
 1. Luo, C. et al. A PGC1α-mediated transcriptional axis suppresses melanoma metastasis. *Nature*

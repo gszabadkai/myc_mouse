@@ -2,9 +2,9 @@
 date: 2026-11-07
 tags: [project/myc_mouse, handoff, nat-metab, extended-data-5, ed-fig5d, orthotopic, tf-activity, decoupler, collectri, plan]
 status: >
-  DECIDED AND BUILT (evening update below). The morning's plan and findings follow it
-  unchanged as the record. Script 58 is written and dry-run; the author runs it.
-  Nothing committed.
+  DECIDED, BUILT AND RUN (update below). The morning's plan and findings follow it
+  unchanged as the record. Script 58 and the ED 5d panel were run by the author on
+  2026-11-08; the numbers equal the dry run. Committed and pushed.
 relates-to:
   - scripts/external/Pgc bclxl analysis.R      (the copy that made ED 5d; untracked, the author's)
   - scripts/external/Pgc bclxl analysis 1.R    (a later edit of it; did not make the figure; untracked)
