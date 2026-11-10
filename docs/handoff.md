@@ -1,8 +1,9 @@
 ---
-date: 2026-11-07
-tags: [project/myc_mouse, handoff, main, nat-metab, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps, ed2-tier-labels, legends, extended-data-5, ed-fig5d, tf-activity, orthotopic]
+date: 2026-11-10
+tags: [project/myc_mouse, handoff, main, nat-metab, reviewer-prep, myc-dose, figure-layer, figure-1, extended-data-2, extended-data-3, script-55, script-56, prism-format, type-5-6pt, box-plot-axes, fig1h-bcl2-fade, ed2-ranked-mitopps, ed2-tier-labels, legends, extended-data-5, ed-fig5d, tf-activity, orthotopic]
 status: live handoff -- overwrite in place at the end of each session
 relates-to:
+  - docs/2026-11-10_myc_protein_decline_reviewer_prep.md (the MYC protein decline: exclusions, the proposal, and two items for the author)
   - docs/2026-11-07_edfig5d_tf_activity.md              (READ FIRST on 2026-11-07's thread: ED 5d's TF panels, the transgene finding, three decisions pending)
   - figures/natmetab/FIGURE_RULES.md                    (READ FIRST for figure work: every rule of the new panel layer, with its reason)
   - figures/natmetab/_style.R                           (the style; figures/natmetab/_style_selftest.R must pass after any edit)
@@ -23,39 +24,68 @@ relates-to:
 
 # Handoff -- restart from here
 
-**2026-11-07/08: ED FIG. 5d DECIDED, BUILT, RUN BY THE AUTHOR AND PUSHED; NEXT, THE FIGURE AND TEXT
-FIXES.** Read `docs/2026-11-07_edfig5d_tf_activity.md` (its update section first).
-- **ED 5d is now a heatmap of 35 invasion genes** chosen from the literature (PGC-1α restraining
-  invasion separately from mitochondrial biogenesis): Id proteins; the Tcf4-Twist1 programme; MMPs;
-  the adhesion, TGF-β and Wnt signature (Luo 2016's melanoma signature, named for its content and as
-  a signature: judged only as a set, so its genes carry no arrow and no bold; author, 2026-11-08); Snail.
-  Columns EV + EV, Bcl-xL + EV, Bcl-xL + Pgc-1α (7 tumours each); Fig. 1g's form, ±1.5. Star = differs
-  from at least one control (IHW < 0.05); bold name = change in the predicted direction (significant);
-  arrows = the prediction. **The TF charts are dropped** (author). Panel
-  `figures/natmetab/edfig5d_invasion_genes.R` (52.5 x 86 mm); legend, DOIs and a Methods draft in
-  `figures/natmetab/LEGENDS.md` (ED 5 section); rules in `FIGURE_RULES.md`.
-- **Script 58 and the panel were run by the author on 2026-11-08** (`results/orthotopic_tf_activity.rds`
-  00:15; `outputs/natmetab/EDFig5/EDFig5d_invasion_genes.pdf` 00:16, 52.5 x 86 mm); the numbers equal
-  Claude's dry run. A first run at 23:59 on 2026-11-07 predated the signature rule and was replaced;
-  the panel now stops, naming the genes, on any object that bolds a signature gene. Committed and
-  pushed. The author places the PDF in Illustrator and pastes the legend.
-- Dry-run reading: *Id1* up, *Cdh1* up, *Cdh2*, *Tcf4*, *Twist1* and *Mmp2* down, *Mmp9* down against
-  Bcl-xL + EV only; *Id2*, *Vim*, *Pthlh*, Snail and the melanoma signature not (set NES +0.9).
-  Stromal markers are lower in the Pgc-1α arm (-0.48), so *Twist1* and *Mmp2* may move partly with
-  composition (in the Methods draft). For the text: *Mmp9* is not a Twist1 target in CollecTRI or
-  DoRothEA; "due to" is causal for a survivor population.
-- Committed (`b93494e`, and the run's record after it) and pushed: `data/collectri_mouse/` (pinned
-  CollecTRI + UniProt names + README), script 58, the panel, two proposals (`p5d_tf_colours.R`,
-  `p5d_expression_options.R`, superseded by the choice), the comparison
-  `docs/2026-11-07_current_figures_vs_repo.md`. Left untracked: `scripts/external/` (the author's) and
-  `omnipathr-log/`.
-- **Then: the figure and text fixes** from the comparison (author's order: ED 5 first, then these):
-  Fig. 3i's Bcl-xL sign (drawn +0.021, is -0.021); Fig. 1b's exponents (10^17, 10^20 for 10^-17,
-  10^-20); Fig. 3g's zero-CPM tumour on a log axis; ED 2f/2g placed at 105% and ED 1c at 96.8%; four
-  text citations to the wrong panel; legends that lost required details; and the repo housekeeping
-  (retire `fig1b_myc_transcript.R` and the old ED 5 scripts, update FIGURE_RULES's Built table and
-  `page_mock_247.R`, make `fig3i_prism_tables.R` write +error before -error). The author said the
-  old EDFig5 is superseded; ask before any `git mv`.
+**2026-11-10: REVIEWER PREP ON THE MYC PROTEIN DECLINE, written at the author's request after
+collaborator comments.** `docs/2026-11-10_myc_protein_decline_reviewer_prep.md` -- no new analysis,
+every number sourced. The point of it: the manuscript explains the *programme* attenuation (the
+protein tracks it, MYC-ER makes it non-load-bearing) but **not the protein fall itself**, and a
+reviewer will ask. It gathers the three exclusions (E-box network unmoved and the error bars equal;
+turnover machinery *down* and no more changed than background; autophagy *falls* with the programme
+rather than rising), their shared transcript-level limitation, and the proposal: the decline is
+**developmental, not transgene-specific** (WT MYC protein falls −57%, MYC+ −32%, so it acts on the
+protein whatever promoter made the message), most likely post-translational via the T58/S62 degron.
+**Two items need the author** (its section 6): the text says "~50%" where the Prism sheet gives −32%
+in MYC+, and Fig. 1b's left graph is labelled "mean nuclear intensity" while its sheet is named
+"Myc WB Quant" -- which of the two decides whether compositional dilution stays live. Also corrects
+the banner of `2026-07-25_attenuation_competing_hypotheses.md` (the "−50% and ×0.55 are the same
+number" coincidence is looser than written: −32% and ×0.487).
+
+**2026-11-08: ED FIG. 5d IS DONE AND PUSHED (`ab272dd`). ON RESUMING, START THE FIGURE, TEXT AND
+CITATION FIXES BELOW.** Everything is on `origin/main`; only this handoff edit is uncommitted.
+
+*ED 5d, done.* A heatmap of 35 invasion genes chosen from the literature (PGC-1α restraining invasion
+apart from mitochondrial biogenesis): Id proteins, the Tcf4-Twist1 programme, MMPs, the adhesion,
+TGF-β and Wnt signature (Luo 2016; judged only as a set, so its genes carry no arrow and no bold;
+its fgsea test, NES +0.90 and +0.84, *P* 0.61 and 0.70, is in the legend), and Snail. Columns EV + EV,
+Bcl-xL + EV, Bcl-xL + Pgc-1α (7 tumours each). The TF charts are dropped. `scripts/58_orthotopic_tf_activity.R`
+and `figures/natmetab/edfig5d_invasion_genes.R` were run by the author on 2026-11-08 (equal to the dry
+run). **For the author:** place `outputs/natmetab/EDFig5/EDFig5d_invasion_genes.pdf` (52.5 x 86 mm) and
+paste the d legend, DOIs and Methods draft from `figures/natmetab/LEGENDS.md` (ED 5 section). Background
+and every number: `docs/2026-11-07_edfig5d_tf_activity.md`. For the text's Twist sentence: *Twist1* and
+*Mmp2* mRNA fall (with the 5e westerns); *Mmp9* is not a Twist1 target in CollecTRI or DoRothEA;
+"due to" is causal for a survivor population; stromal markers are lower in the Pgc-1α arm, so *Twist1*
+and *Mmp2* may move partly with composition (in the Methods draft).
+
+*Next: the fixes,* from `docs/2026-11-07_current_figures_vs_repo.md` (the old-versus-current comparison;
+the three starred items were re-checked against the files, the rest is a subagent's reading). The
+assembled PDFs are on the local Drive mount `/Users/gs/G/data/MK_myc_2022/paper figures/NM_Figs_to_submit/`.
+1. **Printed errors (the author's, in Prism or Illustrator):**
+   - *Fig. 3i: the Bcl-xL point is drawn at +0.021; the value is -0.021 [-0.050, +0.087]
+     (`outputs/natmetab/Fig3/Fig3i_prism_mitopps_contrast.csv`); the Prism sheet on Drive has the slip.
+     The inverted error bars (human repo's flag F13) are fixed in the 23:16 PDF.
+   - *Fig. 1b: the mRNA *P* values print "2.7 x 10^17" and "2.1 x 10^20" (minus signs lost; the graph
+     is now the Prism sheet `1b Myc mRNA`).
+   - *Fig. 3g: one NT + EV tumour has 0 CPM *Ppargc1a*, so the log axis drops it (6 symbols for n = 7).
+2. **Placement:** ED 2f and 2g sit at 105% (type 7.4 pt; the relinked 171-mm PDFs kept the 180-mm
+   frame); ED 1c at 96.8% (5.8 pt).
+3. **Text (the author's Doc):** citations to the wrong panel -- "see Fig. 2e" (iMMEC + Pgc-1α is 2f-g),
+   "Fig. 2d,e" for Ndi1 in the orthotopic model (2d-e are Pgc-1α), "Fig. 2c, ED Fig. 4a-c" for a
+   Pgc-1α ΔΨm (no such panel), "ED Fig. 2f, g" for the window decline (2f is MYC's 6W ranking);
+   "ED Fig. 5a-f" -> a-e (the author's); the Twist sentence (above); the OXPHOS priority "significantly
+   reduced" and fatty acid oxidation "gained priority" between 6 and 12 weeks, neither passing BH (2a.25).
+4. **Legends that lost required detail:** ED 1b (the 22 genes beyond ±3 not shown), ED 3a (*Apaf1* not
+   shown), ED 3b (what the 0.43 is fitted on), Fig. 1i (its epithelial covariates), Fig. 1f (the null's
+   "same expression ventiles"), ED 2c (the broken PC1 axis).
+5. **For the author to rule on:** Fig. 3h's *Cdkn2a* Dunnett runs across series (descriptive only in the
+   repo), and "*Cdkn2a* also fell in the Pgc-1α expressing tumours" holds for Pgc-1α + Bcl-xL only; Fig.
+   3i/3j draw the p19ARF-KO arm orange (MYC+ 12W's colour) rather than the recorded `#AA4499`, in another
+   arm order, all symbols filled.
+6. **Repo housekeeping (Claude; ask before any `git mv`):** retire `fig1b_myc_transcript.R`, the old ED 5
+   (`edfig5a_bbc3_routes.R`, `edfig5b_ox_rel_routes.R`, superseded per the author) and the orphan
+   `outputs/natmetab/Fig3/Fig3i_route_comparison.pdf`; update FIGURE_RULES's Built table (Fig. 1b is
+   Prism; ED 2's swaps and page line) and `page_mock_247.R` (still pre-swap); make
+   `fig3i_prism_tables.R` write +error before -error, the column order Prism expects.
+
+*Untracked, staying so:* `scripts/external/` (the author's) and `omnipathr-log/`.
 
 **2026-10-16: FIG. 1 AND THE EXTENDED DATA RE-FORMED, TWICE (2a.35), THEN ED 2f-g AS fig02 (2a.36),
 THEN THE LEGENDS (2a.37).**
